@@ -1,0 +1,14 @@
+* text=auto 
+
+# Custom for Visual Studio
+*.sln text eol=crlf merge=union 
+*.csproj text eol=crlf merge=union
+*.cs eol=crlf diff=csharp
+*.config eol=crlf
+*.tt eol=crlf
+*.exe -text
+*.pdf -text
+
+core.autocrlf=true
+core.safecrlf=true
+core.ignorecase=false

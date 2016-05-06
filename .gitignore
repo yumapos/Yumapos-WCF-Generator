@@ -1,0 +1,12 @@
+bin
+obj
+*.suo
+*.user
+packages
+*.sln.ide
+/TestResults
+/Server/YumaPos.WCF/related_modifiers/
+/node_modules/
+/Server/YumaPos.WCF/images/
+.vs/
+*.userprefs
