@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -22,14 +23,21 @@ namespace FirstRoslynApp
         private static Solution _solution = null;
         private static Project _project = null;
 
-        private static string _usings = "";
+        private static List<string> _serviceUsings = new List<string>();
+        private static List<string> _allUsings = new List<string>();
 
         private static List<Tuple<string, SourceText, string[], string>> tasks;
 
-        public string ProjectName { get; set; }
         public string SolutionPath { get; set; }
-        public List<string> Services { get; set; }
+        public List<ServiceDetail> Services { get; set; }
+
+        public string ProjectName { get; set; }
+        public List<string> ProjectFolders { get; set; }
+
         public string ProjectApi { get; set; }
+        public List<string> ProjectApiFolders { get; set; }
+
+        public object FaultProject { get; set; }
 
         private void CheckValues(string[] args)
         {
@@ -48,7 +56,7 @@ namespace FirstRoslynApp
 
             foreach (var service in Services)
             {
-                await GenerateService(service);
+                GenerateService(service);
                 GenerateApi(service);
             }
 
@@ -58,107 +66,173 @@ namespace FirstRoslynApp
         }
 
 
-        private async Task GenerateService(string serviceName)
+        private void GenerateService(ServiceDetail service)
         {
-            var svc = GetService(_solution, serviceName);
+            GetService(_solution, service.FileName, service.IsNeededToGetResponseValue);
 
-            if (svc != null)
+            if (service.UserName != null)
             {
-                var svcName = svc.Name.Remove(svc.Name.IndexOf(".", StringComparison.Ordinal));
-
-                GenerateInterfaceAndChannel(svcName, ProjectName);
-                GenerateServiceClient(svcName, ProjectName);
+                GenerateInterfaceAndChannel(service, ProjectName);
+                GenerateServiceClient(service, ProjectName);
             }
         }
 
-        private void GenerateApi(string svcName)
+        private void GenerateApi(ServiceDetail service)
         {
-            svcName = svcName.Remove(svcName.IndexOf(".", StringComparison.Ordinal));
+            var svcName = service.UserName;
+
+            var extIndex = svcName.IndexOf(".", StringComparison.Ordinal);
+            svcName = extIndex > 0 ? svcName.Remove(extIndex) : svcName;
             svcName = svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName;
 
             var sb = new StringBuilder();
 
-            sb.Append(_usings);
-            sb.Append("\n");
+            sb.Append(String.Join("; \n", _serviceUsings) + "; \n\n");
 
             sb.Append(" namespace " + ProjectName + "\n { \n");
             sb.Append("\t public partial class " + svcName + "Api\n\t { \n");
 
+            sb.Append("\t\t private ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\n\t\t { \n");
+            sb.Append("\t\t\t var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); \n");
+            sb.Append("\t\t\t return clientContainer; \n\t\t } \n\n");
+
+            var api = _project.Documents.FirstOrDefault(x => x.Name == svcName + "Api.cs");
+            var declaredApiMethods = new List<MethodDeclarationSyntax>();
+
+            if (api != null)
+                declaredApiMethods = GetMethodSyntaxesFromTree(api.GetSyntaxTreeAsync().Result);
+
             foreach (var method in _methods)
             {
-                var parameters = method.ParametersList.ToString().Replace("(", "").Replace(")", "");
-                var paramList = method.ParametersList;
-                var types = "";
-                var paramNames = "";
-
-                if (paramList != null)
+                if (!declaredApiMethods.Any(x => x.Identifier.ToString() == method.Name 
+                        && x.ParameterList.Parameters.ToString() == method.ParametersList.Parameters.ToString()))
                 {
-                    types = paramList.Parameters.Aggregate(types, (current, param) => current + param.Type + ", ");
-                    types = types != "" ? "<" + types.Remove(types.Length - 2) + ">" : "";
+                    var parameters = GenerateParameters(method.ParametersList);
 
-                    paramNames = paramList.Parameters.Aggregate(paramNames, (current, param) => current + param.Identifier + ", ");
+                    var paramList = method.ParametersList;
+                    var types = "";
+                    var paramNames = "";
+
+                    if (paramList != null)
+                    {
+                        types = paramList.Parameters.Aggregate(types, (current, param) => current + param.Type + ", ");
+                        types = types != "" ? "<" + types.Remove(types.Length - 2) + ">" : "";
+
+                        paramNames = paramList.Parameters.Aggregate(paramNames,
+                            (current, param) => current + param.Identifier + ", ");
+                    }
+
+                    var returnType = method.ReturnTypeApi != "void"
+                        ? ("<" + method.ReturnTypeApi + ">")
+                        : "";
+
+                    sb.Append("\t\t public async System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ")\n");
+                    sb.Append("\t\t {\n");
+                    sb.Append("\t\t\t var channelContainer = CreateChannel<" + svcName + "Client > ();\n");
+                    sb.Append("\t\t\t var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);\n\n");
+                    sb.Append("\t\t\t try\n");
+                    sb.Append("\t\t\t {\n");
+                    sb.Append("\t\t\t\t AddClientInformationHeader();\n");
+                    sb.Append("\t\t\t\t");
+
+                    if (method.ReturnTypeApi != "void")
+                        sb.Append(" var res = ");
+
+                    sb.Append(" await System.Threading.Tasks.Task" +
+                              (method.ReturnType != "void" ? ("<" + method.ReturnType + ">") : "") +
+                              ".Factory.FromAsync" + types + "(channelContainer.Client.Begin" + method.Name +
+                              ", channelContainer.Client.End" + method.Name + ", " + paramNames +
+                              " null).ContinueOnScope(scope);\n");
+
+                    if (method.ReturnTypeApi != "void" && method.ReturnTypeApi != "ResponseDto")
+                        sb.Append("\t\t\t\t return GetValue<" + method.ReturnTypeApi + ">(res);\n");
+
+                    if (method.ReturnTypeApi == "ResponseDto")
+                        sb.Append("\t\t\t\t return res;\n");
+
+                    sb.Append("\t\t\t }\n");
+                    sb.Append("\t\t\t finally\n");
+                    sb.Append("\t\t\t {\n");
+                    sb.Append("\t\t\t\t var disposable = channelContainer as IDisposable; \n");
+                    sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\n\n");
+                    sb.Append("\t\t\t\t disposable = scope as IDisposable;\n");
+                    sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\n");
+                    sb.Append("\t\t\t }\n");
+                    sb.Append("\t\t }\n\n");
                 }
-
-                var returnType = method.ReturnTypeApi != "void" && method.ReturnTypeApi != "ResponseDto" ? ("<" + method.ReturnTypeApi + ">") : "";
-
-                sb.Append("\t\t public async System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ")\n");
-                sb.Append("\t\t {\n");
-                sb.Append("\t\t\t OperationContextScope scope = null;\n");
-                sb.Append("\t\t\t I" + svcName + "Client client = null;\n");
-                sb.Append("\t\t\t try\n");
-                sb.Append("\t\t\t {\n");
-                sb.Append("\t\t\t\t client = ClientFactory<" + svcName + "Client>.CreateClient(\"" + svcName + "Api\").Client;\n");
-                sb.Append("\t\t\t\t scope = new OperationContextScope(((" + svcName + "Client)client).InnerChannel);\n");
-                sb.Append("\t\t\t\t AddClientInformationHeader();\n");
-                sb.Append("\t\t\t\t var res = System.Threading.Tasks.Task" + (method.ReturnType != "void" ? ("<" + method.ReturnType + ">") : "") + ".Factory.FromAsync" + types + "(client.Begin" + method.Name + ", client.End" + method.Name + ", " + paramNames + " null);\n");
-                sb.Append("\t\t\t\t await res.ConfigureAwait(false);\n");
-
-                if (method.ReturnTypeApi != "void")
-                {
-                    sb.Append("\t\t\t\t return await GetValue<" + method.ReturnTypeApi + ">(res);\n");
-                }
-
-                sb.Append("\t\t\t }\n");
-                sb.Append("\t\t\t finally\n");
-                sb.Append("\t\t\t {\n");
-                sb.Append("\t\t\t\t var disposable = client as IDisposable;\n");
-                sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\n\n");
-                sb.Append("\t\t\t\t disposable = scope as IDisposable;\n");
-                sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\n");
-                sb.Append("\t\t\t }\n");
-                sb.Append("\t\t }\n\n");
-
             }
 
             sb.Append("\t }");
             sb.Append(" }");
 
-            CreateDocument(sb.ToString(), ProjectName, svcName + "Api.cs");
+            CreateDocument(sb.ToString(), ProjectName, svcName + "Api.g.cs");
 
             sb.Clear();
 
-            sb.Append(_usings);
-            sb.Append("\n");
+            sb.Append(String.Join("; \n", _serviceUsings) + "; \n\n");
 
             sb.Append(" namespace " + ProjectApi + "\n { \n");
             sb.Append("\t public partial interface I" + svcName + "Api\n\t { \n");
 
+            var projectIApi = _solution.Projects.FirstOrDefault(x => x.Name == ProjectApi);
+            if (projectIApi != null)
+            {
+                var iApi = projectIApi.Documents.FirstOrDefault(x => x.Name == "I" + svcName + "Api.cs");
+
+                if (iApi != null)
+                    declaredApiMethods = GetMethodSyntaxesFromTree(iApi.GetSyntaxTreeAsync().Result);
+            }
+            else
+            {
+                throw new Exception("Project for Interface Api doesn't exist");
+            }
+
             foreach (var method in _methods)
             {
-                var parameters = method.ParametersList.ToString().Replace("(", "").Replace(")", "");
-                var returnType = method.ReturnTypeApi != "void" && method.ReturnTypeApi != "ResponseDto" ? ("<" + method.ReturnTypeApi + ">") : "";
+                if (!declaredApiMethods.Any(x => x.Identifier.ToString() == method.Name && x.ParameterList.Parameters.ToString() == method.ParametersList.Parameters.ToString()))
+                {
+                    var parameters = GenerateParameters(method.ParametersList);
 
-                sb.Append("\t\t System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ");\n");
+                    var returnType = method.ReturnTypeApi != "void" ? ("<" + method.ReturnTypeApi + ">") : "";
+
+                    sb.Append("\t\t System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ");\n");
+                }
             }
 
             sb.Append("\t }");
             sb.Append(" }");
 
-            CreateDocument(sb.ToString(), ProjectApi, "API/I" + svcName + "Api.cs");
-
+            CreateDocument(sb.ToString(), ProjectApi, String.Join("/", ProjectApiFolders) + (ProjectApiFolders.Any() ? "/" : "") + "I" + svcName + "Api.g.cs");
         }
 
-        private Document GetService(Solution solution, string iService)
+        private string GenerateParameters(ParameterListSyntax parametersList)
+        {
+            var parameters = "";
+            var size = parametersList.Parameters.Count;
+            var count = 1;
+
+            foreach (var parm in parametersList.Parameters)
+            {
+                var param = parm.ToString();
+                
+                if (param.Contains("IEnumerable<"))
+                {
+                    param = param.Replace("IEnumerable<", "").Replace(">", "[]");
+                }
+
+                parameters += param;
+
+                if (count < size)
+                {
+                    parameters += ", ";
+                    count++;
+                }
+            }
+
+            return parameters;
+        }
+
+        private Document GetService(Solution solution, string iService, bool isNeededToGetResponseValue)
         {
             _methods = new List<EndPoint>();
             Document svc = null;
@@ -177,21 +251,66 @@ namespace FirstRoslynApp
 
             if (svc != null)
             {
-                CancellationToken cancellationToken = default(CancellationToken);
-
-                SyntaxNode documentRoot = svc.GetSyntaxRootAsync(cancellationToken).Result;
+                SyntaxNode documentRoot = svc.GetSyntaxRootAsync().Result;
                 var rootCompUnit = (CompilationUnitSyntax)documentRoot;
-                var defaultUsings = rootCompUnit.Usings.Select(x => x.Name.ToString());
+                var defaultUsings = rootCompUnit.Usings.Select(x => x.Name.ToString()).ToList();
 
-                var syntaxTree = svc.GetSyntaxTreeAsync(cancellationToken).Result;
-                var syntaxRoot = syntaxTree.GetRoot();
-                var syntaxMethods = syntaxRoot.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                var methodDeclarationSyntaxs = GetMethodSyntaxesFromTree(svc.GetSyntaxTreeAsync().Result);
 
-                var methodDeclarationSyntaxs = syntaxMethods as IList<MethodDeclarationSyntax> ?? syntaxMethods.ToList();
-                var nodeReturn = methodDeclarationSyntaxs.First().ReturnType.DescendantNodes().OfType<IdentifierNameSyntax>().First();
-                var candidateUsing = SymbolFinder.FindDeclarationsAsync(svc.Project, nodeReturn.Identifier.ValueText, ignoreCase: false, cancellationToken: cancellationToken).Result.First().ContainingNamespace.ToString();
+                _serviceUsings = GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
+                _allUsings.AddRange(_serviceUsings.Except(_allUsings));
 
-                var usingsCollection = new List<string>()
+                _methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
+                {
+                    Name = sm.Identifier.ToString(),
+                    ReturnType = GetFullReturnType(sm.ReturnType),
+                    ReturnTypeApi = sm.ReturnType.ToString().Contains("Response") && isNeededToGetResponseValue ? GetProperty(sm.ReturnType, "Value") : GetFullReturnType(sm.ReturnType),
+                    InterfaceReturnType = GetFullReturnType(sm.ReturnType),
+                    ParametersList = sm.ParameterList,
+                    Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
+                }));
+
+                foreach (var method in _methods)
+                {
+                    method.ReturnType = ChangeType(method.ReturnType);
+                    method.ReturnTypeApi = ChangeType(method.ReturnTypeApi);
+                }
+
+                _methods = _methods.OrderBy(o => o.Name).ToList();
+
+                return svc;
+            }
+
+            Console.WriteLine("Service wasn't found");
+
+            return null;
+        }
+
+        private string GetFullReturnType(TypeSyntax returnType)
+        {
+            var fullReturnType = returnType.ToString();
+            var node = returnType.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
+            Document cl = null;
+
+            var systemTypes = new List<string>()
+            {
+                "Guid",
+                "Guid?"
+            };
+
+            if (node != null && systemTypes.All(x => x != node.Identifier.ToString() && x != returnType.ToString()))
+            {
+                var nameSpace = SymbolFinder.FindDeclarationsAsync(_project, node.Identifier.ValueText, ignoreCase: false).Result.Last().ContainingNamespace.ToString();
+
+                fullReturnType = fullReturnType.Replace(node.Identifier.ToString(), nameSpace + "." + node.Identifier);
+            }
+
+            return fullReturnType;
+        }
+
+        private List<string> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
+        {
+            var usingsCollection = new List<string>()
                 {
                     "System",
                     "System.IO",
@@ -201,50 +320,33 @@ namespace FirstRoslynApp
                     "System.Collections.Generic"
                 };
 
-                foreach (var method in methodDeclarationSyntaxs)
-                {
-                    var nodes = method.ParameterList.DescendantNodes().OfType<IdentifierNameSyntax>();
-                    if (nodes.Any())
-                    {
-                        var newUsing = SymbolFinder.FindDeclarationsAsync(svc.Project, nodes.First().Identifier.ValueText, ignoreCase: false, cancellationToken: cancellationToken).Result.First().ContainingNamespace.ToString();
+            foreach (var method in methodDeclarationSyntaxs)
+            {
+                var nodes = method.ParameterList.DescendantNodes().OfType<IdentifierNameSyntax>().ToList();
+                    nodes.AddRange(method.ReturnType.DescendantNodes().OfType<IdentifierNameSyntax>().ToList());
 
-                        if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
-                        {
-                            usingsCollection.Add(newUsing);
-                        }
+                if (nodes.Any())
+                {
+                    var newUsing = SymbolFinder.FindDeclarationsAsync(svc.Project, nodes.First().Identifier.ValueText, ignoreCase: false).Result.First().ContainingNamespace.ToString();
+
+                    if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
+                    {
+                        usingsCollection.Add(newUsing);
                     }
                 }
-
-                var newUsings = defaultUsings.Intersect(usingsCollection).ToList();
-                newUsings = newUsings.Select(x => "using " + x).ToList();
-                usingsCollection = newUsings;
-
-                usingsCollection.Add("using " + candidateUsing);
-
-                _usings = String.Join("; \n", usingsCollection);
-                _usings = _usings + "; \n";
-
-                _methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
-                {
-                    Name = sm.Identifier.ToString(),
-                    ReturnType = sm.ReturnType.ToString(),
-                    ReturnTypeApi = sm.ReturnType.ToString().Contains("Response") ? GetProperty(sm.ReturnType, "Value") : sm.ReturnType.ToString(),
-                    InterfaceReturnType = sm.ReturnType.ToString(),
-                    ParametersList = sm.ParameterList,
-                }));
-
-                foreach (var method in _methods)
-                {
-                    method.ReturnType = ChangeType(method.ReturnType);
-                    method.ReturnTypeApi = ChangeType(method.ReturnTypeApi);
-                }
-
-                return svc;
             }
 
-            Console.WriteLine("Service wasn't found");
+            var newUsings = defaultUsings.Intersect(usingsCollection).ToList();
+            newUsings = newUsings.Select(x => "using " + x).ToList();
+            usingsCollection = newUsings;
 
-            return null;
+            return usingsCollection;
+        }
+
+        private List<MethodDeclarationSyntax> GetMethodSyntaxesFromTree(SyntaxTree syntaxTree)
+        {
+            var syntaxRoot = syntaxTree.GetRoot();
+            return syntaxRoot.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
         }
 
         private string ChangeType(string method)
@@ -271,7 +373,7 @@ namespace FirstRoslynApp
                 returnType = returnType + "[]";
             }
 
-            returnType = returnType == "Stream" ? "byte[]" : returnType;
+            returnType = returnType == "System.IO.Stream" ? "byte[]" : returnType;
             return returnType;
         }
 
@@ -279,7 +381,12 @@ namespace FirstRoslynApp
         {
             var responseDto = returnType.ToString().Replace("Task<", "").Replace(">", "");
             var project = _solution.Projects.First(x => x.Name == ProjectApi);
-            var responseClass = project?.Documents.FirstOrDefault(x => x.Name == responseDto + ".cs");
+            var responseClass = project?.Documents.FirstOrDefault(x => x.Name == responseDto + ".g.cs");
+
+            if (returnType.ToString() == "ResponseDto")
+            {
+                return returnType.ToString();
+            }
 
             var result = responseDto;
 
@@ -321,6 +428,27 @@ namespace FirstRoslynApp
                 }
             }
 
+            responseClass = project?.Documents.FirstOrDefault(x => x.Name == responseDto + ".cs");
+
+            if (responseClass != null)
+            {
+                var syntaxRoot = responseClass.GetSyntaxTreeAsync().Result.GetRoot();
+                var syntaxproperties = syntaxRoot.DescendantNodes().OfType<PropertyDeclarationSyntax>().ToList();
+                var propertyDeclarationSyntax = syntaxproperties.FirstOrDefault(x => x.Identifier.ToString() == value);
+
+                if (propertyDeclarationSyntax == null)
+                {
+                    if (returnType.ToString() == "ResponseDto")
+                    {
+                        result = returnType.ToString();
+                    }
+                }
+                else
+                {
+                    result = propertyDeclarationSyntax?.Type.ToString();
+                }
+            }
+
             if (result.Contains("IEnumerable"))
             {
                 result = result.Replace("IEnumerable<", "").Replace(">", "");
@@ -353,17 +481,26 @@ namespace FirstRoslynApp
 
                 if (oldDocument != null)
                 {
-                    bool isEqual = oldDocument.Folders.SequenceEqual(doc.Item3);
-
-                    if (isEqual)
+                    if (oldDocument.GetTextAsync().Result.ToString() != doc.Item2.ToString())
                     {
-                        _project = _project.RemoveDocument(oldDocument.Id);
+                        bool isEqual = oldDocument.Folders.SequenceEqual(doc.Item3);
+
+                        if (isEqual)
+                        {
+                            _project = _project.RemoveDocument(oldDocument.Id);
+                        }
+
+                        var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
+                        _project = newDocument?.Project;
+                        _solution = _project?.Solution;
                     }
                 }
-
-                var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
-                _project = newDocument?.Project;
-                _solution = _project?.Solution;
+                else
+                {
+                    var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
+                    _project = newDocument?.Project;
+                    _solution = _project?.Solution;
+                }
             }
 
             _workspace.TryApplyChanges(_project.Solution);
@@ -381,7 +518,7 @@ namespace FirstRoslynApp
             sb.Append("\t\t bool IsCaughtException { get; set; } \n");
             sb.Append("\t } \n}");
 
-            CreateDocument(sb.ToString(), projectName, "Service References/IProperter.cs");
+            CreateDocument(sb.ToString(), projectName, "ServiceReferences/IProperter.g.cs");
 
             #endregion
 
@@ -407,7 +544,7 @@ namespace FirstRoslynApp
             sb.Append("\t\t public void Dispose()\n \t\t { \n \t\t\t var dispose = Disposing; \n \t\t\t if (dispose != null) dispose(this, new EventArgs()); \n");
             sb.Append("\t\t } \n \t } \n } ");
 
-            CreateDocument(sb.ToString(), projectName, "ChannelContainer.cs");
+            CreateDocument(sb.ToString(), projectName, "ChannelContainer.g.cs");
 
             #endregion
 
@@ -417,6 +554,7 @@ namespace FirstRoslynApp
 
             sb.Append("using System;" + " \n\n");
             sb.Append("using System.Collections.Concurrent;" + " \n\n");
+            sb.Append("using System.ServiceModel;" + " \n\n");
 
             sb.Append("namespace " + projectName + "\n");
             sb.Append("{\n\t public static class ClientFactory<TClient> where TClient : class, IProperter , new()\n \t { \n");
@@ -427,14 +565,14 @@ namespace FirstRoslynApp
             sb.Append("\t\t\t FreeChannelsChannels = new ConcurrentDictionary<string, ConcurrentBag<TClient>>();\n");
             sb.Append("\t\t\t UsedChannels = new ConcurrentDictionary<int, ChannelContainer<TClient>>();\n \t\t } \n\n");
 
-            sb.Append("\t\t public static ChannelContainer<TClient> CreateClient(string address)\n \t\t { \n");
+            sb.Append("\t\t public static ChannelContainer<TClient> CreateClient(string address, BasicHttpBinding binding, EndpointAddress enAddress)\n \t\t { \n");
             sb.Append("\t\t\t ConcurrentBag<TClient> currentChannels = GetFreeChannels(address); \n\n");
             sb.Append("\t\t\t TClient client = null; \n\n");
 
             sb.Append("\t\t\t for (int i=0; currentChannels.Count > 0  && client == null && i< 10; i++ ) \n \t\t\t { \n");
             sb.Append("\t\t\t\t currentChannels.TryTake(out client); \n \t\t\t } \n");
 
-            sb.Append("\t\t\t client = client ?? new TClient(); \n\n");
+            sb.Append("\t\t\t client = client ?? (TClient)Activator.CreateInstance(typeof(TClient), new object[] {binding, enAddress}); \n\n");
             sb.Append("\t\t\t var container = new ChannelContainer<TClient>(client) { Address = address }; \n\n");
 
             sb.Append("\t\t\t UsedChannels.TryAdd(container.GetHashCode(), container); \n");
@@ -456,7 +594,7 @@ namespace FirstRoslynApp
             sb.Append("\t\t\t\t System.Diagnostics.Debug.WriteLine(\"Client has an exception\"); \n \t\t\t }\n");
             sb.Append("\t\t } \n \t } \n }");
 
-            CreateDocument(sb.ToString(), projectName, "ClientFactory.cs");
+            CreateDocument(sb.ToString(), projectName, "ClientFactory.g.cs");
 
             #endregion
 
@@ -503,7 +641,7 @@ namespace FirstRoslynApp
             sb.Append("\t\t\t OperationContext.Current = _thisContext; \n");
             sb.Append("\t\t } \n \t } \n }");
 
-            CreateDocument(sb.ToString(), projectName, "FlowOperationContextScope.cs");
+            CreateDocument(sb.ToString(), projectName, "FlowOperationContextScope.g.cs");
 
             #endregion
 
@@ -591,7 +729,7 @@ namespace FirstRoslynApp
 
             sb.Append("\n\t\t }\n\t }\n}\n");
 
-            CreateDocument(sb.ToString(), projectName, "SimpleAwaiter.cs");
+            CreateDocument(sb.ToString(), projectName, "SimpleAwaiter.g.cs");
 
             #endregion
 
@@ -614,7 +752,7 @@ namespace FirstRoslynApp
             sb.Append("\t\t\t return new SimpleAwaiter(@this, scope.BeforeAwait, scope.AfterAwait);\n");
             sb.Append("\t\t }\n\t }\n}");
 
-            CreateDocument(sb.ToString(), projectName, "TaskExt.cs");
+            CreateDocument(sb.ToString(), projectName, "TaskExt.g.cs");
 
             #endregion
 
@@ -629,38 +767,49 @@ namespace FirstRoslynApp
             sb.Append("\t\t BasicHttpBinding_Client \n");
             sb.Append("\t } \n }");
 
-            CreateDocument(sb.ToString(), projectName, "Service References/EndpointConfiguration.cs");
+            CreateDocument(sb.ToString(), projectName, "ServiceReferences/EndpointConfiguration.g.cs");
 
             #endregion
         }
 
-        private void GenerateInterfaceAndChannel(string iService, string projectName)
+        private void GenerateInterfaceAndChannel(ServiceDetail iService, string projectName)
         {
             var sb = new StringBuilder();
+            var serviceFileName = iService.FileName.Remove(iService.FileName.IndexOf(".", StringComparison.Ordinal));
 
-            sb.Append(_usings + " \n\n");
+            sb.Append(String.Join("; \n", _serviceUsings) + "; \n" +" \n\n");
 
             sb.Append("namespace " + projectName + "\n { \n");
             sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\n");
-            sb.Append("\t [System.ServiceModel.ServiceContractAttribute(ConfigurationName = \"" + iService + "Client\")]\n");
-            sb.Append("\t public interface " + iService + "Client\n \t{ \n");
+            sb.Append("\t [System.ServiceModel.ServiceContractAttribute(ConfigurationName = \"" + serviceFileName + "Client\")]\n");
+            sb.Append("\t public interface " + iService.UserName + "Client\n \t{ \n");
+            sb.Append("\t\t bool IsCaughtException { get; set; } \n\n");
 
             foreach (var method in _methods)
             {
                 var parameters = method.ParametersList.ToString().Replace("(", "").Replace(")", "");
                 var pm = parameters != "" ? parameters + ", " : "";
 
-                sb.Append("\t\t [System.ServiceModel.OperationContractAttribute(AsyncPattern = true, Action = \"http://tempuri.org/" + iService + "Client/" + method.Name + "\", ReplyAction = \"http://tempuri.org/" + iService + "iService/" + method.Name + "Response\")]\n");
+                sb.Append("\t\t [System.ServiceModel.OperationContractAttribute(AsyncPattern = true, Action = \"http://tempuri.org/" + serviceFileName + "/" + method.Name + "\", ReplyAction = \"http://tempuri.org/" + serviceFileName + "/" + method.Name + "Response\")]\n");
+
+                foreach (var fault in method.Faults)
+                {
+                    var faultType = fault.Attributes.First().ArgumentList.Arguments.First().Expression.ToString().Replace("typeof(", "").Replace(")", "");
+                    sb.Append("\t\t [System.ServiceModel.FaultContractAttribute(typeof(" + (FaultProject ?? ProjectApi) +
+                               "." + faultType + "), Action=\"http://tempuri.org/" + serviceFileName + "/" + method.Name + faultType +
+                               "Fault\", Name=\"" + faultType + "\", Namespace=\"http://schemas.datacontract.org/2004/07/YumaPos.Shared.API.Faults\")]\n");
+                }
+
                 sb.Append("\t\t System.IAsyncResult Begin" + method.Name + "(" + pm + "System.AsyncCallback callback, object asyncState);\n\n");
                 sb.Append("\t\t " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result);\n\n");
             }
-
             sb.Append("\t } \n\n");
             sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\n");
-            sb.Append("\t public interface " + iService + "Channel : " + iService + "Client, System.ServiceModel.IClientChannel{} \n }");
+            sb.Append("\t public interface " + iService.UserName + "Channel : " + iService.UserName + "Client, System.ServiceModel.IClientChannel{} \n }");
 
-            CreateDocument(sb.ToString(), projectName, "Service References/" + iService + "Client.cs");
+            CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + iService.UserName + "Client.g.cs");
         }
+
 
         private static void GenerateCompletedEventArgs(string projectName)
         {
@@ -668,13 +817,12 @@ namespace FirstRoslynApp
 
             foreach (var method in _competedArgsMethods)
             {
-                if (method.InterfaceReturnType.ToString() != "void")
-                {
                     sb.Clear();
 
-                    sb.Append(_usings + " \n");
+                    sb.Append(String.Join("; \n", _allUsings) + "; \n\n");
 
                     sb.Append(" namespace " + projectName + "\n { \n");
+                    sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \n");
                     sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")] \n");
                     sb.Append("\t public partial class " + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \n");
                     sb.Append("\t { \n\n");
@@ -683,26 +831,32 @@ namespace FirstRoslynApp
                     sb.Append("\t   base(exception, cancelled, userState) {\n");
                     sb.Append("\t       this.results = results;\n");
                     sb.Append("\t   } \n\n");
-                    sb.Append("\t   public " + method.InterfaceReturnType + " Result { \n");
-                    sb.Append("\t       get {\n");
-                    sb.Append("\t           base.RaiseExceptionIfNecessary();\n");
-                    sb.Append("\t           return ((" + method.InterfaceReturnType + ")(this.results[0]));\n");
-                    sb.Append("\t       }\n");
-                    sb.Append("\t   }\n");
+
+                    if (method.InterfaceReturnType != "void")
+                    {
+                        sb.Append("\t   public " + method.InterfaceReturnType + " Result { \n");
+                        sb.Append("\t       get {\n");
+                        sb.Append("\t           base.RaiseExceptionIfNecessary();\n");
+                        sb.Append("\t           return ((" + method.InterfaceReturnType + ")(this.results[0]));\n");
+                        sb.Append("\t       }\n");
+                        sb.Append("\t   }\n");
+                    }
+
                     sb.Append("\t }\n");
                     sb.Append(" }");
-                }
 
-                CreateDocument(sb.ToString(), projectName, "Service References/CompletedEventArgs/" + method.Name + "CompletedEventArgs.cs");
+                    CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + method.Name + "CompletedEventArgs.g.cs");
             }
         }
 
-        private static void GenerateServiceClient(string svcName, string projectName)
+        private static void GenerateServiceClient(ServiceDetail sd, string projectName)
         {
             var sb = new StringBuilder();
+            var svcName = sd.UserName;
+
             var channelName = (svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName) + "Client";
 
-            sb.Append(_usings + " \n\n");
+            sb.Append(String.Join("; \n", _allUsings) + "; \n\n");
 
             sb.Append(" namespace " + projectName + "\n { \n");
             sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter\n ");
@@ -716,7 +870,7 @@ namespace FirstRoslynApp
             sb.Append("    } \n");
             sb.Append("}");
 
-            CreateDocument(sb.ToString(), projectName, "Service References/" + channelName + ".cs");
+            CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + channelName + ".g.cs");
 
             _competedArgsMethods = _competedArgsMethods == null ? _methods
                                                                 : _methods.Concat(_competedArgsMethods)
@@ -821,8 +975,8 @@ namespace FirstRoslynApp
                    "\t\t public " + client + "Client() : base(" + client + "Client.GetDefaultBinding(), " + client + "Client.GetDefaultEndpointAddress()) { } \n\n" +
                    "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), " + client + "Client.GetEndpointAddress(endpointConfiguration)) {   } \n\n" +
                    "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, string remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress)) { \n \t\t\t _remoteAddress = remoteAddress; \n \t\t } \n\n" +
-                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), remoteAddress)  { \n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsolutePath; \n \t\t } \n\n" +
-                   "\t\t public " + client + "Client(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : base(binding, remoteAddress) {\n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsolutePath; \n \t\t  } \n\n";
+                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), remoteAddress)  { \n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \n \t\t } \n\n" +
+                   "\t\t public " + client + "Client(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : base(binding, remoteAddress) {\n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \n \t\t  } \n\n";
         }
 
         private static string GenerateMethods(string client)
@@ -882,6 +1036,7 @@ namespace FirstRoslynApp
                 result.Append("\t\t   catch (Exception)\n");
                 result.Append("\t\t   {\n");
                 result.Append("\t\t       IsCaughtException = true;\n");
+                result.Append("\t\t       throw;\n");
 
                 if (method.ReturnType != "void")
                 {
@@ -992,7 +1147,7 @@ namespace FirstRoslynApp
 
         private static string GetBadResponse(string returnType)
         {
-            if (returnType == "bool" || returnType == "Boolean")
+            if (returnType == "bool" || returnType == "System.Boolean" || returnType == "Boolean")
             {
                 return "false";
             }
@@ -1019,5 +1174,14 @@ namespace FirstRoslynApp
         public string ReturnType { get; set; }
         public string InterfaceReturnType { get; set; }
         public ParameterListSyntax ParametersList { get; set; }
+
+        public IEnumerable<AttributeListSyntax> Faults { get; set; }
+    }
+
+    public enum Fault
+    {
+        ValidationFault = 1,
+        UnauthorizedFault = 2,
+        NotFoundFault = 3
     }
 }

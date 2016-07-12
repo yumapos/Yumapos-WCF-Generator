@@ -59,20 +59,56 @@ namespace FirstRoslynApp
 
             //repositoryGenerator.GenerateRepository();
 
-            WCFGenerator wcf = new WCFGenerator
+            if (args.Any() && args[0] != null)
             {
-                SolutionPath = @"C:\Users\denis.ev\Documents\YumaPos-Client-WPF\YumaPos.Client.sln",
-                ProjectName = "YumaPos.Client.WCF",
-                ProjectApi = "YumaPos.Shared.Infrastructure",
-                Services = new List<string>()
+
+                WCFGenerator wcf = new WCFGenerator
                 {
-                    "IBackOfficeService.cs",
-                    "IService.cs"
-                }
-            };
+                    SolutionPath = args[0],
+                    ProjectName = "YumaPos.Client.WCF",
+                    ProjectFolders = new List<string>(),
+                    FaultProject = "YumaPos.Shared.API.Faults",
+                    ProjectApi = "YumaPos.Shared.Infrastructure",
+                    ProjectApiFolders = new List<string>()
+                    {
+                        "API"
+                    },
+                    Services = new List<ServiceDetail>
+                    {
+                        new ServiceDetail()
+                        {
+                            UserName = "IBackOffice",
+                            FileName = "IBackOfficeService.cs",
+                            IsNeededToGetResponseValue = false
+                        },
+                        new ServiceDetail()
+                        {
+                            UserName = "ITerminal",
+                            FileName = "IService.cs",
+                            IsNeededToGetResponseValue = true
+                        },
+                        new ServiceDetail()
+                        {
+                            UserName = "IOnlineService",
+                            FileName = "IOnlineService.cs",
+                            IsNeededToGetResponseValue = false
+                        }
+                    }
+                };
 
-            AsyncContext.Run(() => wcf.Start(args));
-
+                AsyncContext.Run(() => wcf.Start(args));
+            }
+            else
+            {
+                Console.WriteLine("The directory of a solution wasn't specified");
+            }
         }
+    }
+
+    internal class ServiceDetail
+    {
+        public bool IsNeededToGetResponseValue;
+        public string UserName { get; set; }
+        public string FileName { get; set; }
     }
 }

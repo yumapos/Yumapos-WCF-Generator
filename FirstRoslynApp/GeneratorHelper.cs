@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +13,35 @@ namespace FirstRoslynApp
         public static Solution Solution { get; set; }
 
         public static Project Project { get; set; }
+
+        public static string GetFullMetadataName(INamespaceOrTypeSymbol symbol)
+        {
+            ISymbol s = symbol;
+            var sb = new StringBuilder(s.MetadataName);
+
+            var last = s;
+            s = s.ContainingSymbol;
+            while (!IsRootNamespace(s))
+            {
+                if (s is ITypeSymbol && last is ITypeSymbol)
+                {
+                    sb.Insert(0, '+');
+                }
+                else
+                {
+                    sb.Insert(0, '.');
+                }
+                sb.Insert(0, s.MetadataName);
+                s = s.ContainingSymbol;
+            }
+
+            return sb.ToString();
+        }
+
+        private static bool IsRootNamespace(ISymbol s)
+        {
+            return s is INamespaceSymbol && ((INamespaceSymbol)s).IsGlobalNamespace;
+        }
 
         public static async Task<IEnumerable<ClassDeclarationSyntax>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
         {
@@ -123,6 +151,8 @@ namespace FirstRoslynApp
 
             return resultList;
         }
+
+        
 
         public static List<MethodDeclarationSyntax> GetMethodsFromMembers(List<MemberDeclarationSyntax> members)
         {
