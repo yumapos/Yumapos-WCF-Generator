@@ -87,14 +87,14 @@ namespace FirstRoslynApp
 
             var sb = new StringBuilder();
 
-            sb.Append(String.Join("; \n", _serviceUsings) + "; \n\n");
+            sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
-            sb.Append(" namespace " + ProjectName + "\n { \n");
-            sb.Append("\t public partial class " + svcName + "Api\n\t { \n");
+            sb.Append(" namespace " + ProjectName + "\r\n { \r\n");
+            sb.Append("\t public partial class " + svcName + "Api\r\n\t { \r\n");
 
-            sb.Append("\t\t private ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\n\t\t { \n");
-            sb.Append("\t\t\t var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); \n");
-            sb.Append("\t\t\t return clientContainer; \n\t\t } \n\n");
+            sb.Append("\t\t private ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\r\n\t\t { \r\n");
+            sb.Append("\t\t\t var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); \r\n");
+            sb.Append("\t\t\t return clientContainer; \r\n\t\t } \r\n\r\n");
 
             var api = _project.Documents.FirstOrDefault(x => x.Name == svcName + "Api.cs");
             var declaredApiMethods = new List<MethodDeclarationSyntax>();
@@ -126,13 +126,13 @@ namespace FirstRoslynApp
                         ? ("<" + method.ReturnTypeApi + ">")
                         : "";
 
-                    sb.Append("\t\t public async System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ")\n");
-                    sb.Append("\t\t {\n");
-                    sb.Append("\t\t\t var channelContainer = CreateChannel<" + svcName + "Client > ();\n");
-                    sb.Append("\t\t\t var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);\n\n");
-                    sb.Append("\t\t\t try\n");
-                    sb.Append("\t\t\t {\n");
-                    sb.Append("\t\t\t\t AddClientInformationHeader();\n");
+                    sb.Append("\t\t public async System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ")\r\n");
+                    sb.Append("\t\t {\r\n");
+                    sb.Append("\t\t\t var channelContainer = CreateChannel<" + svcName + "Client > ();\r\n");
+                    sb.Append("\t\t\t var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);\r\n\r\n");
+                    sb.Append("\t\t\t try\r\n");
+                    sb.Append("\t\t\t {\r\n");
+                    sb.Append("\t\t\t\t AddClientInformationHeader();\r\n");
                     sb.Append("\t\t\t\t");
 
                     if (method.ReturnTypeApi != "void")
@@ -142,23 +142,23 @@ namespace FirstRoslynApp
                               (method.ReturnType != "void" ? ("<" + method.ReturnType + ">") : "") +
                               ".Factory.FromAsync" + types + "(channelContainer.Client.Begin" + method.Name +
                               ", channelContainer.Client.End" + method.Name + ", " + paramNames +
-                              " null).ContinueOnScope(scope);\n");
+                              " null).ContinueOnScope(scope);\r\n");
 
                     if (method.ReturnTypeApi != "void" && method.ReturnTypeApi != "ResponseDto")
-                        sb.Append("\t\t\t\t return GetValue<" + method.ReturnTypeApi + ">(res);\n");
+                        sb.Append("\t\t\t\t return GetValue<" + method.ReturnTypeApi + ">(res);\r\n");
 
                     if (method.ReturnTypeApi == "ResponseDto")
-                        sb.Append("\t\t\t\t return res;\n");
+                        sb.Append("\t\t\t\t return res;\r\n");
 
-                    sb.Append("\t\t\t }\n");
-                    sb.Append("\t\t\t finally\n");
-                    sb.Append("\t\t\t {\n");
-                    sb.Append("\t\t\t\t var disposable = channelContainer as IDisposable; \n");
-                    sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\n\n");
-                    sb.Append("\t\t\t\t disposable = scope as IDisposable;\n");
-                    sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\n");
-                    sb.Append("\t\t\t }\n");
-                    sb.Append("\t\t }\n\n");
+                    sb.Append("\t\t\t }\r\n");
+                    sb.Append("\t\t\t finally\r\n");
+                    sb.Append("\t\t\t {\r\n");
+                    sb.Append("\t\t\t\t var disposable = channelContainer as IDisposable; \r\n");
+                    sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\r\n\r\n");
+                    sb.Append("\t\t\t\t disposable = scope as IDisposable;\r\n");
+                    sb.Append("\t\t\t\t if (disposable != null) disposable.Dispose();\r\n");
+                    sb.Append("\t\t\t }\r\n");
+                    sb.Append("\t\t }\r\n\r\n");
                 }
             }
 
@@ -169,10 +169,10 @@ namespace FirstRoslynApp
 
             sb.Clear();
 
-            sb.Append(String.Join("; \n", _serviceUsings) + "; \n\n");
+            sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
-            sb.Append(" namespace " + ProjectApi + "\n { \n");
-            sb.Append("\t public partial interface I" + svcName + "Api\n\t { \n");
+            sb.Append(" namespace " + ProjectApi + "\r\n { \r\n");
+            sb.Append("\t public partial interface I" + svcName + "Api\r\n\t { \r\n");
 
             var projectIApi = _solution.Projects.FirstOrDefault(x => x.Name == ProjectApi);
             if (projectIApi != null)
@@ -195,7 +195,7 @@ namespace FirstRoslynApp
 
                     var returnType = method.ReturnTypeApi != "void" ? ("<" + method.ReturnTypeApi + ">") : "";
 
-                    sb.Append("\t\t System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ");\n");
+                    sb.Append("\t\t System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ");\r\n");
                 }
             }
 
@@ -513,10 +513,10 @@ namespace FirstRoslynApp
 
             #region Create IProperter 
 
-            sb.Append("namespace " + projectName + " \n{");
-            sb.Append("\n\t public interface IProperter \n\t {\n");
-            sb.Append("\t\t bool IsCaughtException { get; set; } \n");
-            sb.Append("\t } \n}");
+            sb.Append("namespace " + projectName + " \r\n{");
+            sb.Append("\r\n\t public interface IProperter \r\n\t {\r\n");
+            sb.Append("\t\t bool IsCaughtException { get; set; } \r\n");
+            sb.Append("\t } \r\n}");
 
             CreateDocument(sb.ToString(), projectName, "ServiceReferences/IProperter.g.cs");
 
@@ -525,24 +525,24 @@ namespace FirstRoslynApp
             #region Create ChannelContainer 
             sb.Clear();
 
-            sb.Append("using System;\n\n");
+            sb.Append("using System;\r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\n");
-            sb.Append("{\n\t public class ChannelContainer<TClient> : IDisposable\n");
-            sb.Append("\t{ \n ");
+            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("{\r\n\t public class ChannelContainer<TClient> : IDisposable\r\n");
+            sb.Append("\t{ \r\n ");
 
-            sb.Append("\t\t private readonly TClient _client; \n\n");
-            sb.Append("\t\t public ChannelContainer(TClient client)\n");
-            sb.Append("\t\t { \n \t\t\t _client = client;  \n \t\t } \n\n");
+            sb.Append("\t\t private readonly TClient _client; \r\n\r\n");
+            sb.Append("\t\t public ChannelContainer(TClient client)\r\n");
+            sb.Append("\t\t { \r\n \t\t\t _client = client;  \r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t public TClient Client\n");
-            sb.Append("\t\t { \n \t\t\t get \n \t\t\t {\n \t\t\t\t return _client;  \n \t\t\t } \n \t\t } \n\n");
+            sb.Append("\t\t public TClient Client\r\n");
+            sb.Append("\t\t { \r\n \t\t\t get \r\n \t\t\t {\r\n \t\t\t\t return _client;  \r\n \t\t\t } \r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t public string Address { get; set; }\n\n");
-            sb.Append("\t\t public event EventHandler Disposing;\n\n");
+            sb.Append("\t\t public string Address { get; set; }\r\n\r\n");
+            sb.Append("\t\t public event EventHandler Disposing;\r\n\r\n");
 
-            sb.Append("\t\t public void Dispose()\n \t\t { \n \t\t\t var dispose = Disposing; \n \t\t\t if (dispose != null) dispose(this, new EventArgs()); \n");
-            sb.Append("\t\t } \n \t } \n } ");
+            sb.Append("\t\t public void Dispose()\r\n \t\t { \r\n \t\t\t var dispose = Disposing; \r\n \t\t\t if (dispose != null) dispose(this, new EventArgs()); \r\n");
+            sb.Append("\t\t } \r\n \t } \r\n } ");
 
             CreateDocument(sb.ToString(), projectName, "ChannelContainer.g.cs");
 
@@ -552,47 +552,47 @@ namespace FirstRoslynApp
 
             sb.Clear();
 
-            sb.Append("using System;" + " \n\n");
-            sb.Append("using System.Collections.Concurrent;" + " \n\n");
-            sb.Append("using System.ServiceModel;" + " \n\n");
+            sb.Append("using System;" + " \r\n\r\n");
+            sb.Append("using System.Collections.Concurrent;" + " \r\n\r\n");
+            sb.Append("using System.ServiceModel;" + " \r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\n");
-            sb.Append("{\n\t public static class ClientFactory<TClient> where TClient : class, IProperter , new()\n \t { \n");
-            sb.Append("\t\t private static ConcurrentDictionary<string, ConcurrentBag<TClient>> FreeChannelsChannels { get; set; } \n");
-            sb.Append("\t\t private static ConcurrentDictionary<int, ChannelContainer<TClient>> UsedChannels { get; set; } \n\n");
+            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("{\r\n\t public static class ClientFactory<TClient> where TClient : class, IProperter , new()\r\n \t { \r\n");
+            sb.Append("\t\t private static ConcurrentDictionary<string, ConcurrentBag<TClient>> FreeChannelsChannels { get; set; } \r\n");
+            sb.Append("\t\t private static ConcurrentDictionary<int, ChannelContainer<TClient>> UsedChannels { get; set; } \r\n\r\n");
 
-            sb.Append("\t\t static ClientFactory() \n\t\t { \n");
-            sb.Append("\t\t\t FreeChannelsChannels = new ConcurrentDictionary<string, ConcurrentBag<TClient>>();\n");
-            sb.Append("\t\t\t UsedChannels = new ConcurrentDictionary<int, ChannelContainer<TClient>>();\n \t\t } \n\n");
+            sb.Append("\t\t static ClientFactory() \r\n\t\t { \r\n");
+            sb.Append("\t\t\t FreeChannelsChannels = new ConcurrentDictionary<string, ConcurrentBag<TClient>>();\r\n");
+            sb.Append("\t\t\t UsedChannels = new ConcurrentDictionary<int, ChannelContainer<TClient>>();\r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t public static ChannelContainer<TClient> CreateClient(string address, BasicHttpBinding binding, EndpointAddress enAddress)\n \t\t { \n");
-            sb.Append("\t\t\t ConcurrentBag<TClient> currentChannels = GetFreeChannels(address); \n\n");
-            sb.Append("\t\t\t TClient client = null; \n\n");
+            sb.Append("\t\t public static ChannelContainer<TClient> CreateClient(string address, BasicHttpBinding binding, EndpointAddress enAddress)\r\n \t\t { \r\n");
+            sb.Append("\t\t\t ConcurrentBag<TClient> currentChannels = GetFreeChannels(address); \r\n\r\n");
+            sb.Append("\t\t\t TClient client = null; \r\n\r\n");
 
-            sb.Append("\t\t\t for (int i=0; currentChannels.Count > 0  && client == null && i< 10; i++ ) \n \t\t\t { \n");
-            sb.Append("\t\t\t\t currentChannels.TryTake(out client); \n \t\t\t } \n");
+            sb.Append("\t\t\t for (int i=0; currentChannels.Count > 0  && client == null && i< 10; i++ ) \r\n \t\t\t { \r\n");
+            sb.Append("\t\t\t\t currentChannels.TryTake(out client); \r\n \t\t\t } \r\n");
 
-            sb.Append("\t\t\t client = client ?? (TClient)Activator.CreateInstance(typeof(TClient), new object[] {binding, enAddress}); \n\n");
-            sb.Append("\t\t\t var container = new ChannelContainer<TClient>(client) { Address = address }; \n\n");
+            sb.Append("\t\t\t client = client ?? (TClient)Activator.CreateInstance(typeof(TClient), new object[] {binding, enAddress}); \r\n\r\n");
+            sb.Append("\t\t\t var container = new ChannelContainer<TClient>(client) { Address = address }; \r\n\r\n");
 
-            sb.Append("\t\t\t UsedChannels.TryAdd(container.GetHashCode(), container); \n");
-            sb.Append("\t\t\t container.Disposing += ContainerOnDisposing; \n\n");
+            sb.Append("\t\t\t UsedChannels.TryAdd(container.GetHashCode(), container); \r\n");
+            sb.Append("\t\t\t container.Disposing += ContainerOnDisposing; \r\n\r\n");
 
-            sb.Append("\t\t\t return container; \n \t\t } \n\n");
+            sb.Append("\t\t\t return container; \r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t public static ConcurrentBag<TClient> GetFreeChannels(string address) \n \t\t { \n");
-            sb.Append("\t\t\t return FreeChannelsChannels.GetOrAdd(address, arg => new ConcurrentBag<TClient>()); \n \t\t } \n\n");
+            sb.Append("\t\t public static ConcurrentBag<TClient> GetFreeChannels(string address) \r\n \t\t { \r\n");
+            sb.Append("\t\t\t return FreeChannelsChannels.GetOrAdd(address, arg => new ConcurrentBag<TClient>()); \r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t private static void ContainerOnDisposing(object sender, EventArgs eventArgs) \n \t\t { \n");
-            sb.Append("\t\t\t var container = (ChannelContainer<TClient>) sender;\n");
-            sb.Append("\t\t\t container.Disposing -= ContainerOnDisposing; \n\n");
-            sb.Append("\t\t\t UsedChannels.TryRemove(container.GetHashCode(), out container); \n\n");
-            sb.Append("\t\t\t if(!container.Client.IsCaughtException) \n \t\t\t { \n");
-            sb.Append("\t\t\t\t var freeChannels = GetFreeChannels(container.Address); \n");
-            sb.Append("\t\t\t\t freeChannels.Add(container.Client); \n \t\t\t } else \n \t\t\t { \n ");
-            sb.Append("\t\t\t\t ((IDisposable)container.Client).Dispose(); \n ");
-            sb.Append("\t\t\t\t System.Diagnostics.Debug.WriteLine(\"Client has an exception\"); \n \t\t\t }\n");
-            sb.Append("\t\t } \n \t } \n }");
+            sb.Append("\t\t private static void ContainerOnDisposing(object sender, EventArgs eventArgs) \r\n \t\t { \r\n");
+            sb.Append("\t\t\t var container = (ChannelContainer<TClient>) sender;\r\n");
+            sb.Append("\t\t\t container.Disposing -= ContainerOnDisposing; \r\n\r\n");
+            sb.Append("\t\t\t UsedChannels.TryRemove(container.GetHashCode(), out container); \r\n\r\n");
+            sb.Append("\t\t\t if(!container.Client.IsCaughtException) \r\n \t\t\t { \r\n");
+            sb.Append("\t\t\t\t var freeChannels = GetFreeChannels(container.Address); \r\n");
+            sb.Append("\t\t\t\t freeChannels.Add(container.Client); \r\n \t\t\t } else \r\n \t\t\t { \r\n ");
+            sb.Append("\t\t\t\t ((IDisposable)container.Client).Dispose(); \r\n ");
+            sb.Append("\t\t\t\t System.Diagnostics.Debug.WriteLine(\"Client has an exception\"); \r\n \t\t\t }\r\n");
+            sb.Append("\t\t } \r\n \t } \r\n }");
 
             CreateDocument(sb.ToString(), projectName, "ClientFactory.g.cs");
 
@@ -602,44 +602,44 @@ namespace FirstRoslynApp
 
             sb.Clear();
 
-            sb.Append("using System;\n");
-            sb.Append("using System.ServiceModel;\n\n");
+            sb.Append("using System;\r\n");
+            sb.Append("using System.ServiceModel;\r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\n");
-            sb.Append("{\n\t public sealed class FlowOperationContextScope : IDisposable\n");
-            sb.Append("\t { \n");
-            sb.Append("\t\t private bool _inFlight; \n");
-            sb.Append("\t\t private bool _disposed; \n");
-            sb.Append("\t\t private OperationContext _thisContext; \n");
-            sb.Append("\t\t private OperationContext _originalContext; \n\n");
+            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("{\r\n\t public sealed class FlowOperationContextScope : IDisposable\r\n");
+            sb.Append("\t { \r\n");
+            sb.Append("\t\t private bool _inFlight; \r\n");
+            sb.Append("\t\t private bool _disposed; \r\n");
+            sb.Append("\t\t private OperationContext _thisContext; \r\n");
+            sb.Append("\t\t private OperationContext _originalContext; \r\n\r\n");
 
-            sb.Append("\t\t public FlowOperationContextScope(IContextChannel channel)\n \t\t\t: this(new OperationContext(channel)) {} \n\n");
-            sb.Append("\t\t public FlowOperationContextScope(OperationContext context)\n \t\t { \n \t\t\t _originalContext = OperationContext.Current; \n");
-            sb.Append("\t\t\t OperationContext.Current = _thisContext = context;\n \t\t } \n\n");
+            sb.Append("\t\t public FlowOperationContextScope(IContextChannel channel)\r\n \t\t\t: this(new OperationContext(channel)) {} \r\n\r\n");
+            sb.Append("\t\t public FlowOperationContextScope(OperationContext context)\r\n \t\t { \r\n \t\t\t _originalContext = OperationContext.Current; \r\n");
+            sb.Append("\t\t\t OperationContext.Current = _thisContext = context;\r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t public void Dispose()\n \t\t { \n \t\t\t if (_disposed) return; \n");
-            sb.Append("\t\t\t if (_inFlight || OperationContext.Current != _thisContext)\n \t\t\t { \n \t\t\t\t throw new InvalidOperationException();\n \t\t\t } \n");
-            sb.Append("\t\t\t _disposed = true; \n");
-            sb.Append("\t\t\t OperationContext.Current = _originalContext; \n");
-            sb.Append("\t\t\t _thisContext = null; \n");
-            sb.Append("\t\t\t _originalContext = null; \n \t\t } \n\n");
+            sb.Append("\t\t public void Dispose()\r\n \t\t { \r\n \t\t\t if (_disposed) return; \r\n");
+            sb.Append("\t\t\t if (_inFlight || OperationContext.Current != _thisContext)\r\n \t\t\t { \r\n \t\t\t\t throw new InvalidOperationException();\r\n \t\t\t } \r\n");
+            sb.Append("\t\t\t _disposed = true; \r\n");
+            sb.Append("\t\t\t OperationContext.Current = _originalContext; \r\n");
+            sb.Append("\t\t\t _thisContext = null; \r\n");
+            sb.Append("\t\t\t _originalContext = null; \r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t internal void BeforeAwait() \n");
-            sb.Append("\t\t { \n");
-            sb.Append("\t\t\t if (_inFlight) \n");
-            sb.Append("\t\t\t { \n \t\t\t\t return; \n \t\t\t } \n");
-            sb.Append("\t\t\t _inFlight = true; \n");
-            sb.Append("\t\t } \n\n");
+            sb.Append("\t\t internal void BeforeAwait() \r\n");
+            sb.Append("\t\t { \r\n");
+            sb.Append("\t\t\t if (_inFlight) \r\n");
+            sb.Append("\t\t\t { \r\n \t\t\t\t return; \r\n \t\t\t } \r\n");
+            sb.Append("\t\t\t _inFlight = true; \r\n");
+            sb.Append("\t\t } \r\n\r\n");
 
-            sb.Append("\t\t internal void AfterAwait() \n");
-            sb.Append("\t\t { \n");
-            sb.Append("\t\t\t if (!_inFlight) \n");
-            sb.Append("\t\t\t { \n ");
-            sb.Append("\t\t\t\t throw new InvalidOperationException(); \n ");
-            sb.Append("\t\t\t } \n ");
-            sb.Append("\t\t\t _inFlight = false; \n");
-            sb.Append("\t\t\t OperationContext.Current = _thisContext; \n");
-            sb.Append("\t\t } \n \t } \n }");
+            sb.Append("\t\t internal void AfterAwait() \r\n");
+            sb.Append("\t\t { \r\n");
+            sb.Append("\t\t\t if (!_inFlight) \r\n");
+            sb.Append("\t\t\t { \r\n ");
+            sb.Append("\t\t\t\t throw new InvalidOperationException(); \r\n ");
+            sb.Append("\t\t\t } \r\n ");
+            sb.Append("\t\t\t _inFlight = false; \r\n");
+            sb.Append("\t\t\t OperationContext.Current = _thisContext; \r\n");
+            sb.Append("\t\t } \r\n \t } \r\n }");
 
             CreateDocument(sb.ToString(), projectName, "FlowOperationContextScope.g.cs");
 
@@ -649,85 +649,85 @@ namespace FirstRoslynApp
 
             sb.Clear();
 
-            sb.Append("using System;\n");
-            sb.Append("using System.Threading.Tasks;\n");
-            sb.Append("using System.Runtime.CompilerServices;\n");
-            sb.Append("using System.Threading;\n\n");
+            sb.Append("using System;\r\n");
+            sb.Append("using System.Threading.Tasks;\r\n");
+            sb.Append("using System.Runtime.CompilerServices;\r\n");
+            sb.Append("using System.Threading;\r\n\r\n");
 
-            sb.Append("\n\n namespace " + projectName);
-            sb.Append("\n {\n\t public class SimpleAwaiter : INotifyCompletion");
-            sb.Append("\n\t {");
+            sb.Append("\r\n\r\n namespace " + projectName);
+            sb.Append("\r\n {\r\n\t public class SimpleAwaiter : INotifyCompletion");
+            sb.Append("\r\n\t {");
 
-            sb.Append("\n\t\t #region Fields\n");
-            sb.Append("\n\t\t protected readonly Task task;");
-            sb.Append("\n\t\t protected readonly Action beforeAwait;");
-            sb.Append("\n\t\t protected readonly Action afterAwait;");
-            sb.Append("\n\n\t\t #endregion\n");
+            sb.Append("\r\n\t\t #region Fields\r\n");
+            sb.Append("\r\n\t\t protected readonly Task task;");
+            sb.Append("\r\n\t\t protected readonly Action beforeAwait;");
+            sb.Append("\r\n\t\t protected readonly Action afterAwait;");
+            sb.Append("\r\n\r\n\t\t #endregion\r\n");
 
-            sb.Append("\n\t\t public SimpleAwaiter(Task task, Action beforeAwait, Action afterAwait)");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t this.task = task;");
-            sb.Append("\n\t\t\t this.beforeAwait = beforeAwait;");
-            sb.Append("\n\t\t\t this.afterAwait = afterAwait;");
-            sb.Append("\n\t\t }\n");
+            sb.Append("\r\n\t\t public SimpleAwaiter(Task task, Action beforeAwait, Action afterAwait)");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t this.task = task;");
+            sb.Append("\r\n\t\t\t this.beforeAwait = beforeAwait;");
+            sb.Append("\r\n\t\t\t this.afterAwait = afterAwait;");
+            sb.Append("\r\n\t\t }\r\n");
 
-            sb.Append("\n\t\t public SimpleAwaiter GetAwaiter()");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t return this;");
-            sb.Append("\n\t\t }\n");
+            sb.Append("\r\n\t\t public SimpleAwaiter GetAwaiter()");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t return this;");
+            sb.Append("\r\n\t\t }\r\n");
 
-            sb.Append("\n\t\t public void GetResult()");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t // FUCK YEAH! DO NOT REMOVE!");
-            sb.Append("\n\t\t\t task.GetAwaiter().GetResult();");
-            sb.Append("\n\t\t }\n");
+            sb.Append("\r\n\t\t public void GetResult()");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t // FUCK YEAH! DO NOT REMOVE!");
+            sb.Append("\r\n\t\t\t task.GetAwaiter().GetResult();");
+            sb.Append("\r\n\t\t }\r\n");
 
-            sb.Append("\n\t\t public bool IsCompleted");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t get \n\t\t\t {");
-            sb.Append("\n\t\t\t\t // don't do anything if the task completed synchronously");
-            sb.Append("\n\t\t\t\t // (we're on the same thread)");
-            sb.Append("\n\t\t\t\t if (task.IsCompleted)");
-            sb.Append("\n\t\t\t\t {");
-            sb.Append("\n\t\t\t\t\t return true;");
-            sb.Append("\n\t\t\t\t }");
-            sb.Append("\n\t\t\t\t beforeAwait();");
-            sb.Append("\n\t\t\t\t return false;");
-            sb.Append("\n\t\t\t }");
-            sb.Append("\n\t\t }\n");
+            sb.Append("\r\n\t\t public bool IsCompleted");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t get \r\n\t\t\t {");
+            sb.Append("\r\n\t\t\t\t // don't do anything if the task completed synchronously");
+            sb.Append("\r\n\t\t\t\t // (we're on the same thread)");
+            sb.Append("\r\n\t\t\t\t if (task.IsCompleted)");
+            sb.Append("\r\n\t\t\t\t {");
+            sb.Append("\r\n\t\t\t\t\t return true;");
+            sb.Append("\r\n\t\t\t\t }");
+            sb.Append("\r\n\t\t\t\t beforeAwait();");
+            sb.Append("\r\n\t\t\t\t return false;");
+            sb.Append("\r\n\t\t\t }");
+            sb.Append("\r\n\t\t }\r\n");
 
-            sb.Append("\n\t\t public void OnCompleted(Action continuation)");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t task.ContinueWith(t =>");
-            sb.Append("\n\t\t\t { ");
-            sb.Append("\n\t\t\t\t afterAwait();");
-            sb.Append("\n\t\t\t\t continuation();");
-            sb.Append("\n\t\t\t },");
-            sb.Append("\n\t\t\t CancellationToken.None,");
-            sb.Append("\n\t\t\t TaskContinuationOptions.ExecuteSynchronously,");
-            sb.Append("\n\t\t\t SynchronizationContext.Current != null");
-            sb.Append("\n\t\t\t\t ? TaskScheduler.FromCurrentSynchronizationContext()");
-            sb.Append("\n\t\t\t\t : TaskScheduler.Current);");
-            sb.Append("\n\t\t}\n\t }\n");
-            sb.Append("\n\t public class SimpleAwaiter<TResult> : SimpleAwaiter");
-            sb.Append("\n\t {\n\t\t #region Fields\n");
-            sb.Append("\n\t\t private readonly Task<TResult> _task;");
-            sb.Append("\n\n\t\t #endregion\n");
-            sb.Append("\n\t\t public SimpleAwaiter(Task<TResult> task, Action beforeAwait, Action afterAwait)");
-            sb.Append("\n\t\t\t : base(task, beforeAwait, afterAwait)");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t _task = task;");
+            sb.Append("\r\n\t\t public void OnCompleted(Action continuation)");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t task.ContinueWith(t =>");
+            sb.Append("\r\n\t\t\t { ");
+            sb.Append("\r\n\t\t\t\t afterAwait();");
+            sb.Append("\r\n\t\t\t\t continuation();");
+            sb.Append("\r\n\t\t\t },");
+            sb.Append("\r\n\t\t\t CancellationToken.None,");
+            sb.Append("\r\n\t\t\t TaskContinuationOptions.ExecuteSynchronously,");
+            sb.Append("\r\n\t\t\t SynchronizationContext.Current != null");
+            sb.Append("\r\n\t\t\t\t ? TaskScheduler.FromCurrentSynchronizationContext()");
+            sb.Append("\r\n\t\t\t\t : TaskScheduler.Current);");
+            sb.Append("\r\n\t\t}\r\n\t }\r\n");
+            sb.Append("\r\n\t public class SimpleAwaiter<TResult> : SimpleAwaiter");
+            sb.Append("\r\n\t {\r\n\t\t #region Fields\r\n");
+            sb.Append("\r\n\t\t private readonly Task<TResult> _task;");
+            sb.Append("\r\n\r\n\t\t #endregion\r\n");
+            sb.Append("\r\n\t\t public SimpleAwaiter(Task<TResult> task, Action beforeAwait, Action afterAwait)");
+            sb.Append("\r\n\t\t\t : base(task, beforeAwait, afterAwait)");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t _task = task;");
 
-            sb.Append("\n\t\t }");
-            sb.Append("\n\n\t\t public new SimpleAwaiter<TResult> GetAwaiter()");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t return this;");
-            sb.Append("\n\t\t }\n");
-            sb.Append("\n\t\t public new TResult GetResult()");
-            sb.Append("\n\t\t {");
-            sb.Append("\n\t\t\t return _task.Result;");
+            sb.Append("\r\n\t\t }");
+            sb.Append("\r\n\r\n\t\t public new SimpleAwaiter<TResult> GetAwaiter()");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t return this;");
+            sb.Append("\r\n\t\t }\r\n");
+            sb.Append("\r\n\t\t public new TResult GetResult()");
+            sb.Append("\r\n\t\t {");
+            sb.Append("\r\n\t\t\t return _task.Result;");
 
-            sb.Append("\n\t\t }\n\t }\n}\n");
+            sb.Append("\r\n\t\t }\r\n\t }\r\n}\r\n");
 
             CreateDocument(sb.ToString(), projectName, "SimpleAwaiter.g.cs");
 
@@ -737,20 +737,20 @@ namespace FirstRoslynApp
 
             sb.Clear();
 
-            sb.Append("using System;\n");
-            sb.Append("using System.Threading.Tasks;\n\n");
+            sb.Append("using System;\r\n");
+            sb.Append("using System.Threading.Tasks;\r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\n");
-            sb.Append("{\n\t public static class TaskExt\n");
-            sb.Append("\t {\n");
-            sb.Append("\t\t public static SimpleAwaiter<TResult> ContinueOnScope<TResult>(this Task<TResult> @this, FlowOperationContextScope scope) \n");
-            sb.Append("\t\t {\n");
-            sb.Append("\t\t\t return new SimpleAwaiter<TResult>(@this, scope.BeforeAwait, scope.AfterAwait);\n");
-            sb.Append("\t\t }\n\n");
-            sb.Append("\t\t public static SimpleAwaiter ContinueOnScope(this Task @this, FlowOperationContextScope scope) \n");
-            sb.Append("\t\t {\n");
-            sb.Append("\t\t\t return new SimpleAwaiter(@this, scope.BeforeAwait, scope.AfterAwait);\n");
-            sb.Append("\t\t }\n\t }\n}");
+            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("{\r\n\t public static class TaskExt\r\n");
+            sb.Append("\t {\r\n");
+            sb.Append("\t\t public static SimpleAwaiter<TResult> ContinueOnScope<TResult>(this Task<TResult> @this, FlowOperationContextScope scope) \r\n");
+            sb.Append("\t\t {\r\n");
+            sb.Append("\t\t\t return new SimpleAwaiter<TResult>(@this, scope.BeforeAwait, scope.AfterAwait);\r\n");
+            sb.Append("\t\t }\r\n\r\n");
+            sb.Append("\t\t public static SimpleAwaiter ContinueOnScope(this Task @this, FlowOperationContextScope scope) \r\n");
+            sb.Append("\t\t {\r\n");
+            sb.Append("\t\t\t return new SimpleAwaiter(@this, scope.BeforeAwait, scope.AfterAwait);\r\n");
+            sb.Append("\t\t }\r\n\t }\r\n}");
 
             CreateDocument(sb.ToString(), projectName, "TaskExt.g.cs");
 
@@ -761,11 +761,11 @@ namespace FirstRoslynApp
 
             sb.Clear();
 
-            sb.Append("using System; \n\n");
-            sb.Append("namespace " + projectName + "\n { \n");
-            sb.Append("\t public enum EndpointConfiguration \n\t { \n");
-            sb.Append("\t\t BasicHttpBinding_Client \n");
-            sb.Append("\t } \n }");
+            sb.Append("using System; \r\n\r\n");
+            sb.Append("namespace " + projectName + "\r\n { \r\n");
+            sb.Append("\t public enum EndpointConfiguration \r\n\t { \r\n");
+            sb.Append("\t\t BasicHttpBinding_Client \r\n");
+            sb.Append("\t } \r\n }");
 
             CreateDocument(sb.ToString(), projectName, "ServiceReferences/EndpointConfiguration.g.cs");
 
@@ -777,35 +777,35 @@ namespace FirstRoslynApp
             var sb = new StringBuilder();
             var serviceFileName = iService.FileName.Remove(iService.FileName.IndexOf(".", StringComparison.Ordinal));
 
-            sb.Append(String.Join("; \n", _serviceUsings) + "; \n" +" \n\n");
+            sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n" +" \r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\n { \n");
-            sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\n");
-            sb.Append("\t [System.ServiceModel.ServiceContractAttribute(ConfigurationName = \"" + serviceFileName + "Client\")]\n");
-            sb.Append("\t public interface " + iService.UserName + "Client\n \t{ \n");
-            sb.Append("\t\t bool IsCaughtException { get; set; } \n\n");
+            sb.Append("namespace " + projectName + "\r\n { \r\n");
+            sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\r\n");
+            sb.Append("\t [System.ServiceModel.ServiceContractAttribute(ConfigurationName = \"" + serviceFileName + "Client\")]\r\n");
+            sb.Append("\t public interface " + iService.UserName + "Client\r\n \t{ \r\n");
+            sb.Append("\t\t bool IsCaughtException { get; set; } \r\n\r\n");
 
             foreach (var method in _methods)
             {
                 var parameters = method.ParametersList.ToString().Replace("(", "").Replace(")", "");
                 var pm = parameters != "" ? parameters + ", " : "";
 
-                sb.Append("\t\t [System.ServiceModel.OperationContractAttribute(AsyncPattern = true, Action = \"http://tempuri.org/" + serviceFileName + "/" + method.Name + "\", ReplyAction = \"http://tempuri.org/" + serviceFileName + "/" + method.Name + "Response\")]\n");
+                sb.Append("\t\t [System.ServiceModel.OperationContractAttribute(AsyncPattern = true, Action = \"http://tempuri.org/" + serviceFileName + "/" + method.Name + "\", ReplyAction = \"http://tempuri.org/" + serviceFileName + "/" + method.Name + "Response\")]\r\n");
 
                 foreach (var fault in method.Faults)
                 {
                     var faultType = fault.Attributes.First().ArgumentList.Arguments.First().Expression.ToString().Replace("typeof(", "").Replace(")", "");
                     sb.Append("\t\t [System.ServiceModel.FaultContractAttribute(typeof(" + (FaultProject ?? ProjectApi) +
                                "." + faultType + "), Action=\"http://tempuri.org/" + serviceFileName + "/" + method.Name + faultType +
-                               "Fault\", Name=\"" + faultType + "\", Namespace=\"http://schemas.datacontract.org/2004/07/YumaPos.Shared.API.Faults\")]\n");
+                               "Fault\", Name=\"" + faultType + "\", Namespace=\"http://schemas.datacontract.org/2004/07/YumaPos.Shared.API.Faults\")]\r\n");
                 }
 
-                sb.Append("\t\t System.IAsyncResult Begin" + method.Name + "(" + pm + "System.AsyncCallback callback, object asyncState);\n\n");
-                sb.Append("\t\t " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result);\n\n");
+                sb.Append("\t\t System.IAsyncResult Begin" + method.Name + "(" + pm + "System.AsyncCallback callback, object asyncState);\r\n\r\n");
+                sb.Append("\t\t " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result);\r\n\r\n");
             }
-            sb.Append("\t } \n\n");
-            sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\n");
-            sb.Append("\t public interface " + iService.UserName + "Channel : " + iService.UserName + "Client, System.ServiceModel.IClientChannel{} \n }");
+            sb.Append("\t } \r\n\r\n");
+            sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\r\n");
+            sb.Append("\t public interface " + iService.UserName + "Channel : " + iService.UserName + "Client, System.ServiceModel.IClientChannel{} \r\n }");
 
             CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + iService.UserName + "Client.g.cs");
         }
@@ -819,30 +819,30 @@ namespace FirstRoslynApp
             {
                     sb.Clear();
 
-                    sb.Append(String.Join("; \n", _allUsings) + "; \n\n");
+                    sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
 
-                    sb.Append(" namespace " + projectName + "\n { \n");
-                    sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \n");
-                    sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")] \n");
-                    sb.Append("\t public partial class " + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \n");
-                    sb.Append("\t { \n\n");
-                    sb.Append("\t   private object[] results; \n\n");
-                    sb.Append("\t   public " + method.Name + "CompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :\n");
-                    sb.Append("\t   base(exception, cancelled, userState) {\n");
-                    sb.Append("\t       this.results = results;\n");
-                    sb.Append("\t   } \n\n");
+                    sb.Append(" namespace " + projectName + "\r\n { \r\n");
+                    sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \r\n");
+                    sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")] \r\n");
+                    sb.Append("\t public partial class " + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \r\n");
+                    sb.Append("\t { \r\n\r\n");
+                    sb.Append("\t   private object[] results; \r\n\r\n");
+                    sb.Append("\t   public " + method.Name + "CompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :\r\n");
+                    sb.Append("\t   base(exception, cancelled, userState) {\r\n");
+                    sb.Append("\t       this.results = results;\r\n");
+                    sb.Append("\t   } \r\n\r\n");
 
                     if (method.InterfaceReturnType != "void")
                     {
-                        sb.Append("\t   public " + method.InterfaceReturnType + " Result { \n");
-                        sb.Append("\t       get {\n");
-                        sb.Append("\t           base.RaiseExceptionIfNecessary();\n");
-                        sb.Append("\t           return ((" + method.InterfaceReturnType + ")(this.results[0]));\n");
-                        sb.Append("\t       }\n");
-                        sb.Append("\t   }\n");
+                        sb.Append("\t   public " + method.InterfaceReturnType + " Result { \r\n");
+                        sb.Append("\t       get {\r\n");
+                        sb.Append("\t           base.RaiseExceptionIfNecessary();\r\n");
+                        sb.Append("\t           return ((" + method.InterfaceReturnType + ")(this.results[0]));\r\n");
+                        sb.Append("\t       }\r\n");
+                        sb.Append("\t   }\r\n");
                     }
 
-                    sb.Append("\t }\n");
+                    sb.Append("\t }\r\n");
                     sb.Append(" }");
 
                     CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + method.Name + "CompletedEventArgs.g.cs");
@@ -856,10 +856,10 @@ namespace FirstRoslynApp
 
             var channelName = (svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName) + "Client";
 
-            sb.Append(String.Join("; \n", _allUsings) + "; \n\n");
+            sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
 
-            sb.Append(" namespace " + projectName + "\n { \n");
-            sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter\n ");
+            sb.Append(" namespace " + projectName + "\r\n { \r\n");
+            sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter\r\n ");
             sb.Append("\t {");
 
             sb.Append(GeneratePropertiesAndConstructors(svcName));
@@ -867,7 +867,7 @@ namespace FirstRoslynApp
             sb.Append(GenerateAdditionMathods(svcName + "Client"));
             sb.Append(GenerateClientChannel(svcName + "Client"));
 
-            sb.Append("    } \n");
+            sb.Append("    } \r\n");
             sb.Append("}");
 
             CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + channelName + ".g.cs");
@@ -884,10 +884,10 @@ namespace FirstRoslynApp
             var sb = new StringBuilder();
             var channelName = (svcClient.IndexOf("I", StringComparison.Ordinal) == 0 ? svcClient.Remove(0, 1) : svcClient) + "Channel";
 
-            sb.Append("\t\t private class " + channelName + " : ChannelBase<" + svcClient + ">, " + svcClient + ", IProperter \n \t\t { \n");
-            sb.Append("\t\t\t public bool IsCaughtException { get; set; } \n\n");
+            sb.Append("\t\t private class " + channelName + " : ChannelBase<" + svcClient + ">, " + svcClient + ", IProperter \r\n \t\t { \r\n");
+            sb.Append("\t\t\t public bool IsCaughtException { get; set; } \r\n\r\n");
 
-            sb.Append("\t\t public " + channelName + "(System.ServiceModel.ClientBase<" + svcClient + "> client) : base(client) { } \n\n");
+            sb.Append("\t\t public " + channelName + "(System.ServiceModel.ClientBase<" + svcClient + "> client) : base(client) { } \r\n\r\n");
 
             foreach (var method in _methods)
             {
@@ -898,38 +898,38 @@ namespace FirstRoslynApp
                     parameters += parameter.Type + " " + parameter.Identifier + ", ";
                 }
 
-                sb.Append("\t\t public System.IAsyncResult Begin" + method.Name + "(" + parameters + "System.AsyncCallback callback, object asyncState) \n \t\t { \n");
-                sb.Append("\t\t\t object[] _args = new object[" + method.ParametersList.Parameters.Count + "]; \n");
+                sb.Append("\t\t public System.IAsyncResult Begin" + method.Name + "(" + parameters + "System.AsyncCallback callback, object asyncState) \r\n \t\t { \r\n");
+                sb.Append("\t\t\t object[] _args = new object[" + method.ParametersList.Parameters.Count + "]; \r\n");
 
                 foreach (var parameter in method.ParametersList.Parameters)
                 {
-                    sb.Append("\t\t\t _args[" + method.ParametersList.Parameters.IndexOf(parameter) + "] = " + parameter.Identifier + ";\n");
+                    sb.Append("\t\t\t _args[" + method.ParametersList.Parameters.IndexOf(parameter) + "] = " + parameter.Identifier + ";\r\n");
                 }
 
-                sb.Append("\t\t\t System.IAsyncResult _result = base.BeginInvoke(\"" + method.Name + "\", _args, callback, asyncState);\n");
-                sb.Append("\t\t\t return _result;\n");
-                sb.Append("\t\t } \n\n");
+                sb.Append("\t\t\t System.IAsyncResult _result = base.BeginInvoke(\"" + method.Name + "\", _args, callback, asyncState);\r\n");
+                sb.Append("\t\t\t return _result;\r\n");
+                sb.Append("\t\t } \r\n\r\n");
 
-                sb.Append("\t\t public " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result) \n \t\t { \n");
-                sb.Append("\t\t\t object[] _args = new object[0];\n");
+                sb.Append("\t\t public " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result) \r\n \t\t { \r\n");
+                sb.Append("\t\t\t object[] _args = new object[0];\r\n");
 
                 if (method.ReturnType.ToString() == "void")
                 {
-                    sb.Append("\t\t\t base.EndInvoke(\"" + method.Name + "\", _args, result);\n");
+                    sb.Append("\t\t\t base.EndInvoke(\"" + method.Name + "\", _args, result);\r\n");
                 }
                 else
                 {
-                    sb.Append("\t\t\t " + method.ReturnType + " _result = ((" + method.ReturnType + ")(base.EndInvoke(\"" + method.Name + "\", _args, result)));\n");
+                    sb.Append("\t\t\t " + method.ReturnType + " _result = ((" + method.ReturnType + ")(base.EndInvoke(\"" + method.Name + "\", _args, result)));\r\n");
                 }
 
                 if (method.ReturnType != "void")
                 {
-                    sb.Append("\t\t\t return _result;\n");
+                    sb.Append("\t\t\t return _result;\r\n");
                 }
 
-                sb.Append("\t\t } \n\n");
+                sb.Append("\t\t } \r\n\r\n");
             }
-            sb.Append("\t } \n");
+            sb.Append("\t } \r\n");
 
             return sb.ToString();
         }
@@ -939,68 +939,68 @@ namespace FirstRoslynApp
             var sb = new StringBuilder();
             var client = (svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName);
 
-            sb.Append("\t\t protected override " + svcName + " CreateChannel() \n \t\t {\n");
-            sb.Append("\t\t\t return new " + client + "Channel(this); \n \t\t } \n\n");
+            sb.Append("\t\t protected override " + svcName + " CreateChannel() \r\n \t\t {\r\n");
+            sb.Append("\t\t\t return new " + client + "Channel(this); \r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration) \n \t\t { \n");
-            sb.Append("\t\t\t if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_Client)) \n \t\t\t { \n");
-            sb.Append("\t\t\t\t System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding(); \n");
-            sb.Append("\t\t\t\t result.MaxBufferSize = int.MaxValue; \n");
-            sb.Append("\t\t\t\t result.MaxReceivedMessageSize = int.MaxValue; \n");
-            sb.Append("\t\t\t\t return result; \n \t\t\t } \n ");
-            sb.Append("\t\t\t throw new System.InvalidOperationException(string.Format(\"Could not find endpoint with name \'{0}\'.\", endpointConfiguration));\n \t\t } \n\n");
+            sb.Append("\t\t private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration) \r\n \t\t { \r\n");
+            sb.Append("\t\t\t if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_Client)) \r\n \t\t\t { \r\n");
+            sb.Append("\t\t\t\t System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding(); \r\n");
+            sb.Append("\t\t\t\t result.MaxBufferSize = int.MaxValue; \r\n");
+            sb.Append("\t\t\t\t result.MaxReceivedMessageSize = int.MaxValue; \r\n");
+            sb.Append("\t\t\t\t return result; \r\n \t\t\t } \r\n ");
+            sb.Append("\t\t\t throw new System.InvalidOperationException(string.Format(\"Could not find endpoint with name \'{0}\'.\", endpointConfiguration));\r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration) \n \t\t { \n");
-            sb.Append("\t\t\t if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_Client)) \n \t\t\t { \n");
-            sb.Append("\t\t\t\t return new System.ServiceModel.EndpointAddress(_remoteAddress); \n \t\t\t } \n\n");
-            sb.Append("\t\t\t throw new System.InvalidOperationException(string.Format(\"Could not find endpoint with name \'{0}\'.\", endpointConfiguration));\n \t\t } \n\n");
+            sb.Append("\t\t private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration) \r\n \t\t { \r\n");
+            sb.Append("\t\t\t if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_Client)) \r\n \t\t\t { \r\n");
+            sb.Append("\t\t\t\t return new System.ServiceModel.EndpointAddress(_remoteAddress); \r\n \t\t\t } \r\n\r\n");
+            sb.Append("\t\t\t throw new System.InvalidOperationException(string.Format(\"Could not find endpoint with name \'{0}\'.\", endpointConfiguration));\r\n \t\t } \r\n\r\n");
 
-            sb.Append("\t\t private static System.ServiceModel.Channels.Binding GetDefaultBinding() \n \t\t { \n");
-            sb.Append("\t\t\t return " + client + ".GetBindingForEndpoint(EndpointConfiguration.BasicHttpBinding_Client); \n \t\t } \n");
+            sb.Append("\t\t private static System.ServiceModel.Channels.Binding GetDefaultBinding() \r\n \t\t { \r\n");
+            sb.Append("\t\t\t return " + client + ".GetBindingForEndpoint(EndpointConfiguration.BasicHttpBinding_Client); \r\n \t\t } \r\n");
 
-            sb.Append("\t\t private static System.ServiceModel.EndpointAddress GetDefaultEndpointAddress() \n \t\t { \n");
-            sb.Append("\t\t\t return " + client + ".GetEndpointAddress(EndpointConfiguration.BasicHttpBinding_Client); \n \t\t } \n\n");
+            sb.Append("\t\t private static System.ServiceModel.EndpointAddress GetDefaultEndpointAddress() \r\n \t\t { \r\n");
+            sb.Append("\t\t\t return " + client + ".GetEndpointAddress(EndpointConfiguration.BasicHttpBinding_Client); \r\n \t\t } \r\n\r\n");
 
             return sb.ToString();
         }
 
         private static string GeneratePropertiesAndConstructors(string svcName)
         {
-            var properties = " \n\t\t private static string _remoteAddress = \"\"; \n";
-            properties += " \n\t\t public bool IsCaughtException { get; set; } \n\n";
+            var properties = " \r\n\t\t private static string _remoteAddress = \"\"; \r\n";
+            properties += " \r\n\t\t public bool IsCaughtException { get; set; } \r\n\r\n";
 
             var client = (svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName);
 
             return properties +
-                   "\t\t public " + client + "Client() : base(" + client + "Client.GetDefaultBinding(), " + client + "Client.GetDefaultEndpointAddress()) { } \n\n" +
-                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), " + client + "Client.GetEndpointAddress(endpointConfiguration)) {   } \n\n" +
-                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, string remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress)) { \n \t\t\t _remoteAddress = remoteAddress; \n \t\t } \n\n" +
-                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), remoteAddress)  { \n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \n \t\t } \n\n" +
-                   "\t\t public " + client + "Client(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : base(binding, remoteAddress) {\n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \n \t\t  } \n\n";
+                   "\t\t public " + client + "Client() : base(" + client + "Client.GetDefaultBinding(), " + client + "Client.GetDefaultEndpointAddress()) { } \r\n\r\n" +
+                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), " + client + "Client.GetEndpointAddress(endpointConfiguration)) {   } \r\n\r\n" +
+                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, string remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress)) { \r\n \t\t\t _remoteAddress = remoteAddress; \r\n \t\t } \r\n\r\n" +
+                   "\t\t public " + client + "Client(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) : base(" + client + "Client.GetBindingForEndpoint(endpointConfiguration), remoteAddress)  { \r\n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \r\n \t\t } \r\n\r\n" +
+                   "\t\t public " + client + "Client(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : base(binding, remoteAddress) {\r\n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \r\n \t\t  } \r\n\r\n";
         }
 
         private static string GenerateMethods(string client)
         {
             var result = new StringBuilder();
 
-            result.Append("\n");
+            result.Append("\r\n");
 
             #region Delegates And Event
 
             foreach (var method in _methods)
             {
 
-                result.Append("\t\t private BeginOperationDelegate onBegin" + method.Name + "Delegate; \n");
-                result.Append("\t\t private EndOperationDelegate onEnd" + method.Name + "Delegate; \n");
-                result.Append("\t\t private System.Threading.SendOrPostCallback on" + method.Name + "CompletedDelegate; \n\n");
+                result.Append("\t\t private BeginOperationDelegate onBegin" + method.Name + "Delegate; \r\n");
+                result.Append("\t\t private EndOperationDelegate onEnd" + method.Name + "Delegate; \r\n");
+                result.Append("\t\t private System.Threading.SendOrPostCallback on" + method.Name + "CompletedDelegate; \r\n\r\n");
 
                 if (method.ReturnType.ToString() == "void")
                 {
-                    result.Append("\t\t public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> " + method.Name + "Completed; \n\n");
+                    result.Append("\t\t public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> " + method.Name + "Completed; \r\n\r\n");
                 }
                 else
                 {
-                    result.Append("\t\t public event System.EventHandler<" + method.Name + "CompletedEventArgs> " + method.Name + "Completed; \n\n");
+                    result.Append("\t\t public event System.EventHandler<" + method.Name + "CompletedEventArgs> " + method.Name + "Completed; \r\n\r\n");
                 }
             }
 
@@ -1012,9 +1012,9 @@ namespace FirstRoslynApp
 
                 var parms = method.ParametersList.Parameters.Count == 0 ? "" : (method.ParametersList.Parameters + ",");
 
-                result.Append("\t\t [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]\n");
-                result.Append("\t\t public System.IAsyncResult Begin" + method.Name + "(" + parms + " System.AsyncCallback callback, object asyncState)\n");
-                result.Append("\t\t {\n");
+                result.Append("\t\t [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]\r\n");
+                result.Append("\t\t public System.IAsyncResult Begin" + method.Name + "(" + parms + " System.AsyncCallback callback, object asyncState)\r\n");
+                result.Append("\t\t {\r\n");
                 result.Append("\t\t   return base.Channel.Begin" + method.Name + "(");
 
                 foreach (var parameter in method.ParametersList.Parameters)
@@ -1022,39 +1022,39 @@ namespace FirstRoslynApp
                     result.Append(parameter.Identifier + ", ");
                 }
 
-                result.Append(" callback, asyncState); \n");
+                result.Append(" callback, asyncState); \r\n");
 
-                result.Append("\t\t }\n\n");
+                result.Append("\t\t }\r\n\r\n");
 
-                result.Append("\t\t [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]\n");
-                result.Append("\t\t public " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result)\n");
-                result.Append("\t\t {\n");
-                result.Append("\t\t   try\n");
-                result.Append("\t\t   {\n");
-                result.Append("\t\t       " + (method.ReturnType != "void" ? "return" : "") + " base.Channel.End" + method.Name + "(result);\n");
-                result.Append("\t\t   }\n");
-                result.Append("\t\t   catch (Exception)\n");
-                result.Append("\t\t   {\n");
-                result.Append("\t\t       IsCaughtException = true;\n");
-                result.Append("\t\t       throw;\n");
+                result.Append("\t\t [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]\r\n");
+                result.Append("\t\t public " + method.ReturnType + " End" + method.Name + "(System.IAsyncResult result)\r\n");
+                result.Append("\t\t {\r\n");
+                result.Append("\t\t   try\r\n");
+                result.Append("\t\t   {\r\n");
+                result.Append("\t\t       " + (method.ReturnType != "void" ? "return" : "") + " base.Channel.End" + method.Name + "(result);\r\n");
+                result.Append("\t\t   }\r\n");
+                result.Append("\t\t   catch (Exception)\r\n");
+                result.Append("\t\t   {\r\n");
+                result.Append("\t\t       IsCaughtException = true;\r\n");
+                result.Append("\t\t       throw;\r\n");
 
                 if (method.ReturnType != "void")
                 {
-                    result.Append("\t\t       return " + GetBadResponse(method.ReturnType) + ";\n");
+                    result.Append("\t\t       return " + GetBadResponse(method.ReturnType) + ";\r\n");
                 }
 
-                result.Append("\t\t   }\n");
-                result.Append("\t\t }\n\n");
+                result.Append("\t\t   }\r\n");
+                result.Append("\t\t }\r\n\r\n");
                 #endregion
 
                 #region OnBegin-OnEnd-OnCompleted
-                result.Append("\t\t private System.IAsyncResult OnBegin" + method.Name + "(object[] inValues, System.AsyncCallback callback, object asyncState)\n");
-                result.Append("\t\t {\n");
+                result.Append("\t\t private System.IAsyncResult OnBegin" + method.Name + "(object[] inValues, System.AsyncCallback callback, object asyncState)\r\n");
+                result.Append("\t\t {\r\n");
 
                 var counter = 0;
                 foreach (var parameter in method.ParametersList.Parameters)
                 {
-                    result.Append("\t\t   " + parameter.Type + " " + parameter.Identifier + " = ((" + parameter.Type + ")(inValues[" + counter + "]));\n");
+                    result.Append("\t\t   " + parameter.Type + " " + parameter.Identifier + " = ((" + parameter.Type + ")(inValues[" + counter + "]));\r\n");
                     counter++;
                 }
 
@@ -1065,39 +1065,39 @@ namespace FirstRoslynApp
                     result.Append(parameter.Identifier + ", ");
                 }
 
-                result.Append("callback, asyncState);\n");
-                result.Append("\t\t }\n\n");
+                result.Append("callback, asyncState);\r\n");
+                result.Append("\t\t }\r\n\r\n");
 
-                result.Append("\t\t private object[] OnEnd" + method.Name + "(System.IAsyncResult result)\n");
-                result.Append("\t\t {\n");
+                result.Append("\t\t private object[] OnEnd" + method.Name + "(System.IAsyncResult result)\r\n");
+                result.Append("\t\t {\r\n");
 
                 if (method.ReturnType != "void")
                 {
-                    result.Append("\t\t   " + method.ReturnType + " retVal = ((" + client + ")(this)).End" + method.Name + "(result);\n");
-                    result.Append("\t\t   return new object[] { retVal };\n");
+                    result.Append("\t\t   " + method.ReturnType + " retVal = ((" + client + ")(this)).End" + method.Name + "(result);\r\n");
+                    result.Append("\t\t   return new object[] { retVal };\r\n");
                 }
                 else
                 {
-                    result.Append("\t\t   ((" + client + ")(this)).End" + method.Name + "(result);\n");
-                    result.Append("\t\t   return null;\n");
+                    result.Append("\t\t   ((" + client + ")(this)).End" + method.Name + "(result);\r\n");
+                    result.Append("\t\t   return null;\r\n");
                 }
 
 
-                result.Append("\t\t }\n\n");
+                result.Append("\t\t }\r\n\r\n");
 
-                result.Append("\t\t private void On" + method.Name + "Completed(object state)\n");
-                result.Append("\t\t {\n");
-                result.Append("\t\t   if ((this." + method.Name + "Completed != null))\n");
-                result.Append("\t\t   {\n");
-                result.Append("\t\t      InvokeAsyncCompletedEventArgs e = ((InvokeAsyncCompletedEventArgs)(state));\n");
-                result.Append("\t\t      this." + method.Name + "Completed(this, new " + method.Name + "CompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));\n");
-                result.Append("\t\t   }\n");
-                result.Append("\t\t }\n\n");
+                result.Append("\t\t private void On" + method.Name + "Completed(object state)\r\n");
+                result.Append("\t\t {\r\n");
+                result.Append("\t\t   if ((this." + method.Name + "Completed != null))\r\n");
+                result.Append("\t\t   {\r\n");
+                result.Append("\t\t      InvokeAsyncCompletedEventArgs e = ((InvokeAsyncCompletedEventArgs)(state));\r\n");
+                result.Append("\t\t      this." + method.Name + "Completed(this, new " + method.Name + "CompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));\r\n");
+                result.Append("\t\t   }\r\n");
+                result.Append("\t\t }\r\n\r\n");
                 #endregion
 
                 #region AsyncMethod
-                result.Append("\t\t public void " + method.Name + "Async(" + method.ParametersList.Parameters + ")\n");
-                result.Append("\t\t {\n");
+                result.Append("\t\t public void " + method.Name + "Async(" + method.ParametersList.Parameters + ")\r\n");
+                result.Append("\t\t {\r\n");
                 result.Append("\t\t   this." + method.Name + "Async(");
 
                 foreach (var parameter in method.ParametersList.Parameters)
@@ -1105,23 +1105,23 @@ namespace FirstRoslynApp
                     result.Append(parameter.Identifier + ", ");
                 }
 
-                result.Append("null);\n");
-                result.Append("\t\t }\n\n");
+                result.Append("null);\r\n");
+                result.Append("\t\t }\r\n\r\n");
 
-                result.Append("\t\t public void " + method.Name + "Async(" + (method.ParametersList.Parameters.Count > 0 ? method.ParametersList.Parameters + ", " : "") + " object userState)\n");
-                result.Append("\t\t {\n");
-                result.Append("\t\t   if ((this.onBegin" + method.Name + "Delegate == null))\n");
-                result.Append("\t\t   {\n");
-                result.Append("\t\t       this.onBegin" + method.Name + "Delegate = new BeginOperationDelegate(this.OnBegin" + method.Name + ");\n");
-                result.Append("\t\t   }\n");
-                result.Append("\t\t   if ((this.onEnd" + method.Name + "Delegate == null))\n");
-                result.Append("\t\t   {\n");
-                result.Append("\t\t       this.onEnd" + method.Name + "Delegate = new EndOperationDelegate(this.OnEnd" + method.Name + ");\n");
-                result.Append("\t\t   }\n");
-                result.Append("\t\t   if ((this.on" + method.Name + "CompletedDelegate == null))\n");
-                result.Append("\t\t   {\n");
-                result.Append("\t\t       this.on" + method.Name + "CompletedDelegate = new System.Threading.SendOrPostCallback(this.On" + method.Name + "Completed);\n");
-                result.Append("\t\t   }\n");
+                result.Append("\t\t public void " + method.Name + "Async(" + (method.ParametersList.Parameters.Count > 0 ? method.ParametersList.Parameters + ", " : "") + " object userState)\r\n");
+                result.Append("\t\t {\r\n");
+                result.Append("\t\t   if ((this.onBegin" + method.Name + "Delegate == null))\r\n");
+                result.Append("\t\t   {\r\n");
+                result.Append("\t\t       this.onBegin" + method.Name + "Delegate = new BeginOperationDelegate(this.OnBegin" + method.Name + ");\r\n");
+                result.Append("\t\t   }\r\n");
+                result.Append("\t\t   if ((this.onEnd" + method.Name + "Delegate == null))\r\n");
+                result.Append("\t\t   {\r\n");
+                result.Append("\t\t       this.onEnd" + method.Name + "Delegate = new EndOperationDelegate(this.OnEnd" + method.Name + ");\r\n");
+                result.Append("\t\t   }\r\n");
+                result.Append("\t\t   if ((this.on" + method.Name + "CompletedDelegate == null))\r\n");
+                result.Append("\t\t   {\r\n");
+                result.Append("\t\t       this.on" + method.Name + "CompletedDelegate = new System.Threading.SendOrPostCallback(this.On" + method.Name + "Completed);\r\n");
+                result.Append("\t\t   }\r\n");
                 result.Append("\t\t   base.InvokeAsync(this.onBegin" + method.Name + "Delegate, new object[] {");
 
                 counter = 0;
@@ -1136,9 +1136,9 @@ namespace FirstRoslynApp
                     }
                 }
 
-                result.Append("}, this.onEnd" + method.Name + "Delegate, this.on" + method.Name + "CompletedDelegate, userState);\n");
-                result.Append("\t\t       this.on" + method.Name + "CompletedDelegate = new System.Threading.SendOrPostCallback(this.On" + method.Name + "Completed);\n");
-                result.Append("\t\t }\n\n");
+                result.Append("}, this.onEnd" + method.Name + "Delegate, this.on" + method.Name + "CompletedDelegate, userState);\r\n");
+                result.Append("\t\t       this.on" + method.Name + "CompletedDelegate = new System.Threading.SendOrPostCallback(this.On" + method.Name + "Completed);\r\n");
+                result.Append("\t\t }\r\n\r\n");
                 #endregion
             }
 
