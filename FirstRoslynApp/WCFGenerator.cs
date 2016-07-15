@@ -458,7 +458,7 @@ namespace FirstRoslynApp
         {
             if (fileName != null && projectName != null)
             {
-                code = "//The file " + fileName + " was automatically generated using WCF-Generator.exe\r\n\r\n\r\n";
+                code = "//The file " + fileName + " was automatically generated using WCF-Generator.exe\r\n\r\n\r\n" + code;
 
                 var folders = fileName.Split('/');
                 fileName = folders[folders.Length - 1];
