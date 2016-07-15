@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,7 +69,7 @@ namespace FirstRoslynApp
 
         private void GenerateService(ServiceDetail service)
         {
-            GetService(_solution, service.FileName, service.IsNeededToGetResponseValue);
+            GetService(_solution, service);
 
             if (service.UserName != null)
             {
@@ -128,7 +129,7 @@ namespace FirstRoslynApp
 
                     sb.Append("\t\t public async System.Threading.Tasks.Task" + returnType + " " + method.Name + "(" + parameters + ")\r\n");
                     sb.Append("\t\t {\r\n");
-                    sb.Append("\t\t\t var channelContainer = CreateChannel<" + svcName + "Client > ();\r\n");
+                    sb.Append("\t\t\t var channelContainer = CreateChannel<" + svcName + "Client> ();\r\n");
                     sb.Append("\t\t\t var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);\r\n\r\n");
                     sb.Append("\t\t\t try\r\n");
                     sb.Append("\t\t\t {\r\n");
@@ -136,19 +137,13 @@ namespace FirstRoslynApp
                     sb.Append("\t\t\t\t");
 
                     if (method.ReturnTypeApi != "void")
-                        sb.Append(" var res = ");
+                        sb.Append(" return");
 
                     sb.Append(" await System.Threading.Tasks.Task" +
                               (method.ReturnType != "void" ? ("<" + method.ReturnType + ">") : "") +
                               ".Factory.FromAsync" + types + "(channelContainer.Client.Begin" + method.Name +
                               ", channelContainer.Client.End" + method.Name + ", " + paramNames +
                               " null).ContinueOnScope(scope);\r\n");
-
-                    if (method.ReturnTypeApi != "void" && method.ReturnTypeApi != "ResponseDto")
-                        sb.Append("\t\t\t\t return GetValue<" + method.ReturnTypeApi + ">(res);\r\n");
-
-                    if (method.ReturnTypeApi == "ResponseDto")
-                        sb.Append("\t\t\t\t return res;\r\n");
 
                     sb.Append("\t\t\t }\r\n");
                     sb.Append("\t\t\t finally\r\n");
@@ -232,7 +227,7 @@ namespace FirstRoslynApp
             return parameters;
         }
 
-        private Document GetService(Solution solution, string iService, bool isNeededToGetResponseValue)
+        private Document GetService(Solution solution, ServiceDetail iService)
         {
             _methods = new List<EndPoint>();
             Document svc = null;
@@ -241,7 +236,7 @@ namespace FirstRoslynApp
             {
                 foreach (var document in project.Documents)
                 {
-                    if (document.Name == iService)
+                    if (document.Name == iService.FileName)
                     {
                         svc = document;
                         break;
@@ -262,9 +257,10 @@ namespace FirstRoslynApp
 
                 _methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
                 {
+                    Service = iService.UserName,
                     Name = sm.Identifier.ToString(),
                     ReturnType = GetFullReturnType(sm.ReturnType),
-                    ReturnTypeApi = sm.ReturnType.ToString().Contains("Response") && isNeededToGetResponseValue ? GetProperty(sm.ReturnType, "Value") : GetFullReturnType(sm.ReturnType),
+                    ReturnTypeApi = GetFullReturnType(sm.ReturnType),
                     InterfaceReturnType = GetFullReturnType(sm.ReturnType),
                     ParametersList = sm.ParameterList,
                     Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
@@ -462,6 +458,8 @@ namespace FirstRoslynApp
         {
             if (fileName != null && projectName != null)
             {
+                code = "//The file " + fileName + " was automatically generated using WCF-Generator.exe\r\n\r\n\r\n";
+
                 var folders = fileName.Split('/');
                 fileName = folders[folders.Length - 1];
                 folders = folders.Where((val, idx) => idx != folders.Length - 1).ToArray();
@@ -473,13 +471,28 @@ namespace FirstRoslynApp
 
         private static void ApplyChanges()
         {
+            var dirCompletedEventArgs = new DirectoryInfo(_project.FilePath.Remove(_project.FilePath.LastIndexOf("\\", StringComparison.Ordinal)) + "\\ServiceReferences\\CompletedEventArgs");
+
+            foreach (FileInfo file in dirCompletedEventArgs.GetFiles())
+            {
+                var oldDocuments = _project?.Documents.Where(x => x.Name == file.Name);
+
+                if (oldDocuments != null)
+                    foreach (var document in oldDocuments)
+                    {
+                        _project = _project?.RemoveDocument(document.Id);
+                    }
+            }
+
+            _solution = _project?.Solution;
+
             foreach (var doc in tasks)
             {
                 _project = _solution?.Projects.FirstOrDefault(x => x.Name == doc.Item4);
 
                 var oldDocument = _project?.Documents.FirstOrDefault(x => x.Name == doc.Item1);
 
-                if (oldDocument != null)
+                if (oldDocument != null && !oldDocument.Name.Contains("CompletedEventArgs"))
                 {
                     if (oldDocument.GetTextAsync().Result.ToString() != doc.Item2.ToString())
                     {
@@ -819,15 +832,17 @@ namespace FirstRoslynApp
             {
                     sb.Clear();
 
+                    var suffix = method.Service.IndexOf("I", StringComparison.Ordinal) == 0 ? method.Service.Remove(0, 1) : method.Service;
+
                     sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
 
-                    sb.Append(" namespace " + projectName + "\r\n { \r\n");
+                    sb.Append(" namespace " + projectName  + "\r\n { \r\n");
                     sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \r\n");
                     sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")] \r\n");
-                    sb.Append("\t public partial class " + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \r\n");
+                    sb.Append("\t public partial class " + suffix + "_" + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \r\n");
                     sb.Append("\t { \r\n\r\n");
                     sb.Append("\t   private object[] results; \r\n\r\n");
-                    sb.Append("\t   public " + method.Name + "CompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :\r\n");
+                    sb.Append("\t   public " + suffix + "_" + method.Name + "CompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :\r\n");
                     sb.Append("\t   base(exception, cancelled, userState) {\r\n");
                     sb.Append("\t       this.results = results;\r\n");
                     sb.Append("\t   } \r\n\r\n");
@@ -845,18 +860,18 @@ namespace FirstRoslynApp
                     sb.Append("\t }\r\n");
                     sb.Append(" }");
 
-                    CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + method.Name + "CompletedEventArgs.g.cs");
+                    CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + suffix + "_" + method.Name + "CompletedEventArgs.g.cs");
             }
         }
 
-        private static void GenerateServiceClient(ServiceDetail sd, string projectName)
+        private void GenerateServiceClient(ServiceDetail sd, string projectName)
         {
             var sb = new StringBuilder();
             var svcName = sd.UserName;
 
             var channelName = (svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName) + "Client";
 
-            sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
+            sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n");
 
             sb.Append(" namespace " + projectName + "\r\n { \r\n");
             sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter\r\n ");
@@ -873,10 +888,7 @@ namespace FirstRoslynApp
             CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + channelName + ".g.cs");
 
             _competedArgsMethods = _competedArgsMethods == null ? _methods
-                                                                : _methods.Concat(_competedArgsMethods)
-                                                                          .GroupBy(item => item.Name)
-                                                                          .Select(group => group.First())
-                                                                          .ToList();
+                                                                : _methods.Concat(_competedArgsMethods).ToList();
         }
 
         private static string GenerateClientChannel(string svcClient)
@@ -989,6 +1001,7 @@ namespace FirstRoslynApp
 
             foreach (var method in _methods)
             {
+                var suffix = method.Service.IndexOf("I", StringComparison.Ordinal) == 0 ? method.Service.Remove(0, 1) : method.Service;
 
                 result.Append("\t\t private BeginOperationDelegate onBegin" + method.Name + "Delegate; \r\n");
                 result.Append("\t\t private EndOperationDelegate onEnd" + method.Name + "Delegate; \r\n");
@@ -1000,7 +1013,7 @@ namespace FirstRoslynApp
                 }
                 else
                 {
-                    result.Append("\t\t public event System.EventHandler<" + method.Name + "CompletedEventArgs> " + method.Name + "Completed; \r\n\r\n");
+                    result.Append("\t\t public event System.EventHandler<" + suffix + "_" + method.Name + "CompletedEventArgs> " + method.Name + "Completed; \r\n\r\n");
                 }
             }
 
@@ -1082,6 +1095,7 @@ namespace FirstRoslynApp
                     result.Append("\t\t   return null;\r\n");
                 }
 
+                var suffix = method.Service.IndexOf("I", StringComparison.Ordinal) == 0 ? method.Service.Remove(0, 1) : method.Service;
 
                 result.Append("\t\t }\r\n\r\n");
 
@@ -1090,7 +1104,7 @@ namespace FirstRoslynApp
                 result.Append("\t\t   if ((this." + method.Name + "Completed != null))\r\n");
                 result.Append("\t\t   {\r\n");
                 result.Append("\t\t      InvokeAsyncCompletedEventArgs e = ((InvokeAsyncCompletedEventArgs)(state));\r\n");
-                result.Append("\t\t      this." + method.Name + "Completed(this, new " + method.Name + "CompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));\r\n");
+                result.Append("\t\t      this." + method.Name + "Completed(this, new " + suffix + "_" + method.Name + "CompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));\r\n");
                 result.Append("\t\t   }\r\n");
                 result.Append("\t\t }\r\n\r\n");
                 #endregion
@@ -1169,6 +1183,7 @@ namespace FirstRoslynApp
 
     public class EndPoint
     {
+        public string Service { get; set; }
         public string Name { get; set; }
         public string ReturnTypeApi { get; set; }
         public string ReturnType { get; set; }

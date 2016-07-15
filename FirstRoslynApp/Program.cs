@@ -78,20 +78,17 @@ namespace FirstRoslynApp
                         new ServiceDetail()
                         {
                             UserName = "IBackOffice",
-                            FileName = "IBackOfficeService.cs",
-                            IsNeededToGetResponseValue = false
+                            FileName = "IBackOfficeService.cs"
                         },
                         new ServiceDetail()
                         {
                             UserName = "ITerminal",
-                            FileName = "IService.cs",
-                            IsNeededToGetResponseValue = true
+                            FileName = "IService.cs"
                         },
                         new ServiceDetail()
                         {
                             UserName = "IOnlineService",
-                            FileName = "IOnlineService.cs",
-                            IsNeededToGetResponseValue = false
+                            FileName = "IOnlineService.cs"
                         }
                     }
                 };
@@ -105,9 +102,8 @@ namespace FirstRoslynApp
         }
     }
 
-    internal class ServiceDetail
+    public class ServiceDetail
     {
-        public bool IsNeededToGetResponseValue;
         public string UserName { get; set; }
         public string FileName { get; set; }
     }
