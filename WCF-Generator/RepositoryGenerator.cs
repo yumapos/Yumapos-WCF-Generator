@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 
-namespace FirstRoslynApp
+namespace WCFGenerator
 {
     public class RepositoryAndDo
     {

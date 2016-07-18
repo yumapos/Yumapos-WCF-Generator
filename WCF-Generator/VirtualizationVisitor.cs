@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace FirstRoslynApp
+namespace WCFGenerator
 {
     public class ClassVirtualizationVisitor : CSharpSyntaxRewriter
     {

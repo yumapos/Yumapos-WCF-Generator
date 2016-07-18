@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 
-namespace FirstRoslynApp
+namespace WCFGenerator
 {
     class WCFGenerator
     {
@@ -257,7 +255,7 @@ namespace FirstRoslynApp
 
                 _methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
                 {
-                    Service = iService.UserName,
+                    Service = iService.UserName.IndexOf("I", StringComparison.Ordinal) == 0 ? iService.UserName.Remove(0, 1) : iService.UserName,
                     Name = sm.Identifier.ToString(),
                     ReturnType = GetFullReturnType(sm.ReturnType),
                     ReturnTypeApi = GetFullReturnType(sm.ReturnType),
@@ -323,11 +321,18 @@ namespace FirstRoslynApp
 
                 if (nodes.Any())
                 {
-                    var newUsing = SymbolFinder.FindDeclarationsAsync(svc.Project, nodes.First().Identifier.ValueText, ignoreCase: false).Result.First().ContainingNamespace.ToString();
+                    var dyclarationSyntax =
+                        SymbolFinder.FindDeclarationsAsync(svc.Project, nodes.First().Identifier.ValueText,
+                            ignoreCase: false).Result;
 
-                    if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
+                    if (dyclarationSyntax != null && dyclarationSyntax.Any())
                     {
-                        usingsCollection.Add(newUsing);
+                        var newUsing = dyclarationSyntax.First().ContainingNamespace.ToString();
+
+                        if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
+                        {
+                            usingsCollection.Add(newUsing);
+                        }
                     }
                 }
             }
@@ -475,13 +480,11 @@ namespace FirstRoslynApp
 
             foreach (FileInfo file in dirCompletedEventArgs.GetFiles())
             {
-                var oldDocuments = _project?.Documents.Where(x => x.Name == file.Name);
+                var redundantDocument = _project?.Documents.FirstOrDefault(x => x.Name == file.Name);
 
-                if (oldDocuments != null)
-                    foreach (var document in oldDocuments)
-                    {
-                        _project = _project?.RemoveDocument(document.Id);
-                    }
+                if (redundantDocument != null && _competedArgsMethods.All(x => (x.Service + "_" + x.Name + "CompletedEventArgs") != file.Name.Remove(file.Name.IndexOf(".", StringComparison.Ordinal))))
+                    _project = _project?.RemoveDocument(redundantDocument.Id);
+
             }
 
             _solution = _project?.Solution;
@@ -492,7 +495,7 @@ namespace FirstRoslynApp
 
                 var oldDocument = _project?.Documents.FirstOrDefault(x => x.Name == doc.Item1);
 
-                if (oldDocument != null && !oldDocument.Name.Contains("CompletedEventArgs"))
+                if (oldDocument != null)
                 {
                     if (oldDocument.GetTextAsync().Result.ToString() != doc.Item2.ToString())
                     {
@@ -832,17 +835,15 @@ namespace FirstRoslynApp
             {
                     sb.Clear();
 
-                    var suffix = method.Service.IndexOf("I", StringComparison.Ordinal) == 0 ? method.Service.Remove(0, 1) : method.Service;
-
                     sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
 
                     sb.Append(" namespace " + projectName  + "\r\n { \r\n");
                     sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \r\n");
                     sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")] \r\n");
-                    sb.Append("\t public partial class " + suffix + "_" + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \r\n");
+                    sb.Append("\t public partial class " + method.Service + "_" + method.Name + "CompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs \r\n");
                     sb.Append("\t { \r\n\r\n");
                     sb.Append("\t   private object[] results; \r\n\r\n");
-                    sb.Append("\t   public " + suffix + "_" + method.Name + "CompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :\r\n");
+                    sb.Append("\t   public " + method.Service + "_" + method.Name + "CompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :\r\n");
                     sb.Append("\t   base(exception, cancelled, userState) {\r\n");
                     sb.Append("\t       this.results = results;\r\n");
                     sb.Append("\t   } \r\n\r\n");
@@ -860,7 +861,7 @@ namespace FirstRoslynApp
                     sb.Append("\t }\r\n");
                     sb.Append(" }");
 
-                    CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + suffix + "_" + method.Name + "CompletedEventArgs.g.cs");
+                    CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + method.Service + "_" + method.Name + "CompletedEventArgs.g.cs");
             }
         }
 
@@ -1001,8 +1002,6 @@ namespace FirstRoslynApp
 
             foreach (var method in _methods)
             {
-                var suffix = method.Service.IndexOf("I", StringComparison.Ordinal) == 0 ? method.Service.Remove(0, 1) : method.Service;
-
                 result.Append("\t\t private BeginOperationDelegate onBegin" + method.Name + "Delegate; \r\n");
                 result.Append("\t\t private EndOperationDelegate onEnd" + method.Name + "Delegate; \r\n");
                 result.Append("\t\t private System.Threading.SendOrPostCallback on" + method.Name + "CompletedDelegate; \r\n\r\n");
@@ -1013,7 +1012,7 @@ namespace FirstRoslynApp
                 }
                 else
                 {
-                    result.Append("\t\t public event System.EventHandler<" + suffix + "_" + method.Name + "CompletedEventArgs> " + method.Name + "Completed; \r\n\r\n");
+                    result.Append("\t\t public event System.EventHandler<" + method.Service + "_" + method.Name + "CompletedEventArgs> " + method.Name + "Completed; \r\n\r\n");
                 }
             }
 
@@ -1094,9 +1093,7 @@ namespace FirstRoslynApp
                     result.Append("\t\t   ((" + client + ")(this)).End" + method.Name + "(result);\r\n");
                     result.Append("\t\t   return null;\r\n");
                 }
-
-                var suffix = method.Service.IndexOf("I", StringComparison.Ordinal) == 0 ? method.Service.Remove(0, 1) : method.Service;
-
+                
                 result.Append("\t\t }\r\n\r\n");
 
                 result.Append("\t\t private void On" + method.Name + "Completed(object state)\r\n");
@@ -1104,7 +1101,7 @@ namespace FirstRoslynApp
                 result.Append("\t\t   if ((this." + method.Name + "Completed != null))\r\n");
                 result.Append("\t\t   {\r\n");
                 result.Append("\t\t      InvokeAsyncCompletedEventArgs e = ((InvokeAsyncCompletedEventArgs)(state));\r\n");
-                result.Append("\t\t      this." + method.Name + "Completed(this, new " + suffix + "_" + method.Name + "CompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));\r\n");
+                result.Append("\t\t      this." + method.Name + "Completed(this, new " + method.Service + "_" + method.Name + "CompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));\r\n");
                 result.Append("\t\t   }\r\n");
                 result.Append("\t\t }\r\n\r\n");
                 #endregion
