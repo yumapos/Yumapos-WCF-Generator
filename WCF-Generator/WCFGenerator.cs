@@ -135,13 +135,19 @@ namespace WCFGenerator
                     sb.Append("\t\t\t\t");
 
                     if (method.ReturnTypeApi != "void")
-                        sb.Append(" return");
+                        sb.Append(" var res = ");
 
                     sb.Append(" await System.Threading.Tasks.Task" +
                               (method.ReturnType != "void" ? ("<" + method.ReturnType + ">") : "") +
                               ".Factory.FromAsync" + types + "(channelContainer.Client.Begin" + method.Name +
                               ", channelContainer.Client.End" + method.Name + ", " + paramNames +
                               " null).ContinueOnScope(scope);\r\n");
+
+                    if (method.ReturnTypeApi != "void" && method.ReturnTypeApi != "ResponseDto")
+                        sb.Append("\t\t\t\t return GetValue<" + method.ReturnTypeApi + ">(res);\r\n");
+
+                    if (method.ReturnTypeApi == "ResponseDto")
+                        sb.Append("\t\t\t\t return res;\r\n");
 
                     sb.Append("\t\t\t }\r\n");
                     sb.Append("\t\t\t finally\r\n");
@@ -165,7 +171,7 @@ namespace WCFGenerator
             sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
             sb.Append(" namespace " + ProjectApi + "\r\n { \r\n");
-            sb.Append("\t public partial interface I" + svcName + "Api\r\n\t { \r\n");
+            sb.Append("\t public partial interface " + (service.ApiName ?? "I" + svcName + "Api") + "\r\n\t { \r\n");
 
             var projectIApi = _solution.Projects.FirstOrDefault(x => x.Name == ProjectApi);
             if (projectIApi != null)
@@ -258,7 +264,7 @@ namespace WCFGenerator
                     Service = iService.UserName.IndexOf("I", StringComparison.Ordinal) == 0 ? iService.UserName.Remove(0, 1) : iService.UserName,
                     Name = sm.Identifier.ToString(),
                     ReturnType = GetFullReturnType(sm.ReturnType),
-                    ReturnTypeApi = GetFullReturnType(sm.ReturnType),
+                    ReturnTypeApi = sm.ReturnType.ToString().Contains("Response") ? GetProperty(sm.ReturnType, "Value") : GetFullReturnType(sm.ReturnType),
                     InterfaceReturnType = GetFullReturnType(sm.ReturnType),
                     ParametersList = sm.ParameterList,
                     Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
@@ -478,13 +484,15 @@ namespace WCFGenerator
         {
             var dirCompletedEventArgs = new DirectoryInfo(_project.FilePath.Remove(_project.FilePath.LastIndexOf("\\", StringComparison.Ordinal)) + "\\ServiceReferences\\CompletedEventArgs");
 
-            foreach (FileInfo file in dirCompletedEventArgs.GetFiles())
-            {
-                var redundantDocument = _project?.Documents.FirstOrDefault(x => x.Name == file.Name);
+            if (dirCompletedEventArgs.Exists)
+            { 
+                foreach (FileInfo file in dirCompletedEventArgs.GetFiles())
+                {
+                    var redundantDocument = _project?.Documents.FirstOrDefault(x => x.Name == file.Name);
 
-                if (redundantDocument != null && _competedArgsMethods.All(x => (x.Service + "_" + x.Name + "CompletedEventArgs") != file.Name.Remove(file.Name.IndexOf(".", StringComparison.Ordinal))))
-                    _project = _project?.RemoveDocument(redundantDocument.Id);
-
+                    if (redundantDocument != null && _competedArgsMethods.All(x => (x.Service + "_" + x.Name + "CompletedEventArgs") != file.Name.Remove(file.Name.IndexOf(".", StringComparison.Ordinal))))
+                        _project = _project?.RemoveDocument(redundantDocument.Id);
+                }
             }
 
             _solution = _project?.Solution;

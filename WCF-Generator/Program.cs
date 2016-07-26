@@ -72,7 +72,8 @@ namespace WCFGenerator
                         },
                         new ServiceDetail()
                         {
-                            UserName = "ITerminal",
+                            UserName = "IYumaPos",
+                            ApiName = "IYumaPos",
                             FileName = "IService.cs"
                         },
                         new ServiceDetail()
@@ -96,5 +97,6 @@ namespace WCFGenerator
     {
         public string UserName { get; set; }
         public string FileName { get; set; }
+        public string ApiName { get; set; }
     }
 }
