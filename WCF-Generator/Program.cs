@@ -59,6 +59,7 @@ namespace WCFGenerator
                     ProjectFolders = new List<string>(),
                     FaultProject = "YumaPos.Shared.API.Faults",
                     ProjectApi = "YumaPos.Shared.Infrastructure",
+                    ProjectApiNameSpace = "YumaPos.Shared.API",
                     ProjectApiFolders = new List<string>()
                     {
                         "API"

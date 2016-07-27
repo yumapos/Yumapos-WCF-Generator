@@ -37,6 +37,7 @@ namespace WCFGenerator
         public List<string> ProjectApiFolders { get; set; }
 
         public object FaultProject { get; set; }
+        public string ProjectApiNameSpace { get; set; }
 
         private void CheckValues(string[] args)
         {
@@ -170,7 +171,7 @@ namespace WCFGenerator
 
             sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
-            sb.Append(" namespace " + ProjectApi + "\r\n { \r\n");
+            sb.Append(" namespace " + (ProjectApiNameSpace ?? ProjectApi) + "\r\n { \r\n");
             sb.Append("\t public partial interface " + (service.ApiName ?? "I" + svcName + "Api") + "\r\n\t { \r\n");
 
             var projectIApi = _solution.Projects.FirstOrDefault(x => x.Name == ProjectApi);
