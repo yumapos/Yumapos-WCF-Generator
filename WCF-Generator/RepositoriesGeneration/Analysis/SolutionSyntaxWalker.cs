@@ -6,14 +6,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace WCFGenerator
+namespace VersionedRepositoryGeneration.Generator.Analysis
 {
-    class GeneratorHelper : CSharpSyntaxWalker
+    internal static class SolutionSyntaxWalker //: CSharpSyntaxWalker
     {
-        public static Solution Solution { get; set; }
-
-        public static Project Project { get; set; }
-
         public static string GetFullMetadataName(INamespaceOrTypeSymbol symbol)
         {
             ISymbol s = symbol;
@@ -40,18 +36,19 @@ namespace WCFGenerator
 
         private static bool IsRootNamespace(ISymbol s)
         {
-            return s is INamespaceSymbol && ((INamespaceSymbol)s).IsGlobalNamespace;
+            return s is INamespaceSymbol && ((INamespaceSymbol) s).IsGlobalNamespace;
         }
 
-        public static async Task<IEnumerable<ClassDeclarationSyntax>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
+        public static async Task<IEnumerable<ClassDeclarationSyntax>> GetAllClassesWhithAttribute(Solution solution, string projectName,
+            bool isSkipAttribute, string attribute)
         {
-            var project = Solution.Projects.First(x => x.Name == projectName);
+            var project = solution.Projects.First(x => x.Name == projectName);
             var classes = new List<ClassDeclarationSyntax>();
 
             if (project != null)
             {
                 var compilation = await project.GetCompilationAsync();
-                var classVisitor = new ClassVirtualizationVisitor();
+                var classVisitor = new ClassVirtualizationRewriter();
 
                 foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
@@ -62,7 +59,7 @@ namespace WCFGenerator
                 {
                     classes = classVisitor.classes.Where(x => x.AttributeLists
                         .Any(att => att.Attributes
-                            .Any(att2 => att2.Name.ToString() == attribute))).ToList();
+                            .Any(att2 => att2.Name.ToString() == attribute || att2.Name.ToString() + "Attribute" == attribute))).ToList();
                 }
                 else
                 {
@@ -73,15 +70,16 @@ namespace WCFGenerator
             return classes;
         }
 
-        public static async Task<ClassDeclarationSyntax> FindClassWithBasedClass(string projectName, string className, string implClass = null)
+        public static async Task<ClassDeclarationSyntax> FindClassByName(Solution solution, string projectName, string className,
+            string implClass = null)
         {
             var implementedClass = implClass ?? "I" + className;
-            var project = Solution.Projects.First(x => x.Name == projectName);
+            var project = solution.Projects.First(x => x.Name == projectName);
 
             if (project != null)
             {
                 var compilation = await project.GetCompilationAsync();
-                var classVisitor = new ClassVirtualizationVisitor();
+                var classVisitor = new ClassVirtualizationRewriter();
 
                 foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
@@ -92,7 +90,8 @@ namespace WCFGenerator
 
                 foreach (var foundClass in classesByName)
                 {
-                    if (foundClass.BaseList != null && foundClass.BaseList.Types.Any(elem => elem.ToString() == implementedClass))
+                    if (foundClass.BaseList != null &&
+                        foundClass.BaseList.Types.Any(elem => elem.ToString() == implementedClass))
                     {
                         return foundClass;
                     }
@@ -102,10 +101,11 @@ namespace WCFGenerator
             return null;
         }
 
-        public static async Task<IEnumerable<InterfaceDeclarationSyntax>> GetImplementedInterfaces(string interfacesProjectName, ClassDeclarationSyntax repositoryClass)
+        public static async Task<IEnumerable<InterfaceDeclarationSyntax>> GetImplementedInterfaces(Solution solution,
+            string interfacesProjectName, ClassDeclarationSyntax repositoryClass)
         {
-            var interfaceVisitor = new InterfaceVirtualizationVisitor();
-            var project = Solution.Projects.First(x => x.Name == interfacesProjectName);
+            var interfaceVisitor = new InterfaceVirtualizationRewriter();
+            var project = solution.Projects.First(x => x.Name == interfacesProjectName);
 
             var tree = repositoryClass.SyntaxTree;
             var cls = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Last();
@@ -123,12 +123,13 @@ namespace WCFGenerator
             return interfaceVisitor.interfaces.Where(x => names.Any(a => a.Name == x.Identifier.ToString()));
         }
 
-        public static async Task<List<InterfaceDeclarationSyntax>> GetImplementedInterfaces(string interfaceProjectName, string interfaceName)
+        public static async Task<IEnumerable<InterfaceDeclarationSyntax>> GetImplementedInterfaces(Solution solution, string interfaceProjectName,
+            string interfaceName)
         {
-            var interfaceProject = Solution.Projects.First(x => x.Name == interfaceProjectName);
+            var interfaceProject = solution.Projects.First(x => x.Name == interfaceProjectName);
             var projectCompilation = await interfaceProject.GetCompilationAsync();
 
-            var interfaceVisitor = new InterfaceVirtualizationVisitor();
+            var interfaceVisitor = new InterfaceVirtualizationRewriter();
 
             foreach (var syntaxTree in projectCompilation.SyntaxTrees)
             {
@@ -152,8 +153,9 @@ namespace WCFGenerator
             return resultList;
         }
 
-        
 
+
+        
         public static List<MethodDeclarationSyntax> GetMethodsFromMembers(List<MemberDeclarationSyntax> members)
         {
             return members.OfType<MethodDeclarationSyntax>().ToList();
@@ -166,11 +168,11 @@ namespace WCFGenerator
 
         public static SemanticModel GetSemanticModelFromTree(SyntaxTree syntaxTree)
         {
-            var Mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-            var compilation = CSharpCompilation.Create("MyCompilation", syntaxTrees: new[] { syntaxTree }, references: new[] { Mscorlib });
+            var Mscorlib = MetadataReference.CreateFromFile(typeof (object).Assembly.Location);
+            var compilation = CSharpCompilation.Create("MyCompilation", syntaxTrees: new[] {syntaxTree},
+                references: new[] {Mscorlib});
 
             return compilation.GetSemanticModel(syntaxTree);
         }
-
     }
 }
