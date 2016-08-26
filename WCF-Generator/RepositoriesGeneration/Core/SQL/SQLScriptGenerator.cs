@@ -9,7 +9,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 {
     internal static class SqlScriptGenerator
     {
-        #region Script generation
+        #region Cache table
 
         public static string GenerateSelectAll(RepositoryInfo info)
         {
@@ -206,29 +206,11 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         {
             var sb = new StringBuilder();
 
-            int countMembers = info.JoinedElements.Count;
+            sb.Append(string.Format("UPDATE {0} SET ", GenerateTableName(info.TableNameJoined)));
 
-            sb.Append(String.Format("= \"UPDATE {0} SET ", GenerateTableName(info.TableNameJoined)));
-            int i = 0;
-            foreach (var codeProp in info.JoinedElements)
-            {
-                if (codeProp != info.PrimaryKeyJoined)
-                {
-                    sb.Append(String.Format("[{0}] = @{0}", codeProp));
-                    i++;
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers) sb.Append(" ");
-                }
-                else
-                {
-                    countMembers = countMembers - 1;
-                }
-            }
+            sb.Append(info.JoinedElements.Where(codeProp => codeProp != info.PrimaryKeyJoined).Select(codeProp => string.Format("[{0}] = @{0}", codeProp)));
 
-            sb.Append(String.Format("FROM {0} INNER JOIN {1} ON {0}.[{2}] = {1}.[{3}]  ", info.TableNameJoined, info.TableName,
-                info.PrimaryKeyJoined, info.Keys[0]));
-
-            sb.Append("\";");
+            sb.Append(string.Format("FROM {0} INNER JOIN {1} ON {0}.[{2}] = {1}.[{3}]  ", info.TableNameJoined, info.TableName, info.PrimaryKeyJoined, info.Keys[0]));
 
             return sb.ToString();
         }
@@ -243,23 +225,18 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             var sb = new StringBuilder();
 
             string type = SystemToSqlTypeMapper.GetSqlType(info.JoinedClassName);
-            string declareVariable = string.Format(" \"DECLARE @TempValueDb TABLE ({0} {1});", info.PrimaryKeyJoined,
+            string declareVariable = string.Format("DECLARE @TempValueDb TABLE ({0} {1});", info.PrimaryKeyJoined,
                 type);
-            string declareInsert = "\"INSERT INTO @TempValueDb ";
-            string selectSql = string.Format("\"SELECT {0}  FROM {1} ", info.Keys[0],
+            string declareInsert = "INSERT INTO @TempValueDb ";
+            string selectSql = string.Format("SELECT {0}  FROM {1} ", info.Keys[0],
                 info.TableName);
-            string firstDelete = string.Format("\"DELETE {0} FROM {0}" +
-                                               " WHERE [{1}] IN (SELECT {2} FROM @TempValueDb)", info.TableName, info.Keys[0],
+            string firstDelete = string.Format("DELETE {0} FROM {0} WHERE [{1}] IN (SELECT {2} FROM @TempValueDb)", info.TableName, info.Keys[0],
                 info.PrimaryKeyJoined);
-            string secondDelete = string.Format("\" DELETE {0} FROM {0} WHERE {1} IN (SELECT {1} FROM @TempValueDb)",
+            string secondDelete = string.Format("DELETE {0} FROM {0} WHERE {1} IN (SELECT {1} FROM @TempValueDb)",
                 info.TableNameJoined, info.PrimaryKeyJoined);
-            string whiteSpace = "\"+\r\n                                                          ";
-            sb.Append(String.Format("{0}{3}{1}{3}{2}", declareVariable, declareInsert, selectSql, whiteSpace));
+            sb.Append(string.Format("{0} {1} {2}", declareVariable, declareInsert, selectSql));
 
-            sb.Append("\"; \r\n");
-
-            sb.Append(String.Format("{0}{2}{1}", firstDelete, secondDelete, whiteSpace));
-            sb.Append("\"; \r\n");
+            sb.Append(string.Format("{0} {1}", firstDelete, secondDelete));
 
             return sb.ToString();
         }
@@ -268,34 +245,16 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         {
             var sb = new StringBuilder();
 
-            sb.Append(String.Format("\r\n        private const string SelectAllQuery{0}Join{1} ", info.ClassName, info.JoinedClassName));
-            sb.Append("= \"SELECT ");
+            sb.Append("SELECT " + string.Join(",", info.Elements.Select(e => info.TableName + ".[" + e + "]")));
 
-            foreach (var codeProp in info.Elements)
-            {
-                sb.Append(String.Format("{1}.[{0}], ", codeProp, info.TableName));
-            }
-
-            int i = 0;
-            int countMembers = info.JoinedElements.Count;
-            foreach (var codeProp in info.JoinedElements)
-            {
-                sb.Append(String.Format("{1}.[{0}]", codeProp, GenerateTableName(info.TableNameJoined)));
-                i++;
-                if (i < countMembers) sb.Append(", ");
-                if (i == countMembers) sb.Append(" ");
-            }
-
-            sb.Append(String.Format("FROM {0} INNER JOIN {1} ON {0}.[{2}] = {1}.[{3}] ", GenerateTableName(info.TableName), GenerateTableName(info.TableNameJoined), info.Keys[0],
-                info.PrimaryKeyJoined));
+            sb.Append("," + string.Join(",", info.JoinedElements.Select(e => info.TableNameJoined + ".[" + e + "]")));
+            
+            sb.Append(string.Format(" FROM {0} INNER JOIN {1} ON {0}.[{2}] = {1}.[{3}] ", info.TableName, info.TableNameJoined, info.Keys[0], info.PrimaryKeyJoined));
 
             if (info.IsTenantRelated)
             {
-                var tenant = string.Format("whereTenantId:{0}", GenerateTableName(info.TableName));
-                sb.Append(String.Format("{0}", '{' + tenant + '}'));
+                sb.Append(string.Format("{{whereTenantId:{0}}}", info.TableName));
             }
-
-            sb.Append("\";");
 
             return sb.ToString();
         }
@@ -304,92 +263,62 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         {
             var sb = new StringBuilder();
 
-            int i = 0;
-            int countMembers = info.Elements.Count;
+            sb.Append(string.Format("INSERT INTO {0} (", info.TableName));
 
-            if (!info.IsJoined)
+            sb.Append(string.Join(",", info.Elements
+                .Where(codeProp => (!(info.IsIdentity && codeProp == info.Keys[0]) || info.IsJoined || !info.IsNewKey) 
+                                    && !(info.IsIdentity && codeProp == info.Keys[0] && info.JoinedClassName == "int"))
+                .Select(e => info.TableName + ".[" + e + "]")));
+
+            if ((info.Keys.Count() != 0 && !info.IsJoined) || !info.IsNewKey)
             {
-                sb.Append(string.Format("INSERT INTO {0} (", info.TableName));
-            }
-            else
-            {
-                sb.Append(string.Format("\"INSERT INTO {0} (", info.TableName, info.JoinedClassName)); // TODO что-то тут не так...
+                var temp = GenerateCurrentKeys(info.Keys[0]);
+                sb.Append(string.Format("OUTPUT INSERTED.{0}", temp[0]));
             }
 
-            foreach (var codeProp in info.Elements)
+            sb.Append(" VALUES (");
+
+            var i = 0;
+
+            var elements = info.Elements.Where(codeProp => (!(info.IsIdentity && codeProp == info.Keys[0]) || !info.IsJoined || !info.IsNewKey)
+                                                           && !(info.IsIdentity && codeProp == info.Keys[0] && info.JoinedClassName == "int"));
+            foreach (var codeProp in elements)
             {
-                if ((!(info.IsIdentity && codeProp == info.Keys[0]) || info.IsJoined || !info.IsNewKey)
-                    && !(info.IsIdentity && codeProp == info.Keys[0] && info.JoinedClassName == "int"))
+               
+                if (!info.IsJoined && codeProp == info.Keys[0])
                 {
-                    sb.Append(String.Format("[{0}]", codeProp));
-                    i++;
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers)
+                    if (info.IsIdentityJoined)
                     {
-                        if (info.IsTenantRelated)
-                        {
-                            sb.Append("{columns}");
-                        }
-                        sb.Append(") ");
+                        sb.Append(string.Format("@TempPK{0}, ", info.PrimaryKeyJoined));
+                        i++;
+                    }
+                    else
+                    {
+                        sb.Append(string.Format("@{0}, ", info.PrimaryKeyJoined));
+                        i++;
                     }
                 }
                 else
                 {
-                    countMembers = countMembers - 1;
-                }
-            }
+                    sb.Append(string.Format("@{0}", codeProp));
+                    i++;
 
-            if ((info.Keys.Count() != 0 && !info.IsJoined) || !info.IsNewKey)
-            {
-                List<string> temp = GenerateCurrentKeys(info.Keys[0]);
-                sb.Append(String.Format("OUTPUT INSERTED.{0}", temp[0]));
-            }
-
-            sb.Append(" VALUES (");
-            i = 0;
-
-            foreach (var codeProp in info.Elements)
-            {
-                if ((!(info.IsIdentity && codeProp == info.Keys[0]) || !info.IsJoined || !info.IsNewKey)
-                    && !(info.IsIdentity && codeProp == info.Keys[0] && info.JoinedClassName == "int"))
-                {
-                    if (!info.IsJoined && codeProp == info.Keys[0])
+                    if (i < info.Elements.Count) sb.Append(", ");
+                    if (i == info.Elements.Count)
                     {
-                        if (info.IsIdentityJoined)
+                        if (info.IsTenantRelated)
                         {
-                            sb.Append(String.Format("@TempPK{0}, ", info.PrimaryKeyJoined));
-                            i++;
+                            sb.Append("{values}");
                         }
-                        else
-                        {
-                            sb.Append(String.Format("@{0}, ", info.PrimaryKeyJoined));
-                            i++;
-                        }
-                    }
-                    else
-                    {
-                        sb.Append(String.Format("@{0}", codeProp));
-                        i++;
-
-                        if (i < countMembers) sb.Append(", ");
-                        if (i == countMembers)
-                        {
-                            if (info.IsTenantRelated)
-                            {
-                                sb.Append("{values}");
-                            }
-                            sb.Append(");");
-                        }
+                        sb.Append(");");
                     }
                 }
             }
 
             if (info.IsJoined && info.IsIdentityJoined)
             {
-                sb.Append(String.Format("+ \r\n                                               SELECT {0} FROM @TempPKTable", info.PrimaryKeyJoined));
+                sb.Append(string.Format(" SELECT {0} FROM @TempPKTable", info.PrimaryKeyJoined));
             }
-
-            sb.Append(" ;");
 
             return sb.ToString();
         }
@@ -398,86 +327,40 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         {
             var sb = new StringBuilder();
 
-            int i = 0;
-            int countMembers = info.JoinedElements.Count;
-            var variableName = "InsertQueryJoin";
-
-            if (info.IsNewKey)
-            {
-                variableName = "InsertQueryJoinGenerateId";
-            }
-
             if (info.IsIdentityJoined)
             {
                 string type = SystemToSqlTypeMapper.GetSqlType(info.JoinedClassName);
-                string declaringTable = String.Format("DECLARE @TempPKTable TABLE ({0} {1}); \"+", info.PrimaryKeyJoined, type);
-                string declaringVariable = String.Format("\r\n                                               \"DECLARE @TempPK{0} {1}; \"+", info.PrimaryKeyJoined, type);
-                sb.Append(String.Format("\r\n        private const string {3} InsertQueryJoin = \"{1}{2} \r\n                                               \"INSERT INTO {0} (", info.TableNameJoined, declaringTable, declaringVariable, variableName));
-            }
-            else
-            {
-                sb.Append(String.Format("\r\n        private const string {1} InsertQueryJoin = \"INSERT INTO {0} (", info.TableNameJoined, variableName));
+                sb.Append(string.Format("DECLARE @TempPKTable TABLE ({0} {1});", info.PrimaryKeyJoined, type));
+                sb.Append(string.Format("DECLARE @TempPK{0} {1};", info.PrimaryKeyJoined, type));
             }
 
-            foreach (var codeProp in info.JoinedElements)
+            sb.Append(string.Format(" INSERT INTO {0} (", info.TableNameJoined));
+
+            sb.Append(string.Join(",", info.JoinedElements.Where(codeProp=> !(info.IsIdentityJoined && codeProp == info.PrimaryKeyJoined) || !info.IsNewKey)
+                .Select(codeProp => "[{" + codeProp + "}]")));
+
+            if (info.IsTenantRelated)
             {
-                if (!(info.IsIdentityJoined && codeProp == info.PrimaryKeyJoined) || !info.IsNewKey)
-                {
-                    sb.Append("[{" + codeProp + "}]");
-                    i++;
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers)
-                    {
-                        if (info.IsTenantRelated)
-                        {
-                            sb.Append("{columns}");
-                        }
-                        sb.Append(") ");
-                    }
-                }
-                else
-                {
-                    --countMembers;
-                }
+                sb.Append("{columns}");
             }
+            sb.Append(")");
 
             if (info.IsIdentityJoined || !info.IsNewKey)
             {
-                sb.Append(String.Format("OUTPUT INSERTED.{0} INTO @TempPKTable", info.PrimaryKeyJoined));
+                sb.Append(string.Format("OUTPUT INSERTED.{0} INTO @TempPKTable", info.PrimaryKeyJoined));
             }
 
             sb.Append(" VALUES (");
-            i = 0;
 
-            foreach (var codeProp in info.JoinedElements)
-            {
-                if (!(info.IsIdentityJoined && codeProp == info.PrimaryKeyJoined) || !info.IsNewKey)
-                {
-                    sb.Append("@{" + codeProp + "}");
-                    i++;
-
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers)
-                    {
-                        if (info.IsTenantRelated)
-                        {
-                            sb.Append("{values}");
-                        }
-                        sb.Append(");\"+");
-                    }
-                }
-            }
+            sb.Append(string.Join(",", info.JoinedElements.Where(codeProp => !(info.IsIdentityJoined && codeProp == info.PrimaryKeyJoined) || !info.IsNewKey)
+               .Select(codeProp => "@{" + codeProp + "}")));
 
             if (info.IsIdentityJoined)
             {
-                sb.Append(String.Format("\r\n                                          ы     \"SELECT @TempPK{0} = {0} FROM @TempPKTable \"+", info.PrimaryKeyJoined));
-            }
-            else
-            {
-                sb.Append("\"+");
+                sb.Append(string.Format(" SELECT @TempPK{0} = {0} FROM @TempPKTable", info.PrimaryKeyJoined));
             }
 
-            GenerateInsert(info);
+            sb.Append(GenerateInsert(info));
 
             return sb.ToString();
         }
@@ -506,6 +389,40 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             }
 
             return nameMethods;
+        }
+
+        #endregion
+
+        #region VERSION TABLE
+
+        public static string GenerateInsertToVersionTable(RepositoryInfo info, string repositoryName)
+        {
+            var classProperties = string.Join(",", info.Elements.Select(x => "[" + x.ToString() + "]"));
+            var classValues = string.Join(",", info.Elements.Select(x => "@" + x.ToString()));
+
+            var property = info.VersionKeyJoined;
+            var type = SystemToSqlTypeMapper.GetSqlType(info.JoinedClassName);
+
+            if (info.IsJoined)
+            {
+                var joinClassProperties = string.Join(",", info.JoinedElements.Select(x => "[" + x.ToString() + "]"));
+                var joinClassValues = string.Join(",", info.JoinedElements.Select(x => "@" + x.ToString()));
+
+                return "DECLARE @TempPKTable TABLE (" + property + " " + type + ");\n" +
+                   "DECLARE @TempPK" + property + " " + type + ";\n" +
+                   "INSERT INTO " + info.TableNameJoined + "(" + joinClassProperties + ")\n" +
+                   "OUTPUT INSERTED." + property + " INTO @TempPKTable\n" +
+                   "VALUES (" + joinClassValues + ")\n" +
+                   "SELECT @TempPK" + property + " = " + property + " FROM @TempPKTable\n" +
+                   "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
+                   "VALUES (" + classValues + ")\n" +
+                   "SELECT " + property + " FROM @TempPKTable\n";
+            }
+            else
+            {
+                return "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
+                          "OUTPUT INSERTED." + info.VersionKey + "VALUES (" + classValues + ")";
+            }
         }
 
         #endregion
@@ -559,40 +476,6 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             TableNameCash.Add(tableName, nametrue);
 
             return nametrue;
-        }
-
-        #endregion
-
-        #region VERSION TABLE
-
-        public static string GenerateInsertToVersionTable(RepositoryInfo info, string repositoryName)
-        {
-            var classProperties = string.Join(",", info.Elements.Select(x => "[" + x.ToString() + "]"));
-            var classValues = string.Join(",", info.Elements.Select(x => "@" + x.ToString()));
-
-            var property = info.VersionKeyJoined;
-            var type = SystemToSqlTypeMapper.GetSqlType(info.JoinedClassName);
-
-            if (info.IsJoined)
-            {
-                var joinClassProperties = string.Join(",", info.JoinedElements.Select(x => "[" + x.ToString() + "]"));
-                var joinClassValues = string.Join(",", info.JoinedElements.Select(x => "@" + x.ToString()));
-
-                return "DECLARE @TempPKTable TABLE (" + property + " " + type + ");\n" +
-                   "DECLARE @TempPK" + property + " " + type + ";\n" +
-                   "INSERT INTO " + info.TableNameJoined + "(" + joinClassProperties + ")\n" +
-                   "OUTPUT INSERTED." + property + " INTO @TempPKTable\n" +
-                   "VALUES (" + joinClassValues + ")\n" +
-                   "SELECT @TempPK" + property + " = " + property + " FROM @TempPKTable\n" +
-                   "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
-                   "VALUES (" + classValues + ")\n" +
-                   "SELECT " + property + " FROM @TempPKTable\n";
-            }
-            else
-            {
-                return "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
-                          "OUTPUT INSERTED." + info.VersionKey + "VALUES (" + classValues + ")";
-            }
         }
 
         #endregion

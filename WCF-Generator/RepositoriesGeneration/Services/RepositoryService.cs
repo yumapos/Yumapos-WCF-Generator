@@ -37,14 +37,41 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         public IEnumerable<ICodeClassGeneratorRepository> GetRepositories()
         {
-            var listOfSimilarClasses = new List<ICodeClassGeneratorRepository>();
+            var listOfSimilarClasses = new List<BaseCodeClassGeneratorRepository>();
 
             foreach (var repositoryClasses in _config.RepositoryClassProjects)
             {
                 // Get all clases marked RepositoryAttribute
                 var findClasses = SolutionSyntaxWalker.GetAllClassesWhithAttribute(_solution, repositoryClasses, false, RepositoryDataModelHelper.DataAccessAttributeName).Result;
                 var versionedRepositories = findClasses.SelectMany(c=> GetAllRepositories(c)).Where(c=> c!=null);
+
                 listOfSimilarClasses.AddRange(versionedRepositories);
+            }
+
+            // Apply info from base clasess
+            foreach (var r in listOfSimilarClasses)
+            {
+                var repositoryInfo = r.RepositoryInfo;
+                
+                // Find base class
+                var baseClassType = repositoryInfo.DOClass.BaseList.Types.FirstOrDefault();
+                var baseClass = GetClassByName(baseClassType.ToString());
+
+                if (baseClass != null)
+                {
+                    var baseSimilarClass = listOfSimilarClasses.FirstOrDefault(x => x.RepositoryInfo.ClassName == baseClass.Identifier.Text);
+
+                    if (baseSimilarClass != null)
+                    {
+                        repositoryInfo.JoinedClass = baseSimilarClass.RepositoryInfo.DOClass;
+                        repositoryInfo.JoinedClassName = baseSimilarClass.RepositoryInfo.DOClass.Identifier.ToString();
+                        repositoryInfo.JoinedElements = baseSimilarClass.RepositoryInfo.Elements;
+                        repositoryInfo.PrimaryKeyJoined = baseSimilarClass.RepositoryInfo.Keys[0];
+                        repositoryInfo.TableNameJoined = baseSimilarClass.RepositoryInfo.TableName;
+                        repositoryInfo.IsIdentityJoined = TenantRelationExist(baseSimilarClass.RepositoryInfo.DOClass);
+                        repositoryInfo.FilterDataJoined = baseSimilarClass.RepositoryInfo.FilterData;
+                    }
+                }
             }
 
             return listOfSimilarClasses;
@@ -54,9 +81,9 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         #region Private
 
-        private IEnumerable<ICodeClassGeneratorRepository> GetAllRepositories(ClassDeclarationSyntax doClass)
+        private IEnumerable<BaseCodeClassGeneratorRepository> GetAllRepositories(ClassDeclarationSyntax doClass)
         {
-            var list = new List<ICodeClassGeneratorRepository>();
+            var list = new List<BaseCodeClassGeneratorRepository>();
 
             // Get DataAccess attribute from repository model
             var dataAccessAttr = GetAttributesAndPropepertiesCollection(doClass)
@@ -210,7 +237,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             repositoryInfo.RepositoryInterfaceMethods = SolutionSyntaxWalker.GetMethodsFromMembers(repoInterface.Members.ToList());
             
             // Check exist custom repository class
-            var customRepository = SolutionSyntaxWalker.FindClassByName(_solution, _config.RepositoryMainPlace, doClass.Identifier + _config.RepositorySuffix, _config.RepositoryTargetFolder).Result;
+            var customRepository = GetClassByName(doClass.Identifier + _config.RepositorySuffix);
             var customRepoExist = customRepository != null;
 
             string nameSpace;
@@ -241,30 +268,8 @@ namespace VersionedRepositoryGeneration.Generator.Services
             // Search 
             repositoryInfo.MethodImplementationInfo = GetUnimplementedMethods(repositoryInfo);
 
-            // TODO определить базовые классы
-            //foreach (var similarClass in listOfSimilarClasses)
-            //{
-            //    // Find base class
-            //    var baseClass = similarClass.DOClass.BaseList.SyntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Last();
+           
 
-            //    if (baseClass != null && baseClass.Identifier.ToString() != "System.Object" && listOfSimilarClasses.FirstOrDefault(x => x.DOClass.Identifier == baseClass.Identifier) != null)
-            //    {
-            //        SupportedVersionRepository baseSimilarClass = listOfSimilarClasses.FirstOrDefault(x => x.DOClass.Identifier == baseClass.Identifier);
-
-            //        if (baseSimilarClass != null)
-            //        {
-            //            similarClass.RepositoryInfo.IsJoined = true;
-            //            similarClass.RepositoryInfo.JoinedClass = baseSimilarClass.DOClass;
-            //            similarClass.RepositoryInfo.PrimaryKeyJoined = baseSimilarClass.RepositoryInfo.Keys[0];
-            //            similarClass.RepositoryInfo.JoinedElements = baseSimilarClass.RepositoryInfo.Elements;
-            //            similarClass.RepositoryInfo.TableNameJoined = baseSimilarClass.RepositoryInfo.TableName;
-            //            similarClass.RepositoryInfo.IsIdentityJoined = TenantRelationExist(baseSimilarClass.DOClass);
-            //            similarClass.RepositoryInfo.JoinedClassName = baseSimilarClass.DOClass.Identifier.ToString();
-            //            similarClass.RepositoryInfo.FilterDataJoined = baseSimilarClass.RepositoryInfo.FilterData;
-            //        }
-            //    }
-
-            //}
             return list;
         }
         
@@ -455,7 +460,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             return methods;
         }
 
-        private static ICodeClassGeneratorRepository CreateWithAnalysisError(string doClassName, string repositorySuffix, string message)
+        private static BaseCodeClassGeneratorRepository CreateWithAnalysisError(string doClassName, string repositorySuffix, string message)
         {
             return new CodeClassGeneratorRepository()
             {
@@ -467,6 +472,11 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 RepositoryAnalysisError = message
             };
 
+        }
+
+        private ClassDeclarationSyntax GetClassByName(string name)
+        {
+            return SolutionSyntaxWalker.FindClassByName(_solution, _config.ProjectName, name, _config.RepositoryTargetFolder).Result;
         }
 
         #endregion

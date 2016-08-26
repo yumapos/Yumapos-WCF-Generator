@@ -1,8 +1,9 @@
 ﻿using System;
+using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-   // [DataAccess]
+    [DataAccess]
     public class RecipieItem
     {
         public Guid ItemId { get; set; }

@@ -95,16 +95,8 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
                     classVisitor.Visit(syntaxTree.GetRoot());
                 }
 
-                var classesByName = classVisitor.classes.Where(x => x.Identifier.ToString() == className).ToList();
-
-                foreach (var foundClass in classesByName)
-                {
-                    if (foundClass.BaseList != null &&
-                        foundClass.BaseList.Types.Any(elem => elem.ToString() == implementedClass))
-                    {
-                        return foundClass;
-                    }
-                }
+                var classesByName = classVisitor.classes.FirstOrDefault(x => x.Identifier.ToString() == className);
+                return classesByName;
             }
 
             return null;

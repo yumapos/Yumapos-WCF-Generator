@@ -39,11 +39,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // Update list of key name to SQL format // TODO REFACTOR
             RepositoryInfo.PrimaryKeyNames = SqlScriptGenerator.GenerateNamePrimaryKeys(RepositoryInfo.Keys);
 
-            sb.AppendLine("#region Fields");
-            sb.AppendLine("");
-
-            sb.AppendLine("internal const string Fields = " + SqlScriptGenerator.GenerateFieldsList(RepositoryInfo).SurroundWithQuotes());
-            sb.AppendLine("internal const string Values = " + SqlScriptGenerator.GenerateValuesList(RepositoryInfo).SurroundWithQuotes());
+            sb.AppendLine("private const string Fields = " + SqlScriptGenerator.GenerateFieldsList(RepositoryInfo).SurroundWithQuotes() + ";");
+            sb.AppendLine("private const string Values = " + SqlScriptGenerator.GenerateValuesList(RepositoryInfo).SurroundWithQuotes() + ";");
 
             if (!RepositoryInfo.IsJoined)
             {
@@ -70,7 +67,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 var type = SyntaxAnalysisHelper.FindType(RepositoryInfo.JoinedClass, RepositoryInfo.PrimaryKeyJoined);
 
                 sb.AppendLine("private const string SelectIntoTempTableJoin" + RepositoryInfo.JoinedClassName + " = " + SqlScriptGenerator.GenerateGetAllJoined(RepositoryInfo).SurroundWithQuotes() + ";");
-                sb.AppendLine("private const string InsertQueryJoin = " + SqlScriptGenerator.GenerateInsertJoined(RepositoryInfo).SurroundWithQuotes() + ";");
+
+                sb.AppendLine("private const string "+ (RepositoryInfo.IsNewKey ? "InsertQueryJoinGenerateId" : "InsertQueryJoin")+ " = " + SqlScriptGenerator.GenerateInsertJoined(RepositoryInfo).SurroundWithQuotes() + ";");
 
                 if (RepositoryInfo.IsIdentityJoined && type == "System.Guid")
                 {
@@ -81,11 +79,12 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("private const string DeleteQueryJoin" + RepositoryInfo.JoinedClassName + " = " + SqlScriptGenerator.GenerateRemoveJoined(RepositoryInfo).SurroundWithQuotes() + ";");
                 sb.AppendLine("private const string UpdateQueryJoin" + RepositoryInfo.JoinedClassName + " = " + SqlScriptGenerator.GenerateUpdateJoined(RepositoryInfo).SurroundWithQuotes() + ";");
 
-                for (int i = 0; i < RepositoryInfo.Keys.Count(); i++)
-                {
-                    sb.AppendLine("private const string WhereQueryBy" + RepositoryInfo.PrimaryKeyNames[i] + "And" + RepositoryInfo.FilterDataJoined.Name + " = " + SqlScriptGenerator.GenerateWhere(RepositoryInfo, i).SurroundWithQuotes() + ";");
-                    sb.AppendLine("private const string UpdateQueryJoin" + RepositoryInfo.PrimaryKeyNames[i] + " = " + SqlScriptGenerator.GenerateUpdate(RepositoryInfo, i).SurroundWithQuotes() + ";");
-                }
+                // TODO разобраться с DATAFILTER ATTR
+                //for (int i = 0; i < RepositoryInfo.Keys.Count(); i++)
+                //{
+                //    sb.AppendLine("private const string WhereQueryBy" + RepositoryInfo.PrimaryKeyNames[i] + "And" + RepositoryInfo.FilterDataJoined.Name + " = " + SqlScriptGenerator.GenerateWhere(RepositoryInfo, i).SurroundWithQuotes() + ";");
+                //    sb.AppendLine("private const string UpdateQueryJoin" + RepositoryInfo.PrimaryKeyNames[i] + " = " + SqlScriptGenerator.GenerateUpdate(RepositoryInfo, i).SurroundWithQuotes() + ";");
+                //}
             }
 
             return sb.ToString();
@@ -112,7 +111,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                         codeText = GenerateInsert();
                         break;
                     case RepositoryMethod.GetBy:
-                        // codeText = GenerateGetBy(methodInfo);
+                        //codeText = GenerateGetBy(methodInfo);
                         break;
                     case RepositoryMethod.UpdateBy:
                         // codeText = GenerateUpdate();
@@ -449,36 +448,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var sb = new StringBuilder();
 
-            if (!RepositoryInfo.IsJoined)
-            {
-                sb.Append("\t\t public async Task " + returnType + "InsertAsync(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")\n");
-                sb.Append("\t\t {\n");
-                sb.Append("\t\t\t " + checkingKey + variable + "await DataAccessService.InsertObjectAsync(" + RepositoryInfo.ParameterName + "," + queryName + ");\n");
-                sb.Append("\t\t\t " + conversion + "\n");
-                sb.Append("\t\t }\n");
+            sb.AppendLine("public " + returnTypeNotAsync + " Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
+            sb.AppendLine("{");
+            sb.AppendLine(checkingKey + variable + "DataAccessService.InsertObject(" + RepositoryInfo.ParameterName + "," + queryName + ");");
+            sb.AppendLine(conversion);
+            sb.AppendLine("}");
 
-                sb.Append("\t\t public " + returnTypeNotAsync + "Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")\n");
-                sb.Append("\t\t {\n");
-                sb.Append("\t\t\t " + checkingKey + variable + "DataAccessService.InsertObject(" + RepositoryInfo.ParameterName + "," + queryName + ");\n");
-                sb.Append("\t\t\t " + conversion + "\n");
-                sb.Append("\t\t }\n");
-            }
-            else
-            {
-                var joinedName = RepositoryInfo.JoinedClassName;
-
-                sb.Append("\t\t public async Task" + returnType + " InsertAsync(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")\n");
-                sb.Append("\t\t {\n");
-                sb.Append("\t\t\t " + checkingKey + variable + " await DataAccessService.InsertObjectAsync(" + RepositoryInfo.ParameterName + "," + queryName + ");\n");
-                sb.Append("\t\t\t " + conversion + "\n");
-                sb.Append("\t\t }\n");
-
-                sb.Append("\t\t public " + returnTypeNotAsync + " Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")\n");
-                sb.Append("\t\t {\n");
-                sb.Append("\t\t\t " + checkingKey + variable + " DataAccessService.InsertObject(" + RepositoryInfo.ParameterName + "," + queryName + ");\n");
-                sb.Append("\t\t\t " + conversion + "\n");
-                sb.Append("\t\t }\n");
-            }
+            sb.AppendLine("public async Task " + returnType + " InsertAsync(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine("{");
+            sb.AppendLine(checkingKey + variable + "await DataAccessService.InsertObjectAsync(" + RepositoryInfo.ParameterName + "," + queryName + ");");
+            sb.AppendLine(conversion);
+            sb.AppendLine("}");
 
             return sb.ToString();
         }

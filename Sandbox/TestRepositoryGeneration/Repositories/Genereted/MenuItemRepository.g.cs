@@ -21,31 +21,31 @@ public class MenuItemRepository : RepositoryBase,IMenuItemRepository
 {
 public MenuItemRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService)
 {
-_menuItemCashRepository = new MenuItemCashRepository(dataAccessService);
+_menuItemСacheRepository = new MenuItemСacheRepository(dataAccessService);
 _menuItemVersionRepository = new MenuItemVersionRepository(dataAccessService);
 }
 
-private MenuItemCashRepository _menuItemCashRepository;
+private MenuItemСacheRepository _menuItemСacheRepository;
 private MenuItemVersionRepository _menuItemVersionRepository;
 
 
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll(bool? isDeleted = false)
 {
-return _menuItemCashRepository.GetAll();
+return _menuItemСacheRepository.GetAll();
 }
 
 public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 menuItem.Modified = DateTimeOffset.Now;
 menuItem.ItemVersionId = _menuItemVersionRepository.Insert(menuItem);
-_menuItemCashRepository.Insert(menuItem);
+_menuItemСacheRepository.Insert(menuItem);
 return menuItem.ItemVersionId;
 }
 
 /*
 public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetBy(System.Guid MenuCategoryId, bool? isDeleted = false)
 {
-return _menuItemCashRepository GetBy(System.Guid MenuCategoryId);
+return _menuItemСacheRepository GetBy(System.Guid MenuCategoryId);
 }
 
 */
@@ -54,7 +54,7 @@ public Guid Update(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem;
 {
 menuItem.Modified = DateTimeOffset.Now;
 menuItem.ItemVersionId = _menuItemVersionRepositoryInsert(menuItem);
-_menuItemCashRepository.Update(menuItem);
+_menuItemСacheRepository.Update(menuItem);
 return menuItem.ItemVersionId;
 }
 
@@ -63,7 +63,7 @@ return menuItem.ItemVersionId;
 public Guid Remove(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem;
 {
 menuItem.IsDeleted = true;
-_menuItemCashRepository.Update(menuItem);
+_menuItemСacheRepository.Update(menuItem);
 
 */
 
