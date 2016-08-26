@@ -54,8 +54,23 @@ namespace WCFGenerator
 
             //mapping.GenerateMap(generator);
 
-            RunRepositoryGeneration(absoluteSlnPath);
-            RunWcfGeneration(args);
+            try
+            {
+                RunRepositoryGeneration(absoluteSlnPath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error occured on repository generation. Exception:\n" + e);
+            }
+
+            try
+            {
+                RunWcfGeneration(args);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error occured on wcf generation. Exception:\n" + e);
+            }
         }
 
         private static void RunWcfGeneration(string[] args)
