@@ -524,13 +524,13 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         private static string GenerateTableName(string tableName)
         {
             tableName = tableName.Trim();
-            string cashtableName;
+            string cachetableName;
 
-            TableNameCash.TryGetValue(tableName, out cashtableName);
+            TableNameCash.TryGetValue(tableName, out cachetableName);
 
-            if (cashtableName != null)
+            if (cachetableName != null)
             {
-                return cashtableName;
+                return cachetableName;
             }
 
             var nametrue = "";

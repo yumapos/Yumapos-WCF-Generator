@@ -13,14 +13,14 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         #region Properties
 
-        private string CashRepositoryType
+        private string CacheRepositoryType
         {
-            get { return RepositoryInfo.ClassName + "CashRepository"; }
+            get { return RepositoryInfo.ClassName + "ÑacheRepository"; }
         }
 
-        private string CashRepositoryField
+        private string CacheRepositoryField
         {
-            get { return "_" + CashRepositoryType.FirstSymbolToLower(); }
+            get { return "_" + CacheRepositoryType.FirstSymbolToLower(); }
         }
 
         private string VersionRepositoryType
@@ -141,7 +141,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var sb = new StringBuilder();
             sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(bool? isDeleted = false)");
             sb.AppendLine("{");
-            sb.AppendLine("return " + CashRepositoryField + ".GetAll();");
+            sb.AppendLine("return " + CacheRepositoryField + ".GetAll();");
             sb.AppendLine("}");
             return sb.ToString();
         }
@@ -154,7 +154,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
             sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
-            sb.AppendLine(CashRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(CacheRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
 
             // TODO append many to many repository
 
@@ -170,7 +170,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ", bool? isDeleted = false)");
             sb.AppendLine("{");
-            sb.AppendLine("return " + CashRepositoryField + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ");");
+            sb.AppendLine("return " + CacheRepositoryField + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ");");
             sb.AppendLine("}");
 
             return sb.ToString();
@@ -184,7 +184,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
             sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + "Insert(" + RepositoryInfo.ParameterName + ");");
-            sb.AppendLine(CashRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");"); 
+            sb.AppendLine(CacheRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");"); 
 
             // TODO append many to many repository
 
@@ -201,7 +201,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("public Guid Remove(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ";");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".IsDeleted = true;");
-            sb.AppendLine(CashRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(CacheRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");");
             
             return sb.ToString();
         }
@@ -218,7 +218,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var list = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(CashRepositoryType, CashRepositoryField),
+                new KeyValuePair<string, string>(CacheRepositoryType, CacheRepositoryField),
                 new KeyValuePair<string, string>(VersionRepositoryType, VersionRepositoryField)
                 // TODO append many to many repository
             };

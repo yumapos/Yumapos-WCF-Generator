@@ -140,12 +140,12 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 };
                 list.Add(versionsRepository);
 
-                // cash repository
-                var cashRepository = new CodeClassGeneratorСacheRepository()
+                // cache repository
+                var cacheRepository = new CodeClassGeneratorСacheRepository()
                 {
                     RepositoryInfo = repositoryInfo
                 };
-                list.Add(cashRepository);
+                list.Add(cacheRepository);
             }
             else
             {
