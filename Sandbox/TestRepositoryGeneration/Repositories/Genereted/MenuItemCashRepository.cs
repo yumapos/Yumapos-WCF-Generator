@@ -10,10 +10,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
+using YumaPos.Server.Infrastructure.Repositories;
 
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
 	 public partial class MenuItemCashRepository : RepositoryBase,IMenuItemRepository
 {
@@ -46,25 +46,25 @@ private const string UpdateQueryByMenuCategoryId = "
 #region Methods
 
 /*
-		 public async Task<IEnumerable<VersionedRepositoryGeneration.Models.MenuItem> GetAllAsync()
+		 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAllAsync()
 		 {
-			 var result = await DataAccessService.GetAsync< VersionedRepositoryGeneration.Models.MenuItem> (SelectAllQueryMenuItem, null
+			 var result = await DataAccessService.GetAsync< YumaPos.Server.Infrastructure.DataObjects.MenuItem> (SelectAllQueryMenuItem, null
 			 return result.ToList();
 		 }
-		 public IEnumerable<VersionedRepositoryGeneration.Models.MenuItem> GetAll()
+		 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll()
 		 {
-			 var result = DataAccessService.Get<VersionedRepositoryGeneration.Models.MenuItem> (SelectAllQueryMenuItem, null
+			 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem> (SelectAllQueryMenuItem, null
 			 return result.ToList();
 		 }
 
 */
 /*
-		 public async Task <Guid>InsertAsync(VersionedRepositoryGeneration.Models.MenuItemmenuItem)
+		 public async Task <Guid>InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemmenuItem)
 		 {
 			 var result = await DataAccessService.InsertObjectAsync(menuItem,InsertQuery);
 			 return (Guid)result;
 		 }
-		 public GuidInsert(VersionedRepositoryGeneration.Models.MenuItemmenuItem)
+		 public GuidInsert(YumaPos.Server.Infrastructure.DataObjects.MenuItemmenuItem)
 		 {
 			 var result = DataAccessService.InsertObject(menuItem,InsertQuery);
 			 return (Guid)result;

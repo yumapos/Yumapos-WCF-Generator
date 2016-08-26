@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VersionedRepositoryGeneration.Models.Attributes
+namespace YumaPos.FrontEnd.Infrastructure.Common.DataAccess
 {
     internal class DataMany2ManyAttribute : Attribute
     {

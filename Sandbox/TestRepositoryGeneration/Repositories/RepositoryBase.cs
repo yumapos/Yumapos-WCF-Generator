@@ -1,11 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Interfaces;
+﻿using YumaPos.FrontEnd.Infrastructure.Configuration;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql
 {
     public class RepositoryBase
     {

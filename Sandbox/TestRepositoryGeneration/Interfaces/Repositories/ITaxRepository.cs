@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Models;
+using YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes;
 
-namespace VersionedRepositoryGeneration.Interfaces.Repositories
+namespace YumaPos.Server.Infrastructure.Repositories
 {
-    interface IUserRepository
+    interface ITaxRepository
     {
-        void Insert(User user);
+        Guid Insert(Tax tax);
 
-        User GetByUserId(System.Guid userId, bool? isDeleted);
+        Guid Update(Tax tax);
 
-        IEnumerable<User> GetAll(bool? isDeleted);
+        Guid Remove(Tax tax);
+
+        Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false);
     }
 }

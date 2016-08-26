@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VersionedRepositoryGeneration.Models.Attributes
+namespace YumaPos.FrontEnd.Infrastructure.Common.DataAccess
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
     public class DataFilterAttribute : Attribute

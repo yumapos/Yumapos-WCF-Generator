@@ -1,7 +1,7 @@
 ﻿using System.Configuration;
-using VersionedRepositoryGeneration.Interfaces;
+using YumaPos.FrontEnd.Data.Infrastructure;
 
-namespace VersionedRepositoryGeneration
+namespace YumaPos.FrontEnd.WPF.Common.Data
 {
     public class DataAccessContextProvider : IDataAccessContextProvider
     {

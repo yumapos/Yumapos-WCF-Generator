@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using VersionedRepositoryGeneration.Interfaces;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.Server.Infrastructure.DataObjects;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
-    class MenuItemVersionRepository : RepositoryBase
+    partial class MenuItemVersionRepository : RepositoryBase
     {
         public MenuItemVersionRepository(IDataAccessService dataAccessService) : base(dataAccessService) {}
 
-        public Guid Insert(Models.MenuItem menuItem)
+        public Guid Insert(MenuItem menuItem)
         {
             var InsertQuery = "DECLARE @TempPKTable TABLE (ItemVersionId uniqueidentifier); " +
                               "DECLARE @TempPKItemVersionId uniqueidentifier; " +

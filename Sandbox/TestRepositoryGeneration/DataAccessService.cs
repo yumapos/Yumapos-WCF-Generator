@@ -5,9 +5,11 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using VersionedRepositoryGeneration.Interfaces;
+using YumaPos.FrontEnd.Data.Infrastructure;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.FrontEnd.Infrastructure.DataInterfaces;
 
-namespace VersionedRepositoryGeneration
+namespace YumaPos.FrontEnd.Data.Dapper.DataAccess
 {
     public class DataAccessService : IDataAccessService
     {

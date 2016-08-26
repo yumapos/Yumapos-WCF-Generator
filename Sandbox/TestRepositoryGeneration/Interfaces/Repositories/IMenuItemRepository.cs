@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Models;
+using YumaPos.FrontEnd.Infrastructure.Repositories;
+using YumaPos.Server.Infrastructure.DataObjects;
 
-namespace VersionedRepositoryGeneration.Interfaces.Repositories
+namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface IMenuItemRepository : IRepository<MenuItem>
     {

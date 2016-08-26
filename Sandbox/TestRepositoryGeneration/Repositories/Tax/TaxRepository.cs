@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VersionedRepositoryGeneration.Interfaces;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
-using VersionedRepositoryGeneration.Models;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes;
+using YumaPos.Server.Data.Sql.Menu;
+using YumaPos.Server.Infrastructure.DataObjects;
+using YumaPos.Server.Infrastructure.Repositories;
 
-namespace VersionedRepositoryGeneration.Repositories.Tax
+namespace YumaPos.Server.Data.Sql.Taxes
 {
     class TaxRepository : RepositoryBase, ITaxRepository
     {
@@ -27,7 +29,7 @@ namespace VersionedRepositoryGeneration.Repositories.Tax
             _menuItemsToTaxesVersionRepository = new MenuItemsToTaxesVersionRepository(dataAccessService);
         }
 
-        public void UpdateMenuItemsToTaxes(Models.Tax tax, IEnumerable<Guid> menuItemIds)
+        public void UpdateMenuItemsToTaxes(Tax tax, IEnumerable<Guid> menuItemIds)
         {
             if (menuItemIds == null)
                 menuItemIds = _menuItemsToTaxesCashRepository.GetMenuItemIdsByTaxId(tax.TaxId);
@@ -52,7 +54,7 @@ namespace VersionedRepositoryGeneration.Repositories.Tax
             }
         }
 
-        public Guid Insert(Models.Tax tax)
+        public Guid Insert(Tax tax)
         {
             tax.Modified = DateTimeOffset.Now;
 
@@ -62,7 +64,7 @@ namespace VersionedRepositoryGeneration.Repositories.Tax
             return tax.TaxVersionId;
         }
 
-        public Guid Update(Models.Tax tax)
+        public Guid Update(Tax tax)
         {
             tax.Modified = DateTimeOffset.Now;
 
@@ -74,14 +76,14 @@ namespace VersionedRepositoryGeneration.Repositories.Tax
             return tax.TaxVersionId;
         }
 
-        public Guid Remove(Models.Tax tax)
+        public Guid Remove(Tax tax)
         {
             tax.IsDeleted = true;
 
             return Update(tax);
         }
 
-        public Models.Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false)
+        public Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false)
         {
             return _taxCashRepository.GetByTaxId(taxId);
         }

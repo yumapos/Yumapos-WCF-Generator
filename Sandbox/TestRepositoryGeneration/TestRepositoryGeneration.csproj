@@ -53,7 +53,6 @@
     <Compile Include="Interfaces\Repositories\IMenuItemRepository.cs" />
     <Compile Include="Interfaces\Repositories\IRepository.cs" />
     <Compile Include="Interfaces\Repositories\ITaxRepository.cs" />
-    <Compile Include="Interfaces\Repositories\IUserRepository.cs" />
     <Compile Include="Models\Attributes\DataAccessAttribute.cs" />
     <Compile Include="Models\Attributes\DataFilterAttribute.cs" />
     <Compile Include="Models\Attributes\DataMany2ManyAttribute.cs" />
@@ -62,7 +61,6 @@
     <Compile Include="Models\MenuItemToTax.cs" />
     <Compile Include="Models\RecipieItem.cs" />
     <Compile Include="Models\Tax.cs" />
-    <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\Genereted\MenuItemCashRepository.cs" />
     <Compile Include="Repositories\Genereted\MenuItemRepository.cs" />
@@ -76,16 +74,16 @@
     <Compile Include="Repositories\MenuItem\MenuItemRepository.cs" />
     <Compile Include="Repositories\MenuItem\MenuItemVersionRepository.cs" />
     <Compile Include="Repositories\RepositoryBase.cs" />
-    <Compile Include="Repositories\Services\UserService.cs" />
     <Compile Include="Repositories\Tax\TaxCashRepository.cs" />
     <Compile Include="Repositories\Tax\TaxRepository.cs" />
     <Compile Include="Repositories\Tax\TaxVersionRepository.cs" />
-    <Compile Include="Repositories\UserRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Repositories\Genereted\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

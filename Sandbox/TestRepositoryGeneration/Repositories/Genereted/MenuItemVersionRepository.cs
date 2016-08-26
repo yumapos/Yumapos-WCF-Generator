@@ -9,9 +9,9 @@
 
 using System;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
-public class MenuItemVersionRepository : RepositoryBase
+public partial class MenuItemVersionRepository : RepositoryBase
 {
 #region Constructor
 
@@ -20,7 +20,7 @@ public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.I
 #endregion
 #region Methods
 
-public Guid Insert(VersionedRepositoryGeneration.Models.MenuItem menuItem)
+public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 var InsertQuery = @"INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
 OUTPUT INSERTED.VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)";

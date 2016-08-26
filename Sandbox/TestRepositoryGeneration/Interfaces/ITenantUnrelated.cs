@@ -1,4 +1,4 @@
-﻿namespace VersionedRepositoryGeneration.Interfaces
+﻿namespace YumaPos.FrontEnd.Infrastructure.DataInterfaces
 {
     interface ITenantUnrelated
     {

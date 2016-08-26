@@ -1,4 +1,4 @@
-﻿namespace VersionedRepositoryGeneration.Interfaces
+﻿namespace YumaPos.FrontEnd.Data.Infrastructure
 {
     public interface IDataAccessContextProvider
     {

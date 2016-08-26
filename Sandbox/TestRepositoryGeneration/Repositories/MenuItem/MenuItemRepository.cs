@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VersionedRepositoryGeneration.Interfaces;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
-using VersionedRepositoryGeneration.Models;
-using VersionedRepositoryGeneration.Repositories.Tax;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.Server.Data.Sql.Taxes;
+using YumaPos.Server.Infrastructure.DataObjects;
+using YumaPos.Server.Infrastructure.Repositories;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
     partial class MenuItemRepository : RepositoryBase, IMenuItemRepository
     {
@@ -53,7 +53,7 @@ namespace VersionedRepositoryGeneration.Repositories
             }
         }
 
-        public Guid Insert(Models.MenuItem menuItem)
+        public Guid Insert(MenuItem menuItem)
         {
             menuItem.Modified = DateTimeOffset.Now;
 
@@ -65,7 +65,7 @@ namespace VersionedRepositoryGeneration.Repositories
             return menuItem.ItemVersionId;
         }
 
-        public Guid Update(Models.MenuItem menuItem)
+        public Guid Update(MenuItem menuItem)
         {
             menuItem.Modified = DateTimeOffset.Now;
 
@@ -77,19 +77,19 @@ namespace VersionedRepositoryGeneration.Repositories
             return menuItem.ItemVersionId;
         }
 
-        public Guid Remove(Models.MenuItem menuItem)
+        public Guid Remove(MenuItem menuItem)
         {
             menuItem.IsDeleted = true;
             
             return Update(menuItem);
         }
 
-        public Models.MenuItem GetByMenuItemId(System.Guid menuItemId, bool? isDeleted = false)
+        public MenuItem GetByMenuItemId(System.Guid menuItemId, bool? isDeleted = false)
         {
             return _menuItemCashRepository.GetByMenuItemId(menuItemId);
         }
 
-        public IEnumerable<Models.MenuItem> GetAll(bool? isDeleted = false)
+        public IEnumerable<MenuItem> GetAll(bool? isDeleted = false)
         {
             return _menuItemCashRepository.GetAll();
         }

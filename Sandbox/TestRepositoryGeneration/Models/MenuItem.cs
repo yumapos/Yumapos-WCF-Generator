@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using VersionedRepositoryGeneration.Models.Attributes;
+using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
+using YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes;
 
-namespace VersionedRepositoryGeneration.Models
+namespace YumaPos.Server.Infrastructure.DataObjects
 {
     [DataAccess(TableVersion = "MenuItemVersions", FilterKey1 = "MenuCategoryId", IsDeleted = false)]
     public class MenuItem : RecipieItem

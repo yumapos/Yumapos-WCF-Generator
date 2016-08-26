@@ -10,10 +10,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
+using YumaPos.Server.Infrastructure.Repositories;
 
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
 	 public partial class MenuItemRepository : RepositoryBase,IMenuItemRepository
 {
@@ -42,14 +42,14 @@ private MenuItemVersionRepository _menuItemVersionRepository;
 #region Methods
 
 /*
-public IEnumerable<VersionedRepositoryGeneration.Models.MenuItem> GetAll(bool? isDeleted = false)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll(bool? isDeleted = false)
 {
 return _menuItemCashRepository.GetAll();
 }
 
 */
 /*
-public Guid Insert(VersionedRepositoryGeneration.Models.MenuItem menuItem)
+public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 menuItem.Modified = DateTimeOffset.Now;
 menuItem.ItemVersionId = _menuItemVersionRepositoryInsert(menuItem);
@@ -59,14 +59,14 @@ return menuItem.ItemVersionId;
 
 */
 /*
-public VersionedRepositoryGeneration.Models.MenuItem GetBy(System.Guid MenuCategoryId, bool? isDeleted = false)
+public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetBy(System.Guid MenuCategoryId, bool? isDeleted = false)
 {
 return _menuItemCashRepository GetBy(System.Guid MenuCategoryId);
 }
 
 */
 /*
-public Guid Update(VersionedRepositoryGeneration.Models.MenuItem menuItem;
+public Guid Update(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem;
 {
 menuItem.Modified = DateTimeOffset.Now;
 menuItem.ItemVersionId = _menuItemVersionRepositoryInsert(menuItem);
@@ -76,7 +76,7 @@ return menuItem.ItemVersionId;
 
 */
 /*
-public Guid Remove(VersionedRepositoryGeneration.Models.MenuItem menuItem;
+public Guid Remove(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem;
 {
 menuItem.IsDeleted = true;
 _menuItemCashRepository.Update(menuItem);

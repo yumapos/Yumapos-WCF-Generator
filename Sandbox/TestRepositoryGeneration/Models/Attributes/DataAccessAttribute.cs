@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VersionedRepositoryGeneration.Models.Attributes
+namespace YumaPos.FrontEnd.Infrastructure.Common.DataAccess
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public sealed class DataAccessAttribute : Attribute

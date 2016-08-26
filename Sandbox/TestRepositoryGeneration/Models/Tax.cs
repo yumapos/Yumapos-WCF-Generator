@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace VersionedRepositoryGeneration.Models
+
+namespace YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes
 {
     class Tax
     {

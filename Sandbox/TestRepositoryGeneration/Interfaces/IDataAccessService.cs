@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace VersionedRepositoryGeneration.Interfaces
+namespace YumaPos.FrontEnd.Infrastructure.Configuration
 {
     public interface IDataAccessService
     {

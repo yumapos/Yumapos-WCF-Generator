@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using VersionedRepositoryGeneration.Interfaces;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.Server.Infrastructure.DataObjects;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
-    class MenuItemCashRepository : RepositoryBase
+    partial class  MenuItemCashRepository : RepositoryBase
     {
         public MenuItemCashRepository(IDataAccessService dataAccessService) : base(dataAccessService) { }
 
-        public void Insert(Models.MenuItem menuItem)
+        public void Insert(MenuItem menuItem)
         {
             var InsertQuery = "DECLARE @TempPKTable TABLE (ItemId uniqueidentifier); " +
                               "DECLARE @TempPKItemId uniqueidentifier; " +
@@ -23,7 +23,7 @@ namespace VersionedRepositoryGeneration.Repositories
             DataAccessService.InsertObject(menuItem, InsertQuery);
         }
 
-        public void Update(Models.MenuItem menuItem)
+        public void Update(MenuItem menuItem)
         {
             var UpdateQuery = "UPDATE [dbo].[MenuItems] SET [ItemVersionId] = @ItemVersionId, [Name] = @Name," +
                               "[Modified] = @Modified, [ModifiedBy] = @ModifiedBy, [MenuCategoryId] = @MenuCategoryId, [IsDeleted] = @IsDeleted " +
@@ -35,7 +35,7 @@ namespace VersionedRepositoryGeneration.Repositories
             DataAccessService.PersistObjectAsync(menuItem, UpdateQuery);
         }
 
-        public Models.MenuItem GetByMenuItemId(System.Guid itemId, bool? isDeleted = false)
+        public MenuItem GetByMenuItemId(System.Guid itemId, bool? isDeleted = false)
         {
             var SelectQuery = "SELECT [MenuItems].[ItemId], [MenuItems].[ItemVersionId], [MenuItems].[Name], [MenuItems].[Modified], " +
                                 "[MenuItems].[ModifiedBy], [MenuItems].[MenuCategoryId], " +
@@ -43,11 +43,11 @@ namespace VersionedRepositoryGeneration.Repositories
                                 "INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] " +
                                 "WHERE [MenuItems].[ItemId] = @itemId AND [MenuItems].[IsDeleted] = @isDeleted";
 
-            var result = DataAccessService.Get<Models.MenuItem>(SelectQuery, new { itemId, isDeleted });
+            var result = DataAccessService.Get<MenuItem>(SelectQuery, new { itemId, isDeleted });
             return result.FirstOrDefault();
         }
 
-        public IEnumerable<Models.MenuItem> GetAll(bool? isDeleted = false)
+        public IEnumerable<MenuItem> GetAll(bool? isDeleted = false)
         {
             var SelectQuery = "SELECT [MenuItems].[ItemId], [MenuItems].[ItemVersionId], [MenuItems].[Name], [MenuItems].[Modified], " +
                                 "[MenuItems].[ModifiedBy], [MenuItems].[MenuCategoryId], " +
@@ -55,7 +55,7 @@ namespace VersionedRepositoryGeneration.Repositories
                                 "INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId]" +
                                 "WHERE [MenuItems].[IsDeleted] = @isDeleted";
 
-            var result = DataAccessService.Get<Models.MenuItem>(SelectQuery, new { isDeleted });
+            var result = DataAccessService.Get<MenuItem>(SelectQuery, new { isDeleted });
             return result.ToList();
         }
 

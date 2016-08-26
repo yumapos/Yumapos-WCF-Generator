@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using VersionedRepositoryGeneration.Interfaces;
-using VersionedRepositoryGeneration.Interfaces.Repositories;
-using VersionedRepositoryGeneration.Models;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.Server.Infrastructure.DataObjects;
+using YumaPos.Server.Infrastructure.Repositories;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
     class MenuCategoryRepository : RepositoryBase, IMenuCategoryRepository
     {
@@ -17,7 +17,7 @@ namespace VersionedRepositoryGeneration.Repositories
             _menuCategoryCashRepository = new MenuCategoryCashRepository(dataAccessService);
         }
 
-        public Guid Insert(Models.MenuCategory menuCategory)
+        public Guid Insert(MenuCategory menuCategory)
         {
             menuCategory.Modified = DateTimeOffset.Now;
 
@@ -27,7 +27,7 @@ namespace VersionedRepositoryGeneration.Repositories
             return menuCategory.MenuCategoryVersionId;
         }
 
-        public Guid Update(Models.MenuCategory menuCategory)
+        public Guid Update(MenuCategory menuCategory)
         {
             menuCategory.Modified = DateTimeOffset.Now;
 
@@ -49,12 +49,12 @@ namespace VersionedRepositoryGeneration.Repositories
             return menuCategory.MenuCategoryVersionId;
         }
 
-        public Models.MenuCategory GetByMenuCategoryId(System.Guid menuCategoryId, bool? isDeleted = false)
+        public MenuCategory GetByMenuCategoryId(System.Guid menuCategoryId, bool? isDeleted = false)
         {
             return _menuCategoryCashRepository.GetByMenuCategoryId(menuCategoryId);
         }
 
-        public IEnumerable<Models.MenuCategory> GetAll(bool? isDeleted = false)
+        public IEnumerable<MenuCategory> GetAll(bool? isDeleted = false)
         {
             return _menuCategoryCashRepository.GetAll();
         }

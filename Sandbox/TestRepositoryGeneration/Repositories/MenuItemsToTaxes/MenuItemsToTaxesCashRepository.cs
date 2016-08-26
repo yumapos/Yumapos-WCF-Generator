@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VersionedRepositoryGeneration.Interfaces;
-using VersionedRepositoryGeneration.Models;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.Server.Infrastructure.DataObjects;
 
-namespace VersionedRepositoryGeneration.Repositories
+namespace YumaPos.Server.Data.Sql.Menu
 {
     class MenuItemsToTaxesCashRepository : RepositoryBase
     {

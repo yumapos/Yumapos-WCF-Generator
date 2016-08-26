@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using VersionedRepositoryGeneration.Models;
+using YumaPos.Server.Infrastructure.DataObjects;
 
-namespace VersionedRepositoryGeneration.Interfaces.Repositories
+namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface IMenuCategoryRepository
     {

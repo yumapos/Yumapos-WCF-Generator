@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Models.Attributes;
 
-namespace VersionedRepositoryGeneration.Models
+namespace YumaPos.Server.Infrastructure.DataObjects
 {
    // [DataAccess]
     public class RecipieItem
