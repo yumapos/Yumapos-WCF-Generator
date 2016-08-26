@@ -165,7 +165,6 @@
     <Compile Include="RepositoriesGeneration\Heplers\ExtensionMethods.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\GeneratorHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\RepositoryDataModelHelper.cs" />
-    <Compile Include="RepositoriesGeneration\Heplers\StringHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
