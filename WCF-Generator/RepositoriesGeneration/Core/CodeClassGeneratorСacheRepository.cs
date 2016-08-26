@@ -1,12 +1,12 @@
 namespace VersionedRepositoryGeneration.Generator.Core
 {
-    internal class CodeClassGeneratorCashRepository : CodeClassGeneratorRepository
+    internal class CodeClassGenerator—acheRepository : CodeClassGeneratorRepository
     {
         #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string RepositoryName
         {
-            get { return RepositoryInfo.ClassName + "Cash" + RepositoryInfo.RepositorySuffix; }
+            get { return RepositoryInfo.ClassName + "—ache" + RepositoryInfo.RepositorySuffix; }
         }
 
         #endregion

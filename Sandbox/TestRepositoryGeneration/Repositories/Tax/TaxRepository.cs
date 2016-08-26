@@ -16,7 +16,7 @@ namespace YumaPos.Server.Data.Sql.Taxes
         TaxCashRepository _taxCashRepository;
         TaxVersionRepository _taxVersionRepository;
 
-        MenuItemsToTaxesCashRepository _menuItemsToTaxesCashRepository;
+        MenuItemsToTaxesСacheRepository _menuItemsToTaxesСacheRepository;
         MenuItemsToTaxesVersionRepository _menuItemsToTaxesVersionRepository;
 
         public TaxRepository(IDataAccessService dataAccessService) : base(dataAccessService)
@@ -25,14 +25,14 @@ namespace YumaPos.Server.Data.Sql.Taxes
             _taxVersionRepository = new TaxVersionRepository(dataAccessService);
             _menuItemRepository = new MenuItemCashRepository(dataAccessService);
 
-            _menuItemsToTaxesCashRepository = new MenuItemsToTaxesCashRepository(dataAccessService);
+            _menuItemsToTaxesСacheRepository = new MenuItemsToTaxesСacheRepository(dataAccessService);
             _menuItemsToTaxesVersionRepository = new MenuItemsToTaxesVersionRepository(dataAccessService);
         }
 
         public void UpdateMenuItemsToTaxes(Tax tax, IEnumerable<Guid> menuItemIds)
         {
             if (menuItemIds == null)
-                menuItemIds = _menuItemsToTaxesCashRepository.GetMenuItemIdsByTaxId(tax.TaxId);
+                menuItemIds = _menuItemsToTaxesСacheRepository.GetMenuItemIdsByTaxId(tax.TaxId);
 
             var listOfMenuItemsToTaxes = menuItemIds.Select(menuItemId => new MenuItemToTax()
             {
@@ -42,7 +42,7 @@ namespace YumaPos.Server.Data.Sql.Taxes
                 ItemVersionId = _menuItemRepository.GetByMenuItemId(menuItemId).ItemVersionId,
             }).ToList();
 
-            _menuItemsToTaxesCashRepository.RemoveByTaxId(tax.TaxId);
+            _menuItemsToTaxesСacheRepository.RemoveByTaxId(tax.TaxId);
 
             foreach (var mt in listOfMenuItemsToTaxes)
             {
@@ -50,7 +50,7 @@ namespace YumaPos.Server.Data.Sql.Taxes
                 mt.ModifiedBy = tax.ModifiedBy;
 
                 _menuItemsToTaxesVersionRepository.Insert(mt);
-                _menuItemsToTaxesCashRepository.Insert(mt);
+                _menuItemsToTaxesСacheRepository.Insert(mt);
             }
         }
 

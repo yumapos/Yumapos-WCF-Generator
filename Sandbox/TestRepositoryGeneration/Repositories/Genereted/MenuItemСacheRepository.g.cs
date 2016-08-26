@@ -7,23 +7,19 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YumaPos.Server.Data.Sql;
 using YumaPos.Server.Infrastructure.Repositories;
 
 
-namespace YumaPos.Server.Data.Sql.Menu
+namespace TestRepositoryGeneration
 {
-	 public partial class MenuItemCashRepository : RepositoryBase,IMenuItemRepository
+public class MenuItemСacheRepository : RepositoryBase,IMenuItemRepository
 {
-#region Constructor
-
-public MenuItemCashRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
-
-#endregion
-#region Fields
-
+public MenuItemСacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 #region Fields
 
 internal const string Fields = "Name, Modified, ModifiedBy, TaxesId, MenuCategoryId{columns}"
@@ -37,15 +33,6 @@ private const string UpdateQueryByMenuCategoryId = "
         private const string UpdateQueryByMenuCategoryId = "UPDATE [MenuItems] SET [Name] = @Name, [Modified] = @Modified, [ModifiedBy] = @ModifiedBy, [TaxesId] = @TaxesId, FROM [MenuItems] ";";
 
 
-#endregion
-#region Properties
-
-
-
-#endregion
-#region Methods
-
-/*
 		 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAllAsync()
 		 {
 			 var result = await DataAccessService.GetAsync< YumaPos.Server.Infrastructure.DataObjects.MenuItem> (SelectAllQueryMenuItem, null
@@ -57,20 +44,17 @@ private const string UpdateQueryByMenuCategoryId = "
 			 return result.ToList();
 		 }
 
-*/
-/*
-		 public async Task <Guid>InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemmenuItem)
+		 public async Task <Guid>InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		 {
 			 var result = await DataAccessService.InsertObjectAsync(menuItem,InsertQuery);
 			 return (Guid)result;
 		 }
-		 public GuidInsert(YumaPos.Server.Infrastructure.DataObjects.MenuItemmenuItem)
+		 public GuidInsert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		 {
 			 var result = DataAccessService.InsertObject(menuItem,InsertQuery);
 			 return (Guid)result;
 		 }
 
-*/
 /*
 
 */
@@ -81,7 +65,5 @@ private const string UpdateQueryByMenuCategoryId = "
 
 */
 
-
-#endregion
 }
 }

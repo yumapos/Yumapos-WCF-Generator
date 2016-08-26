@@ -58,9 +58,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var nameSpace = fullName.Replace("." + RepositoryInfo.RepositoryInterface.Identifier.Text, "");
 
             var sb = new StringBuilder();
+            sb.AppendLine("using System;");
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("using System.Linq;");
             sb.AppendLine("using System.Threading.Tasks;");
+            sb.AppendLine("using YumaPos.Server.Data.Sql;");
             sb.AppendLine("using " + nameSpace + ";");
 
             return sb.ToString();
@@ -151,7 +153,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("public Guid Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + "Insert(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
             sb.AppendLine(CashRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
 
             // TODO append many to many repository

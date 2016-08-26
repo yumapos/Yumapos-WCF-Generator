@@ -6,9 +6,9 @@ using YumaPos.Server.Infrastructure.DataObjects;
 
 namespace YumaPos.Server.Data.Sql.Menu
 {
-    class MenuItemsToTaxesCashRepository : RepositoryBase
+    class MenuItemsToTaxesСacheRepository : RepositoryBase
     {
-        public MenuItemsToTaxesCashRepository(IDataAccessService dataAccessService) : base(dataAccessService) { }
+        public MenuItemsToTaxesСacheRepository(IDataAccessService dataAccessService) : base(dataAccessService) { }
 
         public void Insert(MenuItemToTax mt)
         {

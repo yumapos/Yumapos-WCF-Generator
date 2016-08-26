@@ -8,13 +8,13 @@ namespace YumaPos.Server.Data.Sql.Menu
 {
     class MenuCategoryRepository : RepositoryBase, IMenuCategoryRepository
     {
-        MenuCategoryCashRepository _menuCategoryCashRepository;
+        MenuCategoryСacheRepository _menuCategoryСacheRepository;
         MenuCategoryVersionRepository _menuCategoryVersionRepository;
 
         public MenuCategoryRepository(IDataAccessService dataAccessService) : base(dataAccessService)
         {
             _menuCategoryVersionRepository = new MenuCategoryVersionRepository(dataAccessService);
-            _menuCategoryCashRepository = new MenuCategoryCashRepository(dataAccessService);
+            _menuCategoryСacheRepository = new MenuCategoryСacheRepository(dataAccessService);
         }
 
         public Guid Insert(MenuCategory menuCategory)
@@ -22,7 +22,7 @@ namespace YumaPos.Server.Data.Sql.Menu
             menuCategory.Modified = DateTimeOffset.Now;
 
             menuCategory.MenuCategoryVersionId = _menuCategoryVersionRepository.Insert(menuCategory);
-            _menuCategoryCashRepository.Insert(menuCategory);
+            _menuCategoryСacheRepository.Insert(menuCategory);
 
             return menuCategory.MenuCategoryVersionId;
         }
@@ -32,7 +32,7 @@ namespace YumaPos.Server.Data.Sql.Menu
             menuCategory.Modified = DateTimeOffset.Now;
 
             menuCategory.MenuCategoryVersionId = _menuCategoryVersionRepository.Insert(menuCategory);
-            _menuCategoryCashRepository.Update(menuCategory);
+            _menuCategoryСacheRepository.Update(menuCategory);
 
             return menuCategory.MenuCategoryVersionId;
         }
@@ -44,19 +44,19 @@ namespace YumaPos.Server.Data.Sql.Menu
             menuCategory.Modified = DateTimeOffset.Now;
 
             menuCategory.MenuCategoryVersionId = _menuCategoryVersionRepository.Insert(menuCategory);
-            _menuCategoryCashRepository.Update(menuCategory);
+            _menuCategoryСacheRepository.Update(menuCategory);
 
             return menuCategory.MenuCategoryVersionId;
         }
 
         public MenuCategory GetByMenuCategoryId(System.Guid menuCategoryId, bool? isDeleted = false)
         {
-            return _menuCategoryCashRepository.GetByMenuCategoryId(menuCategoryId);
+            return _menuCategoryСacheRepository.GetByMenuCategoryId(menuCategoryId);
         }
 
         public IEnumerable<MenuCategory> GetAll(bool? isDeleted = false)
         {
-            return _menuCategoryCashRepository.GetAll();
+            return _menuCategoryСacheRepository.GetAll();
         }
 
     }

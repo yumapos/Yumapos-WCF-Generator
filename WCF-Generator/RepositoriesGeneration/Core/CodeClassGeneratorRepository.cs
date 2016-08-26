@@ -23,9 +23,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var nameSpace = fullName.Replace("." + RepositoryInfo.RepositoryInterface.Identifier.Text, "");
 
             var sb = new StringBuilder();
+            sb.AppendLine("using System;");
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("using System.Linq;");
             sb.AppendLine("using System.Threading.Tasks;");
+            sb.AppendLine("using YumaPos.Server.Data.Sql;");
             sb.AppendLine("using " + nameSpace + ";");
 
             return sb.ToString();
@@ -449,13 +451,13 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             if (!RepositoryInfo.IsJoined)
             {
-                sb.Append("\t\t public async Task " + returnType + "InsertAsync(" + RepositoryInfo.ClassFullName + "" + RepositoryInfo.ParameterName + ")\n");
+                sb.Append("\t\t public async Task " + returnType + "InsertAsync(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")\n");
                 sb.Append("\t\t {\n");
                 sb.Append("\t\t\t " + checkingKey + variable + "await DataAccessService.InsertObjectAsync(" + RepositoryInfo.ParameterName + "," + queryName + ");\n");
                 sb.Append("\t\t\t " + conversion + "\n");
                 sb.Append("\t\t }\n");
 
-                sb.Append("\t\t public " + returnTypeNotAsync + "Insert(" + RepositoryInfo.ClassFullName + "" + RepositoryInfo.ParameterName + ")\n");
+                sb.Append("\t\t public " + returnTypeNotAsync + "Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")\n");
                 sb.Append("\t\t {\n");
                 sb.Append("\t\t\t " + checkingKey + variable + "DataAccessService.InsertObject(" + RepositoryInfo.ParameterName + "," + queryName + ");\n");
                 sb.Append("\t\t\t " + conversion + "\n");

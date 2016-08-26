@@ -154,7 +154,7 @@
   <ItemGroup>
     <Compile Include="RepositoriesGeneration\Analysis\SolutionSyntaxWalker.cs" />
     <Compile Include="RepositoriesGeneration\Analysis\VirtualizationVisitor.cs" />
-    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorCashRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorRepository.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionedRepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionsRepository.cs" />

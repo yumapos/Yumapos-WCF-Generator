@@ -34,10 +34,10 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         public virtual string GetClassDeclaration()
         {
-            var classDeclaration = string.Format("\t public{0}class {1} : {2}{3}",
+            var classDeclaration = string.Format("public{0}class {1} : {2}{3}",
                 RepositoryInfo.CustomRepository != null ? " partial " : " ",
                 RepositoryName,
-                RepositoryInfo.CustomRepository != null ? "RepositoryBase" : "",
+                "RepositoryBase",
                 RepositoryInfo.RepositoryInterface != null ? "," + RepositoryInfo.RepositoryInterface.Identifier.Text : "");
             return classDeclaration;
         }
@@ -87,10 +87,10 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                     // open class
                     sb.AppendLine("{");
                     // members
-                    sb.AppendLine(GetConstructors().SurroundWithRegion("Constructor"));
-                    sb.AppendLine(GetFields().SurroundWithRegion("Fields"));
-                    sb.AppendLine(GetProperties().SurroundWithRegion("Properties"));
-                    sb.AppendLine(GetMethods().SurroundWithRegion("Methods"));
+                    sb.AppendLine(GetConstructors());
+                    sb.AppendLine(GetFields());
+                    sb.AppendLine(GetProperties());
+                    sb.AppendLine(GetMethods());
                     // close class
                     sb.AppendLine("}");
                     // close namespase

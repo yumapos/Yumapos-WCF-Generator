@@ -141,7 +141,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 list.Add(versionsRepository);
 
                 // cash repository
-                var cashRepository = new CodeClassGeneratorCashRepository()
+                var cashRepository = new CodeClassGeneratorСacheRepository()
                 {
                     RepositoryInfo = repositoryInfo
                 };
@@ -210,7 +210,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             repositoryInfo.RepositoryInterfaceMethods = SolutionSyntaxWalker.GetMethodsFromMembers(repoInterface.Members.ToList());
             
             // Check exist custom repository class
-            var customRepository = SolutionSyntaxWalker.FindClassByName(_solution, _config.RepositoryMainPlace, doClass.Identifier + _config.RepositorySuffix).Result;
+            var customRepository = SolutionSyntaxWalker.FindClassByName(_solution, _config.RepositoryMainPlace, doClass.Identifier + _config.RepositorySuffix, _config.RepositoryTargetFolder).Result;
             var customRepoExist = customRepository != null;
 
             string nameSpace;
@@ -399,11 +399,6 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             if (info.RepositoryInterfaceMethods != null)
             {
-                foreach (var r in info.RepositoryInterfaceMethods)
-                {
-                    var x = info.CustomRepositoryMethods.FirstOrDefault(cm => cm.Identifier.Text == r.Identifier.Text);
-                }
-
                 // Check implemented methods in custom repository
                 var temp = info.CustomRepositoryMethods != null
                     ? info.RepositoryInterfaceMethods.Where(im => info.CustomRepositoryMethods.FirstOrDefault(cm => cm.Identifier.Text == im.Identifier.Text) == null)
@@ -447,13 +442,14 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = name, JoinName = joinName, RequiresImplementation = false });
             }
 
+            // Set methods to implementation from possible list
             foreach (var um in unimplementedMethods)
             {
-                var m = methods.FirstOrDefault( o => o.Method.GetName() == um);
-                if(m!=null)
-                {
-                    m.RequiresImplementation = false;
-                }
+                // Seach in possible list
+                var m = methods.FirstOrDefault(o => o.Method.GetName() + (o.Key ?? "") == um);
+                if (m == null) continue;
+                // Set to implementation
+                m.RequiresImplementation = true;
             }
 
             return methods;

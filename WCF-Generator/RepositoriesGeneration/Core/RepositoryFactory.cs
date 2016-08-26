@@ -61,7 +61,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 // TODO apply standart formating for code 
 
                 // Add document to creation
-                _repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".cs", _configuration.RepositoryTargetFolder, code);
+                _repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".g.cs", _configuration.RepositoryTargetFolder, code);
             }
             
             // Save all files

@@ -20,14 +20,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         public override string GetClassDeclaration()
         {
-            return "public class " + RepositoryName + " : RepositoryBase";
+            return "public partial class " + RepositoryName + " : RepositoryBase";
         }
 
         #endregion
 
         public override string GetUsings()
         {
-            return "using System;";
+            var sb = new StringBuilder();
+            sb.AppendLine("using System;");
+            sb.AppendLine("using YumaPos.Server.Data.Sql;");
+            return sb.ToString();
         }
 
         public override string GetMethods()
@@ -69,8 +72,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     // open class
                     sb.AppendLine("{");
                     // members
-                    sb.AppendLine(GetConstructors().SurroundWithRegion("Constructor"));
-                    sb.AppendLine(GetMethods().SurroundWithRegion("Methods"));
+                    sb.AppendLine(GetConstructors());
+                    sb.AppendLine(GetMethods());
                     // close class
                     sb.AppendLine("}");
                     // close namespase

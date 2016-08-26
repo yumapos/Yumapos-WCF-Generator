@@ -70,8 +70,16 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
             return classes;
         }
 
-        public static async Task<ClassDeclarationSyntax> FindClassByName(Solution solution, string projectName, string className,
-            string implClass = null)
+        /// <summary>
+        ///     Search class by name. Skip genereted classes.
+        /// </summary>
+        /// <param name="solution"></param>
+        /// <param name="projectName"></param>
+        /// <param name="className"></param>
+        /// <param name="implClass"></param>
+        ///  /// <param name="generatedRepositoryPath">Path to project folder with generated repositories - it should be skipped on analysis</param>
+        /// <returns></returns>
+        public static async Task<ClassDeclarationSyntax> FindClassByName(Solution solution, string projectName, string className, string generatedRepositoryPath, string implClass = null)
         {
             var implementedClass = implClass ?? "I" + className;
             var project = solution.Projects.First(x => x.Name == projectName);
@@ -83,6 +91,7 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
 
                 foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
+                    if(syntaxTree.FilePath.Contains(generatedRepositoryPath)) continue;
                     classVisitor.Visit(syntaxTree.GetRoot());
                 }
 

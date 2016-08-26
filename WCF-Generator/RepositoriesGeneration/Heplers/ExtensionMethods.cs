@@ -13,12 +13,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
         public static string FirstSymbolToLower(this string str)
         {
-            var temp = ' ';
-            temp = str[0];
-            temp = char.ToLower(temp);
-            str = str.Substring(1, str.Length - 1);
-            str = str.Insert(0, Convert.ToString(temp));
-            return str;
+            return Char.ToLowerInvariant(str[0]) + str.Substring(1);
         }
 
         public static string SurroundWithComments(this string codeText)

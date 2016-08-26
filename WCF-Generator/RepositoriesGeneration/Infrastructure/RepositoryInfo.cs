@@ -20,11 +20,32 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         // Info
 
+        /// <summary>
+        ///     Repository model type
+        /// </summary>
         public string ClassName { get; set; }
+
+        /// <summary>
+        ///     Repository model type as method parameter name
+        /// </summary>
         public string ParameterName { get { return ClassName.FirstSymbolToLower(); } }
+
+        /// <summary>
+        ///     Full type of repository model
+        /// </summary>
         public string ClassFullName { get; set; }
+
+        /// <summary>
+        ///     Name of database table for repository model
+        /// </summary>
         public string TableName { get; set; }
+
+        /// <summary>
+        ///     Property names - table columns
+        /// </summary>
         public List<string> Elements { get; set; }
+
+
         public FilterOption FilterData { get; set; }
         public List<string> Keys { get; set; }
         public List<string> FilterKeys { get; set; }

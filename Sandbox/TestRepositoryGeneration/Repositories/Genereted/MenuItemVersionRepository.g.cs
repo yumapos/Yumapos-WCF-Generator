@@ -8,18 +8,14 @@
 //------------------------------------------------------------------------------
 
 using System;
+using YumaPos.Server.Data.Sql;
 
-namespace YumaPos.Server.Data.Sql.Menu
+
+namespace TestRepositoryGeneration
 {
 public partial class MenuItemVersionRepository : RepositoryBase
 {
-#region Constructor
-
 public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
-
-#endregion
-#region Methods
-
 public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 var InsertQuery = @"INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
@@ -27,7 +23,5 @@ OUTPUT INSERTED.VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)";
 return (Guid)DataAccessService.InsertObject(menuItem, InsertQuery);
 }
 
-
-#endregion
 }
 }
