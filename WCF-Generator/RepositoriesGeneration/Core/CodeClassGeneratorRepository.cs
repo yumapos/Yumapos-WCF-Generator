@@ -153,8 +153,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 string queryName = generationInfo.FilterDataJoined != null ? generationInfo.ClassName + "Join" + generationInfo.JoinedClassName : generationInfo.ClassName;
 
 
-                string parameters = "new {" + StringHelper.FirstSymbolToLower(filterData.Name) + "}";
-                signature = filterData.Type + "? " + StringHelper.FirstSymbolToLower(filterData.Name) + " = " + filterData.DefaultValue;
+                string parameters = "new {" + filterData.Name.FirstSymbolToLower() + "}";
+                signature = filterData.Type + "? " + filterData.Name.FirstSymbolToLower() + " = " + filterData.DefaultValue;
                 whereSql = "sql, parameters";
                 checkNull = @"object parameters = null;
                 var sql = SelectAllQuery@p2;
@@ -166,7 +166,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
 
                 checkNull = checkNull.Replace("@p1", parameters);
-                checkNull = checkNull.Replace("@p0", StringHelper.FirstSymbolToLower(filterData.Name));
+                checkNull = checkNull.Replace("@p0", filterData.Name.FirstSymbolToLower());
                 checkNull = checkNull.Replace("@p2", queryName);
                 checkNull = checkNull.Replace("@p3", generationInfo.IsTenantRelated ? "And" : "Where");
             }
@@ -263,15 +263,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 foreach (string param in temp)
                 {
                     string type = SyntaxAnalysisHelper.FindType(RepositoryInfo.DOClass, param);
-                    if (type[type.Length - 1] == '?')
-                    {
-                        type = StringHelper.DeleteLastSymbol(type);
-                    }
-                    result = result + type + " " + StringHelper.FirstSymbolToLower(param) + ",";
+                    result = result + type.TrimEnd('?') + " " + param.FirstSymbolToLower() + ",";
                 }
                 if (filter != null)
                 {
-                    result = result + filter.Type + "? " + StringHelper.FirstSymbolToLower(filter.Name) + " = " + filter.DefaultValue;
+                    result = result + filter.Type + "? " + filter.Name.FirstSymbolToLower() + " = " + filter.DefaultValue;
                 }
                 else
                 {
@@ -283,12 +279,12 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 string type = SyntaxAnalysisHelper.FindType(RepositoryInfo.DOClass, temp[0]);
                 if (type.Count() != 0 && type[type.Length - 1] == '?')
                 {
-                    type = StringHelper.DeleteLastSymbol(type);
+                    type = type.TrimEnd('?');
                 }
-                result = type + " " + StringHelper.FirstSymbolToLower(temp[0]);
+                result = type + " " + temp[0].FirstSymbolToLower();
                 if (filter != null)
                 {
-                    result = result + ", " + filter.Type + "? " + StringHelper.FirstSymbolToLower(filter.Name) + " = " + filter.DefaultValue;
+                    result = result + ", " + filter.Type + "? " + filter.Name.FirstSymbolToLower() + " = " + filter.DefaultValue;
                 }
             }
 
@@ -298,7 +294,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             string filterParameters = "";
             for (int k = 0; k < temp.Count(); k++)
             {
-                parameters += StringHelper.FirstSymbolToLower(temp[k]);
+                parameters += temp[k].FirstSymbolToLower();
                 if (k != temp.Count() - 1)
                     parameters += ',';
             }
@@ -314,7 +310,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             if (filter != null)
             {
                 filterParameters = parameters.Substring(1, parameters.Length - 2);
-                filterParameters = filterParameters + "," + StringHelper.FirstSymbolToLower(filter.Name) + "}";
+                filterParameters = filterParameters + "," + filter.Name.FirstSymbolToLower() + "}";
                 outParameters = ",parameters";
                 checkNull = @"object parameters = @p2;
                     var sql = SelectQuery@p4+WhereQueryBy@p3; 
@@ -325,7 +321,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     }";
 
                 enterString = "\r\n            ";
-                checkNull = checkNull.Replace("@p0", StringHelper.FirstSymbolToLower(filter.Name));
+                checkNull = checkNull.Replace("@p0", filter.Name.FirstSymbolToLower());
                 checkNull = checkNull.Replace("@p1", filterParameters);
                 parameters = parameters.Substring(1, parameters.Length - 1);
                 checkNull = checkNull.Replace("@p2", parameters);
@@ -384,7 +380,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     returnType = SyntaxAnalysisHelper.FindType(RepositoryInfo.DOClass, RepositoryInfo.Keys[0]);
                     if (returnType[returnType.Length - 1] == '?')
                     {
-                        returnType = StringHelper.DeleteLastSymbol(returnType);
+                        returnType = returnType.TrimEnd();
                     }
                     returnTypeNotAsync = returnType;
                     conversion = "return (" + returnType + ")result;";
@@ -565,9 +561,9 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     string type = SyntaxAnalysisHelper.FindType(RepositoryInfo.DOClass, param);
                     if (type.Count() != 0 && type[type.Length - 1] == '?')
                     {
-                        type = StringHelper.DeleteLastSymbol(type);
+                        type = type.TrimEnd('?'); ;
                     }
-                    result = result + type + " " + StringHelper.FirstSymbolToLower(param) + ",";
+                    result = result + type + " " + param.FirstSymbolToLower() + ",";
                 }
                 result = result.Substring(0, result.Length - 1);
             }
@@ -576,16 +572,16 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 string type = SyntaxAnalysisHelper.FindType(RepositoryInfo.DOClass, temp[0]);
                 if (type.Count() != 0 && type[type.Length - 1] == '?')
                 {
-                    type = StringHelper.DeleteLastSymbol(type);
+                    type = type.TrimEnd('?');
                 }
-                result = type + " " + StringHelper.FirstSymbolToLower(temp[0]);
+                result = type + " " + temp[0].FirstSymbolToLower();
             }
 
             string parameters = "";
 
             for (int k = 0; k < temp.Count(); k++)
             {
-                parameters += StringHelper.FirstSymbolToLower(temp[k]);
+                parameters += temp[k].FirstSymbolToLower();
                 if (k != temp.Count() - 1)
                     parameters += ',';
             }

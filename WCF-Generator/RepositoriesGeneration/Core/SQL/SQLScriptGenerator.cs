@@ -98,11 +98,11 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             var sb = new StringBuilder();
 
             List<string> temp = GenerateCurrentKeys(info.Keys[j]);
-            sb.Append(String.Format("\" WHERE {2}.[{0}] = @{1}", temp[0], StringHelper.FirstSymbolToLower(temp[0]), GenerateTableName(info.TableName)));
+            sb.Append(String.Format("\" WHERE {2}.[{0}] = @{1}", temp[0], temp[0].FirstSymbolToLower(), GenerateTableName(info.TableName)));
 
             for (int n = 1; n < temp.Count(); n++)
             {
-                sb.Append(String.Format(" AND {2}.[{0}] = @{1}", temp[n], StringHelper.FirstSymbolToLower(temp[n]), GenerateTableName(info.TableName)));
+                sb.Append(String.Format(" AND {2}.[{0}] = @{1}", temp[n], temp[n].FirstSymbolToLower(), GenerateTableName(info.TableName)));
             }
 
             if (info.IsTenantRelated)
@@ -120,11 +120,11 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 
                 sb.Append(String.Format("\r\n        private const string WhereQueryBy{0}{1}", info.PrimaryKeyNames[j], "And" + filterData.Name));
                 temp.Add(filterData.Name);
-                sb.Append(String.Format("= \" WHERE {2}.[{0}] = @{1}", temp[0], StringHelper.FirstSymbolToLower(temp[0]), tableName));
+                sb.Append(String.Format("= \" WHERE {2}.[{0}] = @{1}", temp[0], temp[0].FirstSymbolToLower(), tableName));
 
                 for (int n = 1; n < temp.Count(); n++)
                 {
-                    sb.Append(String.Format(" AND {2}.[{0}] = @{1}", temp[n], StringHelper.FirstSymbolToLower(temp[n]), tableName));
+                    sb.Append(String.Format(" AND {2}.[{0}] = @{1}", temp[n], temp[n].FirstSymbolToLower(), tableName));
                 }
 
                 if (info.IsTenantRelated)
@@ -145,12 +145,12 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
                         {
                             relation = "AND";
                         }
-                        sb.Append(" " + relation + " " + tableName + ".[" + filterData.Name + "] = " + StringHelper.FirstSymbolToLower(filterData.Name));
+                        sb.Append(" " + relation + " " + tableName + ".[" + filterData.Name + "] = " + filterData.Name.FirstSymbolToLower());
                         sb.Append("; \";");
                     }
                     sb.Append("\r\n        private const string AndWithFilterData = WHERE");
                     relation = "AND";
-                    sb.Append(" " + relation + " " + tableName + ".[" + filterData.Name + "] = " + StringHelper.FirstSymbolToLower(filterData.Name));
+                    sb.Append(" " + relation + " " + tableName + ".[" + filterData.Name + "] = " + filterData.Name.FirstSymbolToLower());
                     sb.Append(" \";");
                 }
                 info.IsFilterDataGeneration = true;
