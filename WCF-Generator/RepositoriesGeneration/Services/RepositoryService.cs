@@ -9,6 +9,7 @@ using VersionedRepositoryGeneration.Generator.Analysis;
 using VersionedRepositoryGeneration.Generator.Core;
 using VersionedRepositoryGeneration.Generator.Heplers;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Services
 {
@@ -49,27 +50,34 @@ namespace VersionedRepositoryGeneration.Generator.Services
             }
 
             // Apply info from base clasess
-            foreach (var r in listOfSimilarClasses)
+            foreach (var r in listOfSimilarClasses.Where(c=> c.RepositoryAnalysisError == null))
             {
                 var repositoryInfo = r.RepositoryInfo;
                 
                 // Find base class
-                var baseClassType = repositoryInfo.DOClass.BaseList.Types.FirstOrDefault();
-                var baseClass = GetClassByName(baseClassType.ToString());
-
-                if (baseClass != null)
+                if (repositoryInfo.DOClass.BaseList != null)
                 {
-                    var baseSimilarClass = listOfSimilarClasses.FirstOrDefault(x => x.RepositoryInfo.ClassName == baseClass.Identifier.Text);
+                    var baseClassType = repositoryInfo.DOClass.BaseList.Types.FirstOrDefault();
+                    var baseClass = GetClassByName(baseClassType.ToString());
 
-                    if (baseSimilarClass != null)
+                    if (baseClass != null)
                     {
-                        repositoryInfo.JoinedClass = baseSimilarClass.RepositoryInfo.DOClass;
-                        repositoryInfo.JoinedClassName = baseSimilarClass.RepositoryInfo.DOClass.Identifier.ToString();
-                        repositoryInfo.JoinedElements = baseSimilarClass.RepositoryInfo.Elements;
-                        repositoryInfo.PrimaryKeyJoined = baseSimilarClass.RepositoryInfo.Keys[0];
-                        repositoryInfo.TableNameJoined = baseSimilarClass.RepositoryInfo.TableName;
-                        repositoryInfo.IsIdentityJoined = TenantRelationExist(baseSimilarClass.RepositoryInfo.DOClass);
-                        repositoryInfo.FilterDataJoined = baseSimilarClass.RepositoryInfo.FilterData;
+                        var baseSimilarClass = listOfSimilarClasses.FirstOrDefault(x => x.RepositoryInfo.ClassName == baseClass.Identifier.Text);
+                    
+                        if (baseSimilarClass != null && baseSimilarClass.RepositoryAnalysisError == null)
+                        {
+                            repositoryInfo.PrimaryKeys.AddRange(baseSimilarClass.RepositoryInfo.PrimaryKeys);
+                            repositoryInfo.MethodImplementationInfo.ToList().AddRange(baseSimilarClass.RepositoryInfo.MethodImplementationInfo);
+
+                            repositoryInfo.JoinedClass = baseSimilarClass.RepositoryInfo.DOClass;
+                            repositoryInfo.JoinedClassName = baseSimilarClass.RepositoryInfo.DOClass.Identifier.ToString();
+                            repositoryInfo.JoinedElements = baseSimilarClass.RepositoryInfo.Elements;
+                            //repositoryInfo.PrimaryKeyJoined = baseSimilarClass.RepositoryInfo.Keys[0];
+                            repositoryInfo.TableNameJoined = baseSimilarClass.RepositoryInfo.TableName;
+                            // TODO что тут за хрень
+                            repositoryInfo.IsIdentityJoined = TenantRelationExist(baseSimilarClass.RepositoryInfo.DOClass);
+                            repositoryInfo.FilterDataJoined = baseSimilarClass.RepositoryInfo.FilterData;
+                        }
                     }
                 }
             }
@@ -130,23 +138,28 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             var tableName = dataAccess.TableName ?? doClass.Identifier.ToString() + 's';
             repositoryInfo.TableName = tableName;
-            repositoryInfo.IsIdentity = dataAccess.IsIdentity;
 
-            if (dataAccess.FilterKey1 != null)
+            // Get filters
+            var filterKeys = (new[] {dataAccess.FilterKey1, dataAccess.FilterKey2, dataAccess.FilterKey3})
+                .Where(fk => fk != null)
+                .Select(fk =>
+                {
+                    // Filter data may be combined (ItemId, GroupId)
+                    var filters = fk.Split(',').Select(f=>
+                    {
+                        var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => (GetterInCodePropertyExist(cp) && SetterInCodePropertyExist(cp) && cp.Identifier.Text == f));
+                        return new ParameterInfo(fk, parameter != null ? parameter.Type.ToFullString() : null);
+                    }).ToList();
+                    return new FilterInfo(string.Join("And", fk.Split(',')), filters);
+                });
+
+            // Common filter - isDeleted
+            if (dataAccess.IsDeleted)
             {
-                repositoryInfo.Keys.Add(dataAccess.FilterKey1);
-                repositoryInfo.FilterKeys.Add(dataAccess.FilterKey1);
+                repositoryInfo.SpecialOptions = new FilterInfo("IsDeleted", new List<ParameterInfo> { new ParameterInfo("IsDeleted", typeof(bool).FullName, "false") });
             }
-            if (dataAccess.FilterKey2 != null)
-            {
-                repositoryInfo.Keys.Add(dataAccess.FilterKey2);
-                repositoryInfo.FilterKeys.Add(dataAccess.FilterKey2);
-            }
-            if (dataAccess.FilterKey2 != null)
-            {
-                repositoryInfo.Keys.Add(dataAccess.FilterKey2);
-                repositoryInfo.FilterKeys.Add(dataAccess.FilterKey2);
-            }
+
+            repositoryInfo.FilterInfos.AddRange(filterKeys);
 
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
@@ -205,7 +218,11 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 {
                     if (attr.Name.ToString() == RepositoryDataModelHelper.KeyAttributeName)
                     {
-                        repositoryInfo.Keys.Add(prop.Identifier.Text);
+                        repositoryInfo.PrimaryKeys.Add(new ParameterInfo(prop.Identifier.Text, prop.Type.ToFullString()));
+                    }
+                    else if (attr.Name.ToString() == RepositoryDataModelHelper.VesionKeyAttributeName)
+                    {
+                        repositoryInfo.VersionKey = prop.Identifier.Text;
                     }
                     else if (attr.Name.ToString() == RepositoryDataModelHelper.DbIgnoreAttributeName)
                     {
@@ -214,18 +231,6 @@ namespace VersionedRepositoryGeneration.Generator.Services
                     else if (attr.Name.ToString() == RepositoryDataModelHelper.DataMany2ManyAttributeName)
                     {
                         // TODO ManyToMany
-                    }
-                    else if (attr.Name.ToString() == RepositoryDataModelHelper.DataFilterAttributeName)
-                    {
-                        var datafilterAttr = GetAttributesAndPropepertiesCollection(prop).FirstOrDefault(x => x.Name == RepositoryDataModelHelper.DataFilterAttributeName);
-                        var defaultValue = datafilterAttr.GetParameterByKeyName("DefaultValue");
-                        repositoryInfo.FilterData = new FilterOption
-                        {
-                            Name = prop.Identifier.ToString(),
-                            Type = prop.Type.ToString(),
-                            DefaultValue = defaultValue
-                        };
-                        repositoryInfo.IsFilterDataGeneration = false;
                     }
                 }
             }
@@ -265,11 +270,9 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             repositoryInfo.RepositoriesNamespace = nameSpace;
 
-            // Search 
+            // Search method for implementation
             repositoryInfo.MethodImplementationInfo = GetUnimplementedMethods(repositoryInfo);
-
-           
-
+            
             return list;
         }
         
@@ -409,42 +412,47 @@ namespace VersionedRepositoryGeneration.Generator.Services
                     ? info.RepositoryInterfaceMethods.Where(im => info.CustomRepositoryMethods.FirstOrDefault(cm => cm.Identifier.Text == im.Identifier.Text) == null)
                     : info.RepositoryInterfaceMethods;
                 unimplemented = temp.Select(m => m.Identifier.Text);
-
             }
-            // All common repository methods and methods by keys from model
-            var allmethods = AllPosibleMethods(info.Keys, info.JoinedClassName, unimplemented);
+
+            // Set methods which possible to generate
+            var allmethods = SelectPossibleImplementation(unimplemented, info);
             return allmethods;
         }
-        private static IEnumerable<MethodImplementationInfo> AllPosibleMethods(IEnumerable<string> possibleName, string joinName, IEnumerable<string> unimplementedMethods)
+
+        private static IEnumerable<MethodImplementationInfo> SelectPossibleImplementation(IEnumerable<string> unimplementedMethods, RepositoryInfo info)
         {
             // Add common methods
             var methods = new List<MethodImplementationInfo>
             {
-                new MethodImplementationInfo() {Method = RepositoryMethod.GetAll, RequiresImplementation = false},
-                new MethodImplementationInfo() {Method = RepositoryMethod.Insert, RequiresImplementation = false},
+                new MethodImplementationInfo() { Method = RepositoryMethod.GetAll, RequiresImplementation = false},
+                new MethodImplementationInfo() { Method = RepositoryMethod.Insert, Parameters = new List<ParameterInfo>() {new ParameterInfo(info.ParameterName, info.ClassFullName, TODO)}, RequiresImplementation = false},
             };
 
-            if (joinName != null)
-            {
-                methods.AddRange(new List<MethodImplementationInfo>()
-                {
-                    new MethodImplementationInfo() {Method = RepositoryMethod.GetAll, JoinName = joinName, RequiresImplementation = false},
-                    new MethodImplementationInfo() {Method = RepositoryMethod.Insert, JoinName = joinName, RequiresImplementation = false},
-                });
-            }
+            // Methods by keys from model (without methods from base model)
+            var possibleKeyMethods = info.GetPossibleKeysForMethods();
+
+            // TODO Как это будет выглядеть? GetAllRecipieItem?
+            //if (joinName != null)
+            //{
+            //    methods.AddRange(new List<MethodImplementationInfo>()
+            //    {
+            //        new MethodImplementationInfo() {Method = RepositoryMethod.GetAll, JoinName = joinName, RequiresImplementation = false},
+            //        new MethodImplementationInfo() {Method = RepositoryMethod.Insert, JoinName = joinName, RequiresImplementation = false},
+            //    });
+            //}
 
             // Add methods based on keys
-            foreach (var name in possibleName)
+            foreach (var method in possibleKeyMethods)
             {
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, Key = name, JoinName = name, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = name, JoinName = name, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = name, JoinName = name, RequiresImplementation = false });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
 
-                if (joinName == null) continue;
+                //if (joinName == null) continue;
 
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, Key = name, JoinName = joinName, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = name, JoinName = joinName, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = name, JoinName = joinName, RequiresImplementation = false });
+                //methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, Key = name, JoinName = joinName, RequiresImplementation = false });
+                //methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = name, JoinName = joinName, RequiresImplementation = false });
+                //methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = name, JoinName = joinName, RequiresImplementation = false });
             }
 
             // Set methods to implementation from possible list

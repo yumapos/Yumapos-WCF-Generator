@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Heplers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Infrastructure
 {
@@ -9,7 +12,9 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public RepositoryInfo()
         {
             Keys = new List<string>();
-            FilterKeys = new List<string>();
+            FilterKeys = new List<ParameterInfo>();
+            FilterInfos = new List<FilterInfo>();
+            PrimaryKeys = new List<ParameterInfo>();
             Elements = new List<string>();
             JoinedElements = new List<string>();
         }
@@ -48,9 +53,29 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         public FilterOption FilterData { get; set; }
         public List<string> Keys { get; set; }
-        public List<string> FilterKeys { get; set; }
+
         public string GenericRepositoryName { get; set; }
-        public List<string> PrimaryKeyNames { get; set; }
+
+        public List<string> PrimaryKeyNames { get; set; }// TODO delete
+
+        /// <summary>
+        ///     Primary Keys
+        /// </summary>
+        public List<ParameterInfo> PrimaryKeys { get; set; }
+        public string PrimaryKeyName { get { return string.Join("And", PrimaryKeys.Select(info => info.Name)); } }
+
+        public List<ParameterInfo> FilterKeys { get; set; } // TODO refactor
+
+        /// <summary>
+        ///     Filters
+        /// </summary>
+        public List<FilterInfo> FilterInfos { get; set; }
+
+        /// <summary>
+        ///     Special filter options
+        /// </summary>
+        public FilterInfo SpecialOptions { get; set; }
+
         public string RepositoriesNamespace { get; set; }
         public string VersionKey { get; set; }
 
@@ -58,7 +83,8 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public bool IsVersioning { get; set; }
         public bool IsTenantRelated { get; set; }
         public bool IsConstructorImplemented { get; set; }
-        public bool IsIdentity { get; set; }
+        public bool IsDeleted { get; set; }
+
         public bool IsNewKey { get; set; }
         public bool IsFilterDataGeneration { get; set; }
 
@@ -119,5 +145,36 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public IEnumerable<MethodImplementationInfo> MethodImplementationInfo { get; set; }
 
         #endregion
+
+        public List<FilterInfo> GetPossibleKeysForMethods()
+        {
+            // Methods by keys from model (without methods from base model)
+            var possibleKeyMethods = new List<FilterInfo>();
+            // Primary key(s)
+            if (!string.IsNullOrEmpty(PrimaryKeyName))
+            {
+                possibleKeyMethods.Add(new FilterInfo(PrimaryKeyName, PrimaryKeys));
+            }
+            // Filter keys
+            if (FilterInfos.Any())
+            {
+                possibleKeyMethods.AddRange(FilterInfos);
+            }
+            return possibleKeyMethods;
+        }
+
+    }
+
+
+    internal class FilterInfo
+    {
+        public FilterInfo(string key, List<ParameterInfo> parameters)
+        {
+            Key = key;
+            Parameters = parameters;
+        }
+
+        public string Key { get; set; }
+        public List<ParameterInfo> Parameters { get; set; }
     }
 }

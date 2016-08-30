@@ -43,10 +43,26 @@ return menuItem.ItemVersionId;
 }
 
 /*
-public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetBy(System.Guid MenuCategoryId, bool? isDeleted = false)
+
+*/
+/*
+public Guid Update(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem;
 {
-return _menuItemСacheRepository GetBy(System.Guid MenuCategoryId);
+menuItem.Modified = DateTimeOffset.Now;
+menuItem.ItemVersionId = _menuItemVersionRepositoryInsert(menuItem);
+_menuItemСacheRepository.Update(menuItem);
+return menuItem.ItemVersionId;
 }
+
+*/
+/*
+public Guid Remove(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem;
+{
+menuItem.IsDeleted = true;
+_menuItemСacheRepository.Update(menuItem);
+
+*/
+/*
 
 */
 /*

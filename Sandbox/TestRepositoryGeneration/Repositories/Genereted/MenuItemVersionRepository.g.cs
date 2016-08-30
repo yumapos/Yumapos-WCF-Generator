@@ -18,8 +18,16 @@ public partial class MenuItemVersionRepository : RepositoryBase
 public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
-var InsertQuery = @"INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
-OUTPUT INSERTED.VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)";
+var InsertQuery = @"DECLARE @TempPKTable TABLE ( );
+DECLARE @TempPK ;
+INSERT INTO RecipieItems([ItemId],[ItemVersionId],[IsDeleted],[CategoryId])
+OUTPUT INSERTED. INTO @TempPKTable
+VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
+SELECT @TempPK =  FROM @TempPKTable
+INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
+VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)
+SELECT  FROM @TempPKTable
+";
 return (Guid)DataAccessService.InsertObject(menuItem, InsertQuery);
 }
 

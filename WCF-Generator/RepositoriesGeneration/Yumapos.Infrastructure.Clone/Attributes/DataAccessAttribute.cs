@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VersionedRepositoryGeneration.Models.Attributes
+namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     internal sealed class DataAccessAttribute : Attribute
@@ -18,7 +18,5 @@ namespace VersionedRepositoryGeneration.Models.Attributes
         public string FilterKey3 { get; set; }
 
         public bool IsDeleted { get; set; }
-
-        public bool IsIdentity { get; set; }
     }
 }

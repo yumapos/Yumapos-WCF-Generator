@@ -2,7 +2,7 @@
 
 namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes
 {
-    public class DbIgnoreAttribute : Attribute
+    public class VersionKeyAttribute : Attribute
     {
     }
 }

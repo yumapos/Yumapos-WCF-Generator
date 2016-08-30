@@ -15,53 +15,14 @@ using YumaPos.Server.Data.Sql;
 using YumaPos.Server.Infrastructure.Repositories;
 
 
+
 namespace TestRepositoryGeneration
 {
 public class MenuItemСacheRepository : RepositoryBase,IMenuItemRepository
 {
 public MenuItemСacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
-private const string Fields = "Name, Modified, ModifiedBy, TaxesId, MenuCategoryId{columns}";
-private const string Values = "Name, Modified, ModifiedBy, TaxesId, MenuCategoryId{values}";
-private const string SelectAllQueryMenuItem = "SELECT [Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId]FROM [MenuItem] {whereTenantId:}";
-private const string InsertQuery = "INSERT INTO MenuItems (MenuItems.[Name],MenuItems.[Modified],MenuItems.[ModifiedBy],MenuItems.[TaxesId],MenuItems.[MenuCategoryId]OUTPUT INSERTED.MenuCategoryId VALUES (@Name, @Modified, @ModifiedBy, @TaxesId, @, ";
-private const string SelectQuery = "SELECT [Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId]FROM [MenuItems] ";
-private const string DeleteQuery = "DELETE FROM MenuItems";
-private const string WhereQueryByMenuCategoryId = "" WHERE [MenuItems].[MenuCategoryId] = @menuCategoryId{andTenantId:[MenuItems]} ";";
-private const string UpdateQueryByMenuCategoryId = "
-        private const string UpdateQueryByMenuCategoryId = "UPDATE [MenuItems] SET [Name] = @Name, [Modified] = @Modified, [ModifiedBy] = @ModifiedBy, [TaxesId] = @TaxesId, FROM [MenuItems] ";";
-
-
-		 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAllAsync()
-		 {
-			 var result = await DataAccessService.GetAsync< YumaPos.Server.Infrastructure.DataObjects.MenuItem> (SelectAllQueryMenuItem, null
-			 return result.ToList();
-		 }
-		 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll()
-		 {
-			 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem> (SelectAllQueryMenuItem, null
-			 return result.ToList();
-		 }
-
-public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
-{
-var result = DataAccessService.InsertObject(menuItem,InsertQuery);
-return (Guid)result;
-}
-public async Task <Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem);
-{
-var result = await DataAccessService.InsertObjectAsync(menuItem,InsertQuery);
-return (Guid)result;
-}
-
 /*
-
+Generation ERROR: System.NullReferenceException: Object reference not set to an instance of an object.
+   at VersionedRepositoryGeneration.Generator.Core.CodeClassGeneratorСacheRepository.GetFields() in C:\GitHub\Yumapos\Yumapos-WCF-Generator\WCF-Generator\RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs:line 61
+   at VersionedRepositoryGeneration.Generator.Infrastructure.BaseCodeClassGeneratorRepository.GetFullCode() in C:\GitHub\Yumapos\Yumapos-WCF-Generator\WCF-Generator\RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs:line 102
 */
-/*
-
-*/
-/*
-
-*/
-
-}
-}

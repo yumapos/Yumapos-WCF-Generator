@@ -1,5 +1,5 @@
 ﻿using System;
-using VersionedRepositoryGeneration.Models.Attributes;
+using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
 namespace VersionedRepositoryGeneration.Generator.Services
 {
@@ -7,13 +7,13 @@ namespace VersionedRepositoryGeneration.Generator.Services
     {
         public static DataAccessAttribute GetDataAccessAttribute(AttributeAndPropeperties dataAccessAttr)
         {
-            var identity = dataAccessAttr.GetParameterByKeyName("Identity");
+            var isDeleted = dataAccessAttr.GetParameterByKeyName("IsDeleted");
 
             var attr = new DataAccessAttribute
             {
                 TableName = dataAccessAttr.GetParameterByKeyName("TableName"),
                 TableVersion = dataAccessAttr.GetParameterByKeyName("TableVersion"),
-                IsIdentity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
+                IsDeleted = !string.IsNullOrEmpty(isDeleted) && Convert.ToBoolean(isDeleted),
                 FilterKey1 = dataAccessAttr.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = dataAccessAttr.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = dataAccessAttr.GetParameterByKeyName("FilterKey3"),

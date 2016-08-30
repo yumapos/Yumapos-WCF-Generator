@@ -7,11 +7,11 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface IMenuItemRepository : IRepository<MenuItem>
     {
-        Guid Insert(MenuItem menuItem);
+        void Insert(MenuItem menuItem);
 
-        Guid Update(MenuItem menuItem);
+        void UpdateByItemId(Guid itemId);
 
-        Guid Remove(MenuItem menuItem);
+        void RemoveByItemId(Guid itemId);
 
         MenuItem GetByMenuItemId(System.Guid menuItemId, bool? isDeleted);
 

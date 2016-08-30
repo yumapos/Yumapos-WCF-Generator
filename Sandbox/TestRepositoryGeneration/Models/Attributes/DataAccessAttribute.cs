@@ -5,8 +5,6 @@ namespace YumaPos.FrontEnd.Infrastructure.Common.DataAccess
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public sealed class DataAccessAttribute : Attribute
     {
-        public string PrimaryKey { get; set; }
-
         public string TableName { get; set; }
 
         public string TableVersion { get; set; }
@@ -19,10 +17,5 @@ namespace YumaPos.FrontEnd.Infrastructure.Common.DataAccess
 
         public bool IsDeleted { get; set; }
 
-        public bool IsIdentity { get; set; }
-    }
-
-    public class DbIgnoreAttribute : Attribute
-    {
     }
 }

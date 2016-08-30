@@ -4,203 +4,48 @@ using System.Linq;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Core.SQL
 {
-    internal static class SqlScriptGenerator
+    internal class SqlScriptGenerator
     {
         #region Cache table
 
-        public static string GenerateSelectAll(RepositoryInfo info)
+        public static string GenerateSelectAll(IEnumerable<string> parameters, string table)
         {
-            var codeProps = info.Elements.Select(e => "[" + e + "]");
-
-            return "SELECT " + string.Join(",", codeProps) + string.Format("FROM {0}{1}", GenerateTableName(info.ClassName), info.IsTenantRelated ? " {whereTenantId:}" : "");
+            return Select(parameters) + " " + From(table);
         }
 
-        public static string GenerateFieldsList(RepositoryInfo info)
+        public static string GenerateSelectBy(IEnumerable<string> parameters, string table)
         {
-            var sb = new StringBuilder();
-
-            int countMembers = info.Elements.Count;
-
-            int i = 0;
-            foreach (var codeProp in info.Elements)
-            {
-                if (!(info.IsIdentity && codeProp == info.Keys[0]) || info.IsJoined)
-                {
-                    sb.Append(codeProp);
-                    i++;
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers)
-                    {
-                        if (info.IsTenantRelated)
-                        {
-                            sb.Append("{columns}");
-                        }
-                    }
-                }
-                else
-                {
-                    countMembers = countMembers - 1;
-                }
-            }
-
-            return sb.ToString();
+            var enumerable = parameters as string[] ?? parameters.ToArray();
+            return Select(enumerable) + " " + From(table) + " " + Where(enumerable, table);
         }
 
-        public static string GenerateValuesList(RepositoryInfo info)
+        public static string GenerateInsert(IEnumerable<string> parameters, string table)
         {
-            var sb = new StringBuilder();
-            int countMembers = info.Elements.Count;
-
-            int i = 0;
-
-            foreach (var codeProp in info.Elements)
-            {
-                if (!(info.IsIdentity && codeProp == info.Keys[0]) || info.IsJoined)
-                {
-                    sb.Append(codeProp);
-                    i++;
-
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers)
-                    {
-                        if (info.IsTenantRelated)
-                        {
-                            sb.Append("{values}");
-                        }
-                    }
-                }
-                else
-                {
-                    countMembers = countMembers - 1;
-                }
-            }
-
-            return sb.ToString();
+            return Insert(parameters, table);
         }
 
-        public static string GenerateGetBy(RepositoryInfo info)
+        public static string GenerateWhere(IEnumerable<string> parameters, string table)
         {
-            var codeProps = info.Elements.Select(e => "[" + e + "]");
-            return "SELECT " + string.Join(",", codeProps) + string.Format("FROM {0} ", GenerateTableName(info.TableName));
+            return Where(parameters, table);
         }
 
-        public static string GenerateGetByJoined(RepositoryInfo info)
+        public static string GenerateUpdate(IEnumerable<string> parameters, string table)
         {
-            var codeProps = info.Elements.Concat(info.JoinedElements).Select(e => GenerateTableName(info.TableName) + ".[" + e + "]");
-            return "SELECT " + string.Join(",", codeProps) + string.Format(@"FROM {0} INNER JOIN {1} ON {0}.[{2}] = {1}.[{3}] ", GenerateTableName(info.TableName), info.TableNameJoined, info.Keys[0], info.PrimaryKeyJoined);
+            return Update(table) + " " + Set(parameters, table);
         }
 
-        public static string GenerateWhere(RepositoryInfo info, int j)
+        public static string GenerateRemove(IEnumerable<string> parameters, string table)
         {
-            var sb = new StringBuilder();
-
-            List<string> temp = GenerateCurrentKeys(info.Keys[j]);
-            sb.Append(String.Format("\" WHERE {2}.[{0}] = @{1}", temp[0], temp[0].FirstSymbolToLower(), GenerateTableName(info.TableName)));
-
-            for (int n = 1; n < temp.Count(); n++)
-            {
-                sb.Append(String.Format(" AND {2}.[{0}] = @{1}", temp[n], temp[n].FirstSymbolToLower(), GenerateTableName(info.TableName)));
-            }
-
-            if (info.IsTenantRelated)
-            {
-                var tenant = String.Format("andTenantId:{0}", GenerateTableName(info.TableName));
-                sb.Append(String.Format("{0}", '{' + tenant + '}'));
-            }
-
-            sb.Append(" \";");
-
-            if (info.FilterData != null || info.FilterDataJoined != null)
-            {
-                var filterData = info.FilterData != null ? info.FilterData : info.FilterDataJoined;
-                var tableName = info.FilterData != null ? GenerateTableName(info.TableName) : GenerateTableName(info.TableNameJoined);
-
-                sb.Append(String.Format("\r\n        private const string WhereQueryBy{0}{1}", info.PrimaryKeyNames[j], "And" + filterData.Name));
-                temp.Add(filterData.Name);
-                sb.Append(String.Format("= \" WHERE {2}.[{0}] = @{1}", temp[0], temp[0].FirstSymbolToLower(), tableName));
-
-                for (int n = 1; n < temp.Count(); n++)
-                {
-                    sb.Append(String.Format(" AND {2}.[{0}] = @{1}", temp[n], temp[n].FirstSymbolToLower(), tableName));
-                }
-
-                if (info.IsTenantRelated)
-                {
-                    var tenant = String.Format("andTenantId:{0}", tableName);
-                    sb.Append(String.Format("{0}", '{' + tenant + '}'));
-                }
-
-                sb.Append(" \";");
-                if (!info.IsFilterDataGeneration)
-                {
-                    string relation;
-                    if (!info.IsTenantRelated)
-                    {
-                        sb.Append("\r\n        private const string WhereWithFilterData = ");
-                        relation = "WHERE";
-                        if (info.IsTenantRelated)
-                        {
-                            relation = "AND";
-                        }
-                        sb.Append(" " + relation + " " + tableName + ".[" + filterData.Name + "] = " + filterData.Name.FirstSymbolToLower());
-                        sb.Append("; \";");
-                    }
-                    sb.Append("\r\n        private const string AndWithFilterData = WHERE");
-                    relation = "AND";
-                    sb.Append(" " + relation + " " + tableName + ".[" + filterData.Name + "] = " + filterData.Name.FirstSymbolToLower());
-                    sb.Append(" \";");
-                }
-                info.IsFilterDataGeneration = true;
-            }
-
-            return sb.ToString();
+            return Delete(table) + " " + Where(parameters, table);
         }
 
-        public static string GenerateUpdate(RepositoryInfo info, int j)
-        {
-            var sb = new StringBuilder();
+        #endregion
 
-            int countMembers = info.Elements.Count;
-            sb.Append(String.Format("\r\n        private const string UpdateQueryBy{0} ", info.PrimaryKeyNames[j]));
-
-            sb.Append(String.Format("= \"UPDATE {0} SET ", GenerateTableName(info.TableName)));
-            List<string> temp = GenerateCurrentKeys(info.Keys[j]);
-
-            int i = 0;
-            foreach (var codeProp in info.Elements)
-            {
-                if (temp.Count == 1 && j == 0)
-                {
-                    if (codeProp != info.Keys[j])
-                    {
-                        sb.Append(String.Format("[{0}] = @{0}", codeProp));
-                        i++;
-                        if (i < countMembers) sb.Append(", ");
-                        if (i == countMembers) sb.Append(" ");
-                    }
-                    else
-                    {
-                        countMembers = countMembers - 1;
-                    }
-                }
-                else
-                {
-                    sb.Append(String.Format("[{0}] = @{0}", codeProp));
-                    i++;
-                    if (i < countMembers) sb.Append(", ");
-                    if (i == countMembers) sb.Append(" ");
-                }
-            }
-
-            sb.Append(String.Format("FROM {0} ", GenerateTableName(info.TableName)));
-
-            sb.Append("\";");
-
-            return sb.ToString();
-        }
+        #region Old methods
 
         public static string GenerateUpdateJoined(RepositoryInfo info)
         {
@@ -266,22 +111,20 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             sb.Append(string.Format("INSERT INTO {0} (", info.TableName));
 
             sb.Append(string.Join(",", info.Elements
-                .Where(codeProp => (!(info.IsIdentity && codeProp == info.Keys[0]) || info.IsJoined || !info.IsNewKey) 
-                                    && !(info.IsIdentity && codeProp == info.Keys[0] && info.JoinedClassName == "int"))
+                .Where(codeProp => (info.IsJoined || !info.IsNewKey))
                 .Select(e => info.TableName + ".[" + e + "]")));
 
-            if ((info.Keys.Count() != 0 && !info.IsJoined) || !info.IsNewKey)
-            {
-                var temp = GenerateCurrentKeys(info.Keys[0]);
-                sb.Append(string.Format("OUTPUT INSERTED.{0}", temp[0]));
-            }
+            //if ((info.Keys.Count() != 0 && !info.IsJoined) || !info.IsNewKey)
+            //{
+            //    var temp = GenerateCurrentKeys(info.Keys[0]);
+            //    sb.Append(string.Format("OUTPUT INSERTED.{0}", temp[0]));
+            //}
 
             sb.Append(" VALUES (");
 
             var i = 0;
 
-            var elements = info.Elements.Where(codeProp => (!(info.IsIdentity && codeProp == info.Keys[0]) || !info.IsJoined || !info.IsNewKey)
-                                                           && !(info.IsIdentity && codeProp == info.Keys[0] && info.JoinedClassName == "int"));
+            var elements = info.Elements.Where(codeProp => (!info.IsJoined || !info.IsNewKey));
             foreach (var codeProp in elements)
             {
                
@@ -427,58 +270,111 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 
         #endregion
 
-        #region Private
+        #region SQL operators
 
-        private static List<string> GenerateCurrentKeys(string Key)
+        private static string Select(IEnumerable<string> columns)
         {
-            List<string> filters = Key.Split(',').ToList();
-            return filters;
+            return "SELECT " + string.Join(",", columns.Select(e => "[" + e + "]"));
+        }
+
+        private static string Insert(IEnumerable<string> columns, string ownerTableName)
+        {
+            var values = columns as string[] ?? columns.ToArray();
+            return "INSERT INTO " + ownerTableName + "(" + string.Join(",", values.Select(e => "[" + e + "]")) + ") VALUES(" + string.Join(",", values.Select(e => "@" + e)) + ")";
+        }
+
+        private static string From(string tableName)
+        {
+            return "FROM " + GenerateTableName(tableName);
+        }
+
+        private static string Where(IEnumerable<string> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("WHERE ");
+            sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
+
+            return sb.ToString();
+        }
+
+        private static string And(IEnumerable<string> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("AND ");
+            sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
+
+            return sb.ToString();
+        }
+
+        private static string Update(string tableName)
+        {
+            return "UPDATE " + GenerateTableName(tableName);
+        }
+
+        
+
+        private static string Set(IEnumerable<string> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("SET ");
+            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
+
+            return sb.ToString();
         }
 
 
-        private static readonly Dictionary<string, string> TableNameCash = new Dictionary<string, string>();
+        private static string Delete(string tableName)
+        {
+            return "DELETE FROM" + GenerateTableName(tableName);
+        }
+
+        #endregion
+
+        #region Private
+
+        private static string GenerateFieldsList(RepositoryInfo info)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(string.Join(",", info.Elements.Select(e => "[" + e + "]")));
+
+            return sb.ToString();
+        }
+
+        private static string GenerateValuesList(RepositoryInfo info)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(string.Join(",", info.Elements.Select(e => "@" + e)));
+
+            return sb.ToString();
+        }
+
+
+        private static readonly Dictionary<string, string> TableNameCache = new Dictionary<string, string>();
 
         private static string GenerateTableName(string tableName)
         {
             tableName = tableName.Trim();
             string cachetableName;
 
-            TableNameCash.TryGetValue(tableName, out cachetableName);
+            TableNameCache.TryGetValue(tableName, out cachetableName);
 
             if (cachetableName != null)
             {
                 return cachetableName;
             }
 
-            var nametrue = "";
+            var nametrue = string.Join(".", tableName.Trim('[', ']').Split('.').Select(part => "[" + part + "]"));
 
-            if (tableName.Contains('.'))
-            {
-                var fullName = tableName.Split('.').ToList();
-                foreach (var prefix in fullName)
-                {
-                    if (prefix[0] == '[')
-                    {
-                        nametrue = tableName;
-                    }
-                    else
-                    {
-                        nametrue = nametrue + "[" + prefix + "].";
-                    }
-                }
-                nametrue = nametrue.Substring(0, nametrue.Length - 1);
-            }
-            else if (tableName[0] != '[')
-            {
-                nametrue = "[" + tableName + "]";
-            }
-
-            TableNameCash.Add(tableName, nametrue);
+            TableNameCache.Add(tableName, nametrue);
 
             return nametrue;
         }
 
         #endregion
-
     }
 }

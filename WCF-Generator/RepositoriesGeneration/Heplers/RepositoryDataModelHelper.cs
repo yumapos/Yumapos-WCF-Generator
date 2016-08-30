@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using VersionedRepositoryGeneration.Models.Attributes;
+using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
+using VersionKeyAttribute = WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes.VersionKeyAttribute;
 
 namespace VersionedRepositoryGeneration.Generator.Heplers
 {
@@ -11,6 +12,8 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
         {
             get { return typeof(KeyAttribute).Name; }
         }
+
+        public static string VesionKeyAttributeName { get { return typeof(VersionKeyAttribute).Name; } }
 
         #endregion
 
@@ -32,22 +35,13 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
         #endregion
 
-        #region DataFilterAttribute
-
-        public static string DataFilterAttributeName
-        {
-            get { return typeof(DataFilterAttribute).Name; }
-        }
-
-
-        #endregion
-
         #region DataMany2ManyAttribute
 
         public static string DataMany2ManyAttributeName
         {
             get { return typeof(DataMany2ManyAttribute).Name; }
         }
+
 
         #endregion
 

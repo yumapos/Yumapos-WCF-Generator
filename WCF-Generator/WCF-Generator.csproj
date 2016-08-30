@@ -170,6 +170,7 @@
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterOption.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\IRepositoryClassGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\KeyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\MethodImplementationInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryMethods.cs" />
@@ -177,12 +178,12 @@
     <Compile Include="RepositoriesGeneration\Services\AttributeService.cs" />
     <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />
-    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataFilterAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataMany2ManyAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MappingsGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\VersionKey.cs" />
     <Compile Include="TypeSyntaxGeneratorVisitor.cs" />
     <Compile Include="VirtualizationVisitor.cs" />
     <Compile Include="WCFGenerator.cs" />
@@ -210,7 +211,6 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

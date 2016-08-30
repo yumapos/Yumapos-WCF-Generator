@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
 using VersionedRepositoryGeneration.Generator.Heplers;
 
 namespace VersionedRepositoryGeneration.Generator.Infrastructure
@@ -24,7 +25,17 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         public virtual string GetUsings()
         {
-            return "";
+            var compilation = CSharpCompilation.Create("compilation").AddSyntaxTrees(RepositoryInfo.RepositoryInterface.SyntaxTree);
+            var model = compilation.GetSemanticModel(RepositoryInfo.RepositoryInterface.SyntaxTree);
+            var symbol = model.GetDeclaredSymbol(RepositoryInfo.RepositoryInterface);
+            var fullName = symbol.ToString();
+            var nameSpace = fullName.Replace("." + RepositoryInfo.RepositoryInterface.Identifier.Text, "");
+
+            var sb = new StringBuilder();
+            sb.AppendLine("using YumaPos.Server.Data.Sql;");
+            sb.AppendLine("using " + nameSpace + ";");
+
+            return sb.ToString();
         }
 
         public virtual string GetNamespaceDeclaration()

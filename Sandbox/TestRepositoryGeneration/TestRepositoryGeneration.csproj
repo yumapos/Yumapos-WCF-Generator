@@ -35,6 +35,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -50,12 +51,14 @@
     <Compile Include="Interfaces\IDataAccessService.cs" />
     <Compile Include="Interfaces\ITenantUnrelated.cs" />
     <Compile Include="Interfaces\Repositories\IMenuCategoryRepository.cs" />
+    <Compile Include="Interfaces\Repositories\IRecipieItemRepository.cs" />
     <Compile Include="Interfaces\Repositories\IMenuItemRepository.cs" />
     <Compile Include="Interfaces\Repositories\IRepository.cs" />
     <Compile Include="Interfaces\Repositories\ITaxRepository.cs" />
     <Compile Include="Models\Attributes\DataAccessAttribute.cs" />
-    <Compile Include="Models\Attributes\DataFilterAttribute.cs" />
     <Compile Include="Models\Attributes\DataMany2ManyAttribute.cs" />
+    <Compile Include="Models\Attributes\DbIgnoreAttribute.cs" />
+    <Compile Include="Models\Attributes\VersionKey.cs" />
     <Compile Include="Models\MenuCategory.cs" />
     <Compile Include="Models\MenuItem.cs" />
     <Compile Include="Models\MenuItemToTax.cs" />
@@ -65,6 +68,9 @@
     <Compile Include="Repositories\Genereted\MenuItemRepository.g.cs" />
     <Compile Include="Repositories\Genereted\MenuItemVersionRepository.g.cs" />
     <Compile Include="Repositories\Genereted\MenuItemСacheRepository.g.cs" />
+    <Compile Include="Repositories\Genereted\RecipieItemRepository.g.cs" />
+    <Compile Include="Repositories\Genereted\RecipieItemVersionRepository.g.cs" />
+    <Compile Include="Repositories\Genereted\RecipieItemСacheRepository.g.cs" />
     <Compile Include="Repositories\MenuCategory\MenuCategoryСacheRepository.cs" />
     <Compile Include="Repositories\MenuCategory\MenuCategoryRepository.cs" />
     <Compile Include="Repositories\MenuCategory\MenuCategoryVersionRepository.cs" />

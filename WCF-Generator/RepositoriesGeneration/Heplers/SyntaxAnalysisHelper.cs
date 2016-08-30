@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
-using VersionedRepositoryGeneration.Models.Attributes;
 
 namespace VersionedRepositoryGeneration.Generator.Heplers
 {

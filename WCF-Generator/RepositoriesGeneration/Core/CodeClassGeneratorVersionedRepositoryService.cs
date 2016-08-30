@@ -168,10 +168,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ", bool? isDeleted = false)");
-            sb.AppendLine("{");
-            sb.AppendLine("return " + CacheRepositoryField + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ");");
-            sb.AppendLine("}");
+         //   sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ", bool? isDeleted = false)");
+         //   sb.AppendLine("{");
+          //  sb.AppendLine("return " + CacheRepositoryField + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ");");
+          //  sb.AppendLine("}");
 
             return sb.ToString();
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VersionedRepositoryGeneration.Models.Attributes
+namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes
 {
     internal class DataMany2ManyAttribute : Attribute
     {
