@@ -11,8 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YumaPos.Server.Data.Sql;
 using YumaPos.Server.Infrastructure.Repositories
+using YumaPos.Server.Data.Sql;
+
 
 
 namespace YumaPos.Server.Data.Sql.Taxes
@@ -29,19 +30,32 @@ _taxСacheRepository = new TaxСacheRepository(dataAccessService);
 _taxVersionRepository = new TaxVersionRepository(dataAccessService);
 }
 
+/*
+public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetAll(Boolean? isDeleted = false)
+{
+return _taxСacheRepository.GetAll(Boolean? isDeleted = false);
+}
 public async Task<IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>> GetAllAsync(Boolean? isDeleted = false)
 {
-return await _taxСacheRepository.GetAllAsync();
+return await _taxСacheRepository.GetAllAsync(Boolean? isDeleted = false);
 }
 
-public async Task<Guid> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax);
+*/
+/*
+public void Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 {
 tax.Modified = DateTimeOffset.Now;
 tax. = _taxVersionRepository.Insert(tax);
 _taxСacheRepository.Insert(tax);
-return tax.ItemVersionId;
+}
+public async Task InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+{
+tax.Modified = DateTimeOffset.Now;
+tax. = _taxVersionRepository.InsertAsync(tax);
+await _taxСacheRepository.InsertAsync(tax);
 }
 
+*/
 
 }
 }

@@ -11,10 +11,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YumaPos.Server.Data.Sql;
 using YumaPos.Server.Infrastructure.Repositories
 using TestRepositoryGeneration;
 using YumaPos.Server.Data.Sql.Taxes;
+using YumaPos.Server.Data.Sql;
+
 
 
 namespace TestRepositoryGeneration
@@ -37,37 +38,67 @@ _menuItemToTaxVersionRepository = new MenuItemToTaxVersionRepository(dataAccessS
 _taxСacheRepository = new TaxCashRepository(dataAccessService);
 }
 
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll(Boolean? isDeleted = false)
+{
+return _menuItemСacheRepository.GetAll(Boolean? isDeleted = false);
+}
 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetAllAsync(Boolean? isDeleted = false)
 {
-return await _menuItemСacheRepository.GetAllAsync();
+return await _menuItemСacheRepository.GetAllAsync(Boolean? isDeleted = false);
 }
 
+/*
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByModifiedBy(Guid  modifiedBy, Boolean? isDeleted = false)
+{
+return await _menuItemСacheRepository.GetByModifiedBy(Guid  modifiedBy, Boolean? isDeleted = false);
+}
 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByModifiedByAsync(Guid  modifiedBy, Boolean? isDeleted = false)
 {
-return await _menuItemСacheRepositoryGetByModifiedByAsync(Guid  modifiedBy, Boolean? isDeleted = false);
+return await _menuItemСacheRepository.GetByModifiedByAsync(Guid  modifiedBy, Boolean? isDeleted = false);
 }
 
-public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem);
+*/
+public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 menuItem.Modified = DateTimeOffset.Now;
 menuItem. = _menuItemVersionRepository.Insert(menuItem);
 _menuItemСacheRepository.Insert(menuItem);
-return menuItem.ItemVersionId;
 }
-
-public async Task UpdateByModifiedByAsync(Guid  modifiedBy))
+public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 menuItem.Modified = DateTimeOffset.Now;
-menuItem.ItemVersionId = _menuItemVersionRepositoryInsert(menuItem);
-_menuItemСacheRepository.Update(menuItem);
-return menuItem.ItemVersionId;
+menuItem. = _menuItemVersionRepository.InsertAsync(menuItem);
+await _menuItemСacheRepository.InsertAsync(menuItem);
 }
 
+/*
+public void UpdateByModifiedBy(MenuItem menuItem)
+{
+menuItem.Modified = DateTimeOffset.Now;
+menuItem. = _menuItemVersionRepositoryInsert(menuItem);
+_menuItemСacheRepository.UpdateByModifiedBy(menuItem);
+}
+public async Task UpdateByModifiedByAsync(MenuItem menuItem))
+{
+menuItem.Modified = DateTimeOffset.Now;
+menuItem. = _menuItemVersionRepositoryInsert(menuItem);
+_menuItemСacheRepository.UpdateByModifiedByAsync(menuItem);
+}
+
+*/
+/*
+public void RemoveByModifiedBy(Guid  modifiedBy)
+{
+menuItem.IsDeleted = true;
+_menuItemСacheRepository.UpdateModifiedBy(menuItem);
+}
 public async Task RemoveByModifiedByAsync(Guid  modifiedBy))
 {
 menuItem.IsDeleted = true;
-_menuItemСacheRepository.Update(menuItem);
+_menuItemСacheRepository.UpdateModifiedByAsync(menuItem);
+}
 
+*/
 
 }
 }

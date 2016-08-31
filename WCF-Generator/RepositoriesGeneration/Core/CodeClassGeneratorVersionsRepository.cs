@@ -37,6 +37,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
+            #region Asynchronous method
+
             sb.AppendLine("public Guid Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
             sb.AppendLine("{");
 
@@ -44,6 +46,21 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("return (Guid)DataAccessService.InsertObject(" + RepositoryInfo.ParameterName + ", InsertQuery);");
 
             sb.AppendLine("}");
+
+            #endregion
+
+            #region Asynchronous method
+
+            sb.AppendLine("public Task<Guid> InsertAsync(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
+            sb.AppendLine("{");
+
+            sb.AppendLine("var InsertQuery = @" + SqlScriptGenerator.GenerateInsertToVersionTable(RepositoryInfo, RepositoryName).SurroundWithQuotes() + ";");
+            sb.AppendLine("return await (Guid)DataAccessService.InsertObjectAsync(" + RepositoryInfo.ParameterName + ", InsertQuery);");
+
+            sb.AppendLine("}");
+
+            #endregion
+
             return sb.ToString();
         }
 

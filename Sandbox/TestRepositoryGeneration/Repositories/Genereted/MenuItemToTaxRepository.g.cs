@@ -11,8 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YumaPos.Server.Data.Sql;
 using YumaPos.Server.Infrastructure.Repositories
+using YumaPos.Server.Data.Sql;
+
 
 
 namespace TestRepositoryGeneration
@@ -29,19 +30,32 @@ _menuItemToTaxСacheRepository = new MenuItemToTaxСacheRepository(dataAccessSer
 _menuItemToTaxVersionRepository = new MenuItemToTaxVersionRepository(dataAccessService);
 }
 
+/*
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetAll(Boolean? isDeleted = false)
+{
+return _menuItemToTaxСacheRepository.GetAll(Boolean? isDeleted = false);
+}
 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetAllAsync(Boolean? isDeleted = false)
 {
-return await _menuItemToTaxСacheRepository.GetAllAsync();
+return await _menuItemToTaxСacheRepository.GetAllAsync(Boolean? isDeleted = false);
 }
 
-public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax);
+*/
+/*
+public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
 menuItemToTax. = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
 _menuItemToTaxСacheRepository.Insert(menuItemToTax);
-return menuItemToTax.ItemVersionId;
+}
+public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+{
+menuItemToTax.Modified = DateTimeOffset.Now;
+menuItemToTax. = _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
+await _menuItemToTaxСacheRepository.InsertAsync(menuItemToTax);
 }
 
+*/
 
 }
 }

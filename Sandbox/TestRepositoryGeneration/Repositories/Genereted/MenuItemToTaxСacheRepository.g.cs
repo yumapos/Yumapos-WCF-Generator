@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using YumaPos.Server.Data.Sql;
-using TestRepositoryGeneration;
 
 
 
@@ -52,13 +51,13 @@ return result.ToList();
 
 */
 /*
-public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
-return DataAccessService.InsertObject(menuItemToTax,InsertQuery);
+DataAccessService.InsertObject(menuItemToTax,InsertQuery);
 }
-public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax);
+public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
-return await DataAccessService.InsertObjectAsync(menuItemToTax,InsertQuery);
+await DataAccessService.InsertObjectAsync(menuItemToTax,InsertQuery);
 }
 
 */

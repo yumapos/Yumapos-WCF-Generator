@@ -25,8 +25,8 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public virtual string GetUsings()
         {
             var sb = new StringBuilder();
+
             sb.AppendLine("using YumaPos.Server.Data.Sql;");
-            sb.AppendLine("using " + RepositoryInfo.RepositoryNamespace + ";");
 
             return sb.ToString();
         }

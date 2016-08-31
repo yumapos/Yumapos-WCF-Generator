@@ -22,6 +22,12 @@ var InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVer
 OUTPUT INSERTED.VALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
 return (Guid)DataAccessService.InsertObject(menuItemToTax, InsertQuery);
 }
+public Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+{
+var InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted])
+OUTPUT INSERTED.VALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
+return await (Guid)DataAccessService.InsertObjectAsync(menuItemToTax, InsertQuery);
+}
 
 }
 }

@@ -8,8 +8,12 @@ namespace VersionedRepositoryGeneration.Generator.Core
 {
     internal class CodeClassGeneratorVersionedRepositoryService : BaseCodeClassGeneratorRepository
     {
+        #region Fields
+
         private readonly List<KeyValuePair<string, string>> _fieldsList = new List<KeyValuePair<string, string>>();
         private readonly List<string> _namespaces = new List<string>();
+
+        #endregion
 
         #region Properties
 
@@ -68,14 +72,15 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("using System.Linq;");
             sb.AppendLine("using System.Threading.Tasks;");
-            sb.AppendLine("using YumaPos.Server.Data.Sql;");
-            sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories");
+            sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories;");
 
             // add namespace of repositories which added from relation many to many 
             foreach (var n in Namespaces)
             {
                 sb.AppendLine("using " + n + ";");
             }
+
+            sb.AppendLine(base.GetUsings());
 
             return sb.ToString();
         }
@@ -160,7 +165,9 @@ namespace VersionedRepositoryGeneration.Generator.Core
             return sb.ToString();
         }
 
-        #region Generation
+        #endregion
+
+        #region Private
 
         private string GenerateGetAll(MethodImplementationInfo method)
         {
@@ -169,12 +176,25 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
+            #region Synchronous method
+
+            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(" + specialMethodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync();");
+            sb.AppendLine("return " + CacheRepositoryField + ".GetAll(" + specialParameter.Name.FirstSymbolToLower() + ");");
             sb.AppendLine("}");
 
-            return sb.ToString();
+            #endregion
+
+            #region Asynchronous method
+
+            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync("+ specialParameter.Name.FirstSymbolToLower() + ");");
+            sb.AppendLine("}");
+
+            #endregion
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
         private string GenerateGetBy(MethodImplementationInfo method)
@@ -185,12 +205,25 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + method.Key + "Async(" + methodParameters + ", "+ specialMethodParameter + ")");
+            #region Synchronous method
+
+            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetBy" + method.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("return await " + CacheRepositoryField + "GetBy" + method.Key + "Async(" + methodParameters + ", " + specialMethodParameter + ");");
+            sb.AppendLine("return " + CacheRepositoryField + ".GetBy" + method.Key + "(" + methodParameters + ", " + specialMethodParameter + ");");
             sb.AppendLine("}");
 
-            return sb.ToString();
+            #endregion
+
+            #region Asynchronous method
+
+            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + method.Key + "Async(" + methodParameters + ", " + specialMethodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("return await " + CacheRepositoryField + ".GetBy" + method.Key + "Async(" + methodParameters + ", " + specialMethodParameter + ");");
+            sb.AppendLine("}");
+
+            #endregion
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
         private string GenerateInsert(MethodImplementationInfo method)
@@ -199,60 +232,101 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
 
             var sb = new StringBuilder();
-            sb.AppendLine("public async Task<Guid> InsertAsync(" + methodParameter + ");");
+
+            #region Synchronous method
+
+            sb.AppendLine("public void Insert(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(RepositoryInfo.ParameterName + "."+ RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(RepositoryInfo.ParameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
             sb.AppendLine(CacheRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
 
             // TODO append many to many repository
 
-            sb.AppendLine("return " + RepositoryInfo.ParameterName + ".ItemVersionId;");
             sb.AppendLine("}");
 
-            return sb.ToString();
+            #endregion
+
+            #region Asynchronous method
+
+            sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(RepositoryInfo.ParameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".InsertAsync(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + RepositoryInfo.ParameterName + ");");
+
+            // TODO append many to many repository
+
+            sb.AppendLine("}");
+
+            #endregion
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
         private string GenerateUpdate(MethodImplementationInfo method)
         {
-            var parameter = method.Parameters.First();
-            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
-            var sqlParameter = parameter.Name.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassName + " " + RepositoryInfo.ParameterName;
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("public async Task UpdateBy" + method.Key + "Async(" + methodParameter + ")" + ")");
+            #region Synchronous method
+
+            sb.AppendLine("public void UpdateBy" + method.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + "Insert(" + RepositoryInfo.ParameterName + ");");
-            sb.AppendLine(CacheRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");"); 
-
-            // TODO append many to many repository
-
-            sb.AppendLine("return " + RepositoryInfo.ParameterName + ".ItemVersionId;");
+            sb.AppendLine(RepositoryInfo.ParameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + "Insert(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(CacheRepositoryField + ".UpdateBy" + method.Key + "(" + RepositoryInfo.ParameterName + ");");
             sb.AppendLine("}");
 
-            return sb.ToString();
+            #endregion
+
+            #region Asynchronous method
+
+            sb.AppendLine("public async Task UpdateBy" + method.Key + "Async(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(RepositoryInfo.ParameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + "Insert(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(CacheRepositoryField + ".UpdateBy" + method.Key + "Async(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine("}");
+
+            #endregion
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
         private string GenerateRemove(MethodImplementationInfo method)
         {
             var sb = new StringBuilder();
-            var parameter = method.Parameters.First();
-            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
-            sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter + ")" + ")");
+            var methodParameter = RepositoryInfo.ClassName + " " + RepositoryInfo.ParameterName;
+
+            #region Synchronous method
+
+            sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".IsDeleted = true;");
-            sb.AppendLine(CacheRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");");
-            
-            return sb.ToString();
+            sb.AppendLine(CacheRepositoryField + ".Update"+ method.Key + "(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine("}");
+
+            #endregion
+
+            #region Asynchronous method
+
+            sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine(RepositoryInfo.ParameterName + ".IsDeleted = true;");
+            sb.AppendLine(CacheRepositoryField + ".Update"+ method.Key + "Async(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine("}");
+
+            #endregion
+
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
         #endregion
-        
-        #endregion
 
-        #region Private 
+        #region Heplers 
 
         private IEnumerable<KeyValuePair<string, string>> GetAllFields()
         {

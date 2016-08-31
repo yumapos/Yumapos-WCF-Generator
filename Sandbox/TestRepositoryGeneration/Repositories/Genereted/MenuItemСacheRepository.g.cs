@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using YumaPos.Server.Data.Sql;
-using TestRepositoryGeneration;
 
 
 
@@ -58,46 +57,48 @@ return result.ToList();
 /*
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByModifiedBy(Guid  modifiedBy, Boolean? isDeleted = false)
 {
-object parameters = new {modifiedBy,Boolean? isDeleted = false};
+object parameters = new {modifiedBy,isDeleted};
 var sql = SelectQuery + WhereQueryByModifiedBy;
 if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(SelectQueryModifiedBy, new {Guid  modifiedBy});
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {modifiedBy});
 return result.ToList();
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByModifiedByAsync()(Guid  modifiedBy, bool? isDeleted = false)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByModifiedByAsync(Guid  modifiedBy, Boolean? isDeleted = false)
 {
-object parameters = null;
-var sql = SelectQuery,Boolean? isDeleted = false;
+object parameters = new {modifiedBy,isDeleted};
+var sql = SelectQuery + WhereQueryByModifiedBy;
 if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(SelectQueryModifiedBy, new {modifiedBy}));
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {modifiedBy}));
 return result.ToList();
 }
 
 
 */
-public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
-return DataAccessService.InsertObject(menuItem,InsertQuery);
+DataAccessService.InsertObject(menuItem,InsertQuery);
 }
-public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem);
+public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
-return await DataAccessService.InsertObjectAsync(menuItem,InsertQuery);
+await DataAccessService.InsertObjectAsync(menuItem,InsertQuery);
 }
 
 /*
 public void UpdateByModifiedBy(Guid  modifiedBy)
 {
-DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(UpdateQueryByModifiedBy, new {modifiedBy}).ToList();
+var sql = UpdateQueryByModifiedBy + WhereQueryByModifiedBy; 
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {modifiedBy});
 }
-public async Task UpdateByModifiedByAsync(Guid  modifiedBy))
+public async Task UpdateByModifiedByAsync(Guid  modifiedBy)
 {
-await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(UpdateQueryByModifiedBy, new {modifiedBy});
+var sql = UpdateQueryByModifiedBy + WhereQueryByModifiedBy; 
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {modifiedBy});
 }
 
 
@@ -105,11 +106,13 @@ await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObj
 /*
 public void RemoveByModifiedBy(Guid  modifiedBy)
 {
-DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(DeleteQueryByModifiedBy, new {modifiedBy});
+var sql = DeleteQueryByModifiedBy + WhereQueryByModifiedBy; 
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {modifiedBy});
 }
-public async Task RemoveByModifiedByAsync(Guid  modifiedBy))
+public async Task RemoveByModifiedByAsync(Guid  modifiedBy)
 {
-await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(DeleteQueryByModifiedBy, new {modifiedBy});
+var sql = DeleteQueryByModifiedBy + WhereQueryByModifiedBy; 
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {modifiedBy});
 }
 
 
