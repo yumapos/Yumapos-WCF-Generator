@@ -1,8 +1,10 @@
 ﻿using System;
+using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 
 namespace YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes
 {
+    [DataAccess(TableVersion = "TaxVersions")]
     class Tax
     {
         public Guid TaxId { get; set; }

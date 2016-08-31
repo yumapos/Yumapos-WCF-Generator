@@ -5,7 +5,7 @@ using YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccess(TableVersion = "MenuItemVersions", FilterKey1 = "MenuCategoryId", FilterKey2 = "ModifiedBy", IsDeleted = false)]
+    [DataAccessAttribute(TableVersion = "MenuItemVersions", FilterKey1 = "MenuCategoryId", FilterKey2 = "ModifiedBy", IsDeleted = false)]
     public class MenuItem : RecipieItem
     {
         public string Name { get; set; }
@@ -14,7 +14,7 @@ namespace YumaPos.Server.Infrastructure.DataObjects
 
         public Guid ModifiedBy { get; set; } 
 
-        [DataMany2Many(Type = typeof(Tax), Name = "MenuItemsToTaxes")]
+        [DataMany2Many(EntityType = "YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax", ManyToManyEntytyType = "YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax")]
         public IEnumerable<Guid> TaxesId { get; set; }
 
         public Guid MenuCategoryId { get; set; }

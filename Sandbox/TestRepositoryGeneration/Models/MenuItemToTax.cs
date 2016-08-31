@@ -1,8 +1,10 @@
 ﻿using System;
+using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    class MenuItemToTax
+    [DataAccess(TableVersion = "MenuItemToTaxVersions")]
+    public class MenuItemToTax
     {
         public Guid ItemId { get; set; }
 

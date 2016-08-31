@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using Microsoft.CodeAnalysis.CSharp;
 using VersionedRepositoryGeneration.Generator.Heplers;
 
 namespace VersionedRepositoryGeneration.Generator.Infrastructure
@@ -25,32 +24,21 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         public virtual string GetUsings()
         {
-            var compilation = CSharpCompilation.Create("compilation").AddSyntaxTrees(RepositoryInfo.RepositoryInterface.SyntaxTree);
-            var model = compilation.GetSemanticModel(RepositoryInfo.RepositoryInterface.SyntaxTree);
-            var symbol = model.GetDeclaredSymbol(RepositoryInfo.RepositoryInterface);
-            var fullName = symbol.ToString();
-            var nameSpace = fullName.Replace("." + RepositoryInfo.RepositoryInterface.Identifier.Text, "");
-
             var sb = new StringBuilder();
             sb.AppendLine("using YumaPos.Server.Data.Sql;");
-            sb.AppendLine("using " + nameSpace + ";");
+            sb.AppendLine("using " + RepositoryInfo.RepositoryNamespace + ";");
 
             return sb.ToString();
         }
 
         public virtual string GetNamespaceDeclaration()
         {
-            return "namespace " + RepositoryInfo.RepositoriesNamespace;
+            return "namespace " + RepositoryInfo.RepositoryNamespace;
         }
 
         public virtual string GetClassDeclaration()
         {
-            var classDeclaration = string.Format("public{0}class {1} : {2}{3}",
-                RepositoryInfo.CustomRepository != null ? " partial " : " ",
-                RepositoryName,
-                "RepositoryBase",
-                RepositoryInfo.RepositoryInterface != null ? "," + RepositoryInfo.RepositoryInterface.Identifier.Text : "");
-            return classDeclaration;
+            return "";
         }
 
         public virtual string GetFields()
@@ -98,9 +86,9 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                     // open class
                     sb.AppendLine("{");
                     // members
-                    sb.AppendLine(GetConstructors());
                     sb.AppendLine(GetFields());
                     sb.AppendLine(GetProperties());
+                    sb.AppendLine(GetConstructors());
                     sb.AppendLine(GetMethods());
                     // close class
                     sb.AppendLine("}");

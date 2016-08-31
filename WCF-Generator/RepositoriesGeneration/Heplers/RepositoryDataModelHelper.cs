@@ -10,7 +10,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
         public static string KeyAttributeName
         {
-            get { return typeof(KeyAttribute).Name; }
+            get { return typeof(KeyAttribute).Name.Replace("Attribute", ""); }
         }
 
         public static string VesionKeyAttributeName { get { return typeof(VersionKeyAttribute).Name; } }
@@ -21,7 +21,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
         public static string DbIgnoreAttributeName
         {
-            get { return typeof(DbIgnoreAttribute).Name; }
+            get { return typeof(DbIgnoreAttribute).Name.Replace("Attribute", ""); }
         }
 
         #endregion
@@ -30,7 +30,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
         public static string DataAccessAttributeName
         {
-            get { return typeof(DataAccessAttribute).Name; }
+            get { return typeof(DataAccessAttribute).Name.Replace("Attribute", ""); }
         }
 
         #endregion
@@ -39,7 +39,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
         public static string DataMany2ManyAttributeName
         {
-            get { return typeof(DataMany2ManyAttribute).Name; }
+            get { return typeof(DataMany2ManyAttribute).Name.Replace("Attribute", ""); }
         }
 
 

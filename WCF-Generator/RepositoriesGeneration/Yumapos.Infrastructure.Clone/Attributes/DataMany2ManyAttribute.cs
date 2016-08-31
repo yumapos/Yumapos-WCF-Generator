@@ -4,7 +4,7 @@ namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attri
 {
     internal class DataMany2ManyAttribute : Attribute
     {
-        public object Type { get; set; }
-        public string Name { get; set; }
+        public string EntityType { get; set; }
+        public string ManyToManyEntytyType { get; set; }
     }
 }

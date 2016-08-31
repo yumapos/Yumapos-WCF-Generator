@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,24 +10,38 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
     {
         public RepositoryInfo()
         {
-            Keys = new List<string>();
-            FilterKeys = new List<ParameterInfo>();
             FilterInfos = new List<FilterInfo>();
             PrimaryKeys = new List<ParameterInfo>();
             Elements = new List<string>();
-            JoinedElements = new List<string>();
+            Many2ManyInfo = new List<Many2ManyInfo>();
         }
-
-        public string RepositorySuffix { get; set; }
 
         #region Repository model class info
 
-        // Info
+        /// <summary>
+        ///     Information about inherited model repository (join repository)
+        /// </summary>
+        public RepositoryInfo JoinRepositoryInfo { get; set; }
+
+        /// <summary>
+        ///     Suffix of repository name
+        /// </summary>
+        public string RepositorySuffix { get; set; }
+
+        /// <summary>
+        ///     Namespace of repository class
+        /// </summary>
+        public string RepositoryNamespace { get; set; }
 
         /// <summary>
         ///     Repository model type
         /// </summary>
         public string ClassName { get; set; }
+
+        /// <summary>
+        ///     Name of base class (it joined to this)
+        /// </summary>
+        public string BaseClassName { get; set; }
 
         /// <summary>
         ///     Repository model type as method parameter name
@@ -50,21 +63,25 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// </summary>
         public List<string> Elements { get; set; }
 
+        /// <summary>
+        ///     Returns the name of generic repository interface
+        /// </summary>
+        public string GenericRepositoryName { get { return string.Format("I{0}<{1}>", RepositorySuffix, ClassName); } }
 
-        public FilterOption FilterData { get; set; }
-        public List<string> Keys { get; set; }
-
-        public string GenericRepositoryName { get; set; }
-
-        public List<string> PrimaryKeyNames { get; set; }// TODO delete
+        /// <summary>
+        ///     Name of repository interface
+        /// </summary>
+        public string RepositoryInterfaceName { get; set; }
 
         /// <summary>
         ///     Primary Keys
         /// </summary>
         public List<ParameterInfo> PrimaryKeys { get; set; }
-        public string PrimaryKeyName { get { return string.Join("And", PrimaryKeys.Select(info => info.Name)); } }
 
-        public List<ParameterInfo> FilterKeys { get; set; } // TODO refactor
+        /// <summary>
+        ///     Returns the name of the combined primary key 
+        /// </summary>
+        public string PrimaryKeyName { get { return string.Join("And", PrimaryKeys.Select(info => info.Name)); } }
 
         /// <summary>
         ///     Filters
@@ -72,109 +89,68 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public List<FilterInfo> FilterInfos { get; set; }
 
         /// <summary>
-        ///     Special filter options
+        ///     Special filter options (it is "isDeleted")
         /// </summary>
         public FilterInfo SpecialOptions { get; set; }
 
-        public string RepositoriesNamespace { get; set; }
+        /// <summary>
+        ///     Name of member of repository model which marked as version key
+        /// </summary>
         public string VersionKey { get; set; }
 
-        // Flags
+        /// <summary>
+        ///     Return true if repository supported versioning
+        /// </summary>
         public bool IsVersioning { get; set; }
+
+        /// <summary>
+        ///     Repository joined to another repository and can not generate
+        /// </summary>
+        public bool IsJoned { get; set; }
+
+        /// <summary>
+        ///     Repository is tenant related
+        /// </summary>
         public bool IsTenantRelated { get; set; }
+
+        /// <summary>
+        ///     Return true if constructor implemented in custom repository
+        /// </summary>
         public bool IsConstructorImplemented { get; set; }
-        public bool IsDeleted { get; set; }
-
-        public bool IsNewKey { get; set; }
-        public bool IsFilterDataGeneration { get; set; }
-
-        #endregion
-
-        #region Joined repository class info (inherited base class)
-
-        // Info
-        public string JoinedClassName { get; set; }
-        public string JoinedFullClassName { get; set; }
-        public string TableNameJoined { get; set; }
-        public List<string> JoinedElements { get; set; }
-        public string PrimaryKeyJoined { get; set; }
-        public string VersionKeyJoined { get; set; }
-        public FilterOption FilterDataJoined { get; set; }
-
-        // Flags
-        public bool IsJoined { get { return JoinedClassName != null; }}
-        public bool IsIdentityJoined { get; set; }
-
-        #endregion
-
-        #region Syntax info
-
-        /// <summary>
-        ///     Class declaration syntax of data object class from which generate repository class
-        /// </summary>
-        public ClassDeclarationSyntax DOClass { get; set; }
-
-        /// <summary>
-        ///     Class declaration syntax of joined data object class from which generate repository class
-        /// </summary>
-        public ClassDeclarationSyntax JoinedClass { get; set; }
-
-        /// <summary>
-        ///     Interface declaration syntax for interface of repository class which implemented interface "IRepository{T}"
-        /// </summary>
-        public InterfaceDeclarationSyntax RepositoryInterface { get; set; }
-
-        /// <summary>
-        ///     List of method declaration syntax for methods in repository interface
-        /// </summary>
-        public IEnumerable<MethodDeclarationSyntax> RepositoryInterfaceMethods { get; set; }
-
-        /// <summary>
-        ///     Class declaration syntax of partial repository class which implemented interface "IRepository{T}"
-        /// </summary>
-        public ClassDeclarationSyntax CustomRepository { get; set; }
-
-        /// <summary>
-        ///     List of method declaration syntax for methods in custom part of partial repository class
-        /// </summary>
-        public List<MethodDeclarationSyntax> CustomRepositoryMethods { get; set; }
 
         /// <summary>
         ///     List of method implementation info
         /// </summary>
         public IEnumerable<MethodImplementationInfo> MethodImplementationInfo { get; set; }
 
+        /// <summary>
+        ///     Info about relation many to many 
+        /// </summary>
+        public List<Many2ManyInfo> Many2ManyInfo { get; set; }
+
+        /// <summary>
+        ///     Return list of filters key for key based methods
+        /// </summary>
+        public List<FilterInfo> PossibleKeysForMethods
+        {
+            get
+            {
+                // Methods by keys from model (without methods from base model)
+                var possibleKeyMethods = new List<FilterInfo>();
+                // Primary key(s)
+                if (!string.IsNullOrEmpty(PrimaryKeyName))
+                {
+                    possibleKeyMethods.Add(new FilterInfo(PrimaryKeyName, PrimaryKeys));
+                }
+                // Filter keys
+                if (FilterInfos.Any())
+                {
+                    possibleKeyMethods.AddRange(FilterInfos);
+                }
+                return possibleKeyMethods;
+            }
+        }
+
         #endregion
-
-        public List<FilterInfo> GetPossibleKeysForMethods()
-        {
-            // Methods by keys from model (without methods from base model)
-            var possibleKeyMethods = new List<FilterInfo>();
-            // Primary key(s)
-            if (!string.IsNullOrEmpty(PrimaryKeyName))
-            {
-                possibleKeyMethods.Add(new FilterInfo(PrimaryKeyName, PrimaryKeys));
-            }
-            // Filter keys
-            if (FilterInfos.Any())
-            {
-                possibleKeyMethods.AddRange(FilterInfos);
-            }
-            return possibleKeyMethods;
-        }
-
-    }
-
-
-    internal class FilterInfo
-    {
-        public FilterInfo(string key, List<ParameterInfo> parameters)
-        {
-            Key = key;
-            Parameters = parameters;
-        }
-
-        public string Key { get; set; }
-        public List<ParameterInfo> Parameters { get; set; }
     }
 }

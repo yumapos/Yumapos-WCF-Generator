@@ -22,7 +22,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         #endregion
 
-
         #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string RepositoryName
@@ -40,6 +39,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine(base.GetUsings());
 
             return sb.ToString();
+        }
+
+        public override string GetClassDeclaration()
+        {
+            return "public partial class " + RepositoryName + " : RepositoryBase";
         }
 
         public override string GetFields()
@@ -148,7 +152,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             sb.AppendLine("object parameters = new {" + specialSqlParameter + "};");
             sb.AppendLine("var sql = " + _selectAllQuery + ";");
-            sb.AppendLine("if (" + specialSqlParameter + ")");
+            sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
             sb.AppendLine("{");
             sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
             sb.AppendLine("}");
@@ -179,7 +183,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             #region Synchronous method
             
-            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetBy" + method.Key + "(" + methodParameters + ", bool? isDeleted = false)");
+            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetBy" + method.Key + "(" + methodParameters + ", "+ specialMethodParameter + ")");
             sb.AppendLine("{");
 
             sb.AppendLine("object parameters = new {"+ sqlParameters + "," + specialMethodParameter + "};");
@@ -238,7 +242,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             #region Asynchronous method
 
-            sb.AppendLine("public async Task<Guid> InsertAsync(" + methodParameter + " " + ");");
+            sb.AppendLine("public async Task<Guid> InsertAsync(" + methodParameter + ");");
             sb.AppendLine("{");
             sb.AppendLine("return await DataAccessService.InsertObjectAsync(" + sqlParameter + "," + queryName + ");");
             sb.AppendLine("}");
@@ -312,7 +316,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
         }
 
         #endregion
-
 
     }
 }

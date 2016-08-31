@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using Microsoft.CodeAnalysis.CSharp;
 using VersionedRepositoryGeneration.Generator.Heplers;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
 
@@ -10,6 +9,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
     internal class CodeClassGeneratorVersionedRepositoryService : BaseCodeClassGeneratorRepository
     {
         private readonly List<KeyValuePair<string, string>> _fieldsList = new List<KeyValuePair<string, string>>();
+        private readonly List<string> _namespaces = new List<string>();
 
         #region Properties
 
@@ -33,7 +33,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             get { return "_" + VersionRepositoryType.FirstSymbolToLower(); }
         }
 
-        private List<KeyValuePair<string, string>> AllFields
+        private IEnumerable<KeyValuePair<string, string>> AllFields
         {
             get
             {
@@ -45,27 +45,44 @@ namespace VersionedRepositoryGeneration.Generator.Core
             }
         }
 
+        public IEnumerable<string> Namespaces
+        {
+            get
+            {
+                if (_namespaces.Count == 0)
+                {
+                    _namespaces.AddRange(GetNamespases());
+                }
+                return _namespaces;
+            }
+        }
+
         #endregion
 
         #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string GetUsings()
         {
-            var compilation = CSharpCompilation.Create("compilation").AddSyntaxTrees(RepositoryInfo.RepositoryInterface.SyntaxTree);
-            var model = compilation.GetSemanticModel(RepositoryInfo.RepositoryInterface.SyntaxTree);
-            var symbol = model.GetDeclaredSymbol(RepositoryInfo.RepositoryInterface);
-            var fullName = symbol.ToString();
-            var nameSpace = fullName.Replace("." + RepositoryInfo.RepositoryInterface.Identifier.Text, "");
-
             var sb = new StringBuilder();
             sb.AppendLine("using System;");
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("using System.Linq;");
             sb.AppendLine("using System.Threading.Tasks;");
             sb.AppendLine("using YumaPos.Server.Data.Sql;");
-            sb.AppendLine("using " + nameSpace + ";");
+            sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories");
+
+            // add namespace of repositories which added from relation many to many 
+            foreach (var n in Namespaces)
+            {
+                sb.AppendLine("using " + n + ";");
+            }
 
             return sb.ToString();
+        }
+
+        public override string GetClassDeclaration()
+        {
+            return "public partial class " + RepositoryName + " : RepositoryBase" + (RepositoryInfo.RepositoryInterfaceName != null ? "," + RepositoryInfo.RepositoryInterfaceName : "");
         }
 
         public override string GetConstructors()
@@ -79,12 +96,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
             {
                 sb.AppendLine(f.Value + " = new " + f.Key + "(dataAccessService);");
             }
-
             sb.AppendLine("}");
 
             return sb.ToString();
         }
-
 
         public override string GetFields()
         {
@@ -102,58 +117,92 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            foreach (var methodInfo in RepositoryInfo.MethodImplementationInfo)
-            {
-                var commented = !methodInfo.RequiresImplementation;
-                var codeText = "";
+            // RepositoryMethod.GetAll
+            var getAllMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.GetAll)
+                .Aggregate("", (s, method) => GenerateGetAll(method));
 
-                switch (methodInfo.Method)
-                {
-                    case RepositoryMethod.GetAll:
-                        codeText = GenerateGetAll();
-                        break;
-                    case RepositoryMethod.Insert:
-                        codeText = GenerateInsert();
-                        break;
-                    case RepositoryMethod.GetBy:
-                        codeText = GenerateGetBy();
-                        break;
-                    case RepositoryMethod.UpdateBy:
-                        codeText = GenerateUpdate();
-                        break;
-                    case RepositoryMethod.RemoveBy:
-                        codeText = GenerateRemove();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                codeText = commented ? codeText.SurroundWithComments() : codeText;
-                sb.AppendLine(codeText);
-            }
+            if (!string.IsNullOrEmpty(getAllMethods))
+                sb.AppendLine(getAllMethods);
+
+            // RepositoryMethod.GetBy
+            var getByMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.GetBy)
+                .Aggregate("", (s, method) => GenerateGetBy(method));
+
+            if (!string.IsNullOrEmpty(getByMethods))
+                sb.AppendLine(getByMethods);
+
+            // RepositoryMethod.Insert
+            var insertMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.Insert)
+                .Aggregate("", (s, method) => GenerateInsert(method));
+
+            if (!string.IsNullOrEmpty(insertMethods))
+                sb.AppendLine(insertMethods);
+
+            // RepositoryMethod.UpdateBy
+            var updateByMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.UpdateBy)
+                .Aggregate("", (s, method) => GenerateUpdate(method));
+
+            if (!string.IsNullOrEmpty(updateByMethods))
+                sb.AppendLine(updateByMethods);
+
+            // RepositoryMethod.RemoveBy
+            var removeByMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.RemoveBy)
+                .Aggregate("", (s, method) => GenerateRemove(method));
+
+            if (!string.IsNullOrEmpty(removeByMethods))
+                sb.AppendLine(removeByMethods);
 
             return sb.ToString();
         }
 
         #region Generation
 
-        private string GenerateGetAll()
+        private string GenerateGetAll(MethodImplementationInfo method)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(bool? isDeleted = false)");
-            sb.AppendLine("{");
-            sb.AppendLine("return " + CacheRepositoryField + ".GetAll();");
-            sb.AppendLine("}");
-            return sb.ToString();
-        }
-    
-        private string GenerateInsert()
-        {
+            var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
+            var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
+
             var sb = new StringBuilder();
 
-            sb.AppendLine("public Guid Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
+            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync();");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
+        private string GenerateGetBy(MethodImplementationInfo method)
+        {
+            var methodParameters = string.Join(", ", method.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
+            var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
+            var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + method.Key + "Async(" + methodParameters + ", "+ specialMethodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("return await " + CacheRepositoryField + "GetBy" + method.Key + "Async(" + methodParameters + ", " + specialMethodParameter + ");");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
+        private string GenerateInsert(MethodImplementationInfo method)
+        {
+            var parameter = method.Parameters.First();
+            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("public async Task<Guid> InsertAsync(" + methodParameter + ");");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
+            sb.AppendLine(RepositoryInfo.ParameterName + "."+ RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
             sb.AppendLine(CacheRepositoryField + ".Insert(" + RepositoryInfo.ParameterName + ");");
 
             // TODO append many to many repository
@@ -164,23 +213,15 @@ namespace VersionedRepositoryGeneration.Generator.Core
             return sb.ToString();
         }
 
-        private string GenerateGetBy()
+        private string GenerateUpdate(MethodImplementationInfo method)
         {
+            var parameter = method.Parameters.First();
+            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
+            var sqlParameter = parameter.Name.FirstSymbolToLower();
+
             var sb = new StringBuilder();
 
-         //   sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ", bool? isDeleted = false)");
-         //   sb.AppendLine("{");
-          //  sb.AppendLine("return " + CacheRepositoryField + " GetBy(System.Guid " + RepositoryInfo.Keys[0] + ");");
-          //  sb.AppendLine("}");
-
-            return sb.ToString();
-        }
-
-        private string GenerateUpdate()
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine("public Guid Update(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ";");
+            sb.AppendLine("public async Task UpdateBy" + method.Key + "Async(" + methodParameter + ")" + ")");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".Modified = DateTimeOffset.Now;");
             sb.AppendLine(RepositoryInfo.ParameterName + ".ItemVersionId = " + VersionRepositoryField + "Insert(" + RepositoryInfo.ParameterName + ");");
@@ -194,11 +235,12 @@ namespace VersionedRepositoryGeneration.Generator.Core
             return sb.ToString();
         }
 
-        private string GenerateRemove()
+        private string GenerateRemove(MethodImplementationInfo method)
         {
             var sb = new StringBuilder();
-
-            sb.AppendLine("public Guid Remove(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ";");
+            var parameter = method.Parameters.First();
+            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
+            sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter + ")" + ")");
             sb.AppendLine("{");
             sb.AppendLine(RepositoryInfo.ParameterName + ".IsDeleted = true;");
             sb.AppendLine(CacheRepositoryField + ".Update(" + RepositoryInfo.ParameterName + ");");
@@ -207,23 +249,35 @@ namespace VersionedRepositoryGeneration.Generator.Core
         }
 
         #endregion
-
-
+        
         #endregion
-
 
         #region Private 
 
-        private List<KeyValuePair<string, string>> GetAllFields()
+        private IEnumerable<KeyValuePair<string, string>> GetAllFields()
         {
             var list = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(CacheRepositoryType, CacheRepositoryField),
                 new KeyValuePair<string, string>(VersionRepositoryType, VersionRepositoryField)
-                // TODO append many to many repository
             };
 
+            var many2ManyRepositories = RepositoryInfo.Many2ManyInfo
+                .SelectMany(i => new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(i.TableName + "ÑacheRepository", "_" + i.TableName.FirstSymbolToLower()+"ÑacheRepository"),
+                    new KeyValuePair<string, string>(i.TableName + "VersionRepository", "_" + i.TableName.FirstSymbolToLower()+"VersionRepository"),
+                    new KeyValuePair<string, string>(i.EntityType + "CashRepository", "_" +i.EntityType.FirstSymbolToLower()+"ÑacheRepository")
+                });
+
+            list.AddRange(many2ManyRepositories);
             return list;
+        }
+
+        private IEnumerable<string> GetNamespases()
+        {
+            // add namespace of repositories which added from relation many to many 
+            return RepositoryInfo.Many2ManyInfo.SelectMany(i => i.RepositoryNamespaces);
         }
 
         #endregion

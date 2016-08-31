@@ -21,5 +21,16 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             return attr;
         }
+
+        public static DataMany2ManyAttribute GetMenyToManyAttribute(AttributeAndPropeperties m2mAttr)
+        {
+            var attr = new DataMany2ManyAttribute
+            {
+                ManyToManyEntytyType = m2mAttr.GetParameterByKeyName("ManyToManyEntytyType"),
+                EntityType = m2mAttr.GetParameterByKeyName("EntityType"),
+            };
+
+            return attr;
+        }
     }
 }

@@ -59,7 +59,7 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
                 {
                     classes = classVisitor.classes.Where(x => x.AttributeLists
                         .Any(att => att.Attributes
-                            .Any(att2 => att2.Name.ToString() == attribute || att2.Name.ToString() + "Attribute" == attribute))).ToList();
+                            .Any(att2 => att2.Name.ToString().Contains(attribute)))).ToList();
                 }
                 else
                 {

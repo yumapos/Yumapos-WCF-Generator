@@ -12,7 +12,7 @@
 //    {
 //        private TaxCashRepository _taxRepository;
 
-//        MenuItemCashRepository _menuItemCashRepository;
+//        MenuItemCacheRepository _menuItemCashRepository;
 //        MenuItemVersionRepository _menuItemVersionRepository;
 
 //        MenuItemsToTaxesСacheRepository _menuItemsToTaxesCashRepository;
@@ -80,7 +80,7 @@
 //        public Guid Remove(MenuItem menuItem)
 //        {
 //            menuItem.IsDeleted = true;
-            
+
 //            return Update(menuItem);
 //        }
 
