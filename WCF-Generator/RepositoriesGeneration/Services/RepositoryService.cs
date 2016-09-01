@@ -10,6 +10,7 @@ using VersionedRepositoryGeneration.Generator.Core;
 using VersionedRepositoryGeneration.Generator.Heplers;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
 namespace VersionedRepositoryGeneration.Generator.Services
 {
@@ -70,6 +71,8 @@ namespace VersionedRepositoryGeneration.Generator.Services
                         }
                     }
                 }
+                // Fill method info
+                repositoryInfo.MethodImplementationInfo.AddRange(GetUnimplementedMethods(repositoryInfo));
             }
 
             // Return without attached (it can not generate)
@@ -79,9 +82,22 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             foreach (var many2Many in many2ManyInfos)
             {
+                // get namespaces for generate reference in repository
                 many2Many.RepositoryNamespaces = resultRepositories
-                    .Where(r => (r.RepositoryName.StartsWith(many2Many.EntityType) || r.RepositoryName.StartsWith(many2Many.TableName)) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix) && r.RepositoryInfo.RepositoryNamespace != null)
+                    .Where(r => (r.RepositoryName.StartsWith(many2Many.EntityType) || r.RepositoryName.StartsWith(many2Many.ManyToManyEntytyType)) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix) && r.RepositoryInfo.RepositoryNamespace != null)
                     .Select(r => r.RepositoryInfo.RepositoryNamespace).Distinct().ToList();
+
+                // get repository info by  EntityType from [many2manyAttribute]
+                many2Many.EntityRepositoryInfo = resultRepositories
+                    .Where(r => r.RepositoryName.StartsWith(many2Many.EntityType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
+                    .Select(r => r.RepositoryInfo)
+                    .FirstOrDefault();
+
+                // get repository info by ManyToManyEntytyType from [many2manyAttribute]
+                many2Many.ManyToManyRepositoryInfo = resultRepositories
+                    .Where(r => r.RepositoryName.StartsWith(many2Many.ManyToManyEntytyType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
+                    .Select(r => r.RepositoryInfo)
+                    .FirstOrDefault();
             }
 
             return resultRepositories;
@@ -145,7 +161,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             #region DataAccess
 
-            var dataAccess = AttributeService.GetDataAccessAttribute(dataAccessAttr);
+            var dataAccess = (DataAccessAttribute)dataAccessAttr;
 
             var tableName = dataAccess.TableName ?? doClass.Identifier.ToString() + 's';
             repositoryInfo.TableName = tableName;
@@ -223,7 +239,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             // Primary keys info
             var primaryKeys = properties
-                .Where(p => p.AttributeLists.Any() && p.AttributeLists.First().Attributes.Any(a => a.Name.ToString().Contains(RepositoryDataModelHelper.KeyAttributeName)))
+                .Where(p => p.AttributeLists.Any() && p.AttributeLists.First().Attributes.Any(a => a.Name.ToString().Contains(RepositoryDataModelHelper.KeyAttributeName) && !a.Name.ToString().Contains(RepositoryDataModelHelper.VesionKeyAttributeName)))
                 .Select(p => new ParameterInfo(p.Identifier.Text, p.Type.ToFullString()));
             repositoryInfo.PrimaryKeys.AddRange(primaryKeys);
 
@@ -234,14 +250,14 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 .FirstOrDefault();
             repositoryInfo.VersionKey = versionKey;
 
-            // Version key
-            var meny2Meny = properties
+            // Many to many
+            var many2ManyInfos = properties
                 .Where(p => p.AttributeLists.Any() && p.AttributeLists.First().Attributes.Any(a => a.Name.ToString().Contains(RepositoryDataModelHelper.DataMany2ManyAttributeName)))
                 .SelectMany(p => SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(p))
-                .Select(p => AttributeService.GetMenyToManyAttribute(p))
-                .Select(a => new Many2ManyInfo(a.ManyToManyEntytyType.Split('.').Last(), a.EntityType.Split('.').Last()));
+                .Select(p => new Tuple<string,DataMany2ManyAttribute>(p.OwnerElementName, (DataMany2ManyAttribute)p))
+                .Select(a => new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
 
-            repositoryInfo.Many2ManyInfo.AddRange(meny2Meny);
+            repositoryInfo.Many2ManyInfo.AddRange(many2ManyInfos);
 
             #endregion
 
@@ -280,7 +296,12 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             // Search method for implementation
             var repositoryInterfaceMethods = SolutionSyntaxWalker.GetMethodsFromMembers(repoInterface.Members.ToList());
-            repositoryInfo.MethodImplementationInfo = GetUnimplementedMethods(repositoryInterfaceMethods, customRepositoryMethods, repositoryInfo);
+            repositoryInfo.InterfaceMethodNames.AddRange(repositoryInterfaceMethods.Select(m => m.Identifier.Text));
+
+            if(customRepositoryMethods!=null)
+            {
+                repositoryInfo.CustomRepositoryMethodNames.AddRange(customRepositoryMethods.Select(m => m.Identifier.Text));
+            }
 
             #endregion
 
@@ -293,17 +314,16 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         #region Private
 
-        private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<MethodDeclarationSyntax> interfaceMethods, List<MethodDeclarationSyntax> castomRepositoryMethods, RepositoryInfo info)
+        private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(RepositoryInfo info)
         {
             IEnumerable<string> unimplemented = new List<string>();
 
-            if (interfaceMethods != null)
+            if (info.InterfaceMethodNames != null)
             {
                 // Check implemented methods in custom repository
-                var temp = castomRepositoryMethods != null
-                    ? interfaceMethods.Where(im => castomRepositoryMethods.FirstOrDefault(cm => cm.Identifier.Text == im.Identifier.Text) == null)
-                    : interfaceMethods;
-                unimplemented = temp.Select(m => m.Identifier.Text);
+                unimplemented = info.CustomRepositoryMethodNames != null
+                    ? info.InterfaceMethodNames.Where(im => info.CustomRepositoryMethodNames.FirstOrDefault(cm => cm == im) == null)
+                    : info.InterfaceMethodNames;
             }
 
             // Set methods which possible to generate
@@ -317,14 +337,14 @@ namespace VersionedRepositoryGeneration.Generator.Services
             var methods = new List<MethodImplementationInfo>
             {
                 new MethodImplementationInfo() { Method = RepositoryMethod.GetAll, RequiresImplementation = false},
-                new MethodImplementationInfo() { Method = RepositoryMethod.Insert, Parameters = new List<ParameterInfo>() {new ParameterInfo(info.ParameterName, info.ClassFullName)}, RequiresImplementation = false},
+                new MethodImplementationInfo() { Method = RepositoryMethod.Insert, RequiresImplementation = false},
             };
 
             // Methods by keys from model (without methods from base model)
             foreach (var method in info.PossibleKeysForMethods)
             {
                 methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = method.Key, RequiresImplementation = false });
                 methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
             }
 

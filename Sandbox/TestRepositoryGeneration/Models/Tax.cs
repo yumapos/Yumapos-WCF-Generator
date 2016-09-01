@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using TestRepositoryGeneration.Models.Attributes;
 using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 
@@ -7,8 +9,10 @@ namespace YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes
     [DataAccess(TableVersion = "TaxVersions")]
     class Tax
     {
+        [Key]
         public Guid TaxId { get; set; }
 
+        [VersionKey]
         public Guid TaxVersionId { get; set; }
 
         public string Name { get; set; }

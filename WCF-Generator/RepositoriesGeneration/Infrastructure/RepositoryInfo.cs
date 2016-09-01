@@ -8,12 +8,19 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 {
     internal class RepositoryInfo
     {
+        private string _versionKey;
+        private string _primaryKeyName;
+        private List<ParameterInfo> _primaryKeys;
+
         public RepositoryInfo()
         {
             FilterInfos = new List<FilterInfo>();
             PrimaryKeys = new List<ParameterInfo>();
             Elements = new List<string>();
             Many2ManyInfo = new List<Many2ManyInfo>();
+            InterfaceMethodNames = new List<string>();
+            CustomRepositoryMethodNames = new List<string>();
+            MethodImplementationInfo = new List<MethodImplementationInfo>();
         }
 
         #region Repository model class info
@@ -44,11 +51,6 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public string BaseClassName { get; set; }
 
         /// <summary>
-        ///     Repository model type as method parameter name
-        /// </summary>
-        public string ParameterName { get { return ClassName.FirstSymbolToLower(); } }
-
-        /// <summary>
         ///     Full type of repository model
         /// </summary>
         public string ClassFullName { get; set; }
@@ -63,6 +65,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// </summary>
         public List<string> Elements { get; set; }
 
+        public string RepositoryName
+        {
+            get { return ClassName + RepositorySuffix; }
+        }
+
         /// <summary>
         ///     Returns the name of generic repository interface
         /// </summary>
@@ -76,12 +83,44 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// <summary>
         ///     Primary Keys
         /// </summary>
-        public List<ParameterInfo> PrimaryKeys { get; set; }
+        public List<ParameterInfo> PrimaryKeys
+        {
+            get
+            {
+                if (_primaryKeys == null)
+                {
+                    _primaryKeys = new List<ParameterInfo>();
+                }
+                if(_primaryKeys.Count == 0 && JoinRepositoryInfo != null && JoinRepositoryInfo.PrimaryKeys.Count !=0)
+                {
+                    _primaryKeys.AddRange(JoinRepositoryInfo.PrimaryKeys);
+                }
+                return _primaryKeys;
+            }
+            set { _primaryKeys = value; }
+        }
 
         /// <summary>
         ///     Returns the name of the combined primary key 
         /// </summary>
-        public string PrimaryKeyName { get { return string.Join("And", PrimaryKeys.Select(info => info.Name)); } }
+        public string PrimaryKeyName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_primaryKeyName))
+                {
+                    if(PrimaryKeys!=null && PrimaryKeys.Count != 0)
+                    {
+                        _primaryKeyName = string.Join("And", PrimaryKeys.Select(info => info.Name));
+                    }
+                    else if(JoinRepositoryInfo!=null)
+                    {
+                        _primaryKeyName = JoinRepositoryInfo.PrimaryKeyName;
+                    }
+                }
+                return _primaryKeyName;
+            }
+        }
 
         /// <summary>
         ///     Filters
@@ -96,7 +135,14 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// <summary>
         ///     Name of member of repository model which marked as version key
         /// </summary>
-        public string VersionKey { get; set; }
+        public string VersionKey
+        {
+            get
+            {
+                return _versionKey ?? (JoinRepositoryInfo != null ? JoinRepositoryInfo.VersionKey : null);
+            }
+            set { _versionKey = value; }
+        }
 
         /// <summary>
         ///     Return true if repository supported versioning
@@ -121,12 +167,15 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// <summary>
         ///     List of method implementation info
         /// </summary>
-        public IEnumerable<MethodImplementationInfo> MethodImplementationInfo { get; set; }
+        public List<MethodImplementationInfo> MethodImplementationInfo { get; set; }
 
         /// <summary>
         ///     Info about relation many to many 
         /// </summary>
         public List<Many2ManyInfo> Many2ManyInfo { get; set; }
+
+        public List<string> InterfaceMethodNames { get; set; }
+        public List<string> CustomRepositoryMethodNames { get; set; }
 
         /// <summary>
         ///     Return list of filters key for key based methods
@@ -135,7 +184,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         {
             get
             {
-                // Methods by keys from model (without methods from base model)
+                // Methods by keys from model 
                 var possibleKeyMethods = new List<FilterInfo>();
                 // Primary key(s)
                 if (!string.IsNullOrEmpty(PrimaryKeyName))
@@ -147,6 +196,18 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                 {
                     possibleKeyMethods.AddRange(FilterInfos);
                 }
+
+                
+                // Add methods from base model
+                //if (JoinRepositoryInfo != null)
+                //{
+                //    // Primary key(s)
+                //    if (!string.IsNullOrEmpty(JoinRepositoryInfo.PrimaryKeyName))
+                //    {
+                //        possibleKeyMethods.Add(new FilterInfo(JoinRepositoryInfo.PrimaryKeyName, JoinRepositoryInfo.PrimaryKeys));
+                //    }
+                //}
+
                 return possibleKeyMethods;
             }
         }

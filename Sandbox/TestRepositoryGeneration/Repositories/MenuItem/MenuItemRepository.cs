@@ -1,6 +1,7 @@
 ﻿//using System;
 //using System.Collections.Generic;
 //using System.Linq;
+//using TestRepositoryGeneration;
 //using YumaPos.FrontEnd.Infrastructure.Configuration;
 //using YumaPos.Server.Data.Sql.Taxes;
 //using YumaPos.Server.Infrastructure.DataObjects;
@@ -12,7 +13,7 @@
 //    {
 //        private TaxCashRepository _taxRepository;
 
-//        MenuItemCacheRepository _menuItemCashRepository;
+//        MenuItemСacheRepository _menuItemCashRepository;
 //        MenuItemVersionRepository _menuItemVersionRepository;
 
 //        MenuItemsToTaxesСacheRepository _menuItemsToTaxesCashRepository;
@@ -21,19 +22,19 @@
 //        public MenuItemRepository(IDataAccessService dataAccessService) : base(dataAccessService)
 //        {
 //            _taxRepository = new TaxCashRepository(dataAccessService);
-//            _menuItemCashRepository = new MenuItemCashRepository(dataAccessService);
+//            _menuItemCashRepository = new MenuItemСacheRepository(dataAccessService);
 //            _menuItemVersionRepository = new MenuItemVersionRepository(dataAccessService);
 
 //            _menuItemsToTaxesCashRepository = new MenuItemsToTaxesСacheRepository(dataAccessService);
 //            _menuItemsToTaxesVersionRepository = new MenuItemsToTaxesVersionRepository(dataAccessService);
 //        }
 
-//        private void UpdateMenuItemsToTaxes(MenuItem menuItem, IEnumerable<Guid> taxIds)
+//        private void UpdateMenuItemsToTaxes(MenuItem menuItem)
 //        {
-//            if (taxIds == null)
-//                taxIds = _menuItemsToTaxesCashRepository.GetTaxeIdsByMenuItemId(menuItem.ItemId);
+//            if (menuItem.TaxesId == null)
+//                menuItem.TaxesId = _menuItemsToTaxesCashRepository.GetTaxeIdsByMenuItemId(menuItem.ItemId);
 
-//            var listOfMenuItemsToTaxes = taxIds.Select(taxId => new MenuItemToTax()
+//            var listOfMenuItemsToTaxes = menuItem.TaxesId.Select(taxId => new MenuItemToTax()
 //            {
 //                TaxId = taxId,
 //                TaxVersionId = _taxRepository.GetByTaxId(taxId).TaxVersionId,
@@ -53,7 +54,7 @@
 //            }
 //        }
 
-//        public Guid Insert(MenuItem menuItem)
+//        public void Insert(MenuItem menuItem)
 //        {
 //            menuItem.Modified = DateTimeOffset.Now;
 
@@ -61,32 +62,36 @@
 //            _menuItemCashRepository.Insert(menuItem);
 
 //            UpdateMenuItemsToTaxes(menuItem, menuItem.TaxesId);
-
-//            return menuItem.ItemVersionId;
 //        }
 
-//        public Guid Update(MenuItem menuItem)
+//        public void Update(MenuItem menuItem)
 //        {
 //            menuItem.Modified = DateTimeOffset.Now;
 
 //            menuItem.ItemVersionId = _menuItemVersionRepository.Insert(menuItem);
-//            _menuItemCashRepository.Update(menuItem);
-
-//            UpdateMenuItemsToTaxes(menuItem, menuItem.TaxesId);
-
-//            return menuItem.ItemVersionId;
+//            _menuItemCashRepository.UpdateByModifiedBy(menuItem);
 //        }
 
-//        public Guid Remove(MenuItem menuItem)
+//        public void RemoveById(MenuItem menuItem)
 //        {
 //            menuItem.IsDeleted = true;
 
-//            return Update(menuItem);
+//            Update(menuItem);
 //        }
 
-//        public MenuItem GetByMenuItemId(System.Guid menuItemId, bool? isDeleted = false)
+//        public void RemoveByModifiedBy(Guid modifiedBy)
 //        {
-//            return _menuItemCashRepository.GetByMenuItemId(menuItemId);
+//            var result = _menuItemCashRepository.GetByModifiedBy(modifiedBy);
+//            foreach (var item in result)
+//            {
+//                item.IsDeleted = true;
+//                Update(item);
+//            }
+//        }
+
+//        public IEnumerable<MenuItem> GetByMenuItemId(System.Guid menuItemId, bool? isDeleted = false)
+//        {
+//            return _menuItemCashRepository.GetByModifiedBy(menuItemId, isDeleted);
 //        }
 
 //        public IEnumerable<MenuItem> GetAll(bool? isDeleted = false)

@@ -3,7 +3,7 @@ using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccess(TableVersion = "MenuItemToTaxVersions")]
+    [DataAccess(TableVersion = "MenuItemToTaxVersions", FilterKey1 = "ItemId", FilterKey2 = "TaxId")]
     public class MenuItemToTax
     {
         public Guid ItemId { get; set; }

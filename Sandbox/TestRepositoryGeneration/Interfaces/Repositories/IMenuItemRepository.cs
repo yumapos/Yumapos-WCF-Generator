@@ -13,7 +13,7 @@ namespace YumaPos.Server.Infrastructure.Repositories
 
         void RemoveByItemId(MenuItem menuItem);
 
-        MenuItem GetByMenuItemId(Guid menuItemId, bool? isDeleted);
+        IEnumerable<MenuItem> GetByMenuItemId(Guid menuItemId, bool? isDeleted);
 
         IEnumerable<MenuItem> GetAll(bool? isDeleted);
     }

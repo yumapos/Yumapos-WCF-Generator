@@ -216,16 +216,16 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            var parameter = method.Parameters.First();
-            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
-            var sqlParameter = parameter.Name.FirstSymbolToLower();
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+
             var queryName = _insertQuery;
 
             #region Synchronous method
 
             sb.AppendLine("public void Insert(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("DataAccessService.InsertObject(" + sqlParameter + "," + queryName + ");");
+            sb.AppendLine("DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
             sb.AppendLine("}");
 
             #endregion
@@ -234,7 +234,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("await DataAccessService.InsertObjectAsync(" + sqlParameter + "," + queryName + ");");
+            sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
             sb.AppendLine("}");
 
             #endregion
@@ -246,33 +246,28 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            var parameter = method.Parameters.First();
-            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
-            var sqlParameter = parameter.Name.FirstSymbolToLower();
+            // Update by entity (use filter key)
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
 
             var queryName = _updateQueryBy + method.Key;
             var whereQueryName = _whereQueryBy + method.Key;
 
-            #region Synchronous method
-
+            // Synchronous method
             sb.AppendLine("public void UpdateBy" + method.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine("var sql = " + queryName + " + " + whereQueryName + "; ");
-            sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, new {" + sqlParameter + "});");
+            sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
             sb.AppendLine("}");
 
-            #endregion
-
-            #region Asynchronous method
-
+            // Asynchronous method
             sb.AppendLine("public async Task UpdateBy" + method.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine("var sql = " + queryName + " + " + whereQueryName + "; ");
-            sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, new {" + sqlParameter + "});");
+            sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
             sb.AppendLine("");
 
-            #endregion
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
@@ -281,33 +276,47 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            var parameter = method.Parameters.First();
-            var methodParameter = parameter.TypeName + " " + parameter.Name.FirstSymbolToLower();
-            var sqlParameter = parameter.Name.FirstSymbolToLower();
-
+            // Remove by entity (use filter key)
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+            
             var queryName = _deleteQueryBy + method.Key;
             var whereQueryName = _whereQueryBy + method.Key;
 
-            #region Synchronous method
-
+            // Synchronous method
             sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine("var sql = " + queryName + " + " + whereQueryName + "; ");
-            sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, new {" + sqlParameter + "});");
+            sb.AppendLine("DataAccessService.PersistObject("+ parameterName + ", sql);");
             sb.AppendLine("}");
 
-            #endregion
-
-            #region Asynchronous method
-
+            // Asynchronous method
             sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine("var sql = " + queryName + " + " + whereQueryName + "; ");
-            sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, new {" + sqlParameter + "});");
+            sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
             sb.AppendLine("");
 
-            #endregion
+            // Remove by filter key
+            var parameter2 = method.Parameters.First();
+            var parameter2Name = parameter2.Name.FirstSymbolToLower();
+            var methodParameter2 = parameter2.TypeName + " " + parameter2Name;
+
+            // Synchronous method
+            sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter2 + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("var sql = " + queryName + " + " + whereQueryName + "; ");
+            sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, new {" + parameter2Name + "});");
+            sb.AppendLine("}");
+
+            // Asynchronous method
+            sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter2 + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("var sql = " + queryName + " + " + whereQueryName + "; ");
+            sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, new {" + parameter2Name + "});");
+            sb.AppendLine("}");
+            sb.AppendLine("");
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }

@@ -176,7 +176,6 @@
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryMethods.cs" />
     <Compile Include="RepositoriesGeneration\Services\AttributeAndPropeperties.cs" />
-    <Compile Include="RepositoriesGeneration\Services\AttributeService.cs" />
     <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataMany2ManyAttribute.cs" />

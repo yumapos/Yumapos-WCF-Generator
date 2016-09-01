@@ -8,41 +8,35 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using YumaPos.Server.Data.Sql;
+
 
 
 namespace TestRepositoryGeneration
 {
 public partial class MenuItemVersionRepository : RepositoryBase
 {
+private const string InsertQuery = @"DECLARE @TempPKTable TABLE (ItemVersionId );
+DECLARE @TempPKItemVersionId ;
+INSERT INTO RecipieItems([ItemId],[ItemVersionId],[IsDeleted],[CategoryId])
+OUTPUT INSERTED.ItemVersionId INTO @TempPKTable
+VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
+SELECT @TempPKItemVersionId = ItemVersionId FROM @TempPKTable
+INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
+VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)
+SELECT ItemVersionId FROM @TempPKTable
+";
 public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
-var InsertQuery = @"DECLARE @TempPKTable TABLE ( );
-DECLARE @TempPK ;
-INSERT INTO RecipieItems([ItemId],[ItemVersionId],[IsDeleted],[CategoryId])
-OUTPUT INSERTED. INTO @TempPKTable
-VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
-SELECT @TempPK =  FROM @TempPKTable
-INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
-VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)
-SELECT  FROM @TempPKTable
-";
-return (Guid)DataAccessService.InsertObject(menuItem, InsertQuery);
+var res = DataAccessService.InsertObject(menuItem, InsertQuery);
+return (Guid)res;
 }
-public Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
-var InsertQuery = @"DECLARE @TempPKTable TABLE ( );
-DECLARE @TempPK ;
-INSERT INTO RecipieItems([ItemId],[ItemVersionId],[IsDeleted],[CategoryId])
-OUTPUT INSERTED. INTO @TempPKTable
-VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
-SELECT @TempPK =  FROM @TempPKTable
-INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
-VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)
-SELECT  FROM @TempPKTable
-";
-return await (Guid)DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
+var res = await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
+return (Guid)res;
 }
 
 }

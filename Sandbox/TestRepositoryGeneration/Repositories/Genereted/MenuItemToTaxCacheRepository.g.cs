@@ -17,7 +17,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class MenuItemToTaxСacheRepository : RepositoryBase
+public partial class MenuItemToTaxCacheRepository : RepositoryBase
 {
 private const string SelectQuery = "SELECT [ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted] FROM [MenuItemToTaxs]";
 private const string InsertQuery = "INSERT INTO MenuItemToTaxs([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted]) VALUES(@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
@@ -30,7 +30,7 @@ private const string DeleteQueryByTaxId = "DELETE FROM[MenuItemToTaxs] WHERE Men
 private const string AndWithFilterData = "WHERE MenuItemToTaxs.[IsDeleted] = @IsDeleted";
 
 
-public MenuItemToTaxСacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
+public MenuItemToTaxCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 /*
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetAll(Boolean? isDeleted = false)
 {

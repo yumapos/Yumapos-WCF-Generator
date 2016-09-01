@@ -5,5 +5,6 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface IMenuItemToTaxRepository : IRepository<MenuItemToTax>
     {
+        GetTaxeIdsByMenuItemId
     }
 }

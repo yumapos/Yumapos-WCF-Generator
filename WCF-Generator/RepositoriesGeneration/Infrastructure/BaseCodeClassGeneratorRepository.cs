@@ -19,7 +19,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         public virtual string RepositoryName
         {
-            get { return RepositoryInfo.ClassName + RepositoryInfo.RepositorySuffix; }
+            get { return RepositoryInfo.RepositoryName; }
         }
 
         public virtual string GetUsings()

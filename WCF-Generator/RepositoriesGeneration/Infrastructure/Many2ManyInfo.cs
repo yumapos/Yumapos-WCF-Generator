@@ -5,14 +5,17 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal class Many2ManyInfo
     {
-        public string TableName { get; set; }
+        public string PropertyName { get; set; }
+        public string ManyToManyEntytyType { get; set; }
+        public RepositoryInfo ManyToManyRepositoryInfo { get; set; }
         public string EntityType { get; set; }
-        public string FullEntityType { get; set; }
+        public RepositoryInfo EntityRepositoryInfo { get; set; }
         public List<string> RepositoryNamespaces { get; set; }
 
-        public Many2ManyInfo(string tableName, string entityType)
+        public Many2ManyInfo(string propertyName, string manyToManyEntytyType, string entityType)
         {
-            TableName = tableName;
+            PropertyName = propertyName;
+            ManyToManyEntytyType = manyToManyEntytyType;
             EntityType = entityType;
         }
     }

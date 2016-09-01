@@ -61,10 +61,10 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
                 var joinClassValues = string.Join(",", baseInfo.Elements.Select(x => "@" + x.ToString()));
 
                 return "DECLARE @TempPKTable TABLE (" + property + " " + type + ");\n" +
-                   "DECLARE @TempPK" + property + " " + type + ";\n" +
-                   "INSERT INTO " + baseInfo.TableName + "(" + joinClassProperties + ")\n" +
-                   "OUTPUT INSERTED." + property + " INTO @TempPKTable\n" +
-                   "VALUES (" + joinClassValues + ")\n" +
+                       "DECLARE @TempPK" + property + " " + type + ";\n" +
+                       "INSERT INTO " + baseInfo.TableName + "(" + joinClassProperties + ")\n" +
+                       "OUTPUT INSERTED." + property + " INTO @TempPKTable\n" +
+                       "VALUES (" + joinClassValues + ")\n" +
                    "SELECT @TempPK" + property + " = " + property + " FROM @TempPKTable\n" +
                    "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
                    "VALUES (" + classValues + ")\n" +

@@ -17,14 +17,14 @@ using YumaPos.Server.Data.Sql;
 
 namespace YumaPos.Server.Data.Sql.Taxes
 {
-public partial class TaxСacheRepository : RepositoryBase
+public partial class TaxCacheRepository : RepositoryBase
 {
 private const string SelectQuery = "SELECT [TaxId],[TaxVersionId],[Name],[Modified],[ModifiedBy],[IsDeleted] FROM [Taxs]";
 private const string InsertQuery = "INSERT INTO Taxs([TaxId],[TaxVersionId],[Name],[Modified],[ModifiedBy],[IsDeleted]) VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted)";
 private const string AndWithFilterData = "WHERE Taxs.[IsDeleted] = @IsDeleted";
 
 
-public TaxСacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
+public TaxCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 /*
 public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetAll(Boolean? isDeleted = false)
 {

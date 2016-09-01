@@ -8,25 +8,27 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using YumaPos.Server.Data.Sql;
+
 
 
 namespace TestRepositoryGeneration
 {
 public partial class MenuItemToTaxVersionRepository : RepositoryBase
 {
+private const string InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted])
+OUTPUT INSERTED.VALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
 public MenuItemToTaxVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
-var InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted])
-OUTPUT INSERTED.VALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
-return (Guid)DataAccessService.InsertObject(menuItemToTax, InsertQuery);
+var res = DataAccessService.InsertObject(menuItemToTax, InsertQuery);
+return (Guid)res;
 }
-public Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
-var InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted])
-OUTPUT INSERTED.VALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
-return await (Guid)DataAccessService.InsertObjectAsync(menuItemToTax, InsertQuery);
+var res = await DataAccessService.InsertObjectAsync(menuItemToTax, InsertQuery);
+return (Guid)res;
 }
 
 }

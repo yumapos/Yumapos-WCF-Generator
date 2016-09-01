@@ -8,42 +8,52 @@ namespace VersionedRepositoryGeneration.Generator.Core
 {
     internal class CodeClassGeneratorVersionsRepository : BaseCodeClassGeneratorRepository
     {
+        public static string RepositoryKind = "Version";
+
+        private string _insertQueryName = "InsertQuery";
 
         #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string RepositoryName
         {
-            get { return RepositoryInfo.ClassName + "Version" + RepositoryInfo.RepositorySuffix; }
+            get { return RepositoryInfo.ClassName + RepositoryKind + RepositoryInfo.RepositorySuffix; }
         }
-
-        #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string GetClassDeclaration()
         {
             return "public partial class " + RepositoryName + " : RepositoryBase";
         }
 
-        #endregion
-
         public override string GetUsings()
         {
             var sb = new StringBuilder();
             sb.AppendLine("using System;");
-            sb.AppendLine("using YumaPos.Server.Data.Sql;");
+            sb.AppendLine("using System.Threading.Tasks;");
+            sb.AppendLine(base.GetUsings());
             return sb.ToString();
         }
 
+        #region Overrides of BaseCodeClassGeneratorRepository
+
+        public override string GetFields()
+        {
+            return "private const string " + _insertQueryName + " = @" + SqlScriptGenerator.GenerateInsertToVersionTable(RepositoryInfo, RepositoryName).SurroundWithQuotes() + ";";
+        }
+
+        #endregion
+
         public override string GetMethods()
         {
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+
             var sb = new StringBuilder();
 
             #region Asynchronous method
 
-            sb.AppendLine("public Guid Insert(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
+            sb.AppendLine("public Guid Insert(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
             sb.AppendLine("{");
-
-            sb.AppendLine("var InsertQuery = @" + SqlScriptGenerator.GenerateInsertToVersionTable(RepositoryInfo, RepositoryName).SurroundWithQuotes() + ";");
-            sb.AppendLine("return (Guid)DataAccessService.InsertObject(" + RepositoryInfo.ParameterName + ", InsertQuery);");
+            sb.AppendLine("var res = DataAccessService.InsertObject(" + parameterName + ", " + _insertQueryName + ");");
+            sb.AppendLine("return (Guid)res;");
 
             sb.AppendLine("}");
 
@@ -51,11 +61,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             #region Asynchronous method
 
-            sb.AppendLine("public Task<Guid> InsertAsync(" + RepositoryInfo.ClassFullName + " " + RepositoryInfo.ParameterName + ")");
+            sb.AppendLine("public async Task<Guid> InsertAsync(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
             sb.AppendLine("{");
-
-            sb.AppendLine("var InsertQuery = @" + SqlScriptGenerator.GenerateInsertToVersionTable(RepositoryInfo, RepositoryName).SurroundWithQuotes() + ";");
-            sb.AppendLine("return await (Guid)DataAccessService.InsertObjectAsync(" + RepositoryInfo.ParameterName + ", InsertQuery);");
+            sb.AppendLine("var res = await DataAccessService.InsertObjectAsync(" + parameterName + ", " + _insertQueryName + ");");
+            sb.AppendLine("return (Guid)res;");
 
             sb.AppendLine("}");
 
@@ -88,6 +97,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     sb.AppendLine(GetClassDeclaration());
                     // open class
                     sb.AppendLine("{");
+                    sb.AppendLine(GetFields());
                     // members
                     sb.AppendLine(GetConstructors());
                     sb.AppendLine(GetMethods());

@@ -8,25 +8,27 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using YumaPos.Server.Data.Sql;
+
 
 
 namespace YumaPos.Server.Data.Sql.Taxes
 {
 public partial class TaxVersionRepository : RepositoryBase
 {
+private const string InsertQuery = @"INSERT INTO TaxVersionRepository([TaxId],[TaxVersionId],[Name],[Modified],[ModifiedBy],[IsDeleted])
+OUTPUT INSERTED.TaxVersionIdVALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted)";
 public TaxVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 public Guid Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 {
-var InsertQuery = @"INSERT INTO TaxVersionRepository([TaxId],[TaxVersionId],[Name],[Modified],[ModifiedBy],[IsDeleted])
-OUTPUT INSERTED.VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted)";
-return (Guid)DataAccessService.InsertObject(tax, InsertQuery);
+var res = DataAccessService.InsertObject(tax, InsertQuery);
+return (Guid)res;
 }
-public Task<Guid> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+public async Task<Guid> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 {
-var InsertQuery = @"INSERT INTO TaxVersionRepository([TaxId],[TaxVersionId],[Name],[Modified],[ModifiedBy],[IsDeleted])
-OUTPUT INSERTED.VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted)";
-return await (Guid)DataAccessService.InsertObjectAsync(tax, InsertQuery);
+var res = await DataAccessService.InsertObjectAsync(tax, InsertQuery);
+return (Guid)res;
 }
 
 }

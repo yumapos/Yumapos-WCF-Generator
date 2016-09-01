@@ -5,7 +5,7 @@ using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccess(TableName = "RecipieItems", FilterKey1 = "CategoryId", TableVersion = "RecipieItemVersions", IsDeleted = true)]
+    [DataAccess]
     public class RecipieItem
     {
         [Key]

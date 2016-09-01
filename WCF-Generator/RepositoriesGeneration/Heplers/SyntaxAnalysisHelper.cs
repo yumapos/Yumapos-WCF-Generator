@@ -80,14 +80,22 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
 
+            var ownerName = "";
+
             var codeClass = element as ClassDeclarationSyntax;
             if (codeClass != null)
+            {
                 attributes = codeClass.AttributeLists;
+                ownerName = codeClass.Identifier.Text;
+            }
 
             var codeProperty = element as PropertyDeclarationSyntax;
             if (codeProperty != null)
+            {
                 attributes = codeProperty.AttributeLists;
-
+                ownerName = codeProperty.Identifier.Text;
+            }
+            
             var attributeCollection = new List<AttributeAndPropeperties>();
             var listOfStringProperties = new List<string>();
 
@@ -148,7 +156,8 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
                     attributeCollection.Add(new AttributeAndPropeperties
                     {
                         Name = attr.Name.ToString(),
-                        Parameters = dictionaryOfAttributes
+                        Parameters = dictionaryOfAttributes,
+                        OwnerElementName = ownerName
                     });
                 }
             }
