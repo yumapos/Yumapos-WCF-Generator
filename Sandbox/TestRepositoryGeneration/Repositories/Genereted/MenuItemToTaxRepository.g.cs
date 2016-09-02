@@ -60,38 +60,38 @@ return await _menuItemToTaxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
 public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
-menuItemToTax. = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
+menuItemToTax.TaxVersionId = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
 _menuItemToTaxCacheRepository.Insert(menuItemToTax);
 }
 public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
-menuItemToTax. = await _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
+menuItemToTax.TaxVersionId = await _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
 await _menuItemToTaxCacheRepository.InsertAsync(menuItemToTax);
 }
 
 public void UpdateByItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
-menuItemToTax. = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
+menuItemToTax.TaxVersionId = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
 _menuItemToTaxCacheRepository.UpdateByItemId(menuItemToTax);
 }
 public async Task UpdateByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
-menuItemToTax. = await _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
+menuItemToTax.TaxVersionId = await _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
 await _menuItemToTaxCacheRepository.UpdateByItemIdAsync(menuItemToTax);
 }
 public void UpdateByTaxId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
-menuItemToTax. = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
+menuItemToTax.TaxVersionId = _menuItemToTaxVersionRepository.Insert(menuItemToTax);
 _menuItemToTaxCacheRepository.UpdateByTaxId(menuItemToTax);
 }
 public async Task UpdateByTaxIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 menuItemToTax.Modified = DateTimeOffset.Now;
-menuItemToTax. = await _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
+menuItemToTax.TaxVersionId = await _menuItemToTaxVersionRepository.InsertAsync(menuItemToTax);
 await _menuItemToTaxCacheRepository.UpdateByTaxIdAsync(menuItemToTax);
 }
 

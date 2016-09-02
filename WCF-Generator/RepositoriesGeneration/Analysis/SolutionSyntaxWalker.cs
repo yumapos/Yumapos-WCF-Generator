@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator;
 
 namespace VersionedRepositoryGeneration.Generator.Analysis
 {
@@ -111,17 +112,21 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
             var tree = repositoryClass.SyntaxTree;
             var cls = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Last();
 
-            var compilation = CSharpCompilation.Create("comp").AddSyntaxTrees(tree);
+            // Get interfaces from project
             var projectCompilation = await project.GetCompilationAsync();
-
-            var names = compilation.GetSemanticModel(tree).GetDeclaredSymbol(cls).Interfaces;
-
             foreach (var syntaxTree in projectCompilation.SyntaxTrees)
             {
                 interfaceVisitor.Visit(syntaxTree.GetRoot());
             }
 
-            return interfaceVisitor.interfaces.Where(x => names.Any(a => a.Name == x.Identifier.ToString()));
+            var compilation = CSharpCompilation.Create("comp")
+                .AddSyntaxTrees(projectCompilation.SyntaxTrees);
+
+            var semanticMoidel = compilation.GetSemanticModel(tree);
+            var symbol = semanticMoidel.GetDeclaredSymbol(cls);
+            
+
+            return interfaceVisitor.interfaces.Where(x => symbol.AllInterfaces.Any(a => a.Name == x.Identifier.ToString()));
         }
 
         public static async Task<IEnumerable<InterfaceDeclarationSyntax>> GetImplementedInterfaces(Solution solution, string interfaceProjectName,
@@ -153,10 +158,30 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
 
             return resultList;
         }
+        public static async Task<IEnumerable<InterfaceDeclarationSyntax>> GetImplementedInterfacesFrom(Solution solution,
+            string interfacesProjectName, ClassDeclarationSyntax repositoryClass)
+        {
+            var interfaceVisitor = new InterfaceVirtualizationVisitor();
+            var project = solution.Projects.First(x => x.Name == interfacesProjectName);
+
+            var tree = repositoryClass.SyntaxTree;
+            var cls = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Last();
+
+            var compilation = CSharpCompilation.Create("comp").AddSyntaxTrees(tree);
+            var projectCompilation = await project.GetCompilationAsync();
+
+            var names = compilation.GetSemanticModel(tree).GetDeclaredSymbol(cls).Interfaces;
+
+            foreach (var syntaxTree in projectCompilation.SyntaxTrees)
+            {
+                interfaceVisitor.Visit(syntaxTree.GetRoot());
+            }
+
+            return interfaceVisitor.interfaces.Where(x => names.Any(a => a.Name == x.Identifier.ToString()));
+        }
 
 
 
-        
         public static List<MethodDeclarationSyntax> GetMethodsFromMembers(List<MemberDeclarationSyntax> members)
         {
             return members.OfType<MethodDeclarationSyntax>().ToList();

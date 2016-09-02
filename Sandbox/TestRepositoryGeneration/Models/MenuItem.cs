@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
+using YumaPos.FrontEnd.Infrastructure.DataInterfaces;
 using YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
@@ -19,5 +20,4 @@ namespace YumaPos.Server.Infrastructure.DataObjects
 
         public Guid MenuCategoryId { get; set; }
     }
-
 }

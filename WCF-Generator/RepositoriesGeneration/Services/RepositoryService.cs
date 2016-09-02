@@ -154,8 +154,10 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 list.Add(CreateWithAnalysisError(className, _config.RepositorySuffix, "Class not implemented true named repository interface."));
                 return list;
             }
-            
-            repositoryInfo.IsTenantRelated = !repositoryInterfaces.Any(i => i.Identifier.ToString().Contains("ITenantUnrelated"));
+
+            var classInterfaces = SolutionSyntaxWalker.GetImplementedInterfaces(_solution, _config.RepositoryMainPlace, doClass).Result.ToList();
+
+            repositoryInfo.IsTenantRelated = !classInterfaces.Any(i => i.Identifier.ToString().Contains("ITenantUnrelated"));
             
             // Repository interface info
             repositoryInfo.RepositoryInterfaceName = repoInterface.Identifier.Text;
