@@ -1,6 +1,6 @@
 namespace VersionedRepositoryGeneration.Generator.Core
 {
-    internal class CodeClassGenerator—acheRepository : CodeClassGeneratorRepository
+    internal class CodeClassGeneratorCacheRepository : CodeClassGeneratorRepository
     {
         public static string RepositoryKind = "Cache";
 

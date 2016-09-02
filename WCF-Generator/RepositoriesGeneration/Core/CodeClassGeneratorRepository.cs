@@ -67,7 +67,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.GetAll
             var getAllMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetAll)
-                .Aggregate("", (s, method) => GenerateGetAll(method));
+                .Aggregate("", (s, method) => s + GenerateGetAll(method));
 
             if (!string.IsNullOrEmpty(getAllMethods))
                 sb.AppendLine(getAllMethods);
@@ -75,7 +75,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.GetBy
             var getByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetBy)
-                .Aggregate("", (s, method) => GenerateGetBy(method));
+                .Aggregate("", (s, method) => s + GenerateGetBy(method));
 
             if (!string.IsNullOrEmpty(getByMethods))
                 sb.AppendLine(getByMethods);
@@ -83,7 +83,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.Insert
             var insertMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.Insert)
-                .Aggregate("", (s, method) => GenerateInsert(method));
+                .Aggregate("", (s, method) => s + GenerateInsert(method));
 
             if (!string.IsNullOrEmpty(insertMethods))
                 sb.AppendLine(insertMethods);
@@ -91,7 +91,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.UpdateBy
             var updateByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.UpdateBy)
-                .Aggregate("", (s, method) => GenerateUpdate(method));
+                .Aggregate("", (s, method) => s + GenerateUpdate(method));
 
             if (!string.IsNullOrEmpty(updateByMethods))
                 sb.AppendLine(updateByMethods);
@@ -99,7 +99,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.RemoveBy
             var removeByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.RemoveBy)
-                .Aggregate("", (s, method) => GenerateRemove(method));
+                .Aggregate("", (s, method) => s + GenerateRemove(method));
 
             if (!string.IsNullOrEmpty(removeByMethods))
                 sb.AppendLine(removeByMethods);
@@ -207,6 +207,9 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("");
 
             #endregion
+
+
+
 
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();

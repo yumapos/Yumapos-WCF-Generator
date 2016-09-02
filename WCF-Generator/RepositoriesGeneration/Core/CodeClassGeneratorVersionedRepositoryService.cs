@@ -13,7 +13,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         private readonly List<KeyValuePair<string, string>> _fieldsList = new List<KeyValuePair<string, string>>();
         private readonly List<string> _namespaces = new List<string>();
 
-        private readonly string _cacheRepository = CodeClassGeneratorÑacheRepository.RepositoryKind + "Repository";
+        private readonly string _cacheRepository = CodeClassGeneratorCacheRepository.RepositoryKind + "Repository";
         private readonly string _versionRepository = CodeClassGeneratorVersionsRepository.RepositoryKind + "Repository";
 
         #endregion
@@ -129,7 +129,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.GetAll
             var getAllMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetAll)
-                .Aggregate("", (s, method) => GenerateGetAll(method));
+                .Aggregate("", (s, method) => s + GenerateGetAll(method));
 
             if (!string.IsNullOrEmpty(getAllMethods))
                 sb.AppendLine(getAllMethods);
@@ -137,7 +137,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.GetBy
             var getByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetBy)
-                .Aggregate("", (s, method) => GenerateGetBy(method));
+                .Aggregate("", (s, method) => s + GenerateGetBy(method));
 
             if (!string.IsNullOrEmpty(getByMethods))
                 sb.AppendLine(getByMethods);
@@ -145,7 +145,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.Insert
             var insertMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.Insert)
-                .Aggregate("", (s, method) => GenerateInsert(method));
+                .Aggregate("", (s, method) => s + GenerateInsert(method));
 
             if (!string.IsNullOrEmpty(insertMethods))
                 sb.AppendLine(insertMethods);
@@ -153,7 +153,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.UpdateBy
             var updateByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.UpdateBy)
-                .Aggregate("", (s, method) => GenerateUpdate(method));
+                .Aggregate("", (s, method) => s + GenerateUpdate(method));
 
             if (!string.IsNullOrEmpty(updateByMethods))
                 sb.AppendLine(updateByMethods);
@@ -167,7 +167,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // RepositoryMethod.RemoveBy
             var removeByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.RemoveBy)
-                .Aggregate("", (s, method) => GenerateRemove(method));
+                .Aggregate("", (s, method) => s + GenerateRemove(method));
 
             if (!string.IsNullOrEmpty(removeByMethods))
                 sb.AppendLine(removeByMethods);
@@ -358,17 +358,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("if (" + parameterName + "." + propertyName + " == null)");
-                sb.AppendLine(parameterName + "." + propertyName + " = " + manyToManyCacheRepositoryFieldName + ".Get" + propertyName + "By" + primaryKeyName + "(" + parameterName + "." + primaryKeyName + ");");
+                sb.AppendLine(parameterName + "." + propertyName + " = " + manyToManyCacheRepositoryFieldName + ".GetBy" + primaryKeyName + "(" + parameterName + "." + primaryKeyName + ").Select(i => i." + primaryKeyName2 + ");");
 
                 sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName + ".Select(ids => new " + manyToManyEntityName + "()");
                 sb.AppendLine("{");
                 sb.AppendLine(primaryKeyName2 + " = ids,");
-                sb.AppendLine(versionKeyName2 + " = " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(ids)." + versionKeyName2 + ",");
+                sb.AppendLine(versionKeyName2 + " = " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(ids).First()." + versionKeyName2 + ",");
                 sb.AppendLine(primaryKeyName + " = " + parameterName + "." + primaryKeyName + ",");
                 sb.AppendLine(versionKeyName + " = " + parameterName + "." + versionKeyName + ",");
                 sb.AppendLine("}).ToList();");
 
-                sb.AppendLine(entityCacheRepositoryName + ".RemoveBy" + primaryKeyName + "(" + parameterName + "." + propertyName + ");");
+                sb.AppendLine(manyToManyCacheRepositoryFieldName + ".RemoveBy" + primaryKeyName + "(" + parameterName + "." + primaryKeyName + ");");
 
                 sb.AppendLine("foreach (var mt in listOf" + manyToManyEntityName + ")");
                 sb.AppendLine("{");
@@ -386,12 +386,12 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
                 
                 sb.AppendLine("if (" + parameterName + "." + propertyName + " == null)");
-                sb.AppendLine(parameterName + "." + propertyName + " = await " + manyToManyCacheRepositoryFieldName + ".Get" + primaryKeyName2 + "By" + primaryKeyName + "Async(" + parameterName + "." + primaryKeyName + ");");
+                sb.AppendLine(parameterName + "." + propertyName + " = await " + manyToManyCacheRepositoryFieldName + ".GetBy" + primaryKeyName + "Async(" + parameterName + "." + primaryKeyName + ");");
 
                 sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName + ".Select(ids => new " + manyToManyEntityName + "()");
                 sb.AppendLine("{");
                 sb.AppendLine(primaryKeyName2 + " = ids,");
-                sb.AppendLine(versionKeyName2 + " = await " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "Async(ids)." + versionKeyName2 + ",");
+                sb.AppendLine(versionKeyName2 + " = await " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "Async(ids).First()." + versionKeyName2 + ",");
                 sb.AppendLine(primaryKeyName + " = " + parameterName + "." + primaryKeyName + ",");
                 sb.AppendLine(versionKeyName + " = " + parameterName + "." + versionKeyName + ",");
                 sb.AppendLine("}).ToList();");

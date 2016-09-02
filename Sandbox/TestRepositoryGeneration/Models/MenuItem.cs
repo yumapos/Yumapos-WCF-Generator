@@ -5,7 +5,7 @@ using YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccessAttribute(TableVersion = "MenuItemVersions", FilterKey1 = "MenuCategoryId", FilterKey2 = "ModifiedBy", IsDeleted = false)]
+    [DataAccessAttribute(TableVersion = "MenuItemVersions", FilterKey1 = "MenuCategoryId", IsDeleted = false)]
     public class MenuItem : RecipieItem
     {
         public string Name { get; set; }

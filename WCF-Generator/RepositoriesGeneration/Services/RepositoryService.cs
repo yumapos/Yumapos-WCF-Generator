@@ -71,14 +71,19 @@ namespace VersionedRepositoryGeneration.Generator.Services
                         }
                     }
                 }
-                // Fill method info
-                repositoryInfo.MethodImplementationInfo.AddRange(GetUnimplementedMethods(repositoryInfo));
             }
 
             // Return without attached (it can not generate)
             var resultRepositories = listOfSimilarClasses.Where(r => r.RepositoryInfo.IsJoned == false).ToList();
 
-            var many2ManyInfos = resultRepositories.Where(r => r.RepositoryName.Contains("Version")).SelectMany(repository => repository.RepositoryInfo.Many2ManyInfo);
+            // Fill method implementation info for main repositories
+            foreach (var repo in resultRepositories.Where(r => !r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind) && !r.RepositoryName.Contains(CodeClassGeneratorCacheRepository.RepositoryKind)))
+            {
+                var methods = GetUnimplementedMethods(repo.RepositoryInfo);
+                repo.RepositoryInfo.MethodImplementationInfo.AddRange(methods);
+            }
+
+            var many2ManyInfos = resultRepositories.Where(r => r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind)).SelectMany(repository => repository.RepositoryInfo.Many2ManyInfo);
 
             foreach (var many2Many in many2ManyInfos)
             {
@@ -205,7 +210,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 list.Add(versionsRepository);
 
                 // cache repository
-                var cacheRepository = new CodeClassGeneratorСacheRepository()
+                var cacheRepository = new CodeClassGeneratorCacheRepository()
                 {
                     RepositoryInfo = repositoryInfo
                 };
@@ -316,23 +321,11 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(RepositoryInfo info)
         {
-            IEnumerable<string> unimplemented = new List<string>();
-
-            if (info.InterfaceMethodNames != null)
-            {
-                // Check implemented methods in custom repository
-                unimplemented = info.CustomRepositoryMethodNames != null
-                    ? info.InterfaceMethodNames.Where(im => info.CustomRepositoryMethodNames.FirstOrDefault(cm => cm == im) == null)
-                    : info.InterfaceMethodNames;
-            }
+            // Check implemented methods in custom repository
+            var unimplemented = info.InterfaceMethodNames.Where(im => info.CustomRepositoryMethodNames.FirstOrDefault(cm => cm == im) == null);
 
             // Set methods which possible to generate
-            var allmethods = SelectPossibleImplementation(unimplemented, info);
-            return allmethods;
-        }
 
-        private static IEnumerable<MethodImplementationInfo> SelectPossibleImplementation(IEnumerable<string> unimplementedMethods, RepositoryInfo info)
-        {
             // Add common methods
             var methods = new List<MethodImplementationInfo>
             {
@@ -349,7 +342,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             }
 
             // Set methods to implementation from possible list
-            foreach (var um in unimplementedMethods)
+            foreach (var um in unimplemented)
             {
                 // Seach in possible list
                 var m = methods.FirstOrDefault(o => o.Method.GetName() + (o.Key ?? "") == um);

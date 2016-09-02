@@ -175,6 +175,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public List<Many2ManyInfo> Many2ManyInfo { get; set; }
 
         public List<string> InterfaceMethodNames { get; set; }
+
         public List<string> CustomRepositoryMethodNames { get; set; }
 
         /// <summary>
@@ -196,18 +197,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                 {
                     possibleKeyMethods.AddRange(FilterInfos);
                 }
-
                 
-                // Add methods from base model
-                //if (JoinRepositoryInfo != null)
-                //{
-                //    // Primary key(s)
-                //    if (!string.IsNullOrEmpty(JoinRepositoryInfo.PrimaryKeyName))
-                //    {
-                //        possibleKeyMethods.Add(new FilterInfo(JoinRepositoryInfo.PrimaryKeyName, JoinRepositoryInfo.PrimaryKeys));
-                //    }
-                //}
-
                 return possibleKeyMethods;
             }
         }

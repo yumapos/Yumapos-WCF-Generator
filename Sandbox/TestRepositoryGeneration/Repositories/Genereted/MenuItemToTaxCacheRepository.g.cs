@@ -31,7 +31,6 @@ private const string AndWithFilterData = "WHERE MenuItemToTaxs.[IsDeleted] = @Is
 
 
 public MenuItemToTaxCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
-/*
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetAll(Boolean? isDeleted = false)
 {
 object parameters = new {isDeleted};
@@ -55,8 +54,29 @@ var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.Dat
 return result.ToList();
 }
 
-*/
-/*
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByItemId(Guid  itemId, Boolean? isDeleted = false)
+{
+object parameters = new {itemId,isDeleted};
+var sql = SelectQuery + WhereQueryByItemId;
+if (isDeleted.HasValue)
+{
+sql = sql + AndWithFilterData;
+}
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {itemId});
+return result.ToList();
+}
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
+{
+object parameters = new {itemId,isDeleted};
+var sql = SelectQuery + WhereQueryByItemId;
+if (isDeleted.HasValue)
+{
+sql = sql + AndWithFilterData;
+}
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {itemId}));
+return result.ToList();
+}
+
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByTaxId(Guid  taxId, Boolean? isDeleted = false)
 {
 object parameters = new {taxId,isDeleted};
@@ -81,8 +101,6 @@ return result.ToList();
 }
 
 
-*/
-/*
 public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 DataAccessService.InsertObject(menuItemToTax,InsertQuery);
@@ -92,8 +110,17 @@ public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem
 await DataAccessService.InsertObjectAsync(menuItemToTax,InsertQuery);
 }
 
-*/
-/*
+public void UpdateByItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+{
+var sql = UpdateQueryByItemId + WhereQueryByItemId; 
+DataAccessService.PersistObject(menuItemToTax, sql);
+}
+public async Task UpdateByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+{
+var sql = UpdateQueryByItemId + WhereQueryByItemId; 
+await DataAccessService.PersistObjectAsync(menuItemToTax, sql);
+}
+
 public void UpdateByTaxId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 var sql = UpdateQueryByTaxId + WhereQueryByTaxId; 
@@ -106,8 +133,28 @@ await DataAccessService.PersistObjectAsync(menuItemToTax, sql);
 }
 
 
-*/
-/*
+public void RemoveByItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+{
+var sql = DeleteQueryByItemId + WhereQueryByItemId; 
+DataAccessService.PersistObject(menuItemToTax, sql);
+}
+public async Task RemoveByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+{
+var sql = DeleteQueryByItemId + WhereQueryByItemId; 
+await DataAccessService.PersistObjectAsync(menuItemToTax, sql);
+}
+
+public void RemoveByItemId(Guid  itemId)
+{
+var sql = DeleteQueryByItemId + WhereQueryByItemId; 
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {itemId});
+}
+public async Task RemoveByItemIdAsync(Guid  itemId)
+{
+var sql = DeleteQueryByItemId + WhereQueryByItemId; 
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {itemId});
+}
+
 public void RemoveByTaxId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 {
 var sql = DeleteQueryByTaxId + WhereQueryByTaxId; 
@@ -131,7 +178,6 @@ await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObj
 }
 
 
-*/
 
 }
 }
