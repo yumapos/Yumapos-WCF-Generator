@@ -178,7 +178,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         #endregion
 
         #region Private
-
+        
         private string GenerateGetAll(MethodImplementationInfo method)
         {
             var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
@@ -186,23 +186,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var sb = new StringBuilder();
 
-            #region Synchronous method
-
+            // Synchronous method
             sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(" + specialMethodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine("return " + CacheRepositoryField + ".GetAll(" + specialParameter.Name.FirstSymbolToLower() + ");");
             sb.AppendLine("}");
 
-            #endregion
-
-            #region Asynchronous method
-
+            // Asynchronous method
             sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync("+ specialParameter.Name.FirstSymbolToLower() + ");");
             sb.AppendLine("}");
-
-            #endregion
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
@@ -412,7 +406,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             return sb.ToString();
         }
-
 
         private string GenerateRemove(MethodImplementationInfo method)
         {

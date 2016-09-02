@@ -71,13 +71,10 @@
     <Compile Include="Repositories\Genereted\MenuItemToTaxCacheRepository.g.cs" />
     <Compile Include="Repositories\Genereted\MenuItemToTaxRepository.g.cs" />
     <Compile Include="Repositories\Genereted\MenuItemToTaxVersionRepository.g.cs" />
-    <Compile Include="Repositories\Genereted\MenuItemToTaxСacheRepository.g.cs" />
     <Compile Include="Repositories\Genereted\MenuItemVersionRepository.g.cs" />
-    <Compile Include="Repositories\Genereted\MenuItemСacheRepository.g.cs" />
     <Compile Include="Repositories\Genereted\TaxCacheRepository.g.cs" />
     <Compile Include="Repositories\Genereted\TaxRepository.g.cs" />
     <Compile Include="Repositories\Genereted\TaxVersionRepository.g.cs" />
-    <Compile Include="Repositories\Genereted\TaxСacheRepository.g.cs" />
     <Compile Include="Repositories\MenuCategory\MenuCategoryСacheRepository.cs" />
     <Compile Include="Repositories\MenuCategory\MenuCategoryRepository.cs" />
     <Compile Include="Repositories\MenuCategory\MenuCategoryVersionRepository.cs" />

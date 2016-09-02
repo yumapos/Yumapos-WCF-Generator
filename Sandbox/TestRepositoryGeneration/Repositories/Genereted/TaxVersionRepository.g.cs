@@ -13,7 +13,7 @@ using YumaPos.Server.Data.Sql;
 
 
 
-namespace YumaPos.Server.Data.Sql.Taxes
+namespace TestRepositoryGeneration
 {
 public partial class TaxVersionRepository : RepositoryBase
 {

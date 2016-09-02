@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using YumaPos.Server.Infrastructure.Repositories;
 using YumaPos.Server.Infrastructure.DataObjects;
 using TestRepositoryGeneration;
-using YumaPos.Server.Data.Sql.Taxes;
 using YumaPos.Server.Data.Sql;
 
 

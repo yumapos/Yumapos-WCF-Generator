@@ -7,7 +7,7 @@ using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 namespace YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes
 {
     [DataAccess(TableVersion = "TaxVersions")]
-    class Tax
+    public class Tax
     {
         [Key]
         public Guid TaxId { get; set; }
