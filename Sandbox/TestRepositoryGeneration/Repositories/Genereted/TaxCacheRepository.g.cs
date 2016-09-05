@@ -21,14 +21,14 @@ public partial class TaxCacheRepository : RepositoryBase
 {
 private const string Fields = "[Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns}";
 private const string Values = "@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values}";
-private const string SelectAllQuery = "SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs]{whereTenantId:[Taxs]}";
-private const string SelectByQuery = "SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs]";
-private const string InsertQuery = "INSERT INTO Taxs([TaxId],[TaxVersionId],[Name],[Modified],[ModifiedBy],[IsDeleted]) VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted)";
-private const string UpdateQueryBy = "UPDATE [Taxs] SET Taxs.[TaxId] = @TaxId,Taxs.[TaxVersionId] = @TaxVersionId,Taxs.[Name] = @Name,Taxs.[Modified] = @Modified,Taxs.[ModifiedBy] = @ModifiedBy,Taxs.[IsDeleted] = @IsDeleted";
-private const string DeleteQueryBy = "DELETE FROM[Taxs]";
-private const string SelectIntoTempTable = "DECLARE @TempValueDb TABLE (ItemId uniqueidentifier);INSERT INTO @TempValueDb SELECT [Taxs].[TaxId] FROM [Taxs]";
-private const string WhereQueryByTaxId = "WHERE Taxs.[TaxId] = @TaxId{andTenantId:[Taxs]}";
-private const string AndWithFilterData = "WHERE Taxs.[IsDeleted] = @IsDeleted{andTenantId:[Taxs]}";
+private const string SelectAllQuery = "SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs]  {whereTenantId:[Taxs]} ";
+private const string SelectByQuery = "SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs] ";
+private const string InsertQuery = "INSERT INTO Taxs([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]) VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted) ";
+private const string UpdateQueryBy = "UPDATE [Taxs] SET Taxs.[TaxId] = @TaxId,Taxs.[TaxVersionId] = @TaxVersionId,Taxs.[Name] = @Name,Taxs.[Modified] = @Modified,Taxs.[ModifiedBy] = @ModifiedBy,Taxs.[IsDeleted] = @IsDeleted FROM [Taxs] ";
+private const string DeleteQueryBy = "DELETE FROM[Taxs] ";
+private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [Taxs].[TaxId] FROM [Taxs] ";
+private const string WhereQueryByTaxId = "WHERE Taxs.[TaxId] = @TaxId{andTenantId:[Taxs]} ";
+private const string AndWithFilterData = "WHERE Taxs.[IsDeleted] = @IsDeleted{andTenantId:[Taxs]} ";
 
 
 public TaxCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }

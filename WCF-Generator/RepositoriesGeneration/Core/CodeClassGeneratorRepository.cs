@@ -296,14 +296,28 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // Synchronous method
             sb.AppendLine("public void UpdateBy" + method.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName +  " + " + _updateQuery + _join + " + " + whereQueryName + "; ");
+            }
             sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
             sb.AppendLine("}");
 
             // Asynchronous method
             sb.AppendLine("public async Task UpdateBy" + method.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryName + "; ");
+            }
             sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
             sb.AppendLine("");
@@ -325,14 +339,28 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // Synchronous method
             sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("DataAccessService.PersistObject("+ parameterName + ", sql);");
             sb.AppendLine("}");
 
             // Asynchronous method
             sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
             sb.AppendLine("");
@@ -345,14 +373,28 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // Synchronous method
             sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter2 + ")");
             sb.AppendLine("{");
-            sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, new {" + parameter2Name + "});");
             sb.AppendLine("}");
 
             // Asynchronous method
             sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter2 + ")");
             sb.AppendLine("{");
-            sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, new {" + parameter2Name + "});");
             sb.AppendLine("}");
             sb.AppendLine("");

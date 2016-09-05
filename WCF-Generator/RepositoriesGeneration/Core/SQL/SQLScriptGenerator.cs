@@ -11,7 +11,8 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
     internal class SqlScriptGenerator
     {
 
-        private const string _tempTable = "@TempValueDb";
+        private const string _tempTable = "@Temp";
+        private const string _tempId = "@TempPKItemId";
         private const string _columns = "{columns}";
         private const string _values = "{values}";
 
@@ -29,7 +30,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 
         public static string GenerateSelectAll(SqlInfo info)
         {
-            return GenerateSelectBy(info) + WhereTenantRelated(info.TableName, info.TenantRelated);
+            return GenerateSelectBy(info) + " " + WhereTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
         public static string GenerateSelectBy(SqlInfo info)
@@ -40,48 +41,63 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
                 return Select(info.TableColumns, info.TableName) + ","
                        + Fields(info.JoinTableColumns, info.JoinTableName) + " "
                        + From(info.TableName) + " "
-                       + InnerJoin(info.TableName, info.PrimaryKeyName, info.JoinTableName, info.JoinPrimaryKeyName);// + " " + AndTenantRelated(info.TableName, info.TenantRelated);
+                       + InnerJoin(info.TableName, info.PrimaryKeyName, info.JoinTableName, info.JoinPrimaryKeyName) + " ";
             }
             // return select from table
-            return Select(info.TableColumns, info.TableName) + " " + From(info.TableName); //+ " " + WhereTenantRelated(info.TableName, info.TenantRelated);
+            return Select(info.TableColumns, info.TableName) + " " + From(info.TableName) + " ";
         }
 
         public static string GenerateInsert(SqlInfo info)
         {
-            return Insert(info.TableColumns, info.TableName);
+            if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
+            {
+                var columns = info.TableColumns.ToList();
+                var columnsJoned = info.JoinTableColumns.ToList();
+
+                // return inset into table and join table
+                return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier); DECLARE @TempPKItemId uniqueidentifier;"
+                       + "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJoned, info.JoinTableName) + _columns + ") OUTPUT INSERTED." + info.JoinPrimaryKeyName + " VALUES(" + Values(columnsJoned) + _values + ") "
+                       + "SELECT " + _tempId + " = " + info.JoinPrimaryKeyName + " FROM " + _tempTable + " "
+                       + "INSERT INTO " + info.TableName + "(" + Fields(columns, info.TableName) + _columns + ") VALUES(" + _tempId +","+ Values(columns.Where(c => c != info.PrimaryKeyName)) + _values + ") ";
+            }
+            // return select from table
+            return Insert(info.TableColumns, info.TableName) + " ";
         }
 
         public static string GenerateInsertToTemp(SqlInfo info)
         {
             return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier);" +
                                                         "INSERT INTO "+ _tempTable + " " +
-                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyName) + " FROM " + GenerateTableName(info.TableName);
+                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyName) + " FROM " + GenerateTableName(info.TableName) + " ";
         }
 
         public static string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
         {
-            return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated);
+            return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
         public static string GenerateUpdate(SqlInfo info)
         {
-            return Update(info.TableName) + " " + Set(info.TableColumns, info.TableName);
+            return Update(info.TableName) + " " 
+                    + Set(info.TableColumns, info.TableName) + " " 
+                    + From(info.TableName) + " ";
         }
 
         public static string GenerateUpdateJoin(SqlInfo info)
         {
             return Update(info.JoinTableName) + " "
                    + Set(info.JoinTableColumns, info.TableName) + " "
-                   + InnerJoin(info.TableName, info.PrimaryKeyName, info.JoinTableName, info.JoinPrimaryKeyName);
+                   + From(info.JoinTableName) + " "
+                   + InnerJoin(info.TableName, info.PrimaryKeyName, info.JoinTableName, info.JoinPrimaryKeyName) + " ";
         }
 
         public static string GenerateRemove(SqlInfo info)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
                 return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyName) + " IN (SELECT ItemId FROM " + _tempTable + ");" +
-                   Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyName) + " IN (SELECT ItemId FROM " + _tempTable + ");";
+                   Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyName) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " ";
 
-            return Delete(info.TableName);
+            return Delete(info.TableName) + " ";
         }
 
         #endregion
@@ -136,11 +152,12 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             return "SELECT " + Fields(columns, table);
         }
 
-        private static string Insert(IEnumerable<string> columns, string ownerTableName)
+        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName)
         {
-            var values = columns as string[] ?? columns.ToArray();
-            return "INSERT INTO " + ownerTableName + "(" + string.Join(",", values.Select(e => "[" + e + "]")) + ") VALUES(" + string.Join(",", values.Select(e => "@" + e)) + ")";
+            var columns = tableColumns.ToList();
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") VALUES(" + Values(columns) + ")";
         }
+
         private static string Update(string tableName)
         {
             return "UPDATE " + GenerateTableName(tableName);

@@ -21,15 +21,15 @@ public partial class MenuItemToTaxCacheRepository : RepositoryBase
 {
 private const string Fields = "[MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted]{columns}";
 private const string Values = "@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted{values}";
-private const string SelectAllQuery = "SELECT [MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs]";
-private const string SelectByQuery = "SELECT [MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs]";
-private const string InsertQuery = "INSERT INTO MenuItemToTaxs([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted]) VALUES(@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
-private const string UpdateQueryBy = "UPDATE [MenuItemToTaxs] SET MenuItemToTaxs.[ItemId] = @ItemId,MenuItemToTaxs.[ItemVersionId] = @ItemVersionId,MenuItemToTaxs.[Modified] = @Modified,MenuItemToTaxs.[ModifiedBy] = @ModifiedBy,MenuItemToTaxs.[TaxId] = @TaxId,MenuItemToTaxs.[TaxVersionId] = @TaxVersionId,MenuItemToTaxs.[IsDeleted] = @IsDeleted";
-private const string DeleteQueryBy = "DELETE FROM[MenuItemToTaxs]";
-private const string SelectIntoTempTable = "DECLARE @TempValueDb TABLE (ItemId uniqueidentifier);INSERT INTO @TempValueDb SELECT [MenuItemToTaxs].[] FROM [MenuItemToTaxs]";
-private const string WhereQueryByItemId = "WHERE MenuItemToTaxs.[ItemId] = @ItemId";
-private const string WhereQueryByTaxId = "WHERE MenuItemToTaxs.[TaxId] = @TaxId";
-private const string AndWithFilterData = "WHERE MenuItemToTaxs.[IsDeleted] = @IsDeleted";
+private const string SelectAllQuery = "SELECT [MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs]   ";
+private const string SelectByQuery = "SELECT [MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs] ";
+private const string InsertQuery = "INSERT INTO MenuItemToTaxs([MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted]) VALUES(@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted) ";
+private const string UpdateQueryBy = "UPDATE [MenuItemToTaxs] SET MenuItemToTaxs.[ItemId] = @ItemId,MenuItemToTaxs.[ItemVersionId] = @ItemVersionId,MenuItemToTaxs.[Modified] = @Modified,MenuItemToTaxs.[ModifiedBy] = @ModifiedBy,MenuItemToTaxs.[TaxId] = @TaxId,MenuItemToTaxs.[TaxVersionId] = @TaxVersionId,MenuItemToTaxs.[IsDeleted] = @IsDeleted FROM [MenuItemToTaxs] ";
+private const string DeleteQueryBy = "DELETE FROM[MenuItemToTaxs] ";
+private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItemToTaxs].[] FROM [MenuItemToTaxs] ";
+private const string WhereQueryByItemId = "WHERE MenuItemToTaxs.[ItemId] = @ItemId ";
+private const string WhereQueryByTaxId = "WHERE MenuItemToTaxs.[TaxId] = @TaxId ";
+private const string AndWithFilterData = "WHERE MenuItemToTaxs.[IsDeleted] = @IsDeleted ";
 
 
 public MenuItemToTaxCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
