@@ -18,7 +18,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class TaxCacheRepository : RepositoryBase
+internal class TaxCacheRepository : RepositoryBase
 {
 private const string Fields = "[Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns}";
 private const string Values = "@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values}";

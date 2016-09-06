@@ -15,7 +15,6 @@ namespace YumaPos.Server.Infrastructure.DataObjects
         public Guid ItemVersionId { get; set; }
 
         public bool IsDeleted { get; set; }
-
         public string CategoryId { get; set; }
 
     }

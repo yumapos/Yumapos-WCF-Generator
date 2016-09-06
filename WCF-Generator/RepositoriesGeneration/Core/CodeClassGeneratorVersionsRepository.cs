@@ -21,7 +21,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         public override string GetClassDeclaration()
         {
-            return "public partial class " + RepositoryName + " : RepositoryBase";
+            return "internal class " + RepositoryName + " : RepositoryBase";
         }
 
         public override string GetUsings()

@@ -15,7 +15,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class MenuItemVersionRepository : RepositoryBase
+internal class MenuItemVersionRepository : RepositoryBase
 {
 private const string InsertQuery = @"DECLARE @TempPKTable TABLE (ItemVersionId );
 DECLARE @TempPKItemVersionId ;

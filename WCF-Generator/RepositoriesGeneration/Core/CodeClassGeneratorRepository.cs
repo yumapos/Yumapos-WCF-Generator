@@ -22,11 +22,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         private string _deleteQueryBy = "DeleteQueryBy";
         private string _whereQueryBy = "WhereQueryBy";
         private string _andWithfilterData = "AndWithFilterData";
-        private string _andWithfilterDataJoin = "AndWithFilterDataJoin";
         private string _join = "Join";
-        private string _andWithTenant = "AndWithTenant";
-        private string _andWithTenantJoin = "AndWithTenantJoin";
-
 
         #endregion
 

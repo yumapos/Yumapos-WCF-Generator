@@ -18,7 +18,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class MenuItemCacheRepository : RepositoryBase
+internal class MenuItemCacheRepository : RepositoryBase
 {
 private const string Fields = "[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxesId],[MenuItems].[MenuCategoryId]{columns}";
 private const string Values = "@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId{values}";

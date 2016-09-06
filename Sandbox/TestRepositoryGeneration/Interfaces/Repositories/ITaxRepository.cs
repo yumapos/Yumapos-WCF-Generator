@@ -14,6 +14,6 @@ namespace YumaPos.Server.Infrastructure.Repositories
 
         void RemoveByTaxId(Tax tax);
 
-        IEnumerable<Tax> GetByTaxId(System.Guid taxId, bool? isDeleted = false);
+        Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false);
     }
 }

@@ -15,7 +15,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class MenuItemToTaxVersionRepository : RepositoryBase
+internal class MenuItemToTaxVersionRepository : RepositoryBase
 {
 private const string InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted])
 OUTPUT INSERTED.TaxVersionIdVALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
