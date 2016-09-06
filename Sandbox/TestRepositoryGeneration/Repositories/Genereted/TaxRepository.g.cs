@@ -19,7 +19,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class TaxRepository : RepositoryBase,ITaxRepository
+public partial class TaxRepository : RepositoryBase, ITaxRepository
 {
 private TaxCacheRepository _taxCacheRepository;
 private TaxVersionRepository _taxVersionRepository;
@@ -42,11 +42,11 @@ return await _taxCacheRepository.GetAllAsync(isDeleted);
 }
 
 */
-public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxId(Guid  taxId, Boolean? isDeleted = false)
+public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(Guid  taxId, Boolean? isDeleted = false)
 {
 return _taxCacheRepository.GetByTaxId(taxId, isDeleted);
 }
-public async Task<IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>> GetByTaxIdAsync(Guid  taxId, Boolean? isDeleted = false)
+public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(Guid  taxId, Boolean? isDeleted = false)
 {
 return await _taxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
 }
@@ -90,20 +90,14 @@ await _taxCacheRepository.UpdateByTaxIdAsync(tax);
 public void RemoveByTaxId(Guid  taxId)
 {
 var result = _taxCacheRepository.GetByTaxId(taxId);
-foreach (var item in result)
-{
-item.IsDeleted = true;
-UpdateByTaxId(item);
-}
+result.IsDeleted = true;
+UpdateByTaxId(result);
 }
 public async Task RemoveByTaxIdAsync(Guid  taxId)
 {
 var result = await _taxCacheRepository.GetByTaxIdAsync(taxId);
-foreach (var item in result)
-{
-item.IsDeleted = true;
-await UpdateByTaxIdAsync(item);
-}
+result.IsDeleted = true;
+await UpdateByTaxIdAsync(result);
 }
 
 

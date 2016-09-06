@@ -39,6 +39,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("using System.Linq;");
             sb.AppendLine("using System.Threading.Tasks;");
+            sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories;");
             sb.AppendLine(base.GetUsings());
 
             return sb.ToString();
@@ -46,7 +47,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         public override string GetClassDeclaration()
         {
-            return "public partial class " + RepositoryName + " : RepositoryBase," + RepositoryInfo.RepositoryInterfaceName;
+            return "public partial class " + RepositoryName + " : RepositoryBase, " + RepositoryInfo.RepositoryInterfaceName;
         }
 
         public override string GetFields()
@@ -97,9 +98,13 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
             }
 
-            var specialOptions = RepositoryInfo.SpecialOptions.Parameters.Select(p => p.Name).ToList();
-            var andFilter = SqlScriptGenerator.GenerateWhere(specialOptions, sqlInfo).SurroundWithQuotes();
-            sb.AppendLine("private const string " + _andWithfilterData + " = " + andFilter + ";");
+            // Is deleted filter
+            if (RepositoryInfo.IsDeletedExist)
+            {
+                var specialOption = RepositoryInfo.SpecialOptions.Parameters.First().Name;
+                var andFilter = SqlScriptGenerator.GenerateWhere(specialOption, sqlInfo).SurroundWithQuotes();
+                sb.AppendLine("private const string " + _andWithfilterData + " = " + andFilter + ";");
+            }
 
             return sb.ToString();
         }
@@ -116,13 +121,21 @@ namespace VersionedRepositoryGeneration.Generator.Core
             if (!string.IsNullOrEmpty(getAllMethods))
                 sb.AppendLine(getAllMethods);
 
-            // RepositoryMethod.GetBy
-            var getByMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.GetBy)
-                .Aggregate("", (s, method) => s + GenerateGetBy(method));
+            // RepositoryMethod.GetBy - for primary key
+            var getByPrimaryKeyMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.PrimaryKey)
+                .Aggregate("", (s, method) => s + GenerateGetByPrimaryKey(method));
 
-            if (!string.IsNullOrEmpty(getByMethods))
-                sb.AppendLine(getByMethods);
+            if (!string.IsNullOrEmpty(getByPrimaryKeyMethods))
+                sb.AppendLine(getByPrimaryKeyMethods);
+
+            // RepositoryMethod.GetBy - for filter key
+            var getByFilterKeyMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.FilterKey)
+                .Aggregate("", (s, method) => s + GenerateGetByFilterKey(method));
+
+            if (!string.IsNullOrEmpty(getByFilterKeyMethods))
+                sb.AppendLine(getByFilterKeyMethods);
 
             // RepositoryMethod.Insert
             var insertMethods = RepositoryInfo.MethodImplementationInfo
@@ -159,96 +172,214 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
-            var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
-            var specialSqlParameter = specialParameter.Name.FirstSymbolToLower();
+            if (RepositoryInfo.IsDeletedExist)
+            {
+                var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
+                var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
+                var specialSqlParameter = specialParameter.Name.FirstSymbolToLower();
 
-            // Synchronous method
-            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(" + specialMethodParameter + ")");
-            sb.AppendLine("{");
+                // Synchronous method
+                sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(" + specialMethodParameter + ")");
+                sb.AppendLine("{");
 
-            sb.AppendLine("object parameters = new {" + specialSqlParameter + "};");
-            sb.AppendLine("var sql = " + _selectAllQuery + ";");
-            sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
-            sb.AppendLine("{");
-            sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
-            sb.AppendLine("}");
+                sb.AppendLine("object parameters = new {" + specialSqlParameter + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + ";");
+                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("}");
 
-            sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters).ToList();");
-            sb.AppendLine("return result.ToList();");
-            sb.AppendLine("}");
+                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters).ToList();");
+                sb.AppendLine("return result.ToList();");
+                sb.AppendLine("}");
 
-            // Asynchronous method
-            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
-            sb.AppendLine("{");
+                // Asynchronous method
+                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
+                sb.AppendLine("{");
 
-            sb.AppendLine("object parameters = new {" + specialSqlParameter + "};");
-            sb.AppendLine("var sql = " + _selectAllQuery + ";");
-            sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
-            sb.AppendLine("{");
-            sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
-            sb.AppendLine("}");
+                sb.AppendLine("object parameters = new {" + specialSqlParameter + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + ";");
+                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("}");
 
-            sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
-            sb.AppendLine("return result.ToList();");
+                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+                sb.AppendLine("return result.ToList();");
 
-            sb.AppendLine("}");
+                sb.AppendLine("}");
+            }
+            else
+            {
+                // Synchronous method
+                sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll()");
+                sb.AppendLine("{");
+                sb.AppendLine("var sql = " + _selectAllQuery + ";");
+                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, null).ToList();");
+                sb.AppendLine("return result.ToList();");
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync()");
+                sb.AppendLine("{");
+                sb.AppendLine("var sql = " + _selectAllQuery + ";");
+                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, null));");
+                sb.AppendLine("return result.ToList();");
+
+                sb.AppendLine("}");
+            }
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
-        private string GenerateGetBy(MethodImplementationInfo method)
+        private string GenerateGetByPrimaryKey(MethodImplementationInfo method)
         {
-            var sb = new StringBuilder();
+            var filter = method.FilterInfo;
 
-            var methodParameters = string.Join(", ", method.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
-            var sqlParameters = string.Join(", ", method.Parameters.Select(k => k.Name.FirstSymbolToLower()));
-            var sqlWhere = string.Join(" + ", method.Parameters.Select(k => _whereQueryBy + k.Name));
+            var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
+            var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
+            var sqlWhere = string.Join(" + ", filter.Parameters.Select(k => _whereQueryBy + k.Name));
 
             var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
             var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
             var specialSqlParameter = specialParameter.Name.FirstSymbolToLower();
 
-            #region Synchronous method
+            var sb = new StringBuilder();
 
-            sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetBy" + method.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
-            sb.AppendLine("{");
+            if (RepositoryInfo.IsDeletedExist)
+            {
+                // Synchronous method
+                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
+                sb.AppendLine("{");
 
-            sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-            sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
-            sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
-            sb.AppendLine("{");
-            sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
-            sb.AppendLine("}");
+                sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("}");
 
-            sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, new {" + sqlParameters + "});");
-            sb.AppendLine("return result.ToList();");
-            sb.AppendLine("}");
+                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
+                sb.AppendLine("return result.FirstOrDefault();");
+                sb.AppendLine("}");
 
-            #endregion
+                // Asynchronous method
+                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async" + "(" + methodParameters + ", " + specialMethodParameter + ")");
+                sb.AppendLine("{");
 
-            #region Asynchronous method
+                sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("}");
 
-            sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + method.Key + "Async" + "(" + methodParameters + ", " + specialMethodParameter + ")");
-            sb.AppendLine("{");
+                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+                sb.AppendLine("return result.FirstOrDefault();");
+                sb.AppendLine("}");
+                sb.AppendLine("");
+            }
+            else
+            {
+                // Synchronous method
+                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ")");
+                sb.AppendLine("{");
 
-            sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-            sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
-            sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
-            sb.AppendLine("{");
-            sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
-            sb.AppendLine("}");
+                sb.AppendLine("object parameters = new {" + sqlParameters + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
 
-            sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, new {" + sqlParameters + "}));");
-            sb.AppendLine("return result.ToList();");
-            sb.AppendLine("}");
-            sb.AppendLine("");
+                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
+                sb.AppendLine("return result.FirstOrDefault();");
+                sb.AppendLine("}");
 
-            #endregion
+                // Asynchronous method
+                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async" + "(" + methodParameters + ")");
+                sb.AppendLine("{");
 
+                sb.AppendLine("object parameters = new {" + sqlParameters + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
 
+                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+                sb.AppendLine("return result.FirstOrDefault();");
+                sb.AppendLine("}");
+                sb.AppendLine("");
+            }
 
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
 
+        private string GenerateGetByFilterKey(MethodImplementationInfo method)
+        {
+            var filter = method.FilterInfo;
+
+            var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
+            var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
+            var sqlWhere = string.Join(" + ", filter.Parameters.Select(k => _whereQueryBy + k.Name));
+
+            var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
+            var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
+            var specialSqlParameter = specialParameter.Name.FirstSymbolToLower();
+
+            var sb = new StringBuilder();
+
+            if (RepositoryInfo.IsDeletedExist)
+            {
+                // Synchronous method
+                sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
+                sb.AppendLine("{");
+
+                sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("}");
+
+                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
+                sb.AppendLine("return result.ToList();");
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + filter.Key + "Async" + "(" + methodParameters + ", " + specialMethodParameter + ")");
+                sb.AppendLine("{");
+
+                sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("}");
+
+                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+                sb.AppendLine("return result.ToList();");
+                sb.AppendLine("}");
+                sb.AppendLine("");
+            }
+            else
+            {
+                // Synchronous method
+                sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "(" + methodParameters + ")");
+                sb.AppendLine("{");
+
+                sb.AppendLine("object parameters = new {" + sqlParameters + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+
+                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
+                sb.AppendLine("return result.ToList();");
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + filter.Key + "Async" + "(" + methodParameters + ")");
+                sb.AppendLine("{");
+
+                sb.AppendLine("object parameters = new {" + sqlParameters + "};");
+                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+
+                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+                sb.AppendLine("return result.ToList();");
+                sb.AppendLine("}");
+                sb.AppendLine("");
+            }
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
@@ -285,16 +416,18 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         private string GenerateUpdate(MethodImplementationInfo method)
         {
+            var filter = method.FilterInfo;
+
             var sb = new StringBuilder();
 
             // Update by entity (use filter key)
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
 
-            var whereQueryName = _whereQueryBy + method.Key;
+            var whereQueryName = _whereQueryBy + filter.Key;
 
             // Synchronous method
-            sb.AppendLine("public void UpdateBy" + method.Key + "(" + methodParameter + ")");
+            sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             if (RepositoryInfo.JoinRepositoryInfo == null)
             {
@@ -308,7 +441,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("}");
 
             // Asynchronous method
-            sb.AppendLine("public async Task UpdateBy" + method.Key + "Async(" + methodParameter + ")");
+            sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             if (RepositoryInfo.JoinRepositoryInfo == null)
             {
@@ -328,16 +461,18 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         private string GenerateRemove(MethodImplementationInfo method)
         {
+            var filter = method.FilterInfo;
+
             var sb = new StringBuilder();
 
             // Remove by entity (use filter key)
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
             
-            var whereQueryName = _whereQueryBy + method.Key;
+            var whereQueryName = _whereQueryBy + filter.Key;
 
             // Synchronous method
-            sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter + ")");
+            sb.AppendLine("public void RemoveBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             if (RepositoryInfo.JoinRepositoryInfo == null)
             {
@@ -351,7 +486,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("}");
 
             // Asynchronous method
-            sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter + ")");
+            sb.AppendLine("public async Task RemoveBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             if (RepositoryInfo.JoinRepositoryInfo == null)
             {
@@ -366,12 +501,12 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("");
 
             // Remove by filter key
-            var parameter2 = method.Parameters.First();
+            var parameter2 = filter.Parameters.First();
             var parameter2Name = parameter2.Name.FirstSymbolToLower();
             var methodParameter2 = parameter2.TypeName + " " + parameter2Name;
 
             // Synchronous method
-            sb.AppendLine("public void RemoveBy" + method.Key + "(" + methodParameter2 + ")");
+            sb.AppendLine("public void RemoveBy" + filter.Key + "(" + methodParameter2 + ")");
             sb.AppendLine("{");
             if (RepositoryInfo.JoinRepositoryInfo == null)
             {
@@ -385,7 +520,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("}");
 
             // Asynchronous method
-            sb.AppendLine("public async Task RemoveBy" + method.Key + "Async(" + methodParameter2 + ")");
+            sb.AppendLine("public async Task RemoveBy" + filter.Key + "Async(" + methodParameter2 + ")");
             sb.AppendLine("{");
             if (RepositoryInfo.JoinRepositoryInfo == null)
             {

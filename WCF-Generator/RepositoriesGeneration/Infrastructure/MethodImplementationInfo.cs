@@ -10,6 +10,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public MethodImplementationInfo()
         {
             Parameters = new List<ParameterInfo>();
+            RequiresImplementation = false;
         }
 
         /// <summary>
@@ -18,9 +19,9 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public RepositoryMethod Method { get; set; }
         
         /// <summary>
-        ///     Name of primary or filter key (for key based method only)
+        ///     Key based methods filter
         /// </summary>
-        public string Key { get; set; }
+        public FilterInfo FilterInfo { get; set; }
 
         /// <summary>
         ///     Parameters of methods

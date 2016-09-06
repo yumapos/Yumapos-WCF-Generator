@@ -76,6 +76,11 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
+        public static string GenerateWhere(string selectedFilter, SqlInfo info)
+        {
+            return Where(new [] { selectedFilter}, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
+        }
+
         public static string GenerateUpdate(SqlInfo info)
         {
             return Update(info.TableName) + " " 

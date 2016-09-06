@@ -2,7 +2,7 @@
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    class MenuCategory
+    public class MenuCategory
     {
         public Guid MenuCategoryId { get; set; }
 

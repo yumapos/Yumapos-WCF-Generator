@@ -20,7 +20,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class MenuItemRepository : RepositoryBase,IMenuItemRepository
+public partial class MenuItemRepository : RepositoryBase, IMenuItemRepository
 {
 private MenuItemCacheRepository _menuItemCacheRepository;
 private MenuItemVersionRepository _menuItemVersionRepository;
@@ -47,15 +47,15 @@ public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem
 return await _menuItemCacheRepository.GetAllAsync(isDeleted);
 }
 
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemId(Guid  itemId, Boolean? isDeleted = false)
+public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemId(Guid  itemId, Boolean? isDeleted = false)
 {
 return _menuItemCacheRepository.GetByItemId(itemId, isDeleted);
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
+public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
 {
 return await _menuItemCacheRepository.GetByItemIdAsync(itemId, isDeleted);
 }
-/*
+
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(Guid  menuCategoryId, Boolean? isDeleted = false)
 {
 return _menuItemCacheRepository.GetByMenuCategoryId(menuCategoryId, isDeleted);
@@ -65,7 +65,6 @@ public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem
 return await _menuItemCacheRepository.GetByMenuCategoryIdAsync(menuCategoryId, isDeleted);
 }
 
-*/
 public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 menuItem.Modified = DateTimeOffset.Now;
@@ -119,7 +118,7 @@ menuItem.TaxesId = _menuItemToTaxCacheRepository.GetByItemId(menuItem.ItemId).Se
 var listOfMenuItemToTax = menuItem.TaxesId.Select(ids => new MenuItemToTax()
 {
 TaxId = ids,
-TaxVersionId = _taxCacheRepository.GetByTaxId(ids).First().TaxVersionId,
+TaxVersionId = _taxCacheRepository.GetByTaxId(ids).TaxVersionId,
 ItemId = menuItem.ItemId,
 ItemVersionId = menuItem.ItemVersionId,
 }).ToList();
@@ -146,21 +145,16 @@ await _menuItemCacheRepository.UpdateByItemIdAsync(menuItem);
 public void RemoveByItemId(Guid  itemId)
 {
 var result = _menuItemCacheRepository.GetByItemId(itemId);
-foreach (var item in result)
-{
-item.IsDeleted = true;
-UpdateByItemId(item);
-}
+result.IsDeleted = true;
+UpdateByItemId(result);
 }
 public async Task RemoveByItemIdAsync(Guid  itemId)
 {
 var result = await _menuItemCacheRepository.GetByItemIdAsync(itemId);
-foreach (var item in result)
-{
-item.IsDeleted = true;
-await UpdateByItemIdAsync(item);
+result.IsDeleted = true;
+await UpdateByItemIdAsync(result);
 }
-}
+
 /*
 public void RemoveByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {

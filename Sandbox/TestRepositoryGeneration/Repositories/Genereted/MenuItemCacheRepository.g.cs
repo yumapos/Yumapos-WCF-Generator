@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YumaPos.Server.Infrastructure.Repositories;
 using YumaPos.Server.Data.Sql;
 
 
@@ -57,7 +58,7 @@ var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.Dat
 return result.ToList();
 }
 
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemId(Guid  itemId, Boolean? isDeleted = false)
+public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemId(Guid  itemId, Boolean? isDeleted = false)
 {
 object parameters = new {itemId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByItemId;
@@ -65,10 +66,10 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {itemId});
-return result.ToList();
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
+return result.FirstOrDefault();
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
+public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
 {
 object parameters = new {itemId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByItemId;
@@ -76,11 +77,11 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {itemId}));
-return result.ToList();
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters));
+return result.FirstOrDefault();
 }
 
-/*
+
 public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(Guid  menuCategoryId, Boolean? isDeleted = false)
 {
 object parameters = new {menuCategoryId,isDeleted};
@@ -89,7 +90,7 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {menuCategoryId});
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 return result.ToList();
 }
 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(Guid  menuCategoryId, Boolean? isDeleted = false)
@@ -100,12 +101,11 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {menuCategoryId}));
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters));
 return result.ToList();
 }
 
 
-*/
 public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 {
 DataAccessService.InsertObject(menuItem,InsertQuery);

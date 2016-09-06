@@ -19,7 +19,7 @@ using YumaPos.Server.Data.Sql;
 
 namespace TestRepositoryGeneration
 {
-public partial class MenuItemToTaxRepository : RepositoryBase,IMenuItemToTaxRepository
+public partial class MenuItemToTaxRepository : RepositoryBase, IMenuItemToTaxRepository
 {
 private MenuItemToTaxCacheRepository _menuItemToTaxCacheRepository;
 private MenuItemToTaxVersionRepository _menuItemToTaxVersionRepository;

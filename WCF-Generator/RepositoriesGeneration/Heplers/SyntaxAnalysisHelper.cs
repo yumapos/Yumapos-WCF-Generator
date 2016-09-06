@@ -5,44 +5,12 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.FindSymbols;
 using VersionedRepositoryGeneration.Generator.Services;
 
 namespace VersionedRepositoryGeneration.Generator.Heplers
 {
     internal static class SyntaxAnalysisHelper
     {
-        public static string GetNameSpaceByClass(ClassDeclarationSyntax codeclass, Project project)
-        {
-            var nameSpace = SymbolFinder.FindDeclarationsAsync(project, codeclass.Identifier.ValueText, ignoreCase: false).Result.Last().ContainingNamespace.ToString();
-
-            return nameSpace.ToString();
-        }
-
-        public static string FindType(ClassDeclarationSyntax DOClass, string parameter)
-        {
-            PropertyDeclarationSyntax elementTrue = null;
-            foreach (var elem in DOClass.Members)
-            {
-                var codeProperty = elem as PropertyDeclarationSyntax;
-                if (codeProperty != null && codeProperty.Identifier.ToString() == parameter)
-                    elementTrue = codeProperty;
-            }
-
-            if (elementTrue == null)
-            {
-                throw new Exception("Property " + parameter + ", specified in " + DOClass.Identifier + " wasn't found.");
-            }
-
-            return elementTrue.Type.ToString();
-        }
-
-        public static string FindTypeSql(ClassDeclarationSyntax DOClass, string parameter)
-        {
-            var variable = FindType(DOClass, parameter);
-            return SystemToSqlTypeMapper.GetSqlType(variable);
-        }
-
         public static bool SetterInCodePropertyExist(PropertyDeclarationSyntax codeproperty)
         {
             try
@@ -75,7 +43,6 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
             return false;
         }
-
         public static IEnumerable<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element)
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
@@ -164,11 +131,9 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
             return attributeCollection;
         }
-
         public static bool ConstructorImplementationExist(ClassDeclarationSyntax customRepository)
         {
             return customRepository.Members.Any(e => (e as ConstructorDeclarationSyntax) != null);
         }
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
 using VersionedRepositoryGeneration.Generator.Services;
 
@@ -28,7 +29,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             _configuration = config;
 
-            _repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace(config.SolutionPath, config.ProjectName);
+            _repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace(config.SolutionPath, config.TargetProjectName);
 
             _repositoryService = new RepositoryService(_repositoryGeneratorWorkSpace, config);
         }
@@ -63,7 +64,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 // Add document to creation
                 _repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".g.cs", _configuration.RepositoryTargetFolder, code);
             }
-            
+
             // Save all files
             _repositoryGeneratorWorkSpace.ApplyChanges();
         }

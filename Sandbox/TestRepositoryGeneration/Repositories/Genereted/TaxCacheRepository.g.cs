@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YumaPos.Server.Infrastructure.Repositories;
 using YumaPos.Server.Data.Sql;
 
 
@@ -57,7 +58,7 @@ return result.ToList();
 }
 
 */
-public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxId(Guid  taxId, Boolean? isDeleted = false)
+public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(Guid  taxId, Boolean? isDeleted = false)
 {
 object parameters = new {taxId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByTaxId;
@@ -65,10 +66,10 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, new {taxId});
-return result.ToList();
+var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
+return result.FirstOrDefault();
 }
-public async Task<IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>> GetByTaxIdAsync(Guid  taxId, Boolean? isDeleted = false)
+public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(Guid  taxId, Boolean? isDeleted = false)
 {
 object parameters = new {taxId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByTaxId;
@@ -76,8 +77,8 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = (await DataAccessService.GetAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, new {taxId}));
-return result.ToList();
+var result = (await DataAccessService.GetAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters));
+return result.FirstOrDefault();
 }
 
 

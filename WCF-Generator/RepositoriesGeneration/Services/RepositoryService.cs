@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Analysis;
@@ -11,6 +11,7 @@ using VersionedRepositoryGeneration.Generator.Heplers;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
+using SyntaxKind = Microsoft.CodeAnalysis.VisualBasic.SyntaxKind;
 
 namespace VersionedRepositoryGeneration.Generator.Services
 {
@@ -18,9 +19,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
     {
         #region Private
 
-        private readonly Solution _solution;
         private readonly GeneratorConfiguration _config;
-        private readonly Project _project;
 
         #endregion
 
@@ -28,9 +27,15 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         public RepositoryService(RepositoryGeneratorWorkSpace workSpace, GeneratorConfiguration config)
         {
-            _solution = workSpace.Solution;
-            _project = workSpace.Project;
             _config = config;
+
+            var timer = new Stopwatch();
+            timer.Start();
+
+            SolutionSyntaxWalker.SetCurrentSolution(workSpace.Solution, new List<string> { _config.RepositoryTargetFolder});
+
+            timer.Stop();
+            Console.WriteLine("Scan solution time: " + timer.Elapsed.ToString("c"));
         }
 
         #endregion
@@ -44,7 +49,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             foreach (var repositoryClasses in _config.RepositoryClassProjects)
             {
                 // Get all clases marked RepositoryAttribute
-                var findClasses = SolutionSyntaxWalker.GetAllClassesWhithAttribute(_solution, repositoryClasses, false, RepositoryDataModelHelper.DataAccessAttributeName).Result;
+                var findClasses = SolutionSyntaxWalker.GetAllClassesWhithAttribute(repositoryClasses, RepositoryDataModelHelper.DataAccessAttributeName);
                 var versionedRepositories = findClasses.SelectMany(c=> GetAllRepositories(c)).Where(c=> c!=null);
 
                 listOfSimilarClasses.AddRange(versionedRepositories);
@@ -58,7 +63,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 // Find base class
                 if (repositoryInfo.BaseClassName != null)
                 {
-                    var baseClass = SolutionSyntaxWalker.FindClassByName(_solution, _config.ProjectName, repositoryInfo.BaseClassName, _config.RepositoryTargetFolder).Result;
+                    var baseClass = SolutionSyntaxWalker.FindClassByName(repositoryInfo.BaseClassName, _config.RepositoryTargetFolder);
 
                     if (baseClass != null)
                     {
@@ -131,20 +136,28 @@ namespace VersionedRepositoryGeneration.Generator.Services
             {
                 RepositorySuffix = _config.RepositorySuffix,
                 ClassName = className,
-                ClassFullName = SyntaxAnalysisHelper.GetNameSpaceByClass(doClass, _project) + "." + doClass.Identifier,
+                ClassFullName = SolutionSyntaxWalker.GetNameSpaceByClass(doClass),
             };
+
+            var classInterfaces = SolutionSyntaxWalker.GetImplementedInterfaceNames(doClass).ToList();
+
+            repositoryInfo.IsTenantRelated = !classInterfaces.Any(i => i.Contains("ITenantUnrelated"));
 
             // Base class name
             if (doClass.BaseList != null && doClass.BaseList.Types.Any())
             {
-                repositoryInfo.BaseClassName = doClass.BaseList.Types.FirstOrDefault().ToString();
+                var baseClass = doClass.BaseList.Types.FirstOrDefault(t => classInterfaces.All(i => i != t.Type.ToString()));
+                if(baseClass!=null)
+                {
+                    repositoryInfo.BaseClassName = baseClass.ToString();
+                }
             }
 
             #region Repository interface
 
             // Get implemented interfaces for custom repository (for example - IMenuItemRepository)
 
-            var repositoryInterfaces = SolutionSyntaxWalker.GetImplementedInterfaces(_solution, _config.RepositoryInterfacesProjectName, repositoryInfo.GenericRepositoryName).Result.ToList();
+            var repositoryInterfaces = SolutionSyntaxWalker.GetImplementedInterfaces(repositoryInfo.GenericRepositoryName).ToList();
 
             var repoInterface = repositoryInterfaces.FirstOrDefault(r => r.Identifier.Text != null
                                                                          && r.Identifier.Text.IndexOf("I", StringComparison.Ordinal) == 0
@@ -155,10 +168,6 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 return list;
             }
 
-            var classInterfaces = SolutionSyntaxWalker.GetImplementedInterfaces(_solution, _config.RepositoryMainPlace, doClass).Result.ToList();
-
-            repositoryInfo.IsTenantRelated = !classInterfaces.Any(i => i.Identifier.ToString().Contains("ITenantUnrelated"));
-            
             // Repository interface info
             repositoryInfo.RepositoryInterfaceName = repoInterface.Identifier.Text;
 
@@ -184,13 +193,13 @@ namespace VersionedRepositoryGeneration.Generator.Services
                         var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => (SyntaxAnalysisHelper.GetterInCodePropertyExist(cp) && SyntaxAnalysisHelper.SetterInCodePropertyExist(cp) && cp.Identifier.Text == f));
                         return new ParameterInfo(fk, parameter != null ? parameter.Type.ToFullString() : null);
                     }).ToList();
-                    return new FilterInfo(string.Join("And", fk.Split(',')), filters);
+                    return new FilterInfo(string.Join("And", fk.Split(',')), filters, FilterType.FilterKey);
                 });
 
-            // Common filter - isDeleted
-            repositoryInfo.SpecialOptions = new FilterInfo("IsDeleted", new List<ParameterInfo> {new ParameterInfo("IsDeleted", typeof(bool).Name, Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower())});
-
             repositoryInfo.FilterInfos.AddRange(filterKeys);
+
+            // Common filter - isDeleted
+            repositoryInfo.SpecialOptions = new FilterInfo("IsDeleted", new List<ParameterInfo> { new ParameterInfo("IsDeleted", typeof(bool).Name, Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower()) }, FilterType.FilterKey);
 
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
@@ -271,7 +280,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             #region Custom repository
 
             // Check exist custom repository class
-            var customRepository = SolutionSyntaxWalker.FindClassByName(_solution, _config.ProjectName, doClass.Identifier + _config.RepositorySuffix, _config.RepositoryTargetFolder).Result;
+            var customRepository = SolutionSyntaxWalker.FindClassByName(doClass.Identifier + _config.RepositorySuffix, _config.RepositoryTargetFolder).FirstOrDefault();
             var customRepoExist = customRepository != null;
 
             List<MethodDeclarationSyntax> customRepositoryMethods = null;
@@ -298,7 +307,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             if (repositoryInfo.RepositoryNamespace == null)
             {
-                repositoryInfo.RepositoryNamespace = _config.RepositoryMainPlace;
+                repositoryInfo.RepositoryNamespace = _config.TargetProjectName;
             }
 
             // Search method for implementation
@@ -318,42 +327,46 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         #endregion
 
-
         #region Private
 
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(RepositoryInfo info)
         {
             // Check implemented methods in custom repository
-            var unimplemented = info.InterfaceMethodNames.Where(im => info.CustomRepositoryMethodNames.FirstOrDefault(cm => cm == im) == null);
+            var unimplemented = info.InterfaceMethodNames.Where(im => info.CustomRepositoryMethodNames.FirstOrDefault(cm => cm == im || cm + "Async" == im) == null);
 
             // Set methods which possible to generate
 
             // Add common methods
             var methods = new List<MethodImplementationInfo>
             {
-                new MethodImplementationInfo() { Method = RepositoryMethod.GetAll, RequiresImplementation = false},
-                new MethodImplementationInfo() { Method = RepositoryMethod.Insert, RequiresImplementation = false},
+                new MethodImplementationInfo() { Method = RepositoryMethod.GetAll},
+                new MethodImplementationInfo() { Method = RepositoryMethod.Insert}
             };
 
             // Methods by keys from model (without methods from base model)
-            foreach (var method in info.PossibleKeysForMethods)
+            foreach (var filterInfo in info.PossibleKeysForMethods)
             {
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, Key = method.Key, RequiresImplementation = false });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, Key = method.Key, Parameters = method.Parameters, RequiresImplementation = false });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, FilterInfo = filterInfo});
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo});
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo});
             }
 
             // Set methods to implementation from possible list
             foreach (var um in unimplemented)
             {
                 // Seach in possible list
-                var m = methods.FirstOrDefault(o => o.Method.GetName() + (o.Key ?? "") == um);
+                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um));
                 if (m == null) continue;
                 // Set to implementation
                 m.RequiresImplementation = true;
             }
 
             return methods;
+        }
+
+        private static bool NameIsTrue(MethodImplementationInfo methodInfo, string name)
+        {
+            return methodInfo.Method.GetName() + (methodInfo.FilterInfo != null ? methodInfo.FilterInfo.Key ?? "" : "") == name || methodInfo.Method.GetName() + (methodInfo.FilterInfo != null ? methodInfo.FilterInfo.Key ?? "" : "") + "Async" == name;
         }
 
         private static BaseCodeClassGeneratorRepository CreateWithAnalysisError(string doClassName, string repositorySuffix, string message)

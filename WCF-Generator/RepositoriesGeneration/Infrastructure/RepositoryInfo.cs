@@ -164,6 +164,21 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// </summary>
         public bool IsConstructorImplemented { get; set; }
 
+        public bool IsDeletedExist
+        {
+            get
+            {
+                var specialOption = SpecialOptions.Parameters.First().Name;
+
+                if (JoinRepositoryInfo != null)
+                {
+                    return JoinRepositoryInfo.Elements.Exists(s => s == specialOption);
+                }
+
+                return Elements.Exists(s => s == specialOption);
+            }
+        }
+
         /// <summary>
         ///     List of method implementation info
         /// </summary>
@@ -190,7 +205,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                 // Primary key(s)
                 if (!string.IsNullOrEmpty(PrimaryKeyName))
                 {
-                    possibleKeyMethods.Add(new FilterInfo(PrimaryKeyName, PrimaryKeys));
+                    possibleKeyMethods.Add(new FilterInfo(PrimaryKeyName, PrimaryKeys, FilterType.PrimaryKey));
                 }
                 // Filter keys
                 if (FilterInfos.Any())
@@ -203,5 +218,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         }
 
         #endregion
+
+        
     }
 }

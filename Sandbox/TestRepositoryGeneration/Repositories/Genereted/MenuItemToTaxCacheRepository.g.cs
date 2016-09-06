@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YumaPos.Server.Infrastructure.Repositories;
 using YumaPos.Server.Data.Sql;
 
 
@@ -64,7 +65,7 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {itemId});
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 return result.ToList();
 }
 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
@@ -75,7 +76,7 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {itemId}));
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters));
 return result.ToList();
 }
 
@@ -87,7 +88,7 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {taxId});
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 return result.ToList();
 }
 public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByTaxIdAsync(Guid  taxId, Boolean? isDeleted = false)
@@ -98,7 +99,7 @@ if (isDeleted.HasValue)
 {
 sql = sql + AndWithFilterData;
 }
-var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, new {taxId}));
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters));
 return result.ToList();
 }
 

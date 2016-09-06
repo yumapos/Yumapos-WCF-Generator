@@ -8,4 +8,10 @@
         UpdateBy,
         RemoveBy
     }
+
+    internal enum FilterType
+    {
+        PrimaryKey,
+        FilterKey
+    }
 }

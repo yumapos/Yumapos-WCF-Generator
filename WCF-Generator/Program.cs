@@ -11,21 +11,20 @@ namespace WCFGenerator
 {
     class Program
     {
-        private static string ProjectName = "TestRepositoryGeneration";
-        private static string RepositoryMainPlace = "TestRepositoryGeneration";
-        private static string RepositorySuffix = "Repository";
-        private static string RepositoryInterfaces = "TestRepositoryGeneration";
-        private static string RepositoryTargetFolder = @"Repositories\Genereted";
-
-
         static void Main(string[] args)
         {
-            if (args == null || !args.Any() || args[0] == null || !File.Exists(args[0]))
+            if (args == null || !args.Any() || args[0] == null)
             {
                 Console.WriteLine("The directory of a solution wasn't specified");
+                return;
             }
 
-            var absoluteSlnPath = Path.GetFullPath(args[0]);
+            var absoluteSlnPath = File.Exists(args[0]) ? args[0] : Path.GetFullPath(args[0]);
+
+            if (!File.Exists(absoluteSlnPath))
+            {
+                Console.WriteLine("File of solution not found");
+            }
 
             //MappingsGenerator mapping = new MappingsGenerator()
             //{
@@ -115,33 +114,35 @@ namespace WCFGenerator
         {
             Console.WriteLine("Start repository generation...");
 
-            // Configure generator
+            // Configure generator 
+
+            // TODO general config. Don't remove!!! And use path to WCF solution as cmd line argument
+            //var config = new GeneratorConfiguration()
+            //{
+            //    SolutionPath = slnPath,
+            //    TargetProjectName = "YumaPos.Server.Data.Sql",
+            //    RepositorySuffix = "Repository",
+            //    RepositoryInterfacesProjectName = "YumaPos.Server.Infrastructure",
+            //    RepositoryTargetFolder = @"Repositories\Genereted"
+            //};
+
+            // TODO Test config. Don't remove!!! And use path to current solution "..\..\..\WCF-Generator.sln" as cmd line argument
             var config = new GeneratorConfiguration()
             {
                 SolutionPath = slnPath,
-                ProjectName = ProjectName,
-                RepositoryMainPlace = RepositoryMainPlace,
-                RepositorySuffix = RepositorySuffix,
-                RepositoryInterfacesProjectName = RepositoryInterfaces,
-                RepositoryTargetFolder = RepositoryTargetFolder
+                TargetProjectName = "TestRepositoryGeneration",
+                RepositorySuffix = "Repository",
+                RepositoryInterfacesProjectName = "TestRepositoryGeneration",
+                RepositoryTargetFolder = @"Repositories\Genereted"
             };
 
-            config.RepositoryClassProjects.Add(RepositoryInterfaces);
+            config.RepositoryClassProjects.Add("YumaPos.Server.Infrastructure");
 
             var repositoryGenerator = new RepositoryCodeFactory(config);
 
-
             // run generation
-            var timer = new Stopwatch();
-            timer.Start();
             repositoryGenerator.GenerateRepository();
-            timer.Stop();
-
-            Console.WriteLine("Generation completed. Elapsed time: {0}", timer.Elapsed.ToString("c"));
-
-            Thread.Sleep(3000);
         }
-
     }
 
     public class ServiceDetail
