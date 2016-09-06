@@ -238,7 +238,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
             var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
-            var sqlWhere = string.Join(" + ", filter.Parameters.Select(k => _whereQueryBy + k.Name));
+            var sqlWhere = _whereQueryBy + filter.Key;
 
             var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
             var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
@@ -314,7 +314,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
             var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
-            var sqlWhere = string.Join(" + ", filter.Parameters.Select(k => _whereQueryBy + k.Name));
+            var sqlWhere =  _whereQueryBy + filter.Key;
 
             var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
             var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;

@@ -10,11 +10,11 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     public interface IAddressRepository : IRepository<Address>
     {
-        Task<Address> GetByIdAsync(Guid id);
+        Task<Address> GetByIdAndZipCodeAsync(Guid id, string zipCode);
         Task<IEnumerable<Address>> GetAllAsync();
         Task InsertAsync(Address address);
-        Task UpdateByIdAsync(Address address);
-        Task RemoveByIdAsync(Address address);
+        Task UpdateByIdAndZipCodeAsync(Address address);
+        Task RemoveByIdAndZipCodeAsync(Address address);
     }
 
     public partial class AddressRepository : IAddressRepository {

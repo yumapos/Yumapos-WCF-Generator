@@ -27,8 +27,9 @@ private const string SelectByQuery = "SELECT [Addresss].[Id],[Addresss].[Country
 private const string InsertQuery = "INSERT INTO Addresss([Addresss].[Id],[Addresss].[Country],[Addresss].[City],[Addresss].[State],[Addresss].[Street],[Addresss].[Building],[Addresss].[ZipCode],[Addresss].[Latitude],[Addresss].[Longitude]) VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
 private const string UpdateQueryBy = "UPDATE [Addresss] SET Addresss.[Id] = @Id,Addresss.[Country] = @Country,Addresss.[City] = @City,Addresss.[State] = @State,Addresss.[Street] = @Street,Addresss.[Building] = @Building,Addresss.[ZipCode] = @ZipCode,Addresss.[Latitude] = @Latitude,Addresss.[Longitude] = @Longitude FROM [Addresss] ";
 private const string DeleteQueryBy = "DELETE FROM[Addresss] ";
-private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [Addresss].[Id] FROM [Addresss] ";
-private const string WhereQueryById = "WHERE Addresss.[Id] = @Id ";
+private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [Addresss].[IdAndZipCode] FROM [Addresss] ";
+private const string WhereQueryByIdAndZipCode = "WHERE Addresss.[Id] = @Id AND Addresss.[ZipCode] = @ZipCode ";
+private const string WhereQueryByCity = "WHERE Addresss.[City] = @City ";
 
 
 public AddressRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -45,22 +46,40 @@ var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.Dat
 return result.ToList();
 }
 
-public YumaPos.Server.Infrastructure.DataObjects.Address GetById(Guid  id)
+public YumaPos.Server.Infrastructure.DataObjects.Address GetByIdAndZipCode(Guid  id, string  zipCode)
 {
-object parameters = new {id};
-var sql = SelectAllQuery + WhereQueryById;
+object parameters = new {id, zipCode};
+var sql = SelectAllQuery + WhereQueryByIdAndZipCode;
 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 return result.FirstOrDefault();
 }
-public async Task<YumaPos.Server.Infrastructure.DataObjects.Address> GetByIdAsync(Guid  id)
+public async Task<YumaPos.Server.Infrastructure.DataObjects.Address> GetByIdAndZipCodeAsync(Guid  id, string  zipCode)
 {
-object parameters = new {id};
-var sql = SelectAllQuery + WhereQueryById;
+object parameters = new {id, zipCode};
+var sql = SelectAllQuery + WhereQueryByIdAndZipCode;
 var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters));
 return result.FirstOrDefault();
 }
 
 
+/*
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address> GetByCity(string  city)
+{
+object parameters = new {city};
+var sql = SelectAllQuery + WhereQueryByCity;
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
+return result.ToList();
+}
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetByCityAsync(string  city)
+{
+object parameters = new {city};
+var sql = SelectAllQuery + WhereQueryByCity;
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters));
+return result.ToList();
+}
+
+
+*/
 public void Insert(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
 DataAccessService.InsertObject(address,InsertQuery);
@@ -70,41 +89,78 @@ public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.Address 
 await DataAccessService.InsertObjectAsync(address,InsertQuery);
 }
 
-public void UpdateById(YumaPos.Server.Infrastructure.DataObjects.Address address)
+public void UpdateByIdAndZipCode(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
-var sql = UpdateQueryBy + WhereQueryById; 
+var sql = UpdateQueryBy + WhereQueryByIdAndZipCode; 
 DataAccessService.PersistObject(address, sql);
 }
-public async Task UpdateByIdAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
+public async Task UpdateByIdAndZipCodeAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
-var sql = UpdateQueryBy + WhereQueryById; 
+var sql = UpdateQueryBy + WhereQueryByIdAndZipCode; 
+await DataAccessService.PersistObjectAsync(address, sql);
+}
+
+/*
+public void UpdateByCity(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = UpdateQueryBy + WhereQueryByCity; 
+DataAccessService.PersistObject(address, sql);
+}
+public async Task UpdateByCityAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = UpdateQueryBy + WhereQueryByCity; 
 await DataAccessService.PersistObjectAsync(address, sql);
 }
 
 
-public void RemoveById(YumaPos.Server.Infrastructure.DataObjects.Address address)
+*/
+public void RemoveByIdAndZipCode(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
-var sql = DeleteQueryBy + WhereQueryById; 
+var sql = DeleteQueryBy + WhereQueryByIdAndZipCode; 
 DataAccessService.PersistObject(address, sql);
 }
-public async Task RemoveByIdAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
+public async Task RemoveByIdAndZipCodeAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
-var sql = DeleteQueryBy + WhereQueryById; 
+var sql = DeleteQueryBy + WhereQueryByIdAndZipCode; 
 await DataAccessService.PersistObjectAsync(address, sql);
 }
 
-public void RemoveById(Guid  id)
+public void RemoveByIdAndZipCode(Guid  id)
 {
-var sql = DeleteQueryBy + WhereQueryById; 
+var sql = DeleteQueryBy + WhereQueryByIdAndZipCode; 
 DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {id});
 }
-public async Task RemoveByIdAsync(Guid  id)
+public async Task RemoveByIdAndZipCodeAsync(Guid  id)
 {
-var sql = DeleteQueryBy + WhereQueryById; 
+var sql = DeleteQueryBy + WhereQueryByIdAndZipCode; 
 await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {id});
 }
 
+/*
+public void RemoveByCity(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = DeleteQueryBy + WhereQueryByCity; 
+DataAccessService.PersistObject(address, sql);
+}
+public async Task RemoveByCityAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = DeleteQueryBy + WhereQueryByCity; 
+await DataAccessService.PersistObjectAsync(address, sql);
+}
 
+public void RemoveByCity(string  city)
+{
+var sql = DeleteQueryBy + WhereQueryByCity; 
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {city});
+}
+public async Task RemoveByCityAsync(string  city)
+{
+var sql = DeleteQueryBy + WhereQueryByCity; 
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {city});
+}
+
+
+*/
 
 }
 }

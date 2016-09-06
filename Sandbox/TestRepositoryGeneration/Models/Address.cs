@@ -9,7 +9,7 @@ using YumaPos.FrontEnd.Infrastructure.DataInterfaces;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccess(TableName = "dbo.Addresses")]
+    [DataAccess(TableName = "dbo.Addresses", FilterKey1 = "City")]
     public class Address : ITenantUnrelated
     {
         [Key]
@@ -19,6 +19,7 @@ namespace YumaPos.Server.Infrastructure.DataObjects
         public string State { get; set; }
         public string Street { get; set; }
         public string Building { get; set; }
+        [Key]
         public string ZipCode { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }

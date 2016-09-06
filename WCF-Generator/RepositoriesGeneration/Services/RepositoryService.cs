@@ -29,13 +29,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
         {
             _config = config;
 
-            var timer = new Stopwatch();
-            timer.Start();
-
             SolutionSyntaxWalker.SetCurrentSolution(workSpace.Solution, new List<string> { _config.RepositoryTargetFolder});
-
-            timer.Stop();
-            Console.WriteLine("Scan solution time: " + timer.Elapsed.ToString("c"));
         }
 
         #endregion
