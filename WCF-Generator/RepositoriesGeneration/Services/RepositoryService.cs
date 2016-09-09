@@ -80,10 +80,17 @@ namespace VersionedRepositoryGeneration.Generator.Services
             var resultRepositories = listOfSimilarClasses.Where(r => r.RepositoryInfo.IsJoned == false).ToList();
 
             // Fill method implementation info for main repositories
-            foreach (var repo in resultRepositories.Where(r => !r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind) && !r.RepositoryName.Contains(CodeClassGeneratorCacheRepository.RepositoryKind)))
+            foreach (var info in resultRepositories.Where(r => !r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind) && !r.RepositoryName.Contains(CodeClassGeneratorCacheRepository.RepositoryKind)).Select(r=>r.RepositoryInfo))
             {
-                var methods = GetUnimplementedMethods(repo.RepositoryInfo);
-                repo.RepositoryInfo.MethodImplementationInfo.AddRange(methods);
+                var methods = GetUnimplementedMethods(info.InterfaceMethodNames, info.CustomRepositoryMethodNames, info.PossibleKeysForMethods);
+                info.MethodImplementationInfo.AddRange(methods);
+
+                if (info.IsVersioning)
+                {
+                    var cacheRepoMethods = GetUnimplementedMethods(info.InterfaceMethodNames, info.CustomCacheRepositoryMethodNames, info.PossibleKeysForMethods);
+                    info.CacheRepositoryMethodImplementationInfo.AddRange(cacheRepoMethods);
+                }
+
             }
 
             var many2ManyInfos = resultRepositories.Where(r => r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind)).SelectMany(repository => repository.RepositoryInfo.Many2ManyInfo);
@@ -154,7 +161,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             // Get implemented interfaces for custom repository (for example - IMenuItemRepository)
 
-            var repositoryInterfaces = SolutionSyntaxWalker.GetInheritedInterfaces(repositoryInfo.GenericRepositoryName).ToList();
+            var repositoryInterfaces = SolutionSyntaxWalker.GetInheritedInterfaces(repositoryInfo.GenericRepositoryInterfaceName).ToList();
 
             var repoInterface = repositoryInterfaces.FirstOrDefault(r => r.Identifier.Text != null
                                                                          && r.Identifier.Text.IndexOf("I", StringComparison.Ordinal) == 0
@@ -175,6 +182,8 @@ namespace VersionedRepositoryGeneration.Generator.Services
             #region DataAccess
 
             var dataAccess = (DataAccessAttribute)dataAccessAttr;
+
+            repositoryInfo.Identity = dataAccess.Identity;
 
             var tableName = dataAccess.TableName ?? doClass.Identifier.ToString() + 's';
             repositoryInfo.TableName = tableName;
@@ -298,6 +307,19 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 repositoryInfo.RepositoryNamespace = SolutionSyntaxWalker.GetCustomRepositoryNamespace(customRepository);
             }
 
+            var customCacheRepository = SolutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + "Cache" + _config.RepositorySuffix).FirstOrDefault();
+            var customCacheRepositoryExist = customCacheRepository != null;
+
+            List<MethodDeclarationSyntax> customCacheRepositoryMethods = null;
+            // Get custom cache repository class info
+            if (customCacheRepositoryExist)
+            {
+                // Custom repository info
+                customCacheRepositoryMethods = customCacheRepository.Members.OfType<MethodDeclarationSyntax>().ToList();
+                // Check constructor exist
+                repositoryInfo.IsCacheRepositoryConstructorImplemented = customCacheRepository.ConstructorImplementationExist();
+            }
+
             #endregion
 
             #region Repository methods
@@ -314,6 +336,10 @@ namespace VersionedRepositoryGeneration.Generator.Services
             if(customRepositoryMethods!=null)
             {
                 repositoryInfo.CustomRepositoryMethodNames.AddRange(customRepositoryMethods.Select(m => m.Identifier.Text));
+            }
+            if (customCacheRepositoryMethods != null)
+            {
+                repositoryInfo.CustomCacheRepositoryMethodNames.AddRange(customCacheRepositoryMethods.Select(m => m.Identifier.Text));
             }
 
             #endregion
@@ -346,6 +372,41 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, FilterInfo = filterInfo});
                 methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo});
                 methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo});
+            }
+
+            // Set methods to implementation from possible list
+            foreach (var um in unimplemented)
+            {
+                // Seach in possible list
+                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um));
+                if (m == null) continue;
+                // Set to implementation
+                m.RequiresImplementation = true;
+            }
+
+            return methods;
+        }
+
+        private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<string> interfaceMethodNames, List<string>  customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods)
+        {
+            // Check implemented methods in custom repository
+            var unimplemented = interfaceMethodNames.Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm == im || cm + "Async" == im) == null);
+
+            // Set methods which possible to generate
+
+            // Add common methods
+            var methods = new List<MethodImplementationInfo>
+            {
+                new MethodImplementationInfo() { Method = RepositoryMethod.GetAll},
+                new MethodImplementationInfo() { Method = RepositoryMethod.Insert}
+            };
+
+            // Methods by keys from model (without methods from base model)
+            foreach (var filterInfo in possibleKeysForMethods)
+            {
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, FilterInfo = filterInfo });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo });
+                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo });
             }
 
             // Set methods to implementation from possible list

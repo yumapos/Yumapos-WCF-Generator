@@ -1,3 +1,5 @@
+using VersionedRepositoryGeneration.Generator.Infrastructure;
+
 namespace VersionedRepositoryGeneration.Generator.Core
 {
     internal class CodeClassGeneratorCacheRepository : CodeClassGeneratorRepository
@@ -11,9 +13,14 @@ namespace VersionedRepositoryGeneration.Generator.Core
             get { return RepositoryInfo.ClassName + RepositoryKind + RepositoryInfo.RepositorySuffix; }
         }
 
+        public override RepositoryType RepositoryType
+        {
+            get { return RepositoryType.Cache; }
+        }
+
         public override string GetClassDeclaration()
         {
-            return "internal class " + RepositoryName + " : RepositoryBase";
+            return "internal partial class " + RepositoryName + " : RepositoryBase, " + RepositoryInfo.RepositoryInterfaceName;
         }
 
         #endregion

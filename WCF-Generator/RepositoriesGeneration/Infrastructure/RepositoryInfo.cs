@@ -11,6 +11,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         private string _versionKey;
         private string _primaryKeyName;
         private List<ParameterInfo> _primaryKeys;
+        private bool _identity;
 
         public RepositoryInfo()
         {
@@ -20,7 +21,9 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
             Many2ManyInfo = new List<Many2ManyInfo>();
             InterfaceMethodNames = new List<string>();
             CustomRepositoryMethodNames = new List<string>();
+            CustomCacheRepositoryMethodNames = new List<string>();
             MethodImplementationInfo = new List<MethodImplementationInfo>();
+            CacheRepositoryMethodImplementationInfo = new List<MethodImplementationInfo>();
         }
 
         #region Repository model class info
@@ -65,6 +68,9 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// </summary>
         public List<string> Elements { get; set; }
 
+        /// <summary>
+        ///     Standart name of repository class
+        /// </summary>
         public string RepositoryName
         {
             get { return ClassName + RepositorySuffix; }
@@ -73,7 +79,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// <summary>
         ///     Returns the name of generic repository interface
         /// </summary>
-        public string GenericRepositoryName { get { return string.Format("I{0}<{1}>", RepositorySuffix, ClassName); } }
+        public string GenericRepositoryInterfaceName { get { return string.Format("I{0}<{1}>", RepositorySuffix, ClassName); } }
 
         /// <summary>
         ///     Name of repository interface
@@ -133,7 +139,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public FilterInfo SpecialOptions { get; set; }
 
         /// <summary>
-        ///     Name of member of repository model which marked as version key
+        ///     Name of member of repository model which marked as version key (for versioned repository)
         /// </summary>
         public string VersionKey
         {
@@ -160,10 +166,18 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public bool IsTenantRelated { get; set; }
 
         /// <summary>
-        ///     Return true if constructor implemented in custom repository
+        ///     Return true if constructor implemented in custom repository 
         /// </summary>
         public bool IsConstructorImplemented { get; set; }
 
+        /// <summary>
+        ///     Return true if constructor implemented in custom cache repository (for versioned repository)
+        /// </summary>
+        public bool IsCacheRepositoryConstructorImplemented { get; set; }
+
+        /// <summary>
+        ///     Return true if need create argument IsDeledet in "Get" methods
+        /// </summary>
         public bool IsDeletedExist
         {
             get
@@ -183,15 +197,31 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         ///     List of method implementation info
         /// </summary>
         public List<MethodImplementationInfo> MethodImplementationInfo { get; set; }
+        
+        /// <summary>
+        ///     List of cache repository method implementation info
+        /// </summary>
+        public List<MethodImplementationInfo> CacheRepositoryMethodImplementationInfo { get; set; }
 
         /// <summary>
         ///     Info about relation many to many 
         /// </summary>
         public List<Many2ManyInfo> Many2ManyInfo { get; set; }
 
+        /// <summary>
+        ///     List of methods name in repository interface
+        /// </summary>
         public List<string> InterfaceMethodNames { get; set; }
 
+        /// <summary>
+        ///      List of methods name in castom repository class
+        /// </summary>
         public List<string> CustomRepositoryMethodNames { get; set; }
+
+        /// <summary>
+        ///      List of methods name in castom cache repository class (for versioned repository)
+        /// </summary>
+        public List<string> CustomCacheRepositoryMethodNames { get; set; }
 
         /// <summary>
         ///     Return list of filters key for key based methods
@@ -217,8 +247,8 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
             }
         }
 
-        #endregion
+        public bool Identity { get; set; }
 
-        
-    }
+        #endregion
+    } 
 }

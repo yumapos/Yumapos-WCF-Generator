@@ -68,6 +68,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         #region Overrides of BaseCodeClassGeneratorRepository
 
+        public override RepositoryType RepositoryType
+        {
+            get { return RepositoryType.VersionService; }
+        }
+
         public override string GetUsings()
         {
             var sb = new StringBuilder();
@@ -91,14 +96,14 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         public override string GetClassDeclaration()
         {
-            return "public partial class " + RepositoryName + " : RepositoryBase" + (RepositoryInfo.RepositoryInterfaceName != null ? ", " + RepositoryInfo.RepositoryInterfaceName : "");
+            return "public partial class " + RepositoryName + (RepositoryInfo.RepositoryInterfaceName != null ? " : " + RepositoryInfo.RepositoryInterfaceName : "");
         }
 
         public override string GetConstructors()
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("public "+ RepositoryName + "(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService)");
+            sb.AppendLine("public "+ RepositoryName + "(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService)");
             sb.AppendLine("{");
 
             foreach (var f in AllFields)
@@ -324,47 +329,83 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+            var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "(" + parameterName + ");").ToList();
 
             var sb = new StringBuilder();
 
-            #region Synchronous method
-
-            sb.AppendLine("public void Insert(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
-            sb.AppendLine(CacheRepositoryField + ".Insert(" + parameterName + ");");
-
-            var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "(" + parameterName + ");").ToList();
-
-            foreach (var m in updateMethods)
+            // If should not return identifier
+            if (RepositoryInfo.PrimaryKeys.Count > 1 || !RepositoryInfo.Identity)
             {
-                sb.AppendLine(m);
+                // synchronous method
+                sb.AppendLine("public void Insert(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
+                sb.AppendLine(CacheRepositoryField + ".Insert(" + parameterName + ");");
+
+                foreach (var m in updateMethods)
+                {
+                    sb.AppendLine(m);
+                }
+
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
+                sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
+
+                // if async
+                // var updateMethodsAsync = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "Async(" + parameterName + ");");
+
+                foreach (var m in updateMethods)
+                {
+                    sb.AppendLine(m);
+                }
+
+                sb.AppendLine("}");
             }
 
-            sb.AppendLine("}");
-
-            #endregion
-
-            #region Asynchronous method
-
-            sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
-            sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
-
-            // if async
-            // var updateMethodsAsync = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "Async(" + parameterName + ");");
-
-            foreach (var m in updateMethods)
+            else
             {
-                sb.AppendLine(m);
+                var returnType = RepositoryInfo.PrimaryKeys.First().TypeName;
+
+                // synchronous method
+                sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
+                sb.AppendLine("var res = " + CacheRepositoryField + ".Insert(" + parameterName + ");");
+                sb.AppendLine("return (" + returnType + ")res;");
+
+                foreach (var m in updateMethods)
+                {
+                    sb.AppendLine(m);
+                }
+
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task<" + returnType + "> InsertAsync(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
+                sb.AppendLine("var res = await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
+                sb.AppendLine("return (" + returnType + ")res;");
+
+                // if async
+                // var updateMethodsAsync = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "Async(" + parameterName + ");");
+
+                foreach (var m in updateMethods)
+                {
+                    sb.AppendLine(m);
+                }
+
+                sb.AppendLine("}");
             }
 
-            sb.AppendLine("}");
-
-            #endregion
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
@@ -543,6 +584,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
+
         private string GenerateRemoveByFilterKey(MethodImplementationInfo method)
         {
             var filter = method.FilterInfo;

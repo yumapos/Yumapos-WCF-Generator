@@ -13,6 +13,14 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// </summary>
         public RepositoryInfo RepositoryInfo { get; set; }
 
+        /// <summary>
+        ///     Allowed repository type
+        /// </summary>
+        public virtual RepositoryType RepositoryType
+        {
+            get { return RepositoryType.General; }
+        }
+
         #endregion
 
         #region Implementation of ICodeClassGeneratorRepository
@@ -88,7 +96,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                     // members
                     sb.AppendLine(GetFields());
                     sb.AppendLine(GetProperties());
-                    if(!RepositoryInfo.IsConstructorImplemented)
+                    if((RepositoryType != RepositoryType.Cache && !RepositoryInfo.IsConstructorImplemented) || (RepositoryType == RepositoryType.Cache && !RepositoryInfo.IsCacheRepositoryConstructorImplemented))
                     {
                         sb.AppendLine(GetConstructors());
                     }
@@ -120,4 +128,14 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 
         
     }
+
+    internal enum RepositoryType
+    {
+        General,
+        Cache,
+        Version,
+        VersionService
+    }
+
+
 }

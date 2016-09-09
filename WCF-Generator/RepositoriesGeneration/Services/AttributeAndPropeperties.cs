@@ -19,12 +19,14 @@ namespace VersionedRepositoryGeneration.Generator.Services
         public static explicit operator DataAccessAttribute(AttributeAndPropeperties obj)
         {
             var isDeleted = obj.GetParameterByKeyName("IsDeleted");
+            var identity = obj.GetParameterByKeyName("Identity");
 
             var attr = new DataAccessAttribute
             {
                 TableName = obj.GetParameterByKeyName("ManyToManyEntytyType"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = !string.IsNullOrEmpty(isDeleted) && Convert.ToBoolean(isDeleted),
+                Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = obj.GetParameterByKeyName("FilterKey3"),

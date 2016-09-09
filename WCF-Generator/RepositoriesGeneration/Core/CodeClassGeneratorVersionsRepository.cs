@@ -19,6 +19,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
             get { return RepositoryInfo.ClassName + RepositoryKind + RepositoryInfo.RepositorySuffix; }
         }
 
+        public override RepositoryType RepositoryType
+        {
+            get { return RepositoryType.Version; }
+        }
+
         public override string GetClassDeclaration()
         {
             return "internal class " + RepositoryName + " : RepositoryBase";

@@ -5,6 +5,8 @@ namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attri
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     internal sealed class DataAccessAttribute : Attribute
     {
+        public bool Identity { get; set; }
+
         public string TableName { get; set; }
 
         public string TableVersion { get; set; }

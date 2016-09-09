@@ -53,15 +53,16 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             {
                 var columns = info.TableColumns.ToList();
                 var columnsJoned = info.JoinTableColumns.ToList();
+                var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyName) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyName;
 
                 // return inset into table and join table
                 return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier); DECLARE @TempPKItemId uniqueidentifier;"
                        + "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJoned, info.JoinTableName) + _columns + ") OUTPUT INSERTED." + info.JoinPrimaryKeyName + " VALUES(" + Values(columnsJoned) + _values + ") "
                        + "SELECT " + _tempId + " = " + info.JoinPrimaryKeyName + " FROM " + _tempTable + " "
-                       + "INSERT INTO " + info.TableName + "(" + Fields(columns, info.TableName) + _columns + ") VALUES(" + _tempId +","+ Values(columns.Where(c => c != info.PrimaryKeyName)) + _values + ") ";
+                       + "INSERT INTO " + info.TableName + "(" + Fields(columns, info.TableName) + _columns + ") " + outputKey + " VALUES(" + _tempId +","+ Values(columns.Where(c => c != info.PrimaryKeyName)) + _values + ") ";
             }
             // return select from table
-            return Insert(info.TableColumns, info.TableName) + " ";
+            return Insert(info.TableColumns, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
         }
 
         public static string GenerateInsertToTemp(SqlInfo info)
@@ -157,10 +158,11 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             return "SELECT " + Fields(columns, table);
         }
 
-        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName)
+        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string primaryKey = null)
         {
             var columns = tableColumns.ToList();
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") VALUES(" + Values(columns) + ")";
+            var outputKey = string.IsNullOrEmpty(primaryKey) ? "" : "OUTPUT INSERTED." + primaryKey;
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ")";
         }
 
         private static string Update(string tableName)
@@ -262,6 +264,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         public string TableName;
         public IEnumerable<string> TableColumns;
         public string PrimaryKeyName;
+        public bool ReturnPrimarayKey;
         public string JoinTableName;
         public IEnumerable<string> JoinTableColumns;
         public string JoinPrimaryKeyName;

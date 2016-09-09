@@ -5,6 +5,8 @@ namespace YumaPos.FrontEnd.Infrastructure.Common.DataAccess
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public sealed class DataAccessAttribute : Attribute
     {
+        public bool Identity { get; set; }
+
         public string TableName { get; set; }
 
         public string TableVersion { get; set; }

@@ -59,7 +59,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 JoinTableColumns = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.Elements : null,
                 JoinTableName = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.TableName : null,
                 JoinPrimaryKeyName = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.PrimaryKeyName : null, // TODO more then one key ?
-                TenantRelated = RepositoryInfo.IsTenantRelated
+                TenantRelated = RepositoryInfo.IsTenantRelated,
+                ReturnPrimarayKey = RepositoryInfo.PrimaryKeys.Count == 1
             };
 
             var fields = SqlScriptGenerator.GenerateFields(sqlInfo);
@@ -389,23 +390,40 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var queryName = _insertQuery;
 
-            #region Synchronous method
+            // If should not return identifier
+            if (RepositoryInfo.PrimaryKeys.Count > 1 )
+            {
+                // Synchronous method
+                sb.AppendLine("public void Insert(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("}");
 
-            sb.AppendLine("public void Insert(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine("DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
-            sb.AppendLine("}");
+                // Asynchronous method
+                sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("}");
+            }
+            //
+            else
+            {
+                var returnType = RepositoryInfo.PrimaryKeys.First().TypeName;
 
-            #endregion
+                // Synchronous method
+                sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("var res = DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("return (" + returnType + ")res;");
+                sb.AppendLine("}");
 
-            #region Asynchronous method
-
-            sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
-            sb.AppendLine("}");
-
-            #endregion
+                // Asynchronous method
+                sb.AppendLine("public async Task<" + returnType + "> InsertAsync(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("var res = await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("return (" + returnType + ")res;");
+                sb.AppendLine("}");
+            }
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
