@@ -30,7 +30,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         public RepositoryGeneratorWorkSpace(string solutionPath, string projectName)
         {
             _workspace = MSBuildWorkspace.Create();
-            _workspace.DocumentOpened += (sender, args) => Console.WriteLine(args.Document.Name);
+
             Solution = _workspace.OpenSolutionAsync(solutionPath).Result;
 
             Project = Solution.Projects.First(x => x.Name == projectName);

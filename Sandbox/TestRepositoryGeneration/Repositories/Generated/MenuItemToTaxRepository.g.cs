@@ -31,28 +31,28 @@ _menuItemToTaxCacheRepository = new MenuItemToTaxCacheRepository(dataAccessServi
 _menuItemToTaxVersionRepository = new MenuItemToTaxVersionRepository(dataAccessService);
 }
 
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetAll(Boolean? isDeleted = false)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetAll(bool? isDeleted = false)
 {
 return _menuItemToTaxCacheRepository.GetAll(isDeleted);
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetAllAsync(Boolean? isDeleted = false)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetAllAsync(bool? isDeleted = false)
 {
 return await _menuItemToTaxCacheRepository.GetAllAsync(isDeleted);
 }
 
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByItemId(Guid  itemId, Boolean? isDeleted = false)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByItemId(Guid itemId, bool? isDeleted = false)
 {
 return _menuItemToTaxCacheRepository.GetByItemId(itemId, isDeleted);
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByItemIdAsync(Guid itemId, bool? isDeleted = false)
 {
 return await _menuItemToTaxCacheRepository.GetByItemIdAsync(itemId, isDeleted);
 }
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByTaxId(Guid  taxId, Boolean? isDeleted = false)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByTaxId(Guid taxId, bool? isDeleted = false)
 {
 return _menuItemToTaxCacheRepository.GetByTaxId(taxId, isDeleted);
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByTaxIdAsync(Guid  taxId, Boolean? isDeleted = false)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByTaxIdAsync(Guid taxId, bool? isDeleted = false)
 {
 return await _menuItemToTaxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
 }
@@ -105,7 +105,7 @@ public async Task RemoveByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.
 menuItemToTax.IsDeleted = true;
 await _menuItemToTaxCacheRepository.UpdateByItemIdAsync(menuItemToTax);
 }
-public void RemoveByItemId(Guid  itemId)
+public void RemoveByItemId(Guid itemId)
 {
 var result = _menuItemToTaxCacheRepository.GetByItemId(itemId);
 foreach (var item in result)
@@ -114,7 +114,7 @@ item.IsDeleted = true;
 UpdateByItemId(item);
 }
 }
-public async Task RemoveByItemIdAsync(Guid  itemId)
+public async Task RemoveByItemIdAsync(Guid itemId)
 {
 var result = await _menuItemToTaxCacheRepository.GetByItemIdAsync(itemId);
 foreach (var item in result)
@@ -133,7 +133,7 @@ public async Task RemoveByTaxIdAsync(YumaPos.Server.Infrastructure.DataObjects.M
 menuItemToTax.IsDeleted = true;
 await _menuItemToTaxCacheRepository.UpdateByTaxIdAsync(menuItemToTax);
 }
-public void RemoveByTaxId(Guid  taxId)
+public void RemoveByTaxId(Guid taxId)
 {
 var result = _menuItemToTaxCacheRepository.GetByTaxId(taxId);
 foreach (var item in result)
@@ -142,7 +142,7 @@ item.IsDeleted = true;
 UpdateByTaxId(item);
 }
 }
-public async Task RemoveByTaxIdAsync(Guid  taxId)
+public async Task RemoveByTaxIdAsync(Guid taxId)
 {
 var result = await _menuItemToTaxCacheRepository.GetByTaxIdAsync(taxId);
 foreach (var item in result)

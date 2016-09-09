@@ -11,6 +11,7 @@ namespace YumaPos.Server.Infrastructure.Repositories
     public interface IAddressRepository : IRepository<Address>
     {
         Task<Address> GetByIdAndZipCodeAsync(Guid id, string zipCode);
+        Task<IEnumerable<Address>> GetByZipCodeAsync(string zipCode);
         Task<IEnumerable<Address>> GetAllAsync();
         Task InsertAsync(Address address);
         Task UpdateByIdAndZipCodeAsync(Address address);

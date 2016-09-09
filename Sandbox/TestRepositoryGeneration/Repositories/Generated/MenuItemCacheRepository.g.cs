@@ -35,7 +35,7 @@ private const string AndWithFilterData = "WHERE MenuItems.[IsDeleted] = @IsDelet
 
 
 public MenuItemCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll(Boolean? isDeleted = false)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll(bool? isDeleted = false)
 {
 object parameters = new {isDeleted};
 var sql = SelectAllQuery;
@@ -46,7 +46,7 @@ sql = sql + AndWithFilterData;
 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters).ToList();
 return result.ToList();
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetAllAsync(Boolean? isDeleted = false)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetAllAsync(bool? isDeleted = false)
 {
 object parameters = new {isDeleted};
 var sql = SelectAllQuery;
@@ -58,7 +58,7 @@ var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.Dat
 return result.ToList();
 }
 
-public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemId(Guid  itemId, Boolean? isDeleted = false)
+public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemId(Guid itemId, bool? isDeleted = false)
 {
 object parameters = new {itemId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByItemId;
@@ -69,7 +69,7 @@ sql = sql + AndWithFilterData;
 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 return result.FirstOrDefault();
 }
-public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemIdAsync(Guid  itemId, Boolean? isDeleted = false)
+public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemIdAsync(Guid itemId, bool? isDeleted = false)
 {
 object parameters = new {itemId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByItemId;
@@ -82,7 +82,7 @@ return result.FirstOrDefault();
 }
 
 
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(Guid  menuCategoryId, Boolean? isDeleted = false)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(Guid menuCategoryId, bool? isDeleted = false)
 {
 object parameters = new {menuCategoryId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByMenuCategoryId;
@@ -93,7 +93,7 @@ sql = sql + AndWithFilterData;
 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 return result.ToList();
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(Guid  menuCategoryId, Boolean? isDeleted = false)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(Guid menuCategoryId, bool? isDeleted = false)
 {
 object parameters = new {menuCategoryId,isDeleted};
 var sql = SelectAllQuery + WhereQueryByMenuCategoryId;
@@ -151,15 +151,17 @@ var sql = SelectIntoTempTable + WhereQueryByItemId + DeleteQueryBy;
 await DataAccessService.PersistObjectAsync(menuItem, sql);
 }
 
-public void RemoveByItemId(Guid  itemId)
+public void RemoveByItemId(Guid itemId)
 {
+object parameters = new {itemId};
 var sql = SelectIntoTempTable + WhereQueryByItemId + DeleteQueryBy; 
-DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {itemId});
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 }
-public async Task RemoveByItemIdAsync(Guid  itemId)
+public async Task RemoveByItemIdAsync(Guid itemId)
 {
+object parameters = new {itemId};
 var sql = SelectIntoTempTable + WhereQueryByItemId + DeleteQueryBy; 
-await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {itemId});
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 }
 
 /*
@@ -174,15 +176,17 @@ var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy;
 await DataAccessService.PersistObjectAsync(menuItem, sql);
 }
 
-public void RemoveByMenuCategoryId(Guid  menuCategoryId)
+public void RemoveByMenuCategoryId(Guid menuCategoryId)
 {
+object parameters = new {menuCategoryId};
 var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
-DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {menuCategoryId});
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 }
-public async Task RemoveByMenuCategoryIdAsync(Guid  menuCategoryId)
+public async Task RemoveByMenuCategoryIdAsync(Guid menuCategoryId)
 {
+object parameters = new {menuCategoryId};
 var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
-await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, new {menuCategoryId});
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 }
 
 

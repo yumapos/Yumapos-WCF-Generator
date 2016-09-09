@@ -93,6 +93,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     sb.AppendLine(GetNamespaceDeclaration());
                     // open namespace
                     sb.AppendLine("{");
+                    
                     // class
                     sb.AppendLine(GetClassDeclaration());
                     // open class

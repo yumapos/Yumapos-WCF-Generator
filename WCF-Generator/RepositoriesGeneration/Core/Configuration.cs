@@ -6,7 +6,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
     {
         public GeneratorConfiguration()
         {
-            RepositoryClassProjects = new List<string>();
+            AdditionalProjects = new List<string>();
         }
 
         /// <summary>
@@ -35,9 +35,14 @@ namespace VersionedRepositoryGeneration.Generator.Core
         public string RepositoryInterfacesProjectName { get; set; }
 
         /// <summary>
-        ///     List of project name which include repository models
+        ///     Project name which include repository models
         /// </summary>
-        public List<string> RepositoryClassProjects { get; private set; }
+        public string RepositoryClassProjects { get; private set; }
+
+        /// <summary>
+        ///     List of project for analysis
+        /// </summary>
+        public List<string> AdditionalProjects { get; private set; }
     }
 }
  

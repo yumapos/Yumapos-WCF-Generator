@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using VersionedRepositoryGeneration.Generator.Analysis;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
 using VersionedRepositoryGeneration.Generator.Services;
+using WCFGenerator.RepositoriesGeneration.Configuration;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {
@@ -15,23 +18,15 @@ namespace VersionedRepositoryGeneration.Generator.Core
     {
         #region Fields
 
-        private readonly GeneratorConfiguration _configuration;
-
-        private readonly RepositoryGeneratorWorkSpace _repositoryGeneratorWorkSpace;
-
-        private readonly RepositoryService _repositoryService;
+        private IEnumerable<RepositoryProject> _configurations;
 
         #endregion
 
         #region Constructor
 
-        public RepositoryCodeFactory(GeneratorConfiguration config)
+        public RepositoryCodeFactory(IEnumerable<RepositoryProject> configs)
         {
-            _configuration = config;
-
-            _repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace(config.SolutionPath, config.TargetProjectName);
-
-            _repositoryService = new RepositoryService(_repositoryGeneratorWorkSpace, config);
+            _configurations = configs;
         }
 
         #endregion
@@ -41,32 +36,39 @@ namespace VersionedRepositoryGeneration.Generator.Core
         /// </summary>
         public void GenerateRepository()
         {
-            // Create list of repository for generate
-            IEnumerable<ICodeClassGeneratorRepository> candidatesRepository;
-
-            try
+            foreach (var config in _configurations.Where(c=>c.Enable))
             {
-                candidatesRepository = _repositoryService.GetRepositories();
+                var repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace(config.SolutionPath, config.TargetProjectName);
+
+                var repositoryService = new RepositoryService(repositoryGeneratorWorkSpace, config);
+
+                // Create list of repository for generate
+                IEnumerable<ICodeClassGeneratorRepository> candidatesRepository;
+
+                try
+                {
+                    candidatesRepository = repositoryService.GetRepositories();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return;
+                }
+
+                foreach (var repository in candidatesRepository)
+                {
+                    // Get code of repository class
+                    var code = repository.GetFullCode();
+
+                    // TODO apply standart formating for code 
+
+                    // Add document to creation
+                    repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".g.cs", config.RepositoryTargetFolder, code);
+                }
+
+                // Save all files
+                repositoryGeneratorWorkSpace.ApplyChanges();
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return;
-            }
-
-            foreach (var repository in candidatesRepository)
-            {
-                // Get code of repository class
-                var code = repository.GetFullCode();
-
-                // TODO apply standart formating for code 
-
-                // Add document to creation
-                _repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".g.cs", _configuration.RepositoryTargetFolder, code);
-            }
-
-            // Save all files
-            _repositoryGeneratorWorkSpace.ApplyChanges();
         }
     }
 }

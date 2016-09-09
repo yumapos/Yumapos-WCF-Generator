@@ -30,6 +30,7 @@ private const string DeleteQueryBy = "DELETE FROM[Addresss] ";
 private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [Addresss].[IdAndZipCode] FROM [Addresss] ";
 private const string WhereQueryByIdAndZipCode = "WHERE Addresss.[Id] = @Id AND Addresss.[ZipCode] = @ZipCode ";
 private const string WhereQueryByCity = "WHERE Addresss.[City] = @City ";
+private const string WhereQueryByZipCode = "WHERE Addresss.[ZipCode] = @ZipCode ";
 
 
 public AddressRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -46,14 +47,14 @@ var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.Dat
 return result.ToList();
 }
 
-public YumaPos.Server.Infrastructure.DataObjects.Address GetByIdAndZipCode(Guid  id, string  zipCode)
+public YumaPos.Server.Infrastructure.DataObjects.Address GetByIdAndZipCode(Guid id, string zipCode)
 {
 object parameters = new {id, zipCode};
 var sql = SelectAllQuery + WhereQueryByIdAndZipCode;
 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 return result.FirstOrDefault();
 }
-public async Task<YumaPos.Server.Infrastructure.DataObjects.Address> GetByIdAndZipCodeAsync(Guid  id, string  zipCode)
+public async Task<YumaPos.Server.Infrastructure.DataObjects.Address> GetByIdAndZipCodeAsync(Guid id, string zipCode)
 {
 object parameters = new {id, zipCode};
 var sql = SelectAllQuery + WhereQueryByIdAndZipCode;
@@ -63,14 +64,14 @@ return result.FirstOrDefault();
 
 
 /*
-public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address> GetByCity(string  city)
+public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address> GetByCity(string city)
 {
 object parameters = new {city};
 var sql = SelectAllQuery + WhereQueryByCity;
 var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 return result.ToList();
 }
-public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetByCityAsync(string  city)
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetByCityAsync(string city)
 {
 object parameters = new {city};
 var sql = SelectAllQuery + WhereQueryByCity;
@@ -79,7 +80,22 @@ return result.ToList();
 }
 
 
-*/
+*/public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address> GetByZipCode(string zipCode)
+{
+object parameters = new {zipCode};
+var sql = SelectAllQuery + WhereQueryByZipCode;
+var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
+return result.ToList();
+}
+public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetByZipCodeAsync(string zipCode)
+{
+object parameters = new {zipCode};
+var sql = SelectAllQuery + WhereQueryByZipCode;
+var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters));
+return result.ToList();
+}
+
+
 public void Insert(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
 DataAccessService.InsertObject(address,InsertQuery);
@@ -113,6 +129,19 @@ await DataAccessService.PersistObjectAsync(address, sql);
 }
 
 
+*//*
+public void UpdateByZipCode(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = UpdateQueryBy + WhereQueryByZipCode; 
+DataAccessService.PersistObject(address, sql);
+}
+public async Task UpdateByZipCodeAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = UpdateQueryBy + WhereQueryByZipCode; 
+await DataAccessService.PersistObjectAsync(address, sql);
+}
+
+
 */
 public void RemoveByIdAndZipCode(YumaPos.Server.Infrastructure.DataObjects.Address address)
 {
@@ -125,15 +154,17 @@ var sql = DeleteQueryBy + WhereQueryByIdAndZipCode;
 await DataAccessService.PersistObjectAsync(address, sql);
 }
 
-public void RemoveByIdAndZipCode(Guid  id)
+public void RemoveByIdAndZipCode(Guid id, string zipCode)
 {
+object parameters = new {id, zipCode};
 var sql = DeleteQueryBy + WhereQueryByIdAndZipCode; 
-DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {id});
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 }
-public async Task RemoveByIdAndZipCodeAsync(Guid  id)
+public async Task RemoveByIdAndZipCodeAsync(Guid id, string zipCode)
 {
+object parameters = new {id, zipCode};
 var sql = DeleteQueryBy + WhereQueryByIdAndZipCode; 
-await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {id});
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 }
 
 /*
@@ -148,15 +179,43 @@ var sql = DeleteQueryBy + WhereQueryByCity;
 await DataAccessService.PersistObjectAsync(address, sql);
 }
 
-public void RemoveByCity(string  city)
+public void RemoveByCity(string city)
 {
+object parameters = new {city};
 var sql = DeleteQueryBy + WhereQueryByCity; 
-DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {city});
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 }
-public async Task RemoveByCityAsync(string  city)
+public async Task RemoveByCityAsync(string city)
 {
+object parameters = new {city};
 var sql = DeleteQueryBy + WhereQueryByCity; 
-await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, new {city});
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
+}
+
+
+*//*
+public void RemoveByZipCode(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = DeleteQueryBy + WhereQueryByZipCode; 
+DataAccessService.PersistObject(address, sql);
+}
+public async Task RemoveByZipCodeAsync(YumaPos.Server.Infrastructure.DataObjects.Address address)
+{
+var sql = DeleteQueryBy + WhereQueryByZipCode; 
+await DataAccessService.PersistObjectAsync(address, sql);
+}
+
+public void RemoveByZipCode(string zipCode)
+{
+object parameters = new {zipCode};
+var sql = DeleteQueryBy + WhereQueryByZipCode; 
+DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
+}
+public async Task RemoveByZipCodeAsync(string zipCode)
+{
+object parameters = new {zipCode};
+var sql = DeleteQueryBy + WhereQueryByZipCode; 
+await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
 }
 
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Nito.AsyncEx;
 using VersionedRepositoryGeneration.Generator.Core;
+using WCFGenerator.RepositoriesGeneration.Configuration;
 
 namespace WCFGenerator
 {
@@ -55,7 +56,7 @@ namespace WCFGenerator
 
             try
             {
-                RunRepositoryGeneration(absoluteSlnPath);
+                RunRepositoryGeneration();
             }
             catch (Exception e)
             {
@@ -64,7 +65,6 @@ namespace WCFGenerator
 
             try
             {
-                RunWcfGeneration(args);
             }
             catch (Exception e)
             {
@@ -110,38 +110,18 @@ namespace WCFGenerator
             AsyncContext.Run(() => wcf.Start(args));
         }
 
-        private static void RunRepositoryGeneration(string slnPath)
+        private static void RunRepositoryGeneration()
         {
             Console.WriteLine("Start repository generation...");
 
             // Configure generator 
-
-            // TODO general config. Don't remove!!! And use path to WCF solution as cmd line argument
-            //var config = new GeneratorConfiguration()
-            //{
-            //    SolutionPath = slnPath,
-            //    TargetProjectName = "YumaPos.Server.Data.Sql",
-            //    RepositorySuffix = "Repository",
-            //    RepositoryInterfacesProjectName = "YumaPos.Server.Infrastructure",
-            //    RepositoryTargetFolder = @"Repositories\Genereted"
-            //};
-
-            // TODO Test config. Don't remove!!! And use path to current solution "..\..\..\WCF-Generator.sln" as cmd line argument
-            var config = new GeneratorConfiguration()
-            {
-                SolutionPath = slnPath,
-                TargetProjectName = "TestRepositoryGeneration",
-                RepositorySuffix = "Repository",
-                RepositoryInterfacesProjectName = "TestRepositoryGeneration",
-                RepositoryTargetFolder = @"Repositories\Genereted"
-            };
-
-            config.RepositoryClassProjects.Add("YumaPos.Server.Infrastructure");
-
+            var config = RepositoryGeneratorSettings.GetConfigs();
             var repositoryGenerator = new RepositoryCodeFactory(config);
 
             // run generation
             repositoryGenerator.GenerateRepository();
+
+            Console.WriteLine("Repository generation complated.");
         }
     }
 

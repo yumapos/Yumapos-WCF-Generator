@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Services;
 
@@ -11,38 +10,6 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 {
     internal static class SyntaxAnalysisHelper
     {
-        public static bool SetterInCodePropertyExist(PropertyDeclarationSyntax codeproperty)
-        {
-            try
-            {
-                if (codeproperty.AccessorList.Accessors.FirstOrDefault(x => x.Kind() == SyntaxKind.SetAccessorDeclaration) != null)
-                {
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return false;
-        }
-        public static bool GetterInCodePropertyExist(PropertyDeclarationSyntax codeproperty)
-        {
-            try
-            {
-                if (codeproperty.AccessorList.Accessors.FirstOrDefault(x => x.Kind() == SyntaxKind.GetAccessorDeclaration) != null)
-                {
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return false;
-        }
         public static IEnumerable<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element)
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
@@ -130,10 +97,6 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
             }
 
             return attributeCollection;
-        }
-        public static bool ConstructorImplementationExist(ClassDeclarationSyntax customRepository)
-        {
-            return customRepository.Members.Any(e => (e as ConstructorDeclarationSyntax) != null);
         }
     }
 }

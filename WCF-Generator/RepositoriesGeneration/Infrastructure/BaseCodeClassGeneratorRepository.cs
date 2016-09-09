@@ -88,7 +88,10 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                     // members
                     sb.AppendLine(GetFields());
                     sb.AppendLine(GetProperties());
-                    sb.AppendLine(GetConstructors());
+                    if(!RepositoryInfo.IsConstructorImplemented)
+                    {
+                        sb.AppendLine(GetConstructors());
+                    }
                     sb.AppendLine(GetMethods());
                     // close class
                     sb.AppendLine("}");
