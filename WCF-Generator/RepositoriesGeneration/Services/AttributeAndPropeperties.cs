@@ -23,7 +23,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             var attr = new DataAccessAttribute
             {
-                TableName = obj.GetParameterByKeyName("ManyToManyEntytyType"),
+                TableName = obj.GetParameterByKeyName("TableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = !string.IsNullOrEmpty(isDeleted) && Convert.ToBoolean(isDeleted),
                 Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),

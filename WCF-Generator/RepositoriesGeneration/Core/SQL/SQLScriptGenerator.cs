@@ -82,6 +82,12 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             return Where(new [] { selectedFilter}, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
+
+        public static string GenerateAnd(IEnumerable<string> selectedFilters, SqlInfo sqlInfo)
+        {
+            return And(selectedFilters, sqlInfo.TableName);
+        }
+
         public static string GenerateUpdate(SqlInfo info)
         {
             return Update(info.TableName) + " " 
@@ -162,7 +168,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         {
             var columns = tableColumns.ToList();
             var outputKey = string.IsNullOrEmpty(primaryKey) ? "" : "OUTPUT INSERTED." + primaryKey;
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ")";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + _columns + ") " + outputKey + " VALUES(" + Values(columns) + _values +")";
         }
 
         private static string Update(string tableName)
@@ -182,7 +188,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 
         private static string Delete(string tableName)
         {
-            return "DELETE FROM" + GenerateTableName(tableName);
+            return "DELETE FROM " + GenerateTableName(tableName);
         }
 
         private static string From(string tableName)
@@ -213,8 +219,6 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 
             return sb.ToString();
         }
-
-        
 
         private static string AndTenantRelated(string tableName, bool isTenantRelated)
         {
@@ -257,6 +261,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         }
 
         #endregion
+
     }
 
     public struct SqlInfo

@@ -98,8 +98,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // Is deleted filter
             if (RepositoryInfo.IsDeletedExist)
             {
-                var specialOption = RepositoryInfo.SpecialOptions.Parameters.First().Name;
-                var andFilter = SqlScriptGenerator.GenerateWhere(specialOption, sqlInfo).SurroundWithQuotes();
+                var specialOption = RepositoryInfo.SpecialOptions.Parameters.Select(p=>p.Name);
+                var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _andWithfilterData + " = " + andFilter + ";");
             }
 
@@ -250,7 +250,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
                 sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
                 sb.AppendLine("{");
                 sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
@@ -265,7 +265,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
                 sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
                 sb.AppendLine("{");
                 sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
@@ -283,7 +283,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
 
                 sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
                 sb.AppendLine("return result.FirstOrDefault();");
@@ -294,7 +294,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
 
                 sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
                 sb.AppendLine("return result.FirstOrDefault();");
@@ -326,7 +326,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
                 sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
                 sb.AppendLine("{");
                 sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
@@ -341,7 +341,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
                 sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
                 sb.AppendLine("{");
                 sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
@@ -359,7 +359,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
 
                 sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
                 sb.AppendLine("return result.ToList();");
@@ -370,7 +370,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("{");
 
                 sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-                sb.AppendLine("var sql = " + _selectAllQuery + " + " + sqlWhere + ";");
+                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
 
                 sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
                 sb.AppendLine("return result.ToList();");
