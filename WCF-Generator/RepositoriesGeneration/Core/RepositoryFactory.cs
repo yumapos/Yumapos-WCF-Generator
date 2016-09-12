@@ -60,8 +60,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     // Get code of repository class
                     var code = repository.GetFullCode();
 
-                    // TODO apply standart formating for code 
-
                     // Add document to creation
                     repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".g.cs", config.RepositoryTargetFolder, code);
                 }
