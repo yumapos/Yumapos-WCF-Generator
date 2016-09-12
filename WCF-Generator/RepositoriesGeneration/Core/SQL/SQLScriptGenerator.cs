@@ -83,9 +83,9 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
         }
 
 
-        public static string GenerateAnd(IEnumerable<string> selectedFilters, SqlInfo sqlInfo)
+        public static string GenerateAnd(IEnumerable<string> selectedFilters, string ownerTable)
         {
-            return And(selectedFilters, sqlInfo.TableName);
+            return And(selectedFilters, ownerTable);
         }
 
         public static string GenerateUpdate(SqlInfo info)

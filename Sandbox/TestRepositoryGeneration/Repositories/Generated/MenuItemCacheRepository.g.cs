@@ -31,7 +31,7 @@ namespace TestRepositoryGeneration
 		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET MenuItems.[ItemId] = @ItemId,MenuItems.[ItemVersionId] = @ItemVersionId,MenuItems.[IsDeleted] = @IsDeleted,MenuItems.[CategoryId] = @CategoryId FROM [RecipieItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] ";
 		private const string WhereQueryByItemId = "WHERE MenuItems.[ItemId] = @ItemId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuCategoryId = "WHERE MenuItems.[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItems]} ";
-		private const string AndWithFilterData = "AND MenuItems.[IsDeleted] = @IsDeleted";
+		private const string AndWithFilterData = "AND RecipieItems.[IsDeleted] = @IsDeleted";
 
 
 		public MenuItemCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }

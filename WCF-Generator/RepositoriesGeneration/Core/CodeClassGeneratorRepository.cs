@@ -99,7 +99,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             if (RepositoryInfo.IsDeletedExist)
             {
                 var specialOption = RepositoryInfo.SpecialOptions.Parameters.Select(p=>p.Name);
-                var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo).SurroundWithQuotes();
+                var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _andWithfilterData + " = " + andFilter + ";");
             }
 
