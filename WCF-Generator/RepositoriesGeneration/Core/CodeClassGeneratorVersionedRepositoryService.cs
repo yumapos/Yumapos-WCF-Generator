@@ -378,12 +378,13 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
                 sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine("var res = " + CacheRepositoryField + ".Insert(" + parameterName + ");");
-                sb.AppendLine("return (" + returnType + ")res;");
 
                 foreach (var m in updateMethods)
                 {
                     sb.AppendLine(m);
                 }
+
+                sb.AppendLine("return (" + returnType + ")res;");
 
                 sb.AppendLine("}");
 
@@ -393,7 +394,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
                 sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("var res = await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
-                sb.AppendLine("return (" + returnType + ")res;");
 
                 // if async
                 // var updateMethodsAsync = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "Async(" + parameterName + ");");
@@ -402,6 +402,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 {
                     sb.AppendLine(m);
                 }
+
+                sb.AppendLine("return (" + returnType + ")res;");
 
                 sb.AppendLine("}");
             }

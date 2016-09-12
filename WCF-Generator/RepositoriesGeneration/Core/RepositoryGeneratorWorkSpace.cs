@@ -65,7 +65,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var project = Project;
             
-            // Add new file
             foreach (var doc in _filesToCreation)
             {
                 Document document;
@@ -77,18 +76,29 @@ namespace VersionedRepositoryGeneration.Generator.Core
                     var st = SourceText.From(doc.SrcText);
                     var newDoc = old.WithText(st);
                     var c = newDoc.GetTextChangesAsync(old).Result;
-                    document = c.Any() ? Formatter.FormatAsync(old).Result : old; // format code
+                    document = c.Any() ? newDoc : old; 
                 }
                 // create new document
                 else
                 {
-                    var newFile = project.AddDocument(doc.FileName, doc.SrcText, doc.ProjectFolder.Split('\\'));
-                    document = Formatter.FormatAsync(newFile).Result; // format code
+                    document =  project.AddDocument(doc.FileName, doc.SrcText, doc.ProjectFolder.Split('\\'));
                 }
+
+                document = Formatting(document);
+
                 project = document.Project;
             }
             // Apply project changes
             _workspace.TryApplyChanges(project.Solution);
+        }
+
+        private Document Formatting(Document doc)
+        {
+            // general format
+            var formattedDoc = Formatter.FormatAsync(doc).Result;
+            var text = formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t");
+            formattedDoc = formattedDoc.WithText(SourceText.From(text));
+            return formattedDoc;
         }
 
         #endregion

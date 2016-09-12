@@ -7,7 +7,7 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface IMenuItemRepository : IRepository<MenuItem>
     {
-        void Insert(MenuItem menuItem);
+        Guid Insert(MenuItem menuItem);
 
         void UpdateByItemId(MenuItem itemId);
 
