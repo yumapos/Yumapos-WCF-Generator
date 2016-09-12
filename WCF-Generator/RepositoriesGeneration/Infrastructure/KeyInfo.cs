@@ -11,7 +11,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public ParameterInfo(string name, string typeName, string defaultValue = null)
         {
             Name = name;
-            TypeName = typeName;
+            TypeName = typeName.Trim('?'); // filter key can not be nullable Guid, Int...
             DefaultValue = defaultValue;
         }
 

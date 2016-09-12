@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Text;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {
@@ -62,20 +64,25 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var project = Project;
             
-            // Remove old file
+            // Add new file
             foreach (var doc in _filesToCreation)
             {
+                // check changes
                 var old = project.Documents.FirstOrDefault(x => x.FilePath.EndsWith(doc.ProjectFolder + "\\" + doc.FileName));
-                if (old != null)
+                if(old != null)
                 {
-                    project = project.RemoveDocument(old.Id);
+                    var st = SourceText.From(doc.SrcText);
+                    var newDoc = old.WithText(st);
+                    var c = newDoc.GetTextChangesAsync(old).Result;
+                    if (c.Any())
+                    {
+                        project = newDoc.Project;
+                    }
                 }
-            }
-
-            // Add new file
-            foreach (var task in _filesToCreation)
-            {
-                project = project.AddDocument(task.FileName, task.SrcText, task.ProjectFolder.Split('\\')).Project;
+                else
+                {
+                    project = project.AddDocument(doc.FileName, doc.SrcText, doc.ProjectFolder.Split('\\')).Project;
+                }
             }
             // Apply project changes
             _workspace.TryApplyChanges(project.Solution);

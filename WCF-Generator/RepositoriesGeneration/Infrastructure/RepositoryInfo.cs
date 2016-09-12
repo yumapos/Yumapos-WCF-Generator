@@ -176,7 +176,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public bool IsCacheRepositoryConstructorImplemented { get; set; }
 
         /// <summary>
-        ///     Return true if need create argument IsDeledet in "Get" methods
+        ///     Return true if need create argument IsDeleted in "Get" methods
         /// </summary>
         public bool IsDeletedExist
         {

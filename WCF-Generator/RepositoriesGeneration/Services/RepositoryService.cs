@@ -352,40 +352,6 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         #region Private
 
-        private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(RepositoryInfo info)
-        {
-            // Check implemented methods in custom repository
-            var unimplemented = info.InterfaceMethodNames.Where(im => info.CustomRepositoryMethodNames.FirstOrDefault(cm => cm == im || cm + "Async" == im) == null);
-
-            // Set methods which possible to generate
-
-            // Add common methods
-            var methods = new List<MethodImplementationInfo>
-            {
-                new MethodImplementationInfo() { Method = RepositoryMethod.GetAll},
-                new MethodImplementationInfo() { Method = RepositoryMethod.Insert}
-            };
-
-            // Methods by keys from model (without methods from base model)
-            foreach (var filterInfo in info.PossibleKeysForMethods)
-            {
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, FilterInfo = filterInfo});
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo});
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo});
-            }
-
-            // Set methods to implementation from possible list
-            foreach (var um in unimplemented)
-            {
-                // Seach in possible list
-                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um));
-                if (m == null) continue;
-                // Set to implementation
-                m.RequiresImplementation = true;
-            }
-
-            return methods;
-        }
 
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<string> interfaceMethodNames, List<string>  customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods)
         {

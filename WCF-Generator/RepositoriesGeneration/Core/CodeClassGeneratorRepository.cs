@@ -405,7 +405,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
                 sb.AppendLine("}");
             }
-            //
             else
             {
                 var returnType = RepositoryInfo.PrimaryKeys.First().TypeName;

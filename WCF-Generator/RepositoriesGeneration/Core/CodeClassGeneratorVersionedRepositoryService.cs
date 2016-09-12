@@ -334,7 +334,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var sb = new StringBuilder();
 
             // If should not return identifier
-            if (RepositoryInfo.PrimaryKeys.Count > 1 || !RepositoryInfo.Identity)
+            if (RepositoryInfo.PrimaryKeys.Count > 1)
             {
                 // synchronous method
                 sb.AppendLine("public void Insert(" + methodParameter + ")");
