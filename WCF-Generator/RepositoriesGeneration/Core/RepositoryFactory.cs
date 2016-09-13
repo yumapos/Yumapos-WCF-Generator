@@ -6,6 +6,7 @@ using VersionedRepositoryGeneration.Generator.Analysis;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
 using VersionedRepositoryGeneration.Generator.Services;
 using WCFGenerator.RepositoriesGeneration.Configuration;
+using WCFGenerator.RepositoriesGeneration.Services;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {

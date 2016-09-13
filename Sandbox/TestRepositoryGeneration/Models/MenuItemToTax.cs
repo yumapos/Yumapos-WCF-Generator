@@ -22,7 +22,6 @@ namespace YumaPos.Server.Infrastructure.DataObjects
         [Key]
         public Guid TaxId { get; set; }
 
-        [VersionKey]
         public Guid TaxVersionId { get; set; }
 
         public bool IsDeleted { get; set; }

@@ -49,6 +49,10 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
         {
             return p.AttributeLists.Any(l => l.Attributes.Any(a => a.Name.ToString() == attributeName));
         }
+        public static bool AttributeExist(this ClassDeclarationSyntax c, string attributeName)
+        {
+            return c.AttributeLists.Any(l => l.Attributes.Any(a => a.Name.ToString() == attributeName));
+        }
 
         public static bool ConstructorImplementationExist(this ClassDeclarationSyntax customRepository)
         {

@@ -161,6 +161,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public bool IsJoned { get; set; }
 
         /// <summary>
+        ///     Repository joined to another repository as many-to-many and can not generate
+        /// </summary>
+        public bool IsManyToMany { get; set; }
+
+        /// <summary>
         ///     Repository is tenant related
         /// </summary>
         public bool IsTenantRelated { get; set; }

@@ -8,7 +8,9 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface IEmployeesInRolesScheduleRepository : IRepository<EmployeesInRolesSchedule>
     {
-        void Insert(EmployeesInRolesSchedule item);
-        void UpdateByUserIdAndRoleIdAndStoreId(Guid userId, Guid roleId, Guid storeId);
+        Guid Insert(EmployeesInRolesSchedule item);
+        void RemoveByUserIdAndRoleIdAndStoreId(Guid userId, Guid roleId, Guid storeId);
+        void RemoveByUserIdAndRoleIdAndStoreId(EmployeesInRolesSchedule item);
+        void UpdateByUserIdAndRoleIdAndStoreId(EmployeesInRolesSchedule item);
     }
 }

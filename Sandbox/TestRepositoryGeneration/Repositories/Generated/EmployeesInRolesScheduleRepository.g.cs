@@ -204,33 +204,32 @@ namespace TestRepositoryGeneration
 		}
 
 
-		*//*
+		*/
 		public void RemoveByUserIdAndRoleIdAndStoreId(TestRepositoryGeneration.Models.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{
-		var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId; 
-		DataAccessService.PersistObject(employeesInRolesSchedule, sql);
+			var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId;
+			DataAccessService.PersistObject(employeesInRolesSchedule, sql);
 		}
 		public async Task RemoveByUserIdAndRoleIdAndStoreIdAsync(TestRepositoryGeneration.Models.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{
-		var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId; 
-		await DataAccessService.PersistObjectAsync(employeesInRolesSchedule, sql);
+			var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId;
+			await DataAccessService.PersistObjectAsync(employeesInRolesSchedule, sql);
 		}
 
 		public void RemoveByUserIdAndRoleIdAndStoreId(Guid userId, Guid roleId, Guid storeId)
 		{
-		object parameters = new {userId, roleId, storeId};
-		var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId; 
-		DataAccessService.PersistObject<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
+			object parameters = new { userId, roleId, storeId };
+			var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId;
+			DataAccessService.PersistObject<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		}
 		public async Task RemoveByUserIdAndRoleIdAndStoreIdAsync(Guid userId, Guid roleId, Guid storeId)
 		{
-		object parameters = new {userId, roleId, storeId};
-		var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId; 
-		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
+			object parameters = new { userId, roleId, storeId };
+			var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId;
+			await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		}
 
 
-		*/
 
 	}
 }

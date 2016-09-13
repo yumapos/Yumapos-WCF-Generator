@@ -8,7 +8,7 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface ITaxRepository : IRepository<Tax>
     {
-        void Insert(Tax tax);
+        Guid Insert(Tax tax);
 
         void UpdateByTaxId(Tax tax);
 

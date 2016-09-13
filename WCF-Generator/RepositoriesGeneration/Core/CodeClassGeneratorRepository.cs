@@ -391,7 +391,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var queryName = _insertQuery;
 
             // If should not return identifier
-            if (RepositoryInfo.PrimaryKeys.Count > 1 )
+            if (RepositoryInfo.PrimaryKeys.Count != 1)
             {
                 // Synchronous method
                 sb.AppendLine("public void Insert(" + methodParameter + ")");

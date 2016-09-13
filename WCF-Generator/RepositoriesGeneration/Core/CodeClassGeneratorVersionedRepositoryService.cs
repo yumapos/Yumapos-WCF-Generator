@@ -316,7 +316,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("}");
 
                 // Asynchronous method
-                sb.AppendLine("public async Task<Enumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + filter.Key + "Async(" + methodParameters + ")");
+                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetBy" + filter.Key + "Async(" + methodParameters + ")");
                 sb.AppendLine("{");
                 sb.AppendLine("return await " + CacheRepositoryField + ".GetBy" + filter.Key + "Async(" + methodParameterNames + ");");
                 sb.AppendLine("}");
@@ -334,7 +334,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var sb = new StringBuilder();
 
             // If should not return identifier
-            if (RepositoryInfo.PrimaryKeys.Count > 1)
+            if (RepositoryInfo.PrimaryKeys.Count != 1)
             {
                 // synchronous method
                 sb.AppendLine("public void Insert(" + methodParameter + ")");
@@ -499,7 +499,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("foreach (var mt in listOf" + manyToManyEntityName + ")");
                 sb.AppendLine("{");
                 sb.AppendLine("mt.Modified = DateTimeOffset.Now;");
-                sb.AppendLine("mt.ModifiedBy = menuItem.ModifiedBy;");
+                sb.AppendLine("mt.ModifiedBy = "+ parameterName + ".ModifiedBy;");
                 sb.AppendLine(manyToManyCacheRepositoryFieldName + ".Insert(mt);");
                 sb.AppendLine(manyToManyVersionRepositoryFieldName + ".Insert(mt);");
                 sb.AppendLine("}");

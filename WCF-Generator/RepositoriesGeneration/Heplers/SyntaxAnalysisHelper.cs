@@ -10,7 +10,8 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 {
     internal static class SyntaxAnalysisHelper
     {
-        public static IEnumerable<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element)
+        // TODO Перенести в SolutionSyntaxWalker
+        public static IEnumerable<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element) 
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
 
@@ -26,6 +27,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
             var codeProperty = element as PropertyDeclarationSyntax;
             if (codeProperty != null)
             {
+                // TODO использовать SimanticModel - IPropertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName).First().NamedArguments;
                 attributes = codeProperty.AttributeLists;
                 ownerName = codeProperty.Identifier.Text;
             }
@@ -98,5 +100,7 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
 
             return attributeCollection;
         }
+
+
     }
 }

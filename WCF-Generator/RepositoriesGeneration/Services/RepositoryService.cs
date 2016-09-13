@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Analysis;
 using VersionedRepositoryGeneration.Generator.Core;
@@ -12,16 +9,15 @@ using VersionedRepositoryGeneration.Generator.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
-using SyntaxKind = Microsoft.CodeAnalysis.VisualBasic.SyntaxKind;
 
-namespace VersionedRepositoryGeneration.Generator.Services
+namespace WCFGenerator.RepositoriesGeneration.Services
 {
     internal class RepositoryService
     {
         #region Private
 
         private readonly RepositoryProject _config;
-        private readonly SolutionSyntaxWalker SolutionSyntaxWalker;
+        private readonly SolutionSyntaxWalker _solutionSyntaxWalker;
 
         #endregion
 
@@ -37,7 +33,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             var additionalProjectsForAnalysis = _config.AdditionalProjects.Split(',').Select(p => p.Trim()).ToList();
             additionalProjectsForAnalysis.Add(_config.TargetProjectName);
 
-            SolutionSyntaxWalker = new SolutionSyntaxWalker(workSpace.Solution, repositoryModelsProjects, _config.RepositoryAttributeName, repositoryInterfaceProjects,_config.TargetProjectName, additionalProjectsForAnalysis);
+            _solutionSyntaxWalker = new SolutionSyntaxWalker(workSpace.Solution, repositoryModelsProjects, _config.RepositoryAttributeName, repositoryInterfaceProjects,_config.TargetProjectName, additionalProjectsForAnalysis);
         }
 
         #endregion
@@ -47,40 +43,33 @@ namespace VersionedRepositoryGeneration.Generator.Services
         public IEnumerable<ICodeClassGeneratorRepository> GetRepositories()
         {
             // Get all clases marked RepositoryAttribute
-            var findClasses = SolutionSyntaxWalker.GetRepositoryClasses(RepositoryDataModelHelper.DataAccessAttributeName);
-
-            var versionedRepositories = findClasses.SelectMany(c=> GetAllRepositories(c)).Where(c=> c!=null);
-
-            var listOfSimilarClasses = versionedRepositories.Where(c => c.RepositoryAnalysisError == null).ToList();
-
+            var findClasses = _solutionSyntaxWalker.GetRepositoryClasses(RepositoryDataModelHelper.DataAccessAttributeName);
+            // Get all candidates for generate repository
+            var versionedRepositories = findClasses.Select(c=> GetRepository(c)).Where(c=> c!=null);
+            // Skip with error
+            var listOfCandidate = versionedRepositories.Where(c => c.RepositoryAnalysisError == null).ToList();
             // Apply info from base clasess
-            foreach (var r in listOfSimilarClasses)
+            foreach (var r in listOfCandidate)
             {
                 var repositoryInfo = r.RepositoryInfo;
                 
                 // Find base class
                 if (repositoryInfo.BaseClassName != null)
                 {
-                    var baseClass = SolutionSyntaxWalker.FindCustomRepositoryClassByName(repositoryInfo.BaseClassName);
-
-                    if (baseClass != null)
-                    {
-                        var baseSimilarClass = listOfSimilarClasses.FirstOrDefault(x => x.RepositoryInfo.ClassName == repositoryInfo.BaseClassName);
+                    var baseSimilarClass = listOfCandidate.FirstOrDefault(x => x.RepositoryInfo.ClassName == repositoryInfo.BaseClassName);
                     
-                        if (baseSimilarClass != null && baseSimilarClass.RepositoryAnalysisError == null)
-                        {
-                            baseSimilarClass.RepositoryInfo.IsJoned = true;
-                            repositoryInfo.JoinRepositoryInfo = baseSimilarClass.RepositoryInfo;
-                        }
+                    if (baseSimilarClass != null && baseSimilarClass.RepositoryAnalysisError == null)
+                    {
+                        baseSimilarClass.RepositoryInfo.IsJoned = true;
+                        repositoryInfo.JoinRepositoryInfo = baseSimilarClass.RepositoryInfo;
                     }
                 }
             }
-
-            // Return without attached (it can not generate)
-            var resultRepositories = listOfSimilarClasses.Where(r => r.RepositoryInfo.IsJoned == false).ToList();
+            // Skip attached (it can not generate)
+            var resultRepositories = listOfCandidate.Where(r => r.RepositoryInfo.IsJoned == false).ToList();
 
             // Fill method implementation info for main repositories
-            foreach (var info in resultRepositories.Where(r => !r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind) && !r.RepositoryName.Contains(CodeClassGeneratorCacheRepository.RepositoryKind)).Select(r=>r.RepositoryInfo))
+            foreach (var info in resultRepositories.Select(r => r.RepositoryInfo))
             {
                 var methods = GetUnimplementedMethods(info.InterfaceMethodNames, info.CustomRepositoryMethodNames, info.PossibleKeysForMethods);
                 info.MethodImplementationInfo.AddRange(methods);
@@ -90,11 +79,11 @@ namespace VersionedRepositoryGeneration.Generator.Services
                     var cacheRepoMethods = GetUnimplementedMethods(info.InterfaceMethodNames, info.CustomCacheRepositoryMethodNames, info.PossibleKeysForMethods);
                     info.CacheRepositoryMethodImplementationInfo.AddRange(cacheRepoMethods);
                 }
-
             }
-
-            var many2ManyInfos = resultRepositories.Where(r => r.RepositoryName.Contains(CodeClassGeneratorVersionsRepository.RepositoryKind)).SelectMany(repository => repository.RepositoryInfo.Many2ManyInfo);
-
+            
+            // Fill "many-to-many" info
+            var many2ManyInfos = resultRepositories.SelectMany(repository => repository.RepositoryInfo.Many2ManyInfo);
+            
             foreach (var many2Many in many2ManyInfos)
             {
                 // get namespaces for generate reference in repository
@@ -109,11 +98,35 @@ namespace VersionedRepositoryGeneration.Generator.Services
                     .FirstOrDefault();
 
                 // get repository info by ManyToManyEntytyType from [many2manyAttribute]
-                many2Many.ManyToManyRepositoryInfo = resultRepositories
+                var manyToManyRepositoryInfo = resultRepositories
                     .Where(r => r.RepositoryName.StartsWith(many2Many.ManyToManyEntytyType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
                     .Select(r => r.RepositoryInfo)
                     .FirstOrDefault();
+                if(manyToManyRepositoryInfo != null)
+                {
+                    manyToManyRepositoryInfo.IsManyToMany = true;
+                }
+                many2Many.ManyToManyRepositoryInfo = manyToManyRepositoryInfo;
             }
+
+            // Add versioned repository
+            var versioned = resultRepositories.Where(r => r.RepositoryInfo.IsVersioning).SelectMany(r =>
+            {
+                var list = new List<BaseCodeClassGeneratorRepository>
+                {
+                    // version repository
+                    new CodeClassGeneratorVersionsRepository {RepositoryInfo = r.RepositoryInfo},
+                    // cache repository
+                    new CodeClassGeneratorCacheRepository {RepositoryInfo = r.RepositoryInfo}
+                };
+                // Skip service-repository for many2many model
+                if (!r.RepositoryInfo.IsManyToMany)
+                {
+                    list.Add(new CodeClassGeneratorVersionedRepositoryService { RepositoryInfo = r.RepositoryInfo });
+                }
+                return list;
+            });
+            resultRepositories = resultRepositories.Where(r => !r.RepositoryInfo.IsVersioning).Concat(versioned).ToList();
 
             return resultRepositories;
         }
@@ -122,26 +135,23 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
         #region Analysis methods
 
-        private IEnumerable<BaseCodeClassGeneratorRepository> GetAllRepositories(ClassDeclarationSyntax doClass)
+        /// <summary>
+        ///     Get general info about candidate for repository
+        /// </summary>
+        /// <param name="doClass">Class syntax</param>
+        private BaseCodeClassGeneratorRepository GetRepository(ClassDeclarationSyntax doClass)
         {
-            var list = new List<BaseCodeClassGeneratorRepository>();
             var className = doClass.Identifier.Text;
 
             // Get DataAccess attribute from repository model
             var dataAccessAttr = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(doClass).FirstOrDefault(x => x.Name.ToString().Contains(RepositoryDataModelHelper.DataAccessAttributeName));
-
-            if (dataAccessAttr == null)
-            {
-                list.Add(CreateWithAnalysisError(className, _config.RepositorySuffix, "Repository model not marked DataAccess attribute."));
-                return list;
-            }
 
             // common repository info
             var repositoryInfo = new RepositoryInfo()
             {
                 RepositorySuffix = _config.RepositorySuffix,
                 ClassName = className,
-                ClassFullName = SolutionSyntaxWalker.GetFullRepositoryModelName(doClass),
+                ClassFullName = _solutionSyntaxWalker.GetFullRepositoryModelName(doClass),
             };
 
             repositoryInfo.IsTenantRelated = !doClass.BaseTypeExist("ITenantUnrelated");
@@ -149,7 +159,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             // Base class name
             if (doClass.BaseList != null && doClass.BaseList.Types.Any())
             {
-                var baseClass = doClass.BaseList.Types.FirstOrDefault(t => SolutionSyntaxWalker.IsBaseClass(t));
+                var baseClass = doClass.BaseList.Types.FirstOrDefault(t => _solutionSyntaxWalker.IsBaseClass(t));
 
                 if (baseClass!=null)
                 {
@@ -159,17 +169,15 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             #region Repository interface
 
-            // Get implemented interfaces for custom repository (for example - IMenuItemRepository)
+            // Get implemented interfaces for custom repository (for example - IMenuItemRepository : IRepository<MenuItem>)
+            var repositoryInterfaces = _solutionSyntaxWalker.GetInheritedInterfaces(repositoryInfo.GenericRepositoryInterfaceName).ToList();
 
-            var repositoryInterfaces = SolutionSyntaxWalker.GetInheritedInterfaces(repositoryInfo.GenericRepositoryInterfaceName).ToList();
+            var repoInterface = repositoryInterfaces.FirstOrDefault();
 
-            var repoInterface = repositoryInterfaces.FirstOrDefault(r => r.Identifier.Text != null
-                                                                         && r.Identifier.Text.IndexOf("I", StringComparison.Ordinal) == 0
-                                                                         && r.Identifier.Text.Remove(0, 1) == doClass.Identifier + _config.RepositorySuffix);
             if (repoInterface == null)
             {
-                list.Add(CreateWithAnalysisError(className, _config.RepositorySuffix, "Class not implemented true named repository interface."));
-                return list;
+                var ret = CreateWithAnalysisError(className, _config.RepositorySuffix, string.Format("Repository interface {0} not found.", repositoryInfo.GenericRepositoryInterfaceName));
+                return ret;
             }
 
             // Repository interface info
@@ -197,7 +205,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
                     var filters = fk.Split(',').Select(f =>
                     {
                         var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == f);
-                        var fullTypeName = SolutionSyntaxWalker.GetFullPropertyTypeName(parameter);
+                        var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(parameter);
                         return new ParameterInfo(f, parameter != null ? fullTypeName : null);
                     }).ToList();
                     return new FilterInfo(string.Join("And", fk.Split(',')), filters, FilterType.FilterKey);
@@ -211,45 +219,11 @@ namespace VersionedRepositoryGeneration.Generator.Services
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
 
-            if (isVersioning)
-            {
-                // repository service
-                var repository = new CodeClassGeneratorVersionedRepositoryService()
-                {
-                    RepositoryInfo = repositoryInfo
-                };
-                list.Add(repository);
-
-                // version repository
-                var versionsRepository = new CodeClassGeneratorVersionsRepository()
-                {
-                    RepositoryInfo = repositoryInfo
-                };
-                list.Add(versionsRepository);
-
-                // cache repository
-                var cacheRepository = new CodeClassGeneratorCacheRepository()
-                {
-                    RepositoryInfo = repositoryInfo
-                };
-                list.Add(cacheRepository);
-            }
-            else
-            {
-                // base repository 
-                var repositoryAndDo = new CodeClassGeneratorRepository
-                {
-                    RepositoryInfo = repositoryInfo
-                };
-                list.Add(repositoryAndDo);
-            }
-
             #endregion
 
             #endregion
 
             #region Property attributes
-
 
             var properties = doClass.Members.OfType<PropertyDeclarationSyntax>().Where(cp => cp.GetterExist() && cp.SetterExist()).ToList();
 
@@ -264,7 +238,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 .Where(p => p.AttributeExist(RepositoryDataModelHelper.KeyAttributeName))
                 .Select(p =>
                 {
-                    var fullTypeName = SolutionSyntaxWalker.GetFullPropertyTypeName(p);
+                    var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(p);
                     return new ParameterInfo(p.Identifier.Text, fullTypeName);
                 });
 
@@ -281,8 +255,10 @@ namespace VersionedRepositoryGeneration.Generator.Services
             var many2ManyInfos = properties
                 .Where(p => p.AttributeExist(RepositoryDataModelHelper.DataMany2ManyAttributeName))
                 .SelectMany(p => SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(p))
+                .Where(p => p.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName)
                 .Select(p => new Tuple<string,DataMany2ManyAttribute>(p.OwnerElementName, (DataMany2ManyAttribute)p))
-                .Select(a => new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
+                .Select(a => 
+                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
 
             repositoryInfo.Many2ManyInfo.AddRange(many2ManyInfos);
 
@@ -291,7 +267,7 @@ namespace VersionedRepositoryGeneration.Generator.Services
             #region Custom repository
 
             // Check exist custom repository class
-            var customRepository = SolutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + _config.RepositorySuffix).FirstOrDefault();
+            var customRepository = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + _config.RepositorySuffix).FirstOrDefault();
             var customRepoExist = customRepository != null;
 
             List<MethodDeclarationSyntax> customRepositoryMethods = null;
@@ -304,10 +280,10 @@ namespace VersionedRepositoryGeneration.Generator.Services
                 // Check constructor exist
                 repositoryInfo.IsConstructorImplemented = customRepository.ConstructorImplementationExist();
 
-                repositoryInfo.RepositoryNamespace = SolutionSyntaxWalker.GetCustomRepositoryNamespace(customRepository);
+                repositoryInfo.RepositoryNamespace = _solutionSyntaxWalker.GetCustomRepositoryNamespace(customRepository);
             }
 
-            var customCacheRepository = SolutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + "Cache" + _config.RepositorySuffix).FirstOrDefault();
+            var customCacheRepository = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + "Cache" + _config.RepositorySuffix).FirstOrDefault();
             var customCacheRepositoryExist = customCacheRepository != null;
 
             List<MethodDeclarationSyntax> customCacheRepositoryMethods = null;
@@ -344,14 +320,17 @@ namespace VersionedRepositoryGeneration.Generator.Services
 
             #endregion
 
-            // return one (general repository) or list of repository (versioned)
-            return list;
+            var repositoryAndDo = new CodeClassGeneratorRepository
+            {
+                RepositoryInfo = repositoryInfo
+            };
+            // return general repository
+            return repositoryAndDo;
         }
 
         #endregion
 
         #region Private
-
 
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<string> interfaceMethodNames, List<string>  customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods)
         {

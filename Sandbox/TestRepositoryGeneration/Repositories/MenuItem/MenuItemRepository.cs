@@ -42,7 +42,7 @@
 //                ItemVersionId = menuItem.ItemVersionId,
 //            }).ToList();
 
-//            _menuItemsToTaxesCashRepository.RemoveByMenuItemId(menuItem.ItemId);
+//            _menuItemsToTaxesCashRepository.RemoveByMenuItemId(   .ItemId);
 
 //            foreach (var mt in listOfMenuItemsToTaxes)
 //            {

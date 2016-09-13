@@ -18,7 +18,7 @@ namespace TestRepositoryGeneration
 	internal class MenuItemToTaxVersionRepository : RepositoryBase
 	{
 		private const string InsertQuery = @"INSERT INTO MenuItemToTaxVersionRepository([ItemId],[ItemVersionId],[Modified],[ModifiedBy],[TaxId],[TaxVersionId],[IsDeleted])
-OUTPUT INSERTED.TaxVersionIdVALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
+OUTPUT INSERTED.VALUES (@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
 		public MenuItemToTaxVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 		{

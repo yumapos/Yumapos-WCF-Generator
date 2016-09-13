@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using VersionedRepositoryGeneration.Generator.Heplers;
 
 namespace VersionedRepositoryGeneration.Generator.Analysis
 {
@@ -40,45 +41,34 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
 
             // Get repository model classes
             var repositoryModelTrees = GetTrees(solution, repositoryModelsProjects);
-            foreach (var tree in repositoryModelTrees)
-            {
-                var nodes = tree.GetRoot().DescendantNodes().ToList();
-                var classes = nodes.OfType<ClassDeclarationSyntax>().ToList();
+            var allClasses = repositoryModelTrees
+                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+                .ToList();
+            _allClasses.AddRange(allClasses);
 
-                var repositoryClasses = classes.Where(x => x.AttributeLists
-                   .Any(att => att.Attributes
-                       .Any(att2 => att2.Name.ToString().Contains(repositoryAttributeName))));
-
-                _allClasses.AddRange(classes);
-                _repositoryModelClasses.AddRange(repositoryClasses);
-            }
+            var repositoryModels = allClasses.Where(c => c.AttributeExist(repositoryAttributeName));
+            _repositoryModelClasses.AddRange(repositoryModels);
 
             // Get repository classes
             var repositoryTrees = GetTrees(solution, new List<string> {targetProject});
-            foreach (var tree in repositoryTrees)
-            {
-                var nodes = tree.GetRoot().DescendantNodes().ToList();
-                var classes = nodes.OfType<ClassDeclarationSyntax>().ToList();
-                _customRepositoryClasses.AddRange(classes);
-            }
+            var customClasses = repositoryTrees
+                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+                .ToList();
+            _customRepositoryClasses.AddRange(customClasses);
 
             // Get repository intrefaces
             var repositoryInterfaceTrees = GetTrees(solution, repositoryInterfaceProjects);
-            foreach (var tree in repositoryInterfaceTrees)
-            {
-                var nodes = tree.GetRoot().DescendantNodes().ToList();
-                var interfaces = nodes.OfType<InterfaceDeclarationSyntax>().ToList();
-                _repositoryInterfaces.AddRange(interfaces);
-            }
+            var repositoryInterfaces = repositoryInterfaceTrees
+                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<InterfaceDeclarationSyntax>())
+                .ToList();
+            _repositoryInterfaces.AddRange(repositoryInterfaces);
 
             // Get additional classes
             var additionalTrees = GetTrees(solution, additionalProjectsForAnalysis);
-            foreach (var tree in additionalTrees)
-            {
-                var nodes = tree.GetRoot().DescendantNodes().ToList();
-                var classes = nodes.OfType<ClassDeclarationSyntax>().ToList();
-                _allClasses.AddRange(classes);
-            }
+            var additionalClasses = repositoryTrees
+                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+                .ToList();
+            _allClasses.AddRange(additionalClasses);
 
             _repositoryModelsCompilation = CSharpCompilation.Create("RepositoryModelCompilation").AddSyntaxTrees(repositoryModelTrees);
             _customRepositoriesCompilation = CSharpCompilation.Create("CustomRepositoriesCompilation").AddSyntaxTrees(repositoryTrees);
@@ -98,7 +88,7 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
         }
 
         /// <summary>
-        ///     Search class by name. Skip genereted classes.
+        ///     Search custom repository class by name. Skip genereted classes.
         /// </summary>
         public IEnumerable<ClassDeclarationSyntax> FindCustomRepositoryClassByName(string className)
         {
@@ -137,13 +127,13 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
             var semanticModel = _fullCompilation.GetSemanticModel(prop.SyntaxTree);
 
             var symbol = semanticModel.GetDeclaredSymbol(prop);
-
+            
             return symbol.GetMethod.ReturnType.ToString();
         }
 
         public bool IsBaseClass(BaseTypeSyntax syntax)
         {
-            return _allClasses.Any(c => c.Identifier.Text == syntax.Type.ToString());
+            return _repositoryModelClasses.Any(c => c.Identifier.Text == syntax.Type.ToString());
         }
 
         private static List<SyntaxTree> GetTrees(Solution solution, List<string> projects)
