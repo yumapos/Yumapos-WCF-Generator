@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using VersionedRepositoryGeneration.Generator.Analysis;
+using System.Threading.Tasks;
+using VersionedRepositoryGeneration.Generator.Core;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
-using VersionedRepositoryGeneration.Generator.Services;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Services;
 
-namespace VersionedRepositoryGeneration.Generator.Core
+namespace WCFGenerator.RepositoriesGeneration.Core
 {
 
     /// <summary>
@@ -20,14 +18,16 @@ namespace VersionedRepositoryGeneration.Generator.Core
         #region Fields
 
         private IEnumerable<RepositoryProject> _configurations;
+        private readonly string _slnPath;
 
         #endregion
 
         #region Constructor
 
-        public RepositoryCodeFactory(IEnumerable<RepositoryProject> configs)
+        public RepositoryCodeFactory(IEnumerable<RepositoryProject> configs, string slnPath)
         {
             _configurations = configs;
+            _slnPath = slnPath;
         }
 
         #endregion
@@ -35,11 +35,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
         /// <summary>
         ///     Scan configured project for search repository model and generate code of repository class
         /// </summary>
-        public void GenerateRepository()
+        public async Task GenerateRepository()
         {
-            foreach (var config in _configurations.Where(c=>c.Enable))
+            var repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace();
+            // open target solution
+            repositoryGeneratorWorkSpace.OpenSolution(_slnPath);
+
+            // Generate repositories for configured project
+            foreach (var config in _configurations)
             {
-                var repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace(config.SolutionPath, config.TargetProjectName);
+                // open target project
+                repositoryGeneratorWorkSpace.OpenProject(config.TargetProjectName);
 
                 var repositoryService = new RepositoryService(repositoryGeneratorWorkSpace, config);
 
@@ -66,7 +72,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 }
 
                 // Save all files
-                repositoryGeneratorWorkSpace.ApplyChanges();
+                await repositoryGeneratorWorkSpace.ApplyChanges();
             }
         }
     }

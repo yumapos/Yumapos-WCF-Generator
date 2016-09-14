@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WCFGenerator.RepositoriesGeneration.Configuration
 {
@@ -13,6 +10,12 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         {
             var section = ConfigurationManager.GetSection("repositoryGenerator") as RepositoryGenerator;
             return section.RepositoryProjects.Cast<RepositoryProject>();
+        }
+
+        public static string GetSolutionPath()
+        {
+            var ret = ConfigurationManager.AppSettings["SolutionPath"];
+            return ret;
         }
     }
 
@@ -58,7 +61,6 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
     /// </summary>
     public class RepositoryProject : ConfigurationElement
     {
-
         /// <summary>
         ///     Name
         /// </summary>
@@ -66,15 +68,6 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         public string Name
         {
             get { return ((string)(base["Name"])); }
-        }
-
-        /// <summary>
-        ///     Enable generation
-        /// </summary>
-        [ConfigurationProperty("Enable", DefaultValue = "false", IsRequired = true)]
-        public bool Enable
-        {
-            get { return (bool)(base["Enable"]); }
         }
 
         /// <summary>
@@ -93,15 +86,6 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         public string TargetProjectName
         {
             get { return ((string)(base["TargetProjectName"])); }
-        }
-
-        /// <summary>
-        ///     Solution path
-        /// </summary>
-        [ConfigurationProperty("SolutionPath", DefaultValue = "", IsRequired = true)]
-        public string SolutionPath
-        {
-            get { return ((string) (base["SolutionPath"])); }
         }
 
         /// <summary>
@@ -143,7 +127,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         /// <summary>
         ///      List of project for analysis
         /// </summary>
-        [ConfigurationProperty("AdditionalProjects", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("AdditionalProjects", DefaultValue = "", IsRequired = false)]
         public string AdditionalProjects
         {
             get { return ((string)(base["AdditionalProjects"])); }

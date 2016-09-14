@@ -160,7 +160,6 @@
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorRepository.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionedRepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionsRepository.cs" />
-    <Compile Include="RepositoriesGeneration\Core\Configuration.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryFactory.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryGeneratorWorkSpace.cs" />
     <Compile Include="RepositoriesGeneration\Core\SQL\SQLScriptGenerator.cs" />

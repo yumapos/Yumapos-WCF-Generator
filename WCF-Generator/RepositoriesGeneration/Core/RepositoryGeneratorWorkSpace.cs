@@ -30,12 +30,19 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         #region Constructor
 
-        public RepositoryGeneratorWorkSpace(string solutionPath, string projectName)
+        public RepositoryGeneratorWorkSpace()
         {
             _workspace = MSBuildWorkspace.Create();
+        }
 
+        public void OpenSolution(string solutionPath)
+        {
             Solution = _workspace.OpenSolutionAsync(solutionPath).Result;
+        }
 
+        public void OpenProject(string projectName)
+        {
+            if (Solution == null) throw new InvalidOperationException("At first open solution");
             Project = Solution.Projects.First(x => x.Name == projectName);
         }
 
@@ -61,7 +68,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         /// <summary>
         ///     Apply all changes (adding and removing files) for current workspace project
         /// </summary>
-        public void ApplyChanges()
+        public async Task ApplyChanges()
         {
             var project = Project;
             
@@ -75,7 +82,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 {
                     var st = SourceText.From(doc.SrcText);
                     var newDoc = old.WithText(st);
-                    var c = newDoc.GetTextChangesAsync(old).Result;
+                    var c = await newDoc.GetTextChangesAsync(old);
                     document = c.Any() ? newDoc : old; 
                 }
                 // create new document

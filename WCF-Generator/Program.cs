@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Nito.AsyncEx;
-using VersionedRepositoryGeneration.Generator.Core;
 using WCFGenerator.RepositoriesGeneration.Configuration;
+using WCFGenerator.RepositoriesGeneration.Core;
 
 namespace WCFGenerator
 {
@@ -14,45 +13,15 @@ namespace WCFGenerator
     {
         static void Main(string[] args)
         {
+            // Arguments should be contains path of app.config file
             if (args == null || !args.Any() || args[0] == null)
             {
-                Console.WriteLine("The directory of a solution wasn't specified");
+                Console.WriteLine("Configuration file wasn't specified");
                 return;
             }
 
-            var absoluteSlnPath = File.Exists(args[0]) ? args[0] : Path.GetFullPath(args[0]);
-
-            if (!File.Exists(absoluteSlnPath))
-            {
-                Console.WriteLine("File of solution not found");
-            }
-
-            //MappingsGenerator mapping = new MappingsGenerator()
-            //{
-            //    SolutionPath = @"C:\Users\denis.ev\Documents\WCF_source\YumaPos.Server.WCF.sln"
-            //};
-
-            //var generator = new MappingsGenerator()
-            //{
-            //    MapExtensionNameSpace = "YumaPos.Server.BusinessLogic.Generation",
-            //    MapExtensionClassName = "MapExtensions",
-            //    MapAttribute = "Map",
-            //    MapIgnoreAttribute = "MapIgnore",
-            //    DtoSuffix = "Dto",
-            //    DoProjects = new List<string>
-            //    {
-            //        "YumaPos.Server.Infrastructure",
-            //        "YumaPos.FrontEnd.Infrastructure"
-            //    },
-            //    DtoProjects = new List<string>
-            //    {
-            //        "YumaPos.Shared.Infrastructure"
-            //    },
-            //    DOSkipAttribute = false,
-            //    DTOSkipAttribute = false
-            //};
-
-            //mapping.GenerateMap(generator);
+            // Set path to app.config for current application domain
+            AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", args[0]);
 
             try
             {
@@ -65,6 +34,7 @@ namespace WCFGenerator
 
             try
             {
+                RunWcfGeneration();
             }
             catch (Exception e)
             {
@@ -72,9 +42,16 @@ namespace WCFGenerator
             }
         }
 
-        private static void RunWcfGeneration(string[] args)
+        private static void RunWcfGeneration()
         {
-            var absoluteSlnPath = Path.GetFullPath(args[0]);
+            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+            var absoluteSlnPath = Path.GetFullPath(solutionPath);
+
+            if (!File.Exists(absoluteSlnPath))
+            {
+                Console.WriteLine("File of solution not found");
+                return;
+            }
 
             WCFGenerator wcf = new WCFGenerator
             {
@@ -107,7 +84,7 @@ namespace WCFGenerator
                     }
             };
 
-            AsyncContext.Run(() => wcf.Start(args));
+            AsyncContext.Run(() => wcf.Start(new []{solutionPath}));
         }
 
         private static void RunRepositoryGeneration()
@@ -116,10 +93,12 @@ namespace WCFGenerator
 
             // Configure generator 
             var config = RepositoryGeneratorSettings.GetConfigs();
-            var repositoryGenerator = new RepositoryCodeFactory(config);
+            var slnP = RepositoryGeneratorSettings.GetSolutionPath();
+
+            var repositoryGenerator = new RepositoryCodeFactory(config, slnP);
 
             // run generation
-            repositoryGenerator.GenerateRepository();
+            AsyncContext.Run(() => repositoryGenerator.GenerateRepository());
 
             Console.WriteLine("Repository generation complated.");
         }
