@@ -50,7 +50,17 @@ namespace TestRepositoryGeneration
 		{
 			return await _taxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
 		}
+		/*
+		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxVersionId(Guid taxVersionId, bool? isDeleted = false)
+		{
+		return _taxCacheRepository.GetByTaxVersionId(taxVersionId, isDeleted);
+		}
+		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionIdAsync(Guid taxVersionId, bool? isDeleted = false)
+		{
+		return await _taxCacheRepository.GetByTaxVersionIdAsync(taxVersionId, isDeleted);
+		}
 
+		*/
 		public Guid Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
@@ -78,7 +88,21 @@ namespace TestRepositoryGeneration
 			tax.TaxVersionId = await _taxVersionRepository.InsertAsync(tax);
 			await _taxCacheRepository.UpdateByTaxIdAsync(tax);
 		}
+		/*
+		public void UpdateByTaxVersionId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		{
+		tax.Modified = DateTimeOffset.Now;
+		tax.TaxVersionId = _taxVersionRepository.Insert(tax);
+		_taxCacheRepository.UpdateByTaxVersionId(tax);
+		}
+		public async Task UpdateByTaxVersionIdAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		{
+		tax.Modified = DateTimeOffset.Now;
+		tax.TaxVersionId = await _taxVersionRepository.InsertAsync(tax);
+		await _taxCacheRepository.UpdateByTaxVersionIdAsync(tax);
+		}
 
+		*/
 		public void RemoveByTaxId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.IsDeleted = true;
@@ -101,7 +125,31 @@ namespace TestRepositoryGeneration
 			result.IsDeleted = true;
 			await UpdateByTaxIdAsync(result);
 		}
+		/*
+		public void RemoveByTaxVersionId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		{
+		tax.IsDeleted = true;
+		_taxCacheRepository.UpdateByTaxVersionId(tax);
+		}
+		public async Task RemoveByTaxVersionIdAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		{
+		tax.IsDeleted = true;
+		await _taxCacheRepository.UpdateByTaxVersionIdAsync(tax);
+		}
+		public void RemoveByTaxVersionId(Guid taxVersionId)
+		{
+		var result = _taxCacheRepository.GetByTaxVersionId(taxVersionId);
+		result.IsDeleted = true;
+		UpdateByTaxVersionId(result);
+		}
+		public async Task RemoveByTaxVersionIdAsync(Guid taxVersionId)
+		{
+		var result = await _taxCacheRepository.GetByTaxVersionIdAsync(taxVersionId);
+		result.IsDeleted = true;
+		await UpdateByTaxVersionIdAsync(result);
+		}
 
+		*/
 
 	}
 }

@@ -245,11 +245,17 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             repositoryInfo.PrimaryKeys.AddRange(primaryKeys);
 
             // Version key
-            var versionKey = properties
-                .Where(p => p.AttributeExist(RepositoryDataModelHelper.VesionKeyAttributeName))
-                .Select(p => p.Identifier.Text)
-                .FirstOrDefault();
-            repositoryInfo.VersionKey = versionKey;
+            var versionKey = properties.FirstOrDefault(p => p.AttributeExist(RepositoryDataModelHelper.VesionKeyAttributeName));
+
+            if(versionKey != null)
+            {
+                var keyName = versionKey.Identifier.Text;
+                repositoryInfo.VersionKeyName = keyName;
+                var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(versionKey);
+
+                // add filter parameter
+                repositoryInfo.VersionKey = new ParameterInfo(keyName, fullTypeName);
+            }
 
             // Many to many
             var many2ManyInfos = properties

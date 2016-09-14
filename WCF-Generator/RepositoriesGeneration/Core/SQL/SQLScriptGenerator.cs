@@ -124,7 +124,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             if (info.JoinRepositoryInfo != null)
             {
                 var baseInfo = info.JoinRepositoryInfo;
-                var property = baseInfo.VersionKey;
+                var property = baseInfo.VersionKeyName;
                 var type = SystemToSqlTypeMapper.GetSqlType(baseInfo.ClassName);
                 var joinClassProperties = string.Join(",", baseInfo.Elements.Select(x => "[" + x.ToString() + "]"));
                 var joinClassValues = string.Join(",", baseInfo.Elements.Select(x => "@" + x.ToString()));
@@ -142,7 +142,7 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
             else
             {
                 return "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
-                          "OUTPUT INSERTED." + info.VersionKey + "VALUES (" + classValues + ")";
+                          "OUTPUT INSERTED." + info.VersionKeyName + "VALUES (" + classValues + ")";
             }
         }
 

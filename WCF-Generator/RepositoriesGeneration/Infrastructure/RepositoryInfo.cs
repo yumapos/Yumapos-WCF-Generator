@@ -8,10 +8,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
 {
     internal class RepositoryInfo
     {
-        private string _versionKey;
+        private string _versionKeyName;
         private string _primaryKeyName;
         private List<ParameterInfo> _primaryKeys;
         private bool _identity;
+        private ParameterInfo _versionKey;
 
         public RepositoryInfo()
         {
@@ -141,7 +142,19 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         /// <summary>
         ///     Name of member of repository model which marked as version key (for versioned repository)
         /// </summary>
-        public string VersionKey
+        public string VersionKeyName
+        {
+            get
+            {
+                return _versionKeyName ?? (JoinRepositoryInfo != null ? JoinRepositoryInfo.VersionKeyName : null);
+            }
+            set { _versionKeyName = value; }
+        }
+
+        ///// <summary>
+        /////     Version key
+        ///// </summary>
+        public ParameterInfo VersionKey
         {
             get
             {
@@ -241,6 +254,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                 if (!string.IsNullOrEmpty(PrimaryKeyName))
                 {
                     possibleKeyMethods.Add(new FilterInfo(PrimaryKeyName, PrimaryKeys, FilterType.PrimaryKey));
+                }
+                // Version key
+                if (!string.IsNullOrEmpty(VersionKeyName))
+                {
+                    possibleKeyMethods.Add(new FilterInfo(VersionKeyName, new List<ParameterInfo>{ VersionKey}, FilterType.PrimaryKey));
                 }
                 // Filter keys
                 if (FilterInfos.Any())

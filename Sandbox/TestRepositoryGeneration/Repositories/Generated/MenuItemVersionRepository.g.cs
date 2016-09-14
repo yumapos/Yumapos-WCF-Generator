@@ -23,8 +23,8 @@ INSERT INTO RecipieItems([ItemId],[ItemVersionId],[IsDeleted],[CategoryId])
 OUTPUT INSERTED.ItemVersionId INTO @TempPKTable
 VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
 SELECT @TempPKItemVersionId = ItemVersionId FROM @TempPKTable
-INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxesId],[MenuCategoryId])
-VALUES (@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId)
+INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxIds],[MenuCategoryId])
+VALUES (@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId)
 SELECT ItemVersionId FROM @TempPKTable
 ";
 		public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }

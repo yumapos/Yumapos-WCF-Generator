@@ -340,7 +340,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public void Insert(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine(CacheRepositoryField + ".Insert(" + parameterName + ");");
 
                 foreach (var m in updateMethods)
@@ -354,7 +354,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
 
                 // if async
@@ -376,7 +376,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine("var res = " + CacheRepositoryField + ".Insert(" + parameterName + ");");
 
                 foreach (var m in updateMethods)
@@ -392,7 +392,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public async Task<" + returnType + "> InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
+                sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("var res = await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
 
                 // if async
@@ -424,7 +424,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
+            sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = " + VersionRepositoryField + ".Insert(" + parameterName + ");");
             sb.AppendLine(CacheRepositoryField + ".UpdateBy" + filter.Key + "(" + parameterName + ");");
 
             var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info=> "Update" + info.ManyToManyRepositoryInfo.ClassName + "(" + parameterName + ");").ToList();
@@ -440,7 +440,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
-            sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKey + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
+            sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
             sb.AppendLine("await " + CacheRepositoryField + ".UpdateBy" + filter.Key + "Async(" + parameterName + ");");
 
             // if async
@@ -474,9 +474,9 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 var entityCacheRepositoryName = "_" + info.EntityRepositoryInfo.ClassName.FirstSymbolToLower() + _cacheRepository;
 
                 var primaryKeyName = RepositoryInfo.PrimaryKeyName;
-                var versionKeyName = RepositoryInfo.VersionKey;
+                var versionKeyName = RepositoryInfo.VersionKeyName;
                 var primaryKeyName2 = info.EntityRepositoryInfo.PrimaryKeyName;
-                var versionKeyName2 = info.EntityRepositoryInfo.VersionKey;
+                var versionKeyName2 = info.EntityRepositoryInfo.VersionKeyName;
                 var propertyName = info.PropertyName;
 
                 // sync method

@@ -75,10 +75,8 @@
     <Compile Include="Repositories\Generated\MenuItemCacheRepository.g.cs" />
     <Compile Include="Repositories\Generated\MenuItemRepository.g.cs" />
     <Compile Include="Repositories\Generated\MenuItemToTaxCacheRepository.g.cs" />
-    <Compile Include="Repositories\Generated\MenuItemToTaxRepository.g.cs" />
     <Compile Include="Repositories\Generated\MenuItemToTaxVersionRepository.g.cs" />
     <Compile Include="Repositories\Generated\MenuItemVersionRepository.g.cs" />
-    <Compile Include="Repositories\Generated\RecipieItemRepository.g.cs" />
     <Compile Include="Repositories\Generated\TaxCacheRepository.g.cs" />
     <Compile Include="Repositories\Generated\TaxRepository.g.cs" />
     <Compile Include="Repositories\Generated\TaxVersionRepository.g.cs" />

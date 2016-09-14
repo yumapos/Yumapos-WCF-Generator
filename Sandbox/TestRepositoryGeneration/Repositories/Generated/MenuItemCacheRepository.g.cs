@@ -20,16 +20,17 @@ namespace TestRepositoryGeneration
 {
 	internal partial class MenuItemCacheRepository : RepositoryBase, IMenuItemRepository
 	{
-		private const string Fields = "[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxesId],[MenuItems].[MenuCategoryId]{columns}";
-		private const string Values = "@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId{values}";
-		private const string SelectAllQuery = "SELECT [MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxesId],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId]  {whereTenantId:[MenuItems]} ";
-		private const string SelectByQuery = "SELECT [MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxesId],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] ";
-		private const string InsertQuery = "DECLARE @Temp TABLE (ItemId uniqueidentifier); DECLARE @TempPKItemId uniqueidentifier;INSERT INTO RecipieItems([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId]{columns}) OUTPUT INSERTED.ItemId VALUES(@ItemId,@ItemVersionId,@IsDeleted,@CategoryId{values}) SELECT @TempPKItemId = ItemId FROM @Temp INSERT INTO MenuItems([MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxesId],[MenuItems].[MenuCategoryId]{columns}) OUTPUT INSERTED.ItemId VALUES(@TempPKItemId,@Name,@Modified,@ModifiedBy,@TaxesId,@MenuCategoryId{values}) ";
-		private const string UpdateQueryBy = "UPDATE [MenuItems] SET MenuItems.[Name] = @Name,MenuItems.[Modified] = @Modified,MenuItems.[ModifiedBy] = @ModifiedBy,MenuItems.[TaxesId] = @TaxesId,MenuItems.[MenuCategoryId] = @MenuCategoryId FROM [MenuItems] ";
+		private const string Fields = "[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId]{columns}";
+		private const string Values = "@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId{values}";
+		private const string SelectAllQuery = "SELECT [MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId]  {whereTenantId:[MenuItems]} ";
+		private const string SelectByQuery = "SELECT [MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] ";
+		private const string InsertQuery = "DECLARE @Temp TABLE (ItemId uniqueidentifier); DECLARE @TempPKItemId uniqueidentifier;INSERT INTO RecipieItems([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId]{columns}) OUTPUT INSERTED.ItemId VALUES(@ItemId,@ItemVersionId,@IsDeleted,@CategoryId{values}) SELECT @TempPKItemId = ItemId FROM @Temp INSERT INTO MenuItems([MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId]{columns}) OUTPUT INSERTED.ItemId VALUES(@TempPKItemId,@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId{values}) ";
+		private const string UpdateQueryBy = "UPDATE [MenuItems] SET MenuItems.[Name] = @Name,MenuItems.[Modified] = @Modified,MenuItems.[ModifiedBy] = @ModifiedBy,MenuItems.[TaxIds] = @TaxIds,MenuItems.[MenuCategoryId] = @MenuCategoryId FROM [MenuItems] ";
 		private const string DeleteQueryBy = "DELETE FROM [MenuItems] WHERE [MenuItems].[ItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
 		private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItems].[ItemId] FROM [MenuItems] ";
 		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET MenuItems.[ItemId] = @ItemId,MenuItems.[ItemVersionId] = @ItemVersionId,MenuItems.[IsDeleted] = @IsDeleted,MenuItems.[CategoryId] = @CategoryId FROM [RecipieItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] ";
 		private const string WhereQueryByItemId = "WHERE MenuItems.[ItemId] = @ItemId{andTenantId:[MenuItems]} ";
+		private const string WhereQueryByItemVersionId = "WHERE MenuItems.[ItemVersionId] = @ItemVersionId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuCategoryId = "WHERE MenuItems.[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItems]} ";
 		private const string AndWithFilterData = "AND RecipieItems.[IsDeleted] = @IsDeleted";
 
@@ -73,6 +74,29 @@ namespace TestRepositoryGeneration
 		{
 			object parameters = new { itemId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByItemId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithFilterData;
+			}
+			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters));
+			return result.FirstOrDefault();
+		}
+
+		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemVersionId(Guid itemVersionId, bool? isDeleted = false)
+		{
+			object parameters = new { itemVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByItemVersionId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithFilterData;
+			}
+			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
+			return result.FirstOrDefault();
+		}
+		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemVersionIdAsync(Guid itemVersionId, bool? isDeleted = false)
+		{
+			object parameters = new { itemVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByItemVersionId;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithFilterData;
@@ -129,6 +153,19 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
+		public void UpdateByItemVersionId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		{
+		var sql = UpdateQueryBy + WhereQueryByItemVersionId + UpdateQueryJoin + WhereQueryByItemVersionId; 
+		DataAccessService.PersistObject(menuItem, sql);
+		}
+		public async Task UpdateByItemVersionIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		{
+		var sql = UpdateQueryBy + WhereQueryByItemVersionId + UpdateQueryJoin + WhereQueryByItemVersionId; 
+		await DataAccessService.PersistObjectAsync(menuItem, sql);
+		}
+
+
+		*//*
 		public void UpdateByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 		var sql = UpdateQueryBy + WhereQueryByMenuCategoryId + UpdateQueryJoin + WhereQueryByMenuCategoryId; 
@@ -167,6 +204,32 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
+		public void RemoveByItemVersionId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		{
+		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
+		DataAccessService.PersistObject(menuItem, sql);
+		}
+		public async Task RemoveByItemVersionIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		{
+		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
+		await DataAccessService.PersistObjectAsync(menuItem, sql);
+		}
+
+		public void RemoveByItemVersionId(Guid itemVersionId)
+		{
+		object parameters = new {itemVersionId};
+		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
+		DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
+		}
+		public async Task RemoveByItemVersionIdAsync(Guid itemVersionId)
+		{
+		object parameters = new {itemVersionId};
+		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
+		await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
+		}
+
+
+		*//*
 		public void RemoveByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
