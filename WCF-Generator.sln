@@ -6,6 +6,15 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCF-Generator", "WCF-Generator\WCF-Generator.csproj", "{AEB81C25-77E8-44B0-B820-DC88B86F74B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRepositoryGeneration", "Sandbox\TestRepositoryGeneration\TestRepositoryGeneration.csproj", "{D17E53C7-1F38-45AE-A715-649DB73735B5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEB81C25-77E8-44B0-B820-DC88B86F74B3} = {AEB81C25-77E8-44B0-B820-DC88B86F74B3}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E80D3D4A-AFFA-4AD1-BD2D-18448FE024A9}"
+	ProjectSection(SolutionItems) = preProject
+		WCF-Generator.exe = WCF-Generator.exe
+		WCF-Generator.exe.config = WCF-Generator.exe.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

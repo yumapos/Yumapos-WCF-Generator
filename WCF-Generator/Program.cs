@@ -13,15 +13,18 @@ namespace WCFGenerator
     {
         static void Main(string[] args)
         {
-            // Arguments should be contains path of app.config file
-            if (args == null || !args.Any() || args[0] == null)
-            {
-                Console.WriteLine("Configuration file wasn't specified");
-                return;
-            }
-
             // Set path to app.config for current application domain
-            AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", args[0]);
+            if (args != null && args.Any() && !string.IsNullOrEmpty(args[0]))
+            {
+                var absoluteConfigPath = Path.GetFullPath(args[0]);
+
+                if (!File.Exists(absoluteConfigPath))
+                {
+                    throw new ArgumentException("File of configuration file not found");
+                }
+                
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", args[0]);
+            }
 
             try
             {
@@ -29,7 +32,7 @@ namespace WCFGenerator
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error occured on repository generation. Exception:\n" + e);
+               throw new ApplicationException("Error occured on repository generation", e);
             }
 
             try
@@ -38,7 +41,7 @@ namespace WCFGenerator
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error occured on wcf generation. Exception:\n" + e);
+                throw new ApplicationException("Error occured on wcf generation. ", e);
             }
         }
 
@@ -49,8 +52,7 @@ namespace WCFGenerator
 
             if (!File.Exists(absoluteSlnPath))
             {
-                Console.WriteLine("File of solution not found");
-                return;
+                throw new ArgumentException("File of solution not found");
             }
 
             WCFGenerator wcf = new WCFGenerator
@@ -93,9 +95,15 @@ namespace WCFGenerator
 
             // Configure generator 
             var config = RepositoryGeneratorSettings.GetConfigs();
-            var slnP = RepositoryGeneratorSettings.GetSolutionPath();
+            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+            var absoluteSlnPath = Path.GetFullPath(solutionPath);
 
-            var repositoryGenerator = new RepositoryCodeFactory(config, slnP);
+            if (!File.Exists(absoluteSlnPath))
+            {
+                throw new ArgumentException("File of solution not found. " + absoluteSlnPath);
+            }
+
+            var repositoryGenerator = new RepositoryCodeFactory(config, absoluteSlnPath);
 
             // run generation
             AsyncContext.Run(() => repositoryGenerator.GenerateRepository());
