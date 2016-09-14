@@ -82,16 +82,16 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 {
                     var st = SourceText.From(doc.SrcText);
                     var newDoc = old.WithText(st);
+                    newDoc = Formatting(newDoc);
                     var c = await newDoc.GetTextChangesAsync(old);
-                    document = c.Any() ? newDoc : old; 
+                    document = c.Any() ? newDoc : old;
                 }
                 // create new document
                 else
                 {
                     document =  project.AddDocument(doc.FileName, doc.SrcText, doc.ProjectFolder.Split('\\'));
+                    document = Formatting(document);
                 }
-
-                document = Formatting(document);
 
                 project = document.Project;
             }

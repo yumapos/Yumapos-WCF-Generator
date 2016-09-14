@@ -10,7 +10,6 @@ namespace YumaPos.Server.Infrastructure.DataObjects
     [DataAccess(TableVersion = "MenuItemToTaxVersions", FilterKey1 = "ItemId", FilterKey2 = "TaxId")]
     public class MenuItemToTax : ITenantUnrelated
     {
-        [Key]
         public Guid ItemId { get; set; }
 
         public Guid ItemVersionId { get; set; }
@@ -19,7 +18,6 @@ namespace YumaPos.Server.Infrastructure.DataObjects
 
         public Guid ModifiedBy { get; set; }
 
-        [Key]
         public Guid TaxId { get; set; }
 
         public Guid TaxVersionId { get; set; }
