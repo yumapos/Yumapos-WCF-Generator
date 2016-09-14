@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nito.AsyncEx;
+using System.Configuration;
+using System.IO;
 
 namespace WCFGenerator
 {
@@ -51,10 +53,11 @@ namespace WCFGenerator
 
             if (args.Any() && args[0] != null)
             {
-
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", args[0]);
+                var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
                 WCFGenerator wcf = new WCFGenerator
                 {
-                    SolutionPath = args[0],
+                    SolutionPath = solutionPath,
                     ProjectName = "YumaPos.Client.WCF",
                     ProjectFolders = new List<string>(),
                     FaultProject = "YumaPos.Shared.API.Faults",
@@ -83,7 +86,10 @@ namespace WCFGenerator
                     }
                 };
 
+                var gen = new SerilizationGeneration(solutionPath);
+                
                 AsyncContext.Run(() => wcf.Start(args));
+                AsyncContext.Run(() => gen.GenerateAll());
             }
             else
             {

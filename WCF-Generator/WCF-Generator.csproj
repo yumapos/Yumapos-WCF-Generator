@@ -119,6 +119,7 @@
       <HintPath>..\packages\Microsoft.Composition.1.0.27\lib\portable-net45+win8+wp8+wpa81\System.Composition.TypedParts.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <Private>True</Private>
     </Reference>
@@ -156,12 +157,16 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MappingsGenerator.cs" />
+    <Compile Include="SerializeGeneration\SerializeConfiguration.cs" />
+    <Compile Include="SerilizationGeneration.cs" />
     <Compile Include="TypeSyntaxGeneratorVisitor.cs" />
     <Compile Include="VirtualizationVisitor.cs" />
     <Compile Include="WCFGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +188,7 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

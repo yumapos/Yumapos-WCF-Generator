@@ -50,10 +50,11 @@ namespace WCFGenerator
 
             if (project != null)
             {
-                var compilation = await project.GetCompilationAsync();
+                var mDocuments = project.Documents.Where(d => !d.Name.Contains(".g.cs"));
+                var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
                 var classVisitor = new ClassVirtualizationVisitor();
 
-                foreach (var syntaxTree in compilation.SyntaxTrees)
+                foreach (var syntaxTree in mSyntaxTrees)
                 {
                     classVisitor.Visit(syntaxTree.GetRoot());
                 }
