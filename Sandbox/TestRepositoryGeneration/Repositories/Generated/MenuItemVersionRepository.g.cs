@@ -14,40 +14,32 @@ using YumaPos.Server.Data.Sql;
 
 
 
-namespace TestRepositoryGeneration
+namespace YumaPos.Server.Data.Sql.Menu
 {
 	internal class MenuItemVersionRepository : RepositoryBase
 	{
-		private const string InsertQuery = @"DECLARE @TempPKTable TABLE (ItemVersionId uniqueidentifier);
-DECLARE @TempPKItemVersionId uniqueidentifier;
-INSERT INTO RecipieItems([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId])
-OUTPUT INSERTED.ItemVersionId INTO @TempPKTable
-VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
-SELECT @TempPKItemVersionId = ItemVersionId FROM @TempPKTable
-INSERT INTO MenuItems([MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId])
-VALUES (@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId)
-SELECT ItemVersionId FROM @TempPKTable
-";
-		private const string SelectByQuery = @"SELECT [MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] ";
-		private const string WhereQueryByItemVersionId = @"WHERE MenuItems.[ItemVersionId] = @ItemVersionId{andTenantId:[MenuItems]} ";
+		private const string InsertQuery = @"INSERT INTO RecipieItemVersions([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId])
+VALUES (@ItemId,@MenuItemVersionId,@IsDeleted,@CategoryId)
+INSERT INTO MenuItemVersions([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId])
+VALUES (@MenuItemId,@MenuItemVersionId,@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId)";
+		private const string SelectByQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
+		private const string WhereQueryByMenuItemVersionId = @"WHERE MenuItems.[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
 		private const string AndWithFilterData = "AND RecipieItems.[IsDeleted] = @IsDeleted";
 
 		public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
-		public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
-			var res = DataAccessService.InsertObject(menuItem, InsertQuery);
-			return (Guid)res;
+			DataAccessService.InsertObject(menuItem, InsertQuery);
 		}
-		public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		public async Task InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
-			var res = await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
-			return (Guid)res;
+			await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
 		}
 
-		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemVersionId(System.Guid itemVersionId, bool? isDeleted = false)
+		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByMenuItemVersionId(System.Guid menuItemVersionId, bool? isDeleted = false)
 		{
-			object parameters = new { itemVersionId, isDeleted };
-			var sql = SelectByQuery + WhereQueryByItemVersionId;
+			object parameters = new { menuItemVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByMenuItemVersionId;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithFilterData;
@@ -55,10 +47,10 @@ SELECT ItemVersionId FROM @TempPKTable
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 			return result.FirstOrDefault();
 		}
-		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemVersionIdAsync(System.Guid itemVersionId, bool? isDeleted = false)
+		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuItemVersionIdAsync(System.Guid menuItemVersionId, bool? isDeleted = false)
 		{
-			object parameters = new { itemVersionId, isDeleted };
-			var sql = SelectByQuery + WhereQueryByItemVersionId;
+			object parameters = new { menuItemVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByMenuItemVersionId;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithFilterData;

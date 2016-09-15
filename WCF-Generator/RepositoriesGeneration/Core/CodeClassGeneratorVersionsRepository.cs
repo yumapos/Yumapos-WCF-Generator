@@ -49,24 +49,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         public override string GetFields()
         {
             // Common info for generate sql scriptes
-            var sqlInfo = new SqlInfo()
-            {
-                TableColumns = RepositoryInfo.Elements,
-                TableName = RepositoryInfo.TableName,
-                PrimaryKeyName = RepositoryInfo.PrimaryKeyName,
-                JoinTableColumns = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.Elements : null,
-                JoinTableName = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.TableName : null,
-                JoinPrimaryKeyName = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.PrimaryKeyName : null, 
-                TenantRelated = RepositoryInfo.IsTenantRelated,
-                ReturnPrimarayKey = RepositoryInfo.PrimaryKeys.Count == 1,
-
-                VersionKeyName = RepositoryInfo.VersionKeyName,
-                VersionKeyType = RepositoryInfo.VersionKey !=null ? SystemToSqlTypeMapper.GetSqlType(RepositoryInfo.VersionKey.TypeName) : null,
-                VersionTableName = RepositoryInfo.TableName,
-
-                IsManyToMany = RepositoryInfo.IsManyToMany,
-            };
-
+            var sqlInfo = RepositoryInfo.RepositorySqlInfo;
             
             var insertQuery = SqlScriptGenerator.GenerateInsertToVersionTable(sqlInfo).SurroundWithQuotes();
             
@@ -130,38 +113,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             var sb = new StringBuilder();
 
-            if (RepositoryInfo.IsManyToMany)
-            {
-                // Asynchronous method
-                sb.AppendLine("public void Insert(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("DataAccessService.InsertObject(" + parameterName + ", " + _insertQueryName + ");");
-                sb.AppendLine("}");
+            // Asynchronous method
+            sb.AppendLine("public void Insert(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("DataAccessService.InsertObject(" + parameterName + ", " + _insertQueryName + ");");
+            sb.AppendLine("}");
 
-                // Synchronous method
-                sb.AppendLine("public async Task InsertAsync(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + ", " + _insertQueryName + ");");
-                sb.AppendLine("}");
-            }
-            else
-            {
-                // Asynchronous method
-                sb.AppendLine("public Guid Insert(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("var res = DataAccessService.InsertObject(" + parameterName + ", " + _insertQueryName + ");");
-                sb.AppendLine("return (Guid)res;");
-
-                sb.AppendLine("}");
-
-                // Synchronous method
-                sb.AppendLine("public async Task<Guid> InsertAsync(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("var res = await DataAccessService.InsertObjectAsync(" + parameterName + ", " + _insertQueryName + ");");
-                sb.AppendLine("return (Guid)res;");
-
-                sb.AppendLine("}");
-            }
+            // Synchronous method
+            sb.AppendLine("public async Task InsertAsync(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + ", " + _insertQueryName + ");");
+            sb.AppendLine("}");
 
             return sb.ToString();
         }

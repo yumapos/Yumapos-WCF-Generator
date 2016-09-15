@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Heplers;
+using WCFGenerator.RepositoriesGeneration.Core.SQL;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Infrastructure
@@ -276,6 +277,40 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         }
 
         public bool Identity { get; set; }
+
+        public SqlInfo RepositorySqlInfo
+        {
+            get
+            {
+                // Common info for generate sql scriptes
+                var sqlInfo = new SqlInfo()
+                {
+                    TableColumns = Elements,
+                    TableName = TableName,
+                    PrimaryKeyName = PrimaryKeyName,
+                    TenantRelated = IsTenantRelated,
+                    ReturnPrimarayKey = PrimaryKeys.Count == 1,
+                    VersionKeyName = VersionKeyName,
+                    VersionKeyType = VersionKey != null ? SystemToSqlTypeMapper.GetSqlType(VersionKey.TypeName) : null,
+                    VersionTableName = VersionTableName,
+                    IsManyToMany = IsManyToMany,
+                    SkipPrimaryKey = PrimaryKeys.Where(k => k.TypeName.Contains("int")).Select(k => k.Name),
+                };
+
+                if (JoinRepositoryInfo != null)
+                {
+                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
+                    sqlInfo.JoinTableName = JoinRepositoryInfo.TableName;
+                    sqlInfo.JoinPrimaryKeyName = JoinRepositoryInfo.PrimaryKeyName;
+                    sqlInfo.JoinVersionTableName = JoinRepositoryInfo.VersionTableName;
+                    sqlInfo.JoinVersionKeyName = JoinRepositoryInfo.VersionKeyName;
+                }
+                var pk = PrimaryKeys.FirstOrDefault();
+                sqlInfo.PrimaryKeyType = pk!=null ? SystemToSqlTypeMapper.GetSqlType(pk.TypeName) : null;
+
+                return sqlInfo;
+            }
+        }
 
         #endregion
     } 

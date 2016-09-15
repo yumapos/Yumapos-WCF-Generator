@@ -9,13 +9,13 @@ namespace YumaPos.Server.Infrastructure.Repositories
     {
         Guid Insert(MenuItem menuItem);
 
-        void UpdateByItemId(MenuItem itemId);
+        void UpdateByMenuItemId(MenuItem itemId);
 
-        void RemoveByItemId(MenuItem itemId);
+        void RemoveByMenuItemId(MenuItem itemId);
 
-        MenuItem GetByItemId(Guid itemId, bool? isDeleted);
+        MenuItem GetByMenuItemId(Guid itemId, bool? isDeleted);
 
-        MenuItem GetByItemVersionId(Guid itemVersionId, bool? isDeleted);
+        MenuItem GetByMenuItemVersionId(Guid itemVersionId, bool? isDeleted);
 
         IEnumerable<MenuItem> GetAll(bool? isDeleted);
 

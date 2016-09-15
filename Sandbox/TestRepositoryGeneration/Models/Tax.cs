@@ -10,7 +10,7 @@ namespace YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes
     public class Tax
     {
         [Key]
-        public Guid TaxId { get; set; }
+        public int TaxId { get; set; }
 
         [VersionKey]
         public Guid TaxVersionId { get; set; }

@@ -8,12 +8,12 @@ namespace YumaPos.Server.Infrastructure.Repositories
 {
     interface ITaxRepository : IRepository<Tax>
     {
-        Guid Insert(Tax tax);
+        int Insert(Tax tax);
 
         void UpdateByTaxId(Tax tax);
 
         void RemoveByTaxId(Tax tax);
 
-        Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false);
+        Tax GetByTaxId(int taxId, bool? isDeleted = false);
     }
 }

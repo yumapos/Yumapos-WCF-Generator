@@ -42,11 +42,11 @@ namespace TestRepositoryGeneration
 		}
 
 		*/
-		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false)
+		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(int taxId, bool? isDeleted = false)
 		{
 			return _taxCacheRepository.GetByTaxId(taxId, isDeleted);
 		}
-		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(System.Guid taxId, bool? isDeleted = false)
+		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(int taxId, bool? isDeleted = false)
 		{
 			return await _taxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
 		}
@@ -62,31 +62,35 @@ namespace TestRepositoryGeneration
 		}
 
 		*/
-		public System.Guid Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		public int Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
-			tax.TaxVersionId = _taxVersionRepository.Insert(tax);
+			tax.TaxVersionId = Guid.NewGuid();
+			_taxVersionRepository.Insert(tax);
 			var res = _taxCacheRepository.Insert(tax);
-			return (System.Guid)res;
+			return (int)res;
 		}
-		public async Task<System.Guid> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		public async Task<int> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
-			tax.TaxVersionId = await _taxVersionRepository.InsertAsync(tax);
+			tax.TaxVersionId = Guid.NewGuid();
+			await _taxVersionRepository.InsertAsync(tax);
 			var res = await _taxCacheRepository.InsertAsync(tax);
-			return (System.Guid)res;
+			return (int)res;
 		}
 
 		public void UpdateByTaxId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
-			tax.TaxVersionId = _taxVersionRepository.Insert(tax);
+			tax.TaxVersionId = Guid.NewGuid();
+			_taxVersionRepository.Insert(tax);
 			_taxCacheRepository.UpdateByTaxId(tax);
 		}
 		public async Task UpdateByTaxIdAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
-			tax.TaxVersionId = await _taxVersionRepository.InsertAsync(tax);
+			tax.TaxVersionId = Guid.NewGuid();
+			await _taxVersionRepository.InsertAsync(tax);
 			await _taxCacheRepository.UpdateByTaxIdAsync(tax);
 		}
 
@@ -100,13 +104,13 @@ namespace TestRepositoryGeneration
 			tax.IsDeleted = true;
 			await _taxCacheRepository.UpdateByTaxIdAsync(tax);
 		}
-		public void RemoveByTaxId(System.Guid taxId)
+		public void RemoveByTaxId(int taxId)
 		{
 			var result = _taxCacheRepository.GetByTaxId(taxId);
 			result.IsDeleted = true;
 			UpdateByTaxId(result);
 		}
-		public async Task RemoveByTaxIdAsync(System.Guid taxId)
+		public async Task RemoveByTaxIdAsync(int taxId)
 		{
 			var result = await _taxCacheRepository.GetByTaxIdAsync(taxId);
 			result.IsDeleted = true;

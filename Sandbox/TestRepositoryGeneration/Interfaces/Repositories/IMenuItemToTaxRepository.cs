@@ -9,17 +9,17 @@ namespace YumaPos.Server.Infrastructure.Repositories
     {
         void Insert(MenuItemToTax menuItem);
 
-        void UpdateByItemId(MenuItemToTax itemId);
+        void UpdateByMenuItemId(MenuItemToTax itemId);
 
-        void RemoveByItemId(MenuItemToTax itemId);
+        void RemoveByMenuItemId(MenuItemToTax itemId);
 
-        IEnumerable<MenuItemToTax> GetByTaxId(Guid TaxId, bool? isDeleted);
+        IEnumerable<MenuItemToTax> GetByTaxId(int TaxId, bool? isDeleted);
 
         void UpdateByTaxId(MenuItemToTax itemId);
 
         void RemoveByTaxId(MenuItemToTax itemId);
 
-        IEnumerable<MenuItemToTax> GetByItemId(Guid itemId, bool? isDeleted);
+        IEnumerable<MenuItemToTax> GetByMenuItemId(Guid itemId, bool? isDeleted);
 
         IEnumerable<MenuItemToTax> GetAll(bool? isDeleted);
     }

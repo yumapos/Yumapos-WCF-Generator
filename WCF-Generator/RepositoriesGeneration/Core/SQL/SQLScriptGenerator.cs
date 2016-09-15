@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
@@ -46,20 +47,23 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateInsert(SqlInfo info)
         {
+            var columnsWithoutSelectedPk = info.TableColumns.Where(c => info.SkipPrimaryKey.All(pk => pk != c)).ToList();
+
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
-                var columns = info.TableColumns.ToList();
-                var columnsJoned = info.JoinTableColumns.ToList();
+                var columnsJonedWithoutSelectedPk = info.JoinTableColumns.Where(c => info.SkipPrimaryKey.All(pk => pk != c)).ToList();
                 var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyName) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyName;
 
+                // use pk from inherite model
+                var valuesWitoutPkInt = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
+                var joinClassValues = Values(valuesWitoutPkInt);
+
                 // return inset into table and join table
-                return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier); DECLARE @TempPKItemId uniqueidentifier;"
-                       + "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJoned, info.JoinTableName) + _columns + ") OUTPUT INSERTED." + info.JoinPrimaryKeyName + " VALUES(" + Values(columnsJoned) + _values + ") "
-                       + "SELECT " + _tempId + " = " + info.JoinPrimaryKeyName + " FROM " + _tempTable + " "
-                       + "INSERT INTO " + info.TableName + "(" + Fields(columns, info.TableName) + _columns + ") " + outputKey + " VALUES(" + _tempId +","+ Values(columns.Where(c => c != info.PrimaryKeyName)) + _values + ") ";
+                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + _columns + ") VALUES(" + joinClassValues + _values + ")\n "
+                     + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + _columns + ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + _values + ") ";
             }
             // return select from table
-            return Insert(info.TableColumns, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
+            return Insert(columnsWithoutSelectedPk, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
         }
 
         public static string GenerateInsertToTemp(SqlInfo info)
@@ -121,22 +125,20 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             if (info.JoinTableName != null)
             {
                 var joinClassProperties = Fields(info.JoinTableColumns, info.JoinTableName);
-                var joinClassValues = Values(info.JoinTableColumns);
+                // use versionId from inherite model
+                var values = info.JoinTableColumns.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c);
+                var joinClassValues = Values(values);
 
-                return "DECLARE @TempPKTable TABLE (" + info.VersionKeyName + " " + info.VersionKeyType + ");\n" +
-                       "DECLARE @TempPK" + info.VersionKeyName + " " + info.VersionKeyType + ";\n" +
-                       "INSERT INTO " + info.JoinTableName + "(" + joinClassProperties + ")\n" +
-                       "OUTPUT INSERTED." + info.VersionKeyName + " INTO @TempPKTable\n" +
+                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + ")\n" +
                        "VALUES (" + joinClassValues + ")\n" +
-                   "SELECT @TempPK" + info.VersionKeyName + " = " + info.VersionKeyName + " FROM @TempPKTable\n" +
                    "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
-                   "VALUES (" + classValues + ")\n" +
-                   "SELECT " + info.VersionKeyName + " FROM @TempPKTable\n";
+                   "VALUES (" + classValues + ")";
             }
+
             if(!info.IsManyToMany)
             {
                 return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
-                       "OUTPUT INSERTED." + info.VersionKeyName + "VALUES (" + classValues + ")";
+                        "VALUES (" + classValues + ")";
             }
 
             return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
@@ -261,7 +263,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
     }
 
-    public struct SqlInfo
+    internal struct SqlInfo
     {
         public string TableName;
         public IEnumerable<string> TableColumns;
@@ -274,6 +276,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public string PrimaryKeyName;
         public string VersionKeyName;
         public string VersionTableName;
+        public string JoinVersionKeyName;
+        public string JoinVersionTableName;
         public bool IsManyToMany;
+        public IEnumerable<string> SkipPrimaryKey;
+        public string PrimaryKeyType;
     }
 }

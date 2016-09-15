@@ -20,15 +20,15 @@ namespace TestRepositoryGeneration
 {
 	internal partial class MenuItemToTaxCacheRepository : RepositoryBase, IMenuItemToTaxRepository
 	{
-		private const string Fields = "[MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted]{columns}";
-		private const string Values = "@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted{values}";
-		private const string SelectAllQuery = "SELECT [MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs]   ";
-		private const string SelectByQuery = "SELECT [MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs] ";
-		private const string InsertQuery = "INSERT INTO MenuItemToTaxs([MenuItemToTaxs].[ItemId],[MenuItemToTaxs].[ItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted]{columns})  VALUES(@ItemId,@ItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted{values}) ";
-		private const string UpdateQueryBy = "UPDATE [MenuItemToTaxs] SET MenuItemToTaxs.[ItemId] = @ItemId,MenuItemToTaxs.[ItemVersionId] = @ItemVersionId,MenuItemToTaxs.[Modified] = @Modified,MenuItemToTaxs.[ModifiedBy] = @ModifiedBy,MenuItemToTaxs.[TaxId] = @TaxId,MenuItemToTaxs.[TaxVersionId] = @TaxVersionId,MenuItemToTaxs.[IsDeleted] = @IsDeleted FROM [MenuItemToTaxs] ";
-		private const string DeleteQueryBy = "DELETE FROM [MenuItemToTaxs] ";
-		private const string SelectIntoTempTable = "DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItemToTaxs].[] FROM [MenuItemToTaxs] ";
-		private const string WhereQueryByItemId = "WHERE MenuItemToTaxs.[ItemId] = @ItemId ";
+		private const string Fields = @"[MenuItemToTaxs].[MenuItemId],[MenuItemToTaxs].[MenuItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted]{columns}";
+		private const string Values = @"@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted{values}";
+		private const string SelectAllQuery = @"SELECT [MenuItemToTaxs].[MenuItemId],[MenuItemToTaxs].[MenuItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs]   ";
+		private const string SelectByQuery = @"SELECT [MenuItemToTaxs].[MenuItemId],[MenuItemToTaxs].[MenuItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted] FROM [MenuItemToTaxs] ";
+		private const string InsertQuery = @"INSERT INTO MenuItemToTaxs([MenuItemToTaxs].[MenuItemId],[MenuItemToTaxs].[MenuItemVersionId],[MenuItemToTaxs].[Modified],[MenuItemToTaxs].[ModifiedBy],[MenuItemToTaxs].[TaxId],[MenuItemToTaxs].[TaxVersionId],[MenuItemToTaxs].[IsDeleted]{columns})  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted{values}) ";
+		private const string UpdateQueryBy = @"UPDATE [MenuItemToTaxs] SET MenuItemToTaxs.[MenuItemId] = @MenuItemId,MenuItemToTaxs.[MenuItemVersionId] = @MenuItemVersionId,MenuItemToTaxs.[Modified] = @Modified,MenuItemToTaxs.[ModifiedBy] = @ModifiedBy,MenuItemToTaxs.[TaxId] = @TaxId,MenuItemToTaxs.[TaxVersionId] = @TaxVersionId,MenuItemToTaxs.[IsDeleted] = @IsDeleted FROM [MenuItemToTaxs] ";
+		private const string DeleteQueryBy = @"DELETE FROM [MenuItemToTaxs] ";
+		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItemToTaxs].[] FROM [MenuItemToTaxs] ";
+		private const string WhereQueryByMenuItemId = "WHERE MenuItemToTaxs.[MenuItemId] = @MenuItemId ";
 		private const string WhereQueryByTaxId = "WHERE MenuItemToTaxs.[TaxId] = @TaxId ";
 		private const string AndWithFilterData = "AND MenuItemToTaxs.[IsDeleted] = @IsDeleted";
 
@@ -57,10 +57,10 @@ namespace TestRepositoryGeneration
 			return result.ToList();
 		}
 
-		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByItemId(System.Guid itemId, bool? isDeleted = false)
+		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByMenuItemId(System.Guid menuItemId, bool? isDeleted = false)
 		{
-			object parameters = new { itemId, isDeleted };
-			var sql = SelectByQuery + WhereQueryByItemId;
+			object parameters = new { menuItemId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByMenuItemId;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithFilterData;
@@ -68,10 +68,10 @@ namespace TestRepositoryGeneration
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByItemIdAsync(System.Guid itemId, bool? isDeleted = false)
+		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByMenuItemIdAsync(System.Guid menuItemId, bool? isDeleted = false)
 		{
-			object parameters = new { itemId, isDeleted };
-			var sql = SelectByQuery + WhereQueryByItemId;
+			object parameters = new { menuItemId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByMenuItemId;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithFilterData;
@@ -80,7 +80,7 @@ namespace TestRepositoryGeneration
 			return result.ToList();
 		}
 
-		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByTaxId(System.Guid taxId, bool? isDeleted = false)
+		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax> GetByTaxId(int taxId, bool? isDeleted = false)
 		{
 			object parameters = new { taxId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByTaxId;
@@ -91,7 +91,7 @@ namespace TestRepositoryGeneration
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByTaxIdAsync(System.Guid taxId, bool? isDeleted = false)
+		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>> GetByTaxIdAsync(int taxId, bool? isDeleted = false)
 		{
 			object parameters = new { taxId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByTaxId;
@@ -113,14 +113,14 @@ namespace TestRepositoryGeneration
 			await DataAccessService.InsertObjectAsync(menuItemToTax, InsertQuery);
 		}
 
-		public void UpdateByItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+		public void UpdateByMenuItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 		{
-			var sql = UpdateQueryBy + WhereQueryByItemId;
+			var sql = UpdateQueryBy + WhereQueryByMenuItemId;
 			DataAccessService.PersistObject(menuItemToTax, sql);
 		}
-		public async Task UpdateByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+		public async Task UpdateByMenuItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 		{
-			var sql = UpdateQueryBy + WhereQueryByItemId;
+			var sql = UpdateQueryBy + WhereQueryByMenuItemId;
 			await DataAccessService.PersistObjectAsync(menuItemToTax, sql);
 		}
 
@@ -136,27 +136,27 @@ namespace TestRepositoryGeneration
 		}
 
 
-		public void RemoveByItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+		public void RemoveByMenuItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 		{
-			var sql = DeleteQueryBy + WhereQueryByItemId;
+			var sql = DeleteQueryBy + WhereQueryByMenuItemId;
 			DataAccessService.PersistObject(menuItemToTax, sql);
 		}
-		public async Task RemoveByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
+		public async Task RemoveByMenuItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax menuItemToTax)
 		{
-			var sql = DeleteQueryBy + WhereQueryByItemId;
+			var sql = DeleteQueryBy + WhereQueryByMenuItemId;
 			await DataAccessService.PersistObjectAsync(menuItemToTax, sql);
 		}
 
-		public void RemoveByItemId(System.Guid itemId)
+		public void RemoveByMenuItemId(System.Guid menuItemId)
 		{
-			object parameters = new { itemId };
-			var sql = DeleteQueryBy + WhereQueryByItemId;
+			object parameters = new { menuItemId };
+			var sql = DeleteQueryBy + WhereQueryByMenuItemId;
 			DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 		}
-		public async Task RemoveByItemIdAsync(System.Guid itemId)
+		public async Task RemoveByMenuItemIdAsync(System.Guid menuItemId)
 		{
-			object parameters = new { itemId };
-			var sql = DeleteQueryBy + WhereQueryByItemId;
+			object parameters = new { menuItemId };
+			var sql = DeleteQueryBy + WhereQueryByMenuItemId;
 			await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 		}
 
@@ -171,13 +171,13 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(menuItemToTax, sql);
 		}
 
-		public void RemoveByTaxId(System.Guid taxId)
+		public void RemoveByTaxId(int taxId)
 		{
 			object parameters = new { taxId };
 			var sql = DeleteQueryBy + WhereQueryByTaxId;
 			DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItemToTax>(sql, parameters);
 		}
-		public async Task RemoveByTaxIdAsync(System.Guid taxId)
+		public async Task RemoveByTaxIdAsync(int taxId)
 		{
 			object parameters = new { taxId };
 			var sql = DeleteQueryBy + WhereQueryByTaxId;

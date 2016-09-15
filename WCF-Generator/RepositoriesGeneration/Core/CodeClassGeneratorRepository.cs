@@ -51,17 +51,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var sb = new StringBuilder();
 
             // Common info for generate sql scriptes
-            var sqlInfo = new SqlInfo()
-            {
-                TableColumns = RepositoryInfo.Elements,
-                TableName = RepositoryInfo.TableName,
-                PrimaryKeyName = RepositoryInfo.PrimaryKeyName, // TODO more then one key ?
-                JoinTableColumns = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.Elements : null,
-                JoinTableName = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.TableName : null,
-                JoinPrimaryKeyName = RepositoryInfo.JoinRepositoryInfo != null ? RepositoryInfo.JoinRepositoryInfo.PrimaryKeyName : null, // TODO more then one key ?
-                TenantRelated = RepositoryInfo.IsTenantRelated,
-                ReturnPrimarayKey = RepositoryInfo.PrimaryKeys.Count == 1
-            };
+            var sqlInfo = RepositoryInfo.RepositorySqlInfo;
 
             var fields = SqlScriptGenerator.GenerateFields(sqlInfo);
             var values = SqlScriptGenerator.GenerateValues(sqlInfo);
@@ -72,14 +62,14 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var deleteBy = SqlScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
             var selectIntoTemp = SqlScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
 
-            sb.AppendLine("private const string Fields = " + fields.SurroundWithQuotes() + ";");
-            sb.AppendLine("private const string Values = " + values.SurroundWithQuotes() + ";");
-            sb.AppendLine("private const string " + _selectAllQuery + " = " + selectAllQuery + ";");
-            sb.AppendLine("private const string " + _selectByQuery + " = " + selectByQuery + ";");
-            sb.AppendLine("private const string " + _insertQuery + " = " + insertQuery + ";");
-            sb.AppendLine("private const string " + _updateQueryBy + " = " + updateBy + ";");
-            sb.AppendLine("private const string " + _deleteQueryBy + " = " + deleteBy + ";");
-            sb.AppendLine("private const string " + _selectIntoTemp + " = " + selectIntoTemp + ";");
+            sb.AppendLine("private const string Fields = @" + fields.SurroundWithQuotes() + ";");
+            sb.AppendLine("private const string Values = @" + values.SurroundWithQuotes() + ";");
+            sb.AppendLine("private const string " + _selectAllQuery + " = @" + selectAllQuery + ";");
+            sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
+            sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
+            sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
+            sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
+            sb.AppendLine("private const string " + _selectIntoTemp + " = @" + selectIntoTemp + ";");
 
             if(RepositoryInfo.JoinRepositoryInfo != null)
             {

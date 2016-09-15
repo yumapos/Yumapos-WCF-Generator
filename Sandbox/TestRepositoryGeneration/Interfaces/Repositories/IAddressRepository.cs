@@ -29,4 +29,25 @@ namespace YumaPos.Server.Infrastructure.Repositories
 
         #endregion
     }
+
+
+    public interface IAddress2Repository : IRepository<Address2>
+    {
+        Task<Address2> GetByIdAsync(int id);
+        Task<IEnumerable<Address2>> GetAllAsync();
+        Task<int> InsertAsync(Address2 address);
+    }
+
+    public partial class Address2Repository : IAddress2Repository
+    {
+
+        #region Implementation of IAddressRepository
+
+        //public Task<IEnumerable<Address>> GetAllAsync()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        #endregion
+    }
 }

@@ -24,4 +24,19 @@ namespace YumaPos.Server.Infrastructure.DataObjects
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
     }
+
+    [DataAccess(TableName = "dbo.Addresses2")]
+    public class Address2 : ITenantUnrelated
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Country { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Street { get; set; }
+        public string Building { get; set; }
+        public string ZipCode { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+    }
 }

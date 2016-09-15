@@ -5,7 +5,7 @@ using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccess]
+    [DataAccess (TableVersion = "RecipieItemVersions")]
     public class RecipieItem
     {
         [Key]
