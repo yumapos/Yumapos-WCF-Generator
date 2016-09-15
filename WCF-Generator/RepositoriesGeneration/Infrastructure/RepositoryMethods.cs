@@ -12,6 +12,7 @@
     internal enum FilterType
     {
         PrimaryKey,
-        FilterKey
+        FilterKey,
+        VersionKey
     }
 }

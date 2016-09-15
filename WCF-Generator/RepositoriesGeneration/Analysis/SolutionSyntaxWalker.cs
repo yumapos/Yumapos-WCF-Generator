@@ -78,8 +78,13 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
             allTrees.AddRange(repositoryInterfaceTrees);
             allTrees.AddRange(repositoryTrees);
             allTrees.AddRange(additionalTrees);
-
-            _fullCompilation = CSharpCompilation.Create("FullCompilation").AddSyntaxTrees(allTrees);
+            
+            _fullCompilation = CSharpCompilation.Create("FullCompilation")
+                .AddSyntaxTrees(allTrees)
+                .WithReferences(new List<MetadataReference>()
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+                });
         }
 
         public IEnumerable<ClassDeclarationSyntax> GetRepositoryClasses(string attribute)

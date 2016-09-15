@@ -65,6 +65,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public string TableName { get; set; }
 
         /// <summary>
+        ///     Name of database table for version repository model
+        /// </summary>
+        public string VersionTableName { get; set; }
+
+        /// <summary>
         ///     Property names - table columns
         /// </summary>
         public List<string> Elements { get; set; }
@@ -258,7 +263,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
                 // Version key
                 if (!string.IsNullOrEmpty(VersionKeyName))
                 {
-                    possibleKeyMethods.Add(new FilterInfo(VersionKeyName, new List<ParameterInfo>{ VersionKey}, FilterType.PrimaryKey));
+                    possibleKeyMethods.Add(new FilterInfo(VersionKeyName, new List<ParameterInfo>{ VersionKey}, FilterType.VersionKey));
                 }
                 // Filter keys
                 if (FilterInfos.Any())

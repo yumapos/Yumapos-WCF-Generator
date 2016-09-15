@@ -50,14 +50,14 @@ namespace TestRepositoryGeneration
 
 		*/
 		/*
-		public TestRepositoryGeneration.Models.EmployeesInRolesSchedule GetByScheduleId(Guid scheduleId)
+		public TestRepositoryGeneration.Models.EmployeesInRolesSchedule GetByScheduleId(System.Guid scheduleId)
 		{
 		object parameters = new {scheduleId};
 		var sql = SelectByQuery + WhereQueryByScheduleId;
 		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		return result.FirstOrDefault();
 		}
-		public async Task<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByScheduleIdAsync(Guid scheduleId)
+		public async Task<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByScheduleIdAsync(System.Guid scheduleId)
 		{
 		object parameters = new {scheduleId};
 		var sql = SelectByQuery + WhereQueryByScheduleId;
@@ -68,14 +68,14 @@ namespace TestRepositoryGeneration
 
 		*/
 		/*
-		public IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByUserId(Guid userId)
+		public IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByUserId(System.Guid userId)
 		{
 		object parameters = new {userId};
 		var sql = SelectByQuery + WhereQueryByUserId;
 		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByUserIdAsync(Guid userId)
+		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByUserIdAsync(System.Guid userId)
 		{
 		object parameters = new {userId};
 		var sql = SelectByQuery + WhereQueryByUserId;
@@ -85,14 +85,14 @@ namespace TestRepositoryGeneration
 
 
 		*//*
-		public IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByUserIdAndRoleIdAndStoreId(Guid userId, Guid roleId, Guid storeId)
+		public IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByUserIdAndRoleIdAndStoreId(System.Guid userId, System.Guid roleId, System.Guid storeId)
 		{
 		object parameters = new {userId, roleId, storeId};
 		var sql = SelectByQuery + WhereQueryByUserIdAndRoleIdAndStoreId;
 		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByUserIdAndRoleIdAndStoreIdAsync(Guid userId, Guid roleId, Guid storeId)
+		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByUserIdAndRoleIdAndStoreIdAsync(System.Guid userId, System.Guid roleId, System.Guid storeId)
 		{
 		object parameters = new {userId, roleId, storeId};
 		var sql = SelectByQuery + WhereQueryByUserIdAndRoleIdAndStoreId;
@@ -102,15 +102,15 @@ namespace TestRepositoryGeneration
 
 
 		*/
-		public Guid Insert(TestRepositoryGeneration.Models.EmployeesInRolesSchedule employeesInRolesSchedule)
+		public System.Guid Insert(TestRepositoryGeneration.Models.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{
 			var res = DataAccessService.InsertObject(employeesInRolesSchedule, InsertQuery);
-			return (Guid)res;
+			return (System.Guid)res;
 		}
-		public async Task<Guid> InsertAsync(TestRepositoryGeneration.Models.EmployeesInRolesSchedule employeesInRolesSchedule)
+		public async Task<System.Guid> InsertAsync(TestRepositoryGeneration.Models.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{
 			var res = await DataAccessService.InsertObjectAsync(employeesInRolesSchedule, InsertQuery);
-			return (Guid)res;
+			return (System.Guid)res;
 		}
 
 		/*
@@ -164,13 +164,13 @@ namespace TestRepositoryGeneration
 		await DataAccessService.PersistObjectAsync(employeesInRolesSchedule, sql);
 		}
 
-		public void RemoveByScheduleId(Guid scheduleId)
+		public void RemoveByScheduleId(System.Guid scheduleId)
 		{
 		object parameters = new {scheduleId};
 		var sql = DeleteQueryBy + WhereQueryByScheduleId; 
 		DataAccessService.PersistObject<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		}
-		public async Task RemoveByScheduleIdAsync(Guid scheduleId)
+		public async Task RemoveByScheduleIdAsync(System.Guid scheduleId)
 		{
 		object parameters = new {scheduleId};
 		var sql = DeleteQueryBy + WhereQueryByScheduleId; 
@@ -190,13 +190,13 @@ namespace TestRepositoryGeneration
 		await DataAccessService.PersistObjectAsync(employeesInRolesSchedule, sql);
 		}
 
-		public void RemoveByUserId(Guid userId)
+		public void RemoveByUserId(System.Guid userId)
 		{
 		object parameters = new {userId};
 		var sql = DeleteQueryBy + WhereQueryByUserId; 
 		DataAccessService.PersistObject<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		}
-		public async Task RemoveByUserIdAsync(Guid userId)
+		public async Task RemoveByUserIdAsync(System.Guid userId)
 		{
 		object parameters = new {userId};
 		var sql = DeleteQueryBy + WhereQueryByUserId; 
@@ -216,13 +216,13 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(employeesInRolesSchedule, sql);
 		}
 
-		public void RemoveByUserIdAndRoleIdAndStoreId(Guid userId, Guid roleId, Guid storeId)
+		public void RemoveByUserIdAndRoleIdAndStoreId(System.Guid userId, System.Guid roleId, System.Guid storeId)
 		{
 			object parameters = new { userId, roleId, storeId };
 			var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId;
 			DataAccessService.PersistObject<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
 		}
-		public async Task RemoveByUserIdAndRoleIdAndStoreIdAsync(Guid userId, Guid roleId, Guid storeId)
+		public async Task RemoveByUserIdAndRoleIdAndStoreIdAsync(System.Guid userId, System.Guid roleId, System.Guid storeId)
 		{
 			object parameters = new { userId, roleId, storeId };
 			var sql = DeleteQueryBy + WhereQueryByUserIdAndRoleIdAndStoreId;

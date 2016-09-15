@@ -59,7 +59,7 @@ namespace TestRepositoryGeneration
 		}
 
 		*/
-		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(Guid taxId, bool? isDeleted = false)
+		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(System.Guid taxId, bool? isDeleted = false)
 		{
 			object parameters = new { taxId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByTaxId;
@@ -70,7 +70,7 @@ namespace TestRepositoryGeneration
 			var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
 			return result.FirstOrDefault();
 		}
-		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(Guid taxId, bool? isDeleted = false)
+		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(System.Guid taxId, bool? isDeleted = false)
 		{
 			object parameters = new { taxId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByTaxId;
@@ -83,7 +83,7 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
-		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxVersionId(Guid taxVersionId, bool? isDeleted = false)
+		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
 		{
 		object parameters = new {taxVersionId,isDeleted};
 		var sql = SelectByQuery + WhereQueryByTaxVersionId;
@@ -94,7 +94,7 @@ namespace TestRepositoryGeneration
 		var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
 		return result.FirstOrDefault();
 		}
-		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionIdAsync(Guid taxVersionId, bool? isDeleted = false)
+		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
 		{
 		object parameters = new {taxVersionId,isDeleted};
 		var sql = SelectByQuery + WhereQueryByTaxVersionId;
@@ -108,15 +108,15 @@ namespace TestRepositoryGeneration
 
 
 		*/
-		public Guid Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		public System.Guid Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			var res = DataAccessService.InsertObject(tax, InsertQuery);
-			return (Guid)res;
+			return (System.Guid)res;
 		}
-		public async Task<Guid> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		public async Task<System.Guid> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			var res = await DataAccessService.InsertObjectAsync(tax, InsertQuery);
-			return (Guid)res;
+			return (System.Guid)res;
 		}
 
 		public void UpdateByTaxId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
@@ -130,20 +130,7 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(tax, sql);
 		}
 
-		/*
-		public void UpdateByTaxVersionId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
-		{
-		var sql = UpdateQueryBy + WhereQueryByTaxVersionId; 
-		DataAccessService.PersistObject(tax, sql);
-		}
-		public async Task UpdateByTaxVersionIdAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
-		{
-		var sql = UpdateQueryBy + WhereQueryByTaxVersionId; 
-		await DataAccessService.PersistObjectAsync(tax, sql);
-		}
 
-
-		*/
 		public void RemoveByTaxId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			var sql = DeleteQueryBy + WhereQueryByTaxId;
@@ -155,46 +142,20 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(tax, sql);
 		}
 
-		public void RemoveByTaxId(Guid taxId)
+		public void RemoveByTaxId(System.Guid taxId)
 		{
 			object parameters = new { taxId };
 			var sql = DeleteQueryBy + WhereQueryByTaxId;
 			DataAccessService.PersistObject<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
 		}
-		public async Task RemoveByTaxIdAsync(Guid taxId)
+		public async Task RemoveByTaxIdAsync(System.Guid taxId)
 		{
 			object parameters = new { taxId };
 			var sql = DeleteQueryBy + WhereQueryByTaxId;
 			await DataAccessService.PersistObjectAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
 		}
 
-		/*
-		public void RemoveByTaxVersionId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
-		{
-		var sql = DeleteQueryBy + WhereQueryByTaxVersionId; 
-		DataAccessService.PersistObject(tax, sql);
-		}
-		public async Task RemoveByTaxVersionIdAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
-		{
-		var sql = DeleteQueryBy + WhereQueryByTaxVersionId; 
-		await DataAccessService.PersistObjectAsync(tax, sql);
-		}
 
-		public void RemoveByTaxVersionId(Guid taxVersionId)
-		{
-		object parameters = new {taxVersionId};
-		var sql = DeleteQueryBy + WhereQueryByTaxVersionId; 
-		DataAccessService.PersistObject<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
-		}
-		public async Task RemoveByTaxVersionIdAsync(Guid taxVersionId)
-		{
-		object parameters = new {taxVersionId};
-		var sql = DeleteQueryBy + WhereQueryByTaxVersionId; 
-		await DataAccessService.PersistObjectAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
-		}
-
-
-		*/
 
 	}
 }

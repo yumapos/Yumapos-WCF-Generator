@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using YumaPos.Server.Data.Sql;
 
@@ -17,16 +18,20 @@ namespace TestRepositoryGeneration
 {
 	internal class MenuItemVersionRepository : RepositoryBase
 	{
-		private const string InsertQuery = @"DECLARE @TempPKTable TABLE (ItemVersionId );
-DECLARE @TempPKItemVersionId ;
-INSERT INTO RecipieItems([ItemId],[ItemVersionId],[IsDeleted],[CategoryId])
+		private const string InsertQuery = @"DECLARE @TempPKTable TABLE (ItemVersionId uniqueidentifier);
+DECLARE @TempPKItemVersionId uniqueidentifier;
+INSERT INTO RecipieItems([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId])
 OUTPUT INSERTED.ItemVersionId INTO @TempPKTable
 VALUES (@ItemId,@ItemVersionId,@IsDeleted,@CategoryId)
 SELECT @TempPKItemVersionId = ItemVersionId FROM @TempPKTable
-INSERT INTO MenuItemVersionRepository([Name],[Modified],[ModifiedBy],[TaxIds],[MenuCategoryId])
+INSERT INTO MenuItems([MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId])
 VALUES (@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId)
 SELECT ItemVersionId FROM @TempPKTable
 ";
+		private const string SelectByQuery = @"SELECT [MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[ItemId] = [RecipieItems].[ItemId] ";
+		private const string WhereQueryByItemVersionId = @"WHERE MenuItems.[ItemVersionId] = @ItemVersionId{andTenantId:[MenuItems]} ";
+		private const string AndWithFilterData = "AND RecipieItems.[IsDeleted] = @IsDeleted";
+
 		public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
@@ -38,6 +43,31 @@ SELECT ItemVersionId FROM @TempPKTable
 			var res = await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
 			return (Guid)res;
 		}
+
+		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemVersionId(System.Guid itemVersionId, bool? isDeleted = false)
+		{
+			object parameters = new { itemVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByItemVersionId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithFilterData;
+			}
+			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
+			return result.FirstOrDefault();
+		}
+		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemVersionIdAsync(System.Guid itemVersionId, bool? isDeleted = false)
+		{
+			object parameters = new { itemVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByItemVersionId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithFilterData;
+			}
+			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters));
+			return result.FirstOrDefault();
+		}
+
+
 
 	}
 }

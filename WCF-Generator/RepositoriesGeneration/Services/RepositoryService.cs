@@ -216,6 +216,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Common filter - isDeleted
             repositoryInfo.SpecialOptions = new FilterInfo("IsDeleted", new List<ParameterInfo> { new ParameterInfo("IsDeleted", "bool", Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower()) }, FilterType.FilterKey);
 
+            repositoryInfo.VersionTableName = dataAccess.TableVersion;
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
 
@@ -353,13 +354,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             };
 
             // Methods by keys from model (without methods from base model)
-            foreach (var filterInfo in possibleKeysForMethods)
-            {
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.GetBy, FilterInfo = filterInfo });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo });
-                methods.Add(new MethodImplementationInfo() { Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo });
-            }
-
+            var keyBasedMethods = possibleKeysForMethods
+                .SelectMany(filterInfo => new List<MethodImplementationInfo>
+                {
+                    new MethodImplementationInfo {Method = RepositoryMethod.GetBy, FilterInfo = filterInfo},
+                    new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
+                    new MethodImplementationInfo {Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo}
+                });
+            methods.AddRange(keyBasedMethods);
+            
             // Set methods to implementation from possible list
             foreach (var um in unimplemented)
             {

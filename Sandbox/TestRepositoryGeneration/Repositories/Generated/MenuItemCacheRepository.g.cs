@@ -59,7 +59,7 @@ namespace TestRepositoryGeneration
 			return result.ToList();
 		}
 
-		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemId(Guid itemId, bool? isDeleted = false)
+		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemId(System.Guid itemId, bool? isDeleted = false)
 		{
 			object parameters = new { itemId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByItemId;
@@ -70,7 +70,7 @@ namespace TestRepositoryGeneration
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 			return result.FirstOrDefault();
 		}
-		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemIdAsync(Guid itemId, bool? isDeleted = false)
+		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemIdAsync(System.Guid itemId, bool? isDeleted = false)
 		{
 			object parameters = new { itemId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByItemId;
@@ -82,7 +82,7 @@ namespace TestRepositoryGeneration
 			return result.FirstOrDefault();
 		}
 
-		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemVersionId(Guid itemVersionId, bool? isDeleted = false)
+		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByItemVersionId(System.Guid itemVersionId, bool? isDeleted = false)
 		{
 			object parameters = new { itemVersionId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByItemVersionId;
@@ -93,7 +93,7 @@ namespace TestRepositoryGeneration
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 			return result.FirstOrDefault();
 		}
-		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemVersionIdAsync(Guid itemVersionId, bool? isDeleted = false)
+		public async Task<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByItemVersionIdAsync(System.Guid itemVersionId, bool? isDeleted = false)
 		{
 			object parameters = new { itemVersionId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByItemVersionId;
@@ -106,7 +106,7 @@ namespace TestRepositoryGeneration
 		}
 
 
-		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(Guid menuCategoryId, bool? isDeleted = false)
+		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(System.Guid menuCategoryId, bool? isDeleted = false)
 		{
 			object parameters = new { menuCategoryId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByMenuCategoryId;
@@ -117,7 +117,7 @@ namespace TestRepositoryGeneration
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(Guid menuCategoryId, bool? isDeleted = false)
+		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(System.Guid menuCategoryId, bool? isDeleted = false)
 		{
 			object parameters = new { menuCategoryId, isDeleted };
 			var sql = SelectByQuery + WhereQueryByMenuCategoryId;
@@ -130,15 +130,15 @@ namespace TestRepositoryGeneration
 		}
 
 
-		public Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		public System.Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 			var res = DataAccessService.InsertObject(menuItem, InsertQuery);
-			return (Guid)res;
+			return (System.Guid)res;
 		}
-		public async Task<Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		public async Task<System.Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 			var res = await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
-			return (Guid)res;
+			return (System.Guid)res;
 		}
 
 		public void UpdateByItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
@@ -153,19 +153,6 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
-		public void UpdateByItemVersionId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
-		{
-		var sql = UpdateQueryBy + WhereQueryByItemVersionId + UpdateQueryJoin + WhereQueryByItemVersionId; 
-		DataAccessService.PersistObject(menuItem, sql);
-		}
-		public async Task UpdateByItemVersionIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
-		{
-		var sql = UpdateQueryBy + WhereQueryByItemVersionId + UpdateQueryJoin + WhereQueryByItemVersionId; 
-		await DataAccessService.PersistObjectAsync(menuItem, sql);
-		}
-
-
-		*//*
 		public void UpdateByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 		var sql = UpdateQueryBy + WhereQueryByMenuCategoryId + UpdateQueryJoin + WhereQueryByMenuCategoryId; 
@@ -190,13 +177,13 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 
-		public void RemoveByItemId(Guid itemId)
+		public void RemoveByItemId(System.Guid itemId)
 		{
 			object parameters = new { itemId };
 			var sql = SelectIntoTempTable + WhereQueryByItemId + DeleteQueryBy;
 			DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 		}
-		public async Task RemoveByItemIdAsync(Guid itemId)
+		public async Task RemoveByItemIdAsync(System.Guid itemId)
 		{
 			object parameters = new { itemId };
 			var sql = SelectIntoTempTable + WhereQueryByItemId + DeleteQueryBy;
@@ -204,32 +191,6 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
-		public void RemoveByItemVersionId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
-		{
-		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
-		DataAccessService.PersistObject(menuItem, sql);
-		}
-		public async Task RemoveByItemVersionIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
-		{
-		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
-		await DataAccessService.PersistObjectAsync(menuItem, sql);
-		}
-
-		public void RemoveByItemVersionId(Guid itemVersionId)
-		{
-		object parameters = new {itemVersionId};
-		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
-		DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
-		}
-		public async Task RemoveByItemVersionIdAsync(Guid itemVersionId)
-		{
-		object parameters = new {itemVersionId};
-		var sql = SelectIntoTempTable + WhereQueryByItemVersionId + DeleteQueryBy; 
-		await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
-		}
-
-
-		*//*
 		public void RemoveByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
@@ -241,13 +202,13 @@ namespace TestRepositoryGeneration
 		await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 
-		public void RemoveByMenuCategoryId(Guid menuCategoryId)
+		public void RemoveByMenuCategoryId(System.Guid menuCategoryId)
 		{
 		object parameters = new {menuCategoryId};
 		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
 		DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
 		}
-		public async Task RemoveByMenuCategoryIdAsync(Guid menuCategoryId)
+		public async Task RemoveByMenuCategoryIdAsync(System.Guid menuCategoryId)
 		{
 		object parameters = new {menuCategoryId};
 		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 

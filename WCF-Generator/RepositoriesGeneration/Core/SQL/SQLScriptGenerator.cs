@@ -1,12 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
-using VersionedRepositoryGeneration.Generator.Infrastructure;
-using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
-namespace VersionedRepositoryGeneration.Generator.Core.SQL
+namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
     internal class SqlScriptGenerator
     {
@@ -116,34 +113,34 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
 
         #region VERSION TABLE
 
-        public static string GenerateInsertToVersionTable(RepositoryInfo info, string repositoryName)
+        public static string GenerateInsertToVersionTable(SqlInfo info)
         {
-            var classProperties = string.Join(",", info.Elements.Select(x => "[" + x.ToString() + "]"));
-            var classValues = string.Join(",", info.Elements.Select(x => "@" + x.ToString()));
+            var classProperties = Fields(info.TableColumns, info.TableName);
+            var classValues = Values(info.TableColumns);
 
-            if (info.JoinRepositoryInfo != null)
+            if (info.JoinTableName != null)
             {
-                var baseInfo = info.JoinRepositoryInfo;
-                var property = baseInfo.VersionKeyName;
-                var type = SystemToSqlTypeMapper.GetSqlType(baseInfo.ClassName);
-                var joinClassProperties = string.Join(",", baseInfo.Elements.Select(x => "[" + x.ToString() + "]"));
-                var joinClassValues = string.Join(",", baseInfo.Elements.Select(x => "@" + x.ToString()));
+                var joinClassProperties = Fields(info.JoinTableColumns, info.JoinTableName);
+                var joinClassValues = Values(info.JoinTableColumns);
 
-                return "DECLARE @TempPKTable TABLE (" + property + " " + type + ");\n" +
-                       "DECLARE @TempPK" + property + " " + type + ";\n" +
-                       "INSERT INTO " + baseInfo.TableName + "(" + joinClassProperties + ")\n" +
-                       "OUTPUT INSERTED." + property + " INTO @TempPKTable\n" +
+                return "DECLARE @TempPKTable TABLE (" + info.VersionKeyName + " " + info.VersionKeyType + ");\n" +
+                       "DECLARE @TempPK" + info.VersionKeyName + " " + info.VersionKeyType + ";\n" +
+                       "INSERT INTO " + info.JoinTableName + "(" + joinClassProperties + ")\n" +
+                       "OUTPUT INSERTED." + info.VersionKeyName + " INTO @TempPKTable\n" +
                        "VALUES (" + joinClassValues + ")\n" +
-                   "SELECT @TempPK" + property + " = " + property + " FROM @TempPKTable\n" +
-                   "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
+                   "SELECT @TempPK" + info.VersionKeyName + " = " + info.VersionKeyName + " FROM @TempPKTable\n" +
+                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
                    "VALUES (" + classValues + ")\n" +
-                   "SELECT " + property + " FROM @TempPKTable\n";
+                   "SELECT " + info.VersionKeyName + " FROM @TempPKTable\n";
             }
-            else
+            if(!info.IsManyToMany)
             {
-                return "INSERT INTO " + repositoryName + "(" + classProperties + ")\n" +
-                          "OUTPUT INSERTED." + info.VersionKeyName + "VALUES (" + classValues + ")";
+                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
+                       "OUTPUT INSERTED." + info.VersionKeyName + "VALUES (" + classValues + ")";
             }
+
+            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
+                       "VALUES (" + classValues + ")";
         }
 
         #endregion
@@ -268,11 +265,15 @@ namespace VersionedRepositoryGeneration.Generator.Core.SQL
     {
         public string TableName;
         public IEnumerable<string> TableColumns;
-        public string PrimaryKeyName;
+        public string VersionKeyType;
         public bool ReturnPrimarayKey;
         public string JoinTableName;
         public IEnumerable<string> JoinTableColumns;
         public string JoinPrimaryKeyName;
         public bool TenantRelated;
+        public string PrimaryKeyName;
+        public string VersionKeyName;
+        public string VersionTableName;
+        public bool IsManyToMany;
     }
 }

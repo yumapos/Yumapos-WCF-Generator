@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Text;
-using VersionedRepositoryGeneration.Generator.Core.SQL;
 using VersionedRepositoryGeneration.Generator.Heplers;
 using VersionedRepositoryGeneration.Generator.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Core.SQL;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {
@@ -120,7 +120,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             // RepositoryMethod.GetBy - for primary key
             var getByPrimaryKeyMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.PrimaryKey)
+                .Where(m => m.Method == RepositoryMethod.GetBy && (m.FilterInfo.FilterType == FilterType.PrimaryKey || m.FilterInfo.FilterType == FilterType.VersionKey))
                 .Aggregate("", (s, method) => s + GenerateGetByPrimaryKey(method));
 
             if (!string.IsNullOrEmpty(getByPrimaryKeyMethods))
@@ -144,7 +144,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             // RepositoryMethod.UpdateBy
             var updateByMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.UpdateBy)
+                .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateUpdate(method));
 
             if (!string.IsNullOrEmpty(updateByMethods))
@@ -152,7 +152,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
             // RepositoryMethod.RemoveBy
             var removeByMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.RemoveBy)
+                .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateRemove(method));
 
             if (!string.IsNullOrEmpty(removeByMethods))
