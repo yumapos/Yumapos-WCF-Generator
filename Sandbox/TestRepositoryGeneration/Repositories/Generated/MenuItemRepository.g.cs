@@ -22,7 +22,8 @@ namespace YumaPos.Server.Data.Sql.Menu
 {
 	public partial class MenuItemRepository : IMenuItemRepository
 	{
-		private IDataAccessController _dataAccessController; private MenuItemCacheRepository _menuItemCacheRepository;
+		private IDataAccessController _dataAccessController;
+		private MenuItemCacheRepository _menuItemCacheRepository;
 		private MenuItemVersionRepository _menuItemVersionRepository;
 		private MenuItemToTaxCacheRepository _menuItemToTaxCacheRepository;
 		private MenuItemToTaxVersionRepository _menuItemToTaxVersionRepository;
@@ -81,7 +82,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			menuItem.Modified = DateTimeOffset.Now;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
-			menuItem.MenuItemId = Guid.NewGuid();
+			menuItem.MenuItemId = menuItem.MenuItemId != null && menuItem.MenuItemId != Guid.Empty ? menuItem.MenuItemId : Guid.NewGuid();
 			_menuItemVersionRepository.Insert(menuItem);
 			var res = _menuItemCacheRepository.Insert(menuItem);
 			UpdateMenuItemToTax(menuItem);
@@ -92,7 +93,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			menuItem.Modified = DateTimeOffset.Now;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
-			menuItem.MenuItemId = Guid.NewGuid();
+			menuItem.MenuItemId = menuItem.MenuItemId != null && menuItem.MenuItemId != Guid.Empty ? menuItem.MenuItemId : Guid.NewGuid();
 			await _menuItemVersionRepository.InsertAsync(menuItem);
 			var res = await _menuItemCacheRepository.InsertAsync(menuItem);
 			UpdateMenuItemToTax(menuItem);

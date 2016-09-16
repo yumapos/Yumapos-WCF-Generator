@@ -24,15 +24,16 @@ namespace YumaPos.Server.Data.Sql.Menu
 		private const string Values = @"@MenuItemId,@MenuItemVersionId,@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId{values}";
 		private const string SelectAllQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId]  {whereTenantId:[MenuItems]} ";
 		private const string SelectByQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
-		private const string InsertQuery = @"INSERT INTO RecipieItems([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId]{columns}) VALUES(@MenuItemId,@ItemVersionId,@IsDeleted,@CategoryId{values})
+		private const string InsertQuery = @"INSERT INTO RecipieItems([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId]{columns}) VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@CategoryId{values})
  INSERT INTO MenuItems([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId]{columns}) OUTPUT INSERTED.MenuItemId VALUES(@MenuItemId,@MenuItemVersionId,@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId{values}) ";
 		private const string UpdateQueryBy = @"UPDATE [MenuItems] SET MenuItems.[MenuItemId] = @MenuItemId,MenuItems.[MenuItemVersionId] = @MenuItemVersionId,MenuItems.[Name] = @Name,MenuItems.[Modified] = @Modified,MenuItems.[ModifiedBy] = @ModifiedBy,MenuItems.[TaxIds] = @TaxIds,MenuItems.[MenuCategoryId] = @MenuCategoryId FROM [MenuItems] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItems].[MenuItemId] FROM [MenuItems] ";
-		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET MenuItems.[ItemId] = @ItemId,MenuItems.[ItemVersionId] = @ItemVersionId,MenuItems.[IsDeleted] = @IsDeleted,MenuItems.[CategoryId] = @CategoryId FROM [RecipieItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
+		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET RecipieItems.[ItemId] = @ItemId,RecipieItems.[ItemVersionId] = @ItemVersionId,RecipieItems.[IsDeleted] = @IsDeleted,RecipieItems.[CategoryId] = @CategoryId FROM [RecipieItems] ";
 		private const string WhereQueryByMenuItemId = "WHERE MenuItems.[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuItemVersionId = "WHERE MenuItems.[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuCategoryId = "WHERE MenuItems.[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItems]} ";
+		private const string WhereQueryByJoinPk = "WHERE RecipieItems.[ItemId] = @ItemId{andTenantId:[RecipieItems]} ";
 		private const string AndWithFilterData = "AND RecipieItems.[IsDeleted] = @IsDeleted";
 
 
@@ -144,24 +145,24 @@ namespace YumaPos.Server.Data.Sql.Menu
 
 		public void UpdateByMenuItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
-			var sql = UpdateQueryBy + WhereQueryByMenuItemId + UpdateQueryJoin + WhereQueryByMenuItemId;
+			var sql = UpdateQueryBy + WhereQueryByMenuItemId + UpdateQueryJoin + WhereQueryByJoinPk;
 			DataAccessService.PersistObject(menuItem, sql);
 		}
 		public async Task UpdateByMenuItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
-			var sql = UpdateQueryBy + WhereQueryByMenuItemId + UpdateQueryJoin + WhereQueryByMenuItemId;
+			var sql = UpdateQueryBy + WhereQueryByMenuItemId + UpdateQueryJoin + WhereQueryByJoinPk;
 			await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 
 		/*
 		public void UpdateByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
-		var sql = UpdateQueryBy + WhereQueryByMenuCategoryId + UpdateQueryJoin + WhereQueryByMenuCategoryId; 
+		var sql = UpdateQueryBy + WhereQueryByMenuCategoryId + UpdateQueryJoin + WhereQueryByJoinPk; 
 		DataAccessService.PersistObject(menuItem, sql);
 		}
 		public async Task UpdateByMenuCategoryIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
-		var sql = UpdateQueryBy + WhereQueryByMenuCategoryId + UpdateQueryJoin + WhereQueryByMenuCategoryId; 
+		var sql = UpdateQueryBy + WhereQueryByMenuCategoryId + UpdateQueryJoin + WhereQueryByJoinPk; 
 		await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 

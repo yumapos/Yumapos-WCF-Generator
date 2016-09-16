@@ -23,7 +23,7 @@ namespace WCFGenerator
                     throw new ArgumentException("File of configuration file not found");
                 }
                 
-                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", args[0]);
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", absoluteConfigPath);
             }
 
             try

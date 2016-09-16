@@ -52,7 +52,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyName) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyName;
 
                 // use pk from inherite model
-                var values = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
+                var values = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
                 var joinClassValues = Values(values);
 
                 // return inset into table and join table
@@ -75,9 +75,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateWhere(string selectedFilter, SqlInfo info)
+        public static string GenerateWhereJoinPk( SqlInfo info)
         {
-            return Where(new [] { selectedFilter}, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
+            return Where(new [] { info.JoinPrimaryKeyName }, info.JoinTableName) + AndTenantRelated(info.JoinTableName, info.TenantRelated) + " ";
         }
 
 
@@ -96,9 +96,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public static string GenerateUpdateJoin(SqlInfo info)
         {
             return Update(info.JoinTableName) + " "
-                   + Set(info.JoinTableColumns, info.TableName) + " "
-                   + From(info.JoinTableName) + " "
-                   + InnerJoin(info.TableName, info.PrimaryKeyName, info.JoinTableName, info.JoinPrimaryKeyName) + " ";
+                   + Set(info.JoinTableColumns, info.JoinTableName) + " "
+                   + From(info.JoinTableName) + " ";
         }
 
         public static string GenerateRemove(SqlInfo info)

@@ -23,6 +23,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
         private string _whereQueryBy = "WhereQueryBy";
         private string _andWithfilterData = "AndWithFilterData";
         private string _join = "Join";
+        private string _pk = "Pk";
 
         #endregion
 
@@ -83,6 +84,13 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 var parametrs = method.Parameters.Select(p => p.Name).ToList();
                 var sql = SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
+                
+            }
+            // where by join PK
+            if (RepositoryInfo.JoinRepositoryInfo!=null)
+            {
+                var sqlJoin = SqlScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
+                sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
             }
 
             // Is deleted filter
@@ -428,6 +436,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
 
             var whereQueryName = _whereQueryBy + filter.Key;
+            var whereQueryByJoinPk = _whereQueryBy + _join + _pk;
 
             // Synchronous method
             sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
@@ -438,7 +447,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             }
             else
             {
-                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName +  " + " + _updateQuery + _join + " + " + whereQueryName + "; ");
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName +  " + " + _updateQuery + _join + " + " + whereQueryByJoinPk + "; ");
             }
             sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
             sb.AppendLine("}");
@@ -452,7 +461,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             }
             else
             {
-                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryName + "; ");
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryByJoinPk + "; ");
             }
             sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");

@@ -204,11 +204,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                     // Filter data may be combined (ItemId, GroupId)
                     var filters = fk.Split(',').Select(f =>
                     {
-                        var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == f);
+                        var name = f.Trim();
+                        var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == name);
                         var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(parameter);
-                        return new ParameterInfo(f, parameter != null ? fullTypeName : null);
+                        return new ParameterInfo(name, parameter != null ? fullTypeName : null);
                     }).ToList();
-                    return new FilterInfo(string.Join("And", fk.Split(',')), filters, FilterType.FilterKey);
+                    return new FilterInfo(string.Join("And", fk.Split(',').Select(f=>f.Trim())), filters, FilterType.FilterKey);
                 });
 
             repositoryInfo.FilterInfos.AddRange(filterKeys);

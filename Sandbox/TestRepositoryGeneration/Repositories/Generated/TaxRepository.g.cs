@@ -23,7 +23,8 @@ namespace TestRepositoryGeneration
 {
 	public partial class TaxRepository : ITaxRepository
 	{
-		private IDataAccessController _dataAccessController; private TaxCacheRepository _taxCacheRepository;
+		private IDataAccessController _dataAccessController;
+		private TaxCacheRepository _taxCacheRepository;
 		private TaxVersionRepository _taxVersionRepository;
 		private MenuItemToTaxCacheRepository _menuItemToTaxCacheRepository;
 		private MenuItemToTaxVersionRepository _menuItemToTaxVersionRepository;
