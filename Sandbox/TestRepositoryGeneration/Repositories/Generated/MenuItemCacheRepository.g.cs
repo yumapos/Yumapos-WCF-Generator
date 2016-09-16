@@ -29,7 +29,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		private const string UpdateQueryBy = @"UPDATE [MenuItems] SET MenuItems.[MenuItemId] = @MenuItemId,MenuItems.[MenuItemVersionId] = @MenuItemVersionId,MenuItems.[Name] = @Name,MenuItems.[Modified] = @Modified,MenuItems.[ModifiedBy] = @ModifiedBy,MenuItems.[TaxIds] = @TaxIds,MenuItems.[MenuCategoryId] = @MenuCategoryId FROM [MenuItems] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItems].[MenuItemId] FROM [MenuItems] ";
-		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET RecipieItems.[ItemId] = @ItemId,RecipieItems.[ItemVersionId] = @ItemVersionId,RecipieItems.[IsDeleted] = @IsDeleted,RecipieItems.[CategoryId] = @CategoryId FROM [RecipieItems] ";
+		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET RecipieItems.[ItemId] = @MenuItemId,RecipieItems.[ItemVersionId] = @MenuItemVersionId,RecipieItems.[IsDeleted] = @IsDeleted,RecipieItems.[CategoryId] = @CategoryId FROM [RecipieItems] ";
 		private const string WhereQueryByMenuItemId = "WHERE MenuItems.[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuItemVersionId = "WHERE MenuItems.[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuCategoryId = "WHERE MenuItems.[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItems]} ";

@@ -95,8 +95,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateUpdateJoin(SqlInfo info)
         {
+            // use pk from inherite model
+            var values = info.JoinTableColumns.Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c));
+
             return Update(info.JoinTableName) + " "
-                   + Set(info.JoinTableColumns, info.JoinTableName) + " "
+                   + Set(values, info.JoinTableName) + " "
                    + From(info.JoinTableName) + " ";
         }
 
@@ -177,6 +180,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
             sb.Append("SET ");
             sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
+
+            return sb.ToString();
+        }
+
+        private static string Set(IEnumerable<KeyValuePair<string, string>> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("SET ");
+            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i.Key + "] = @" + i.Value)));
 
             return sb.ToString();
         }
