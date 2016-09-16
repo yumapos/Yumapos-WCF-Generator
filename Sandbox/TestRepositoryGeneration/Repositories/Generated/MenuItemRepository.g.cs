@@ -13,24 +13,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using YumaPos.Server.Infrastructure.Repositories;
 using YumaPos.Server.Infrastructure.DataObjects;
+using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
 using TestRepositoryGeneration;
-using YumaPos.Server.Data.Sql;
-
 
 
 namespace YumaPos.Server.Data.Sql.Menu
 {
 	public partial class MenuItemRepository : IMenuItemRepository
 	{
-		private MenuItemCacheRepository _menuItemCacheRepository;
+		private IDataAccessController _dataAccessController; private MenuItemCacheRepository _menuItemCacheRepository;
 		private MenuItemVersionRepository _menuItemVersionRepository;
 		private MenuItemToTaxCacheRepository _menuItemToTaxCacheRepository;
 		private MenuItemToTaxVersionRepository _menuItemToTaxVersionRepository;
 		private TaxCacheRepository _taxCacheRepository;
 
 
-		public MenuItemRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService)
+		public MenuItemRepository(IDataAccessController dataAccessController,
+		IDataAccessService dataAccessService)
 		{
+			_dataAccessController = dataAccessController;
 			_menuItemCacheRepository = new MenuItemCacheRepository(dataAccessService);
 			_menuItemVersionRepository = new MenuItemVersionRepository(dataAccessService);
 			_menuItemToTaxCacheRepository = new MenuItemToTaxCacheRepository(dataAccessService);
@@ -77,7 +79,9 @@ namespace YumaPos.Server.Data.Sql.Menu
 		public System.Guid Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 			menuItem.Modified = DateTimeOffset.Now;
+			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
+			menuItem.MenuItemId = Guid.NewGuid();
 			_menuItemVersionRepository.Insert(menuItem);
 			var res = _menuItemCacheRepository.Insert(menuItem);
 			UpdateMenuItemToTax(menuItem);
@@ -86,7 +90,9 @@ namespace YumaPos.Server.Data.Sql.Menu
 		public async Task<System.Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 			menuItem.Modified = DateTimeOffset.Now;
+			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
+			menuItem.MenuItemId = Guid.NewGuid();
 			await _menuItemVersionRepository.InsertAsync(menuItem);
 			var res = await _menuItemCacheRepository.InsertAsync(menuItem);
 			UpdateMenuItemToTax(menuItem);
@@ -96,6 +102,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		public void UpdateByMenuItemId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 			menuItem.Modified = DateTimeOffset.Now;
+			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
 			_menuItemVersionRepository.Insert(menuItem);
 			_menuItemCacheRepository.UpdateByMenuItemId(menuItem);
@@ -104,6 +111,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		public async Task UpdateByMenuItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 			menuItem.Modified = DateTimeOffset.Now;
+			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
 			await _menuItemVersionRepository.InsertAsync(menuItem);
 			await _menuItemCacheRepository.UpdateByMenuItemIdAsync(menuItem);
@@ -113,6 +121,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		public void UpdateByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 		menuItem.Modified = DateTimeOffset.Now;
+		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		menuItem.MenuItemVersionId = Guid.NewGuid();
 		_menuItemVersionRepository.Insert(menuItem);
 		_menuItemCacheRepository.UpdateByMenuCategoryId(menuItem);
@@ -121,6 +130,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		public async Task UpdateByMenuCategoryIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
 		menuItem.Modified = DateTimeOffset.Now;
+		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		menuItem.MenuItemVersionId = Guid.NewGuid();
 		await _menuItemVersionRepository.InsertAsync(menuItem);
 		await _menuItemCacheRepository.UpdateByMenuCategoryIdAsync(menuItem);

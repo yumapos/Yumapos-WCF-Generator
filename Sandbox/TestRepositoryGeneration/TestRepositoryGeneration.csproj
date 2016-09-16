@@ -58,6 +58,7 @@
     <Compile Include="Interfaces\Repositories\IMenuItemToTaxRepository.cs" />
     <Compile Include="Interfaces\Repositories\IAddressRepository.cs" />
     <Compile Include="Interfaces\Repositories\ITaxRepository.cs" />
+    <Compile Include="Interfaces\Tenant.cs" />
     <Compile Include="Models\Attributes\DataAccessAttribute.cs" />
     <Compile Include="Models\Attributes\DataMany2ManyAttribute.cs" />
     <Compile Include="Models\Attributes\DbIgnoreAttribute.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Repositories\Generated\Address2Repository.g.cs" />
     <Compile Include="Repositories\Generated\AddressRepository.g.cs" />
     <Compile Include="Repositories\Generated\EmployeesInRolesScheduleRepository.g.cs" />
+    <Compile Include="Interfaces\IDataAccessController.cs" />
     <Compile Include="Repositories\Generated\MenuItemCacheRepository.g.cs" />
     <Compile Include="Repositories\Generated\MenuItemRepository.g.cs" />
     <Compile Include="Repositories\Generated\MenuItemToTaxCacheRepository.g.cs" />

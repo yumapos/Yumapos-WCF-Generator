@@ -13,22 +13,32 @@ using System.Linq;
 using System.Threading.Tasks;
 using YumaPos.Server.Infrastructure.Repositories;
 using YumaPos.Server.Infrastructure.DataObjects;
-using YumaPos.Server.Data.Sql;
-
+using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;
+using YumaPos.FrontEnd.Infrastructure.Configuration;
+using YumaPos.Server.Data.Sql.Menu;
+using TestRepositoryGeneration;
 
 
 namespace TestRepositoryGeneration
 {
 	public partial class TaxRepository : ITaxRepository
 	{
-		private TaxCacheRepository _taxCacheRepository;
+		private IDataAccessController _dataAccessController; private TaxCacheRepository _taxCacheRepository;
 		private TaxVersionRepository _taxVersionRepository;
+		private MenuItemToTaxCacheRepository _menuItemToTaxCacheRepository;
+		private MenuItemToTaxVersionRepository _menuItemToTaxVersionRepository;
+		private MenuItemCacheRepository _menuItemCacheRepository;
 
 
-		public TaxRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService)
+		public TaxRepository(IDataAccessController dataAccessController,
+		IDataAccessService dataAccessService)
 		{
+			_dataAccessController = dataAccessController;
 			_taxCacheRepository = new TaxCacheRepository(dataAccessService);
 			_taxVersionRepository = new TaxVersionRepository(dataAccessService);
+			_menuItemToTaxCacheRepository = new MenuItemToTaxCacheRepository(dataAccessService);
+			_menuItemToTaxVersionRepository = new MenuItemToTaxVersionRepository(dataAccessService);
+			_menuItemCacheRepository = new MenuItemCacheRepository(dataAccessService);
 		}
 
 		/*
@@ -65,33 +75,64 @@ namespace TestRepositoryGeneration
 		public int Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
+			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = Guid.NewGuid();
+			tax.TaxId = 0;
 			_taxVersionRepository.Insert(tax);
 			var res = _taxCacheRepository.Insert(tax);
+			UpdateMenuItemToTax(tax);
 			return (int)res;
 		}
 		public async Task<int> InsertAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
+			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = Guid.NewGuid();
+			tax.TaxId = 0;
 			await _taxVersionRepository.InsertAsync(tax);
 			var res = await _taxCacheRepository.InsertAsync(tax);
+			UpdateMenuItemToTax(tax);
 			return (int)res;
 		}
 
 		public void UpdateByTaxId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
+			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = Guid.NewGuid();
 			_taxVersionRepository.Insert(tax);
 			_taxCacheRepository.UpdateByTaxId(tax);
+			UpdateMenuItemToTax(tax);
 		}
 		public async Task UpdateByTaxIdAsync(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
 		{
 			tax.Modified = DateTimeOffset.Now;
+			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = Guid.NewGuid();
 			await _taxVersionRepository.InsertAsync(tax);
 			await _taxCacheRepository.UpdateByTaxIdAsync(tax);
+			UpdateMenuItemToTax(tax);
+		}
+
+		private void UpdateMenuItemToTax(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)
+		{
+			if (tax.MenuItemIds == null)
+				tax.MenuItemIds = _menuItemToTaxCacheRepository.GetByTaxId(tax.TaxId).Select(i => i.MenuItemId);
+			var listOfMenuItemToTax = tax.MenuItemIds.Select(ids => new MenuItemToTax()
+			{
+				MenuItemId = ids,
+				MenuItemVersionId = _menuItemCacheRepository.GetByMenuItemId(ids).MenuItemVersionId,
+				TaxId = tax.TaxId,
+				TaxVersionId = tax.TaxVersionId,
+			}).ToList();
+			_menuItemToTaxCacheRepository.RemoveByTaxId(tax.TaxId);
+			foreach (var mt in listOfMenuItemToTax)
+			{
+				mt.Modified = DateTimeOffset.Now;
+				mt.ModifiedBy = tax.ModifiedBy;
+				_menuItemToTaxCacheRepository.Insert(mt);
+				_menuItemToTaxVersionRepository.Insert(mt);
+			}
 		}
 
 		public void RemoveByTaxId(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)

@@ -18,8 +18,8 @@ namespace TestRepositoryGeneration
 {
 	internal class TaxVersionRepository : RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO TaxVersions([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted])
-VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted)";
+		private const string InsertQuery = @"INSERT INTO TaxVersions([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns})
+VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values})";
 		private const string SelectByQuery = @"SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs] ";
 		private const string WhereQueryByTaxVersionId = @"WHERE Taxs.[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
 		private const string AndWithFilterData = "AND Taxs.[IsDeleted] = @IsDeleted";

@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using VersionedRepositoryGeneration.Generator.Heplers;
-using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
@@ -10,7 +8,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
     {
 
         private const string _tempTable = "@Temp";
-        private const string _tempId = "@TempPKItemId";
         private const string _columns = "{columns}";
         private const string _values = "{values}";
 
@@ -55,15 +52,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyName) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyName;
 
                 // use pk from inherite model
-                var valuesWitoutPkInt = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
-                var joinClassValues = Values(valuesWitoutPkInt);
+                var values = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
+                var joinClassValues = Values(values);
 
                 // return inset into table and join table
-                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + _columns + ") VALUES(" + joinClassValues + _values + ")\n "
-                     + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + _columns + ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + _values + ") ";
+                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + (info.TenantRelated ?_columns : "") + ") VALUES(" + joinClassValues + (info.TenantRelated ? _values : "") + ")\n "
+                     + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + (info.TenantRelated ? _columns : "")+ ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + (info.TenantRelated ? _values : "" ) + ") ";
             }
             // return select from table
-            return Insert(columnsWithoutSelectedPk, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
+            return Insert(columnsWithoutSelectedPk, info.TableName,info.TenantRelated, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
         }
 
         public static string GenerateInsertToTemp(SqlInfo info)
@@ -125,24 +122,24 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             if (info.JoinTableName != null)
             {
                 var joinClassProperties = Fields(info.JoinTableColumns, info.JoinTableName);
-                // use versionId from inherite model
-                var values = info.JoinTableColumns.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c);
+                // use versionId & primary key from inherite model
+                var values = info.JoinTableColumns.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
                 var joinClassValues = Values(values);
 
-                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + ")\n" +
-                       "VALUES (" + joinClassValues + ")\n" +
-                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
-                   "VALUES (" + classValues + ")";
+                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+                       "VALUES (" + joinClassValues + (info.TenantRelated ? _values : "") + ")\n" +
+                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+                   "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
             }
 
             if(!info.IsManyToMany)
             {
-                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
-                        "VALUES (" + classValues + ")";
+                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+                        "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
             }
 
-            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\n" +
-                       "VALUES (" + classValues + ")";
+            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+                       "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
         }
 
         #endregion
@@ -163,11 +160,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "SELECT " + Fields(columns, table);
         }
 
-        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string primaryKey = null)
+        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, bool tenantRelated, string primaryKey = null)
         {
             var columns = tableColumns.ToList();
             var outputKey = string.IsNullOrEmpty(primaryKey) ? "" : "OUTPUT INSERTED." + primaryKey;
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + _columns + ") " + outputKey + " VALUES(" + Values(columns) + _values +")";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + (tenantRelated ? _columns : "") + ") " + outputKey + " VALUES(" + Values(columns) + (tenantRelated ? _values : "") + ")";
         }
 
         private static string Update(string tableName)

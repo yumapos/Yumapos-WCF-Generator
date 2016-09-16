@@ -15,6 +15,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         private readonly string _cacheRepository = CodeClassGeneratorCacheRepository.RepositoryKind + "Repository";
         private readonly string _versionRepository = CodeClassGeneratorVersionsRepository.RepositoryKind + "Repository";
+        private const string DataAccessControllerField = "_dataAccessController";
 
         #endregion
 
@@ -82,14 +83,14 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("using System.Threading.Tasks;");
             sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories;");
             sb.AppendLine("using YumaPos.Server.Infrastructure.DataObjects;");
+            sb.AppendLine("using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;");
+            sb.AppendLine("using YumaPos.FrontEnd.Infrastructure.Configuration;");
             
             // add namespace of repositories which added from relation many to many 
             foreach (var n in Namespaces)
             {
                 sb.AppendLine("using " + n + ";");
             }
-
-            sb.AppendLine(base.GetUsings());
 
             return sb.ToString();
         }
@@ -103,8 +104,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("public "+ RepositoryName + "(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService)");
+            sb.AppendLine("public " + RepositoryName + "(IDataAccessController dataAccessController,");
+            sb.AppendLine("IDataAccessService dataAccessService)");
             sb.AppendLine("{");
+            sb.AppendLine(DataAccessControllerField + " = " + "dataAccessController;");
 
             foreach (var f in AllFields)
             {
@@ -118,12 +121,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
         public override string GetFields()
         {
             var sb = new StringBuilder();
-
+            sb.Append("private IDataAccessController " + DataAccessControllerField + ";");
             foreach (var f in AllFields)
             {
                 sb.AppendLine("private " + f.Key + " " + f.Value + ";");
             }
-
             return sb.ToString();
         }
        
@@ -382,6 +384,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
             var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName + "(" + parameterName + ");").ToList();
+            var isIntPk = RepositoryInfo.PrimaryKeys.Any(k => k.TypeName.Contains("int"));
 
             var sb = new StringBuilder();
 
@@ -392,7 +395,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public void Insert(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+                // generate primary key if guid, int skipped on insert
+                sb.AppendLine(parameterName + "." + RepositoryInfo.PrimaryKeyName + " = " + (isIntPk ? "0;" :"Guid.NewGuid();"));
                 sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine(CacheRepositoryField + ".Insert(" + parameterName + ");");
 
@@ -407,7 +413,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+                // generate primary key if guid, int skipped on insert
+                sb.AppendLine(parameterName + "." + RepositoryInfo.PrimaryKeyName + " = " + (isIntPk ? "0;" : "Guid.NewGuid();"));
                 sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
 
@@ -430,7 +439,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+                // generate primary key if guid, int skipped on insert
+                sb.AppendLine(parameterName + "." + RepositoryInfo.PrimaryKeyName + " = " + (isIntPk ? "0;" : "Guid.NewGuid();"));
                 sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine("var res = " + CacheRepositoryField + ".Insert(" + parameterName + ");");
 
@@ -447,7 +459,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 sb.AppendLine("public async Task<" + returnType + "> InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+                // generate primary key if guid, int skipped on insert
+                sb.AppendLine(parameterName + "." + RepositoryInfo.PrimaryKeyName + " = " + (isIntPk ? "0;" : "Guid.NewGuid();"));
                 sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("var res = await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
 
@@ -480,6 +495,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
             sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
             sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
             sb.AppendLine(CacheRepositoryField + ".UpdateBy" + filter.Key + "(" + parameterName + ");");
@@ -497,6 +513,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
             sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
             sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
             sb.AppendLine("await " + CacheRepositoryField + ".UpdateBy" + filter.Key + "Async(" + parameterName + ");");
