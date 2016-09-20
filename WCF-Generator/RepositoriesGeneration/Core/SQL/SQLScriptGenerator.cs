@@ -88,8 +88,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateUpdate(SqlInfo info)
         {
+            var columns = info.TableColumns.Where(c => info.SkipPrimaryKey.All(pk => pk != c)).ToList();
             return Update(info.TableName) + " " 
-                    + Set(info.TableColumns, info.TableName) + " " 
+                    + Set(columns, info.TableName) + " " 
                     + From(info.TableName) + " ";
         }
 

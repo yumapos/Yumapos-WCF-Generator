@@ -57,6 +57,7 @@
     <Compile Include="Interfaces\Repositories\IRepository.cs" />
     <Compile Include="Interfaces\Repositories\IMenuItemToTaxRepository.cs" />
     <Compile Include="Interfaces\Repositories\IAddressRepository.cs" />
+    <Compile Include="Interfaces\Repositories\ICustomerSubscriptionRepository.cs" />
     <Compile Include="Interfaces\Repositories\ITaxRepository.cs" />
     <Compile Include="Interfaces\Tenant.cs" />
     <Compile Include="Models\Attributes\DataAccessAttribute.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Models\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Models\Attributes\VersionKey.cs" />
     <Compile Include="Models\Address.cs" />
+    <Compile Include="Models\CustomerSubscription.cs" />
     <Compile Include="Models\EmployeesInRolesSchedule.cs" />
     <Compile Include="Models\MenuCategory.cs" />
     <Compile Include="Models\MenuItem.cs" />
@@ -71,8 +73,10 @@
     <Compile Include="Models\RecipieItem.cs" />
     <Compile Include="Models\Tax.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\CustomerSubscription\Class1.cs" />
     <Compile Include="Repositories\Generated\Address2Repository.g.cs" />
     <Compile Include="Repositories\Generated\AddressRepository.g.cs" />
+    <Compile Include="Repositories\Generated\CustomerSubscriptionRepository.g.cs" />
     <Compile Include="Repositories\Generated\EmployeesInRolesScheduleRepository.g.cs" />
     <Compile Include="Interfaces\IDataAccessController.cs" />
     <Compile Include="Repositories\Generated\MenuItemCacheRepository.g.cs" />
