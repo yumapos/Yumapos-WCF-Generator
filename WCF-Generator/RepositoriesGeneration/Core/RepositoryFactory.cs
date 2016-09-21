@@ -68,7 +68,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                     var code = repository.GetFullCode();
 
                     // Add document to creation
-                    repositoryGeneratorWorkSpace.AddFileToCreation(repository.RepositoryName + ".g.cs", config.RepositoryTargetFolder, code);
+                    repositoryGeneratorWorkSpace.AddFileToCreation(repository.FileName, config.RepositoryTargetFolder, code);
                 }
 
                 // Save all files

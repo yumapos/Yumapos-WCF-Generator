@@ -108,7 +108,7 @@ namespace WCFGenerator
             // run generation
             AsyncContext.Run(() => repositoryGenerator.GenerateRepository());
 
-            Console.WriteLine("Repository generation complated.");
+            Console.WriteLine("Repository generation completed.");
         }
     }
 

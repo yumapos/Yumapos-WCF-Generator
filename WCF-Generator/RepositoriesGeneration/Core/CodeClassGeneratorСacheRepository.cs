@@ -13,6 +13,15 @@ namespace VersionedRepositoryGeneration.Generator.Core
             get { return RepositoryInfo.ClassName + RepositoryKind + RepositoryInfo.RepositorySuffix; }
         }
 
+        #region Overrides of BaseCodeClassGeneratorRepository
+
+        public override string RepositoryKindName
+        {
+            get { return RepositoryKind; }
+        }
+
+        #endregion
+
         public override RepositoryType RepositoryType
         {
             get { return RepositoryType.Cache; }

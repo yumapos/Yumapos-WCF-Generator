@@ -74,6 +74,11 @@ namespace VersionedRepositoryGeneration.Generator.Core
             get { return RepositoryType.VersionService; }
         }
 
+        public override string RepositoryKindName
+        {
+            get { return "Service"; }
+        }
+
         public override string GetUsings()
         {
             var sb = new StringBuilder();

@@ -14,14 +14,17 @@ namespace VersionedRepositoryGeneration.Generator.Core
         private string _whereQueryBy = "WhereQueryBy";
         private string _selectByQuery = "SelectByQuery";
         private string _andWithfilterData = "AndWithFilterData";
-
-
-
+        
         #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string RepositoryName
         {
             get { return RepositoryInfo.ClassName + RepositoryKind + RepositoryInfo.RepositorySuffix; }
+        }
+
+        public override string RepositoryKindName
+        {
+            get { return RepositoryKind; }
         }
 
         public override RepositoryType RepositoryType

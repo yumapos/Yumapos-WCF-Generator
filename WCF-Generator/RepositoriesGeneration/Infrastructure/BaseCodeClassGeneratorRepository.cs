@@ -21,6 +21,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
             get { return RepositoryType.General; }
         }
 
+        public virtual string RepositoryKindName
+        {
+            get { return ""; }
+        }
+
         #endregion
 
         #region Implementation of ICodeClassGeneratorRepository
@@ -28,6 +33,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         public virtual string RepositoryName
         {
             get { return RepositoryInfo.RepositoryName; }
+        }
+
+        public virtual string FileName
+        {
+            get { return RepositoryInfo.ClassName + RepositoryKindName + RepositoryInfo.RepositorySuffix + ".g.cs"; }
         }
 
         public virtual string GetUsings()
