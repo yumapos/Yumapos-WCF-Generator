@@ -43,7 +43,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         public IEnumerable<ICodeClassGeneratorRepository> GetRepositories()
         {
             // Get all clases marked RepositoryAttribute
-            var findClasses = _solutionSyntaxWalker.GetRepositoryClasses(RepositoryDataModelHelper.DataAccessAttributeName);
+            var findClasses = _solutionSyntaxWalker.GetRepositoryClasses(_config.RepositoryAttributeName);
             // Get all candidates for generate repository
             var versionedRepositories = findClasses.Select(c=> GetRepository(c)).Where(c=> c!=null);
             // Skip with error
@@ -144,7 +144,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var className = doClass.Identifier.Text;
 
             // Get DataAccess attribute from repository model
-            var dataAccessAttr = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(doClass).FirstOrDefault(x => x.Name.ToString().Contains(RepositoryDataModelHelper.DataAccessAttributeName));
+            var dataAccessAttr = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(doClass).FirstOrDefault(x => x.Name.ToString().Contains(_config.RepositoryAttributeName));
 
             // common repository info
             var repositoryInfo = new RepositoryInfo()
