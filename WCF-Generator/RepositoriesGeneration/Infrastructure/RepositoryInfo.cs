@@ -1,19 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Heplers;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
-using WCFGenerator.RepositoriesGeneration.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Heplers;
 
-namespace VersionedRepositoryGeneration.Generator.Infrastructure
+namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal class RepositoryInfo
     {
+        #region Fields
+
         private string _versionKeyName;
         private string _primaryKeyName;
         private List<ParameterInfo> _primaryKeys;
-        private bool _identity;
         private ParameterInfo _versionKey;
+
+        #endregion
+
+        #region Constructor
 
         public RepositoryInfo()
         {
@@ -26,7 +30,10 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
             CustomCacheRepositoryMethodNames = new List<string>();
             MethodImplementationInfo = new List<MethodImplementationInfo>();
             CacheRepositoryMethodImplementationInfo = new List<MethodImplementationInfo>();
+            RequiredNamespaces = new Dictionary<RepositoryType, List<string>>();
         }
+
+        #endregion
 
         #region Repository model class info
 
@@ -92,6 +99,11 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         ///     Name of repository interface
         /// </summary>
         public string RepositoryInterfaceName { get; set; }
+
+        /// <summary>
+        ///     Required namespaces
+        /// </summary>
+        public Dictionary<RepositoryType, List<string>> RequiredNamespaces { get; set; }
 
         /// <summary>
         ///     Primary Keys
@@ -276,8 +288,9 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
             }
         }
 
-        public bool Identity { get; set; }
-
+        /// <summary>
+        ///     Get general repository info for sql script generation 
+        /// </summary>
         public SqlInfo RepositorySqlInfo
         {
             get

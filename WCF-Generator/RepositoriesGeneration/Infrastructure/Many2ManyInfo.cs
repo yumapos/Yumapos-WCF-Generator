@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using VersionedRepositoryGeneration.Generator.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {

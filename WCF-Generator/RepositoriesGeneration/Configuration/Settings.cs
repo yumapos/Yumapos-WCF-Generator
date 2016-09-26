@@ -47,7 +47,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((RepositoryProject)(element)).TargetProjectName;
+            return ((RepositoryProject)(element)).Name;
         }
 
         public RepositoryProject this[int idx]
@@ -64,7 +64,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         /// <summary>
         ///     Name
         /// </summary>
-        [ConfigurationProperty("Name", DefaultValue = "", IsRequired = false)]
+        [ConfigurationProperty("Name", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string Name
         {
             get { return ((string)(base["Name"])); }
@@ -82,7 +82,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         /// <summary>
         ///     Target Project Name for save file
         /// </summary>
-        [ConfigurationProperty("TargetProjectName", DefaultValue = "", IsKey = true, IsRequired = true)]
+        [ConfigurationProperty("TargetProjectName", DefaultValue = "",  IsRequired = true)]
         public string TargetProjectName
         {
             get { return ((string)(base["TargetProjectName"])); }
@@ -131,6 +131,15 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         public string AdditionalProjects
         {
             get { return ((string)(base["AdditionalProjects"])); }
+        }
+
+        /// <summary>
+        ///     Default namespace
+        /// </summary>
+        [ConfigurationProperty("DefaultNamespace", DefaultValue = "", IsRequired = true)]
+        public string DefaultNamespace
+        {
+            get { return ((string)(base["DefaultNamespace"])); }
         }
 
     }

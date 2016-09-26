@@ -1,4 +1,5 @@
-using VersionedRepositoryGeneration.Generator.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Core;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {

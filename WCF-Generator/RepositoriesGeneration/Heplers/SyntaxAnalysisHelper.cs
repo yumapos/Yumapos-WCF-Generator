@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using VersionedRepositoryGeneration.Generator.Services;
+using WCFGenerator.RepositoriesGeneration.Services;
 
-namespace VersionedRepositoryGeneration.Generator.Heplers
+namespace WCFGenerator.RepositoriesGeneration.Heplers
 {
     internal static class SyntaxAnalysisHelper
     {

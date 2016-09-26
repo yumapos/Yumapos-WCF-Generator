@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VersionedRepositoryGeneration.Generator.Heplers
+namespace WCFGenerator.RepositoriesGeneration.Heplers
 {
     internal static class SystemToSqlTypeMapper
     {

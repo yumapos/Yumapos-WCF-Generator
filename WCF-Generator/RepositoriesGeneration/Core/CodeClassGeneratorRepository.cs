@@ -1,10 +1,10 @@
 using System.Linq;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
-using VersionedRepositoryGeneration.Generator.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
-namespace VersionedRepositoryGeneration.Generator.Core
+namespace WCFGenerator.RepositoriesGeneration.Core
 {
     internal class CodeClassGeneratorRepository : BaseCodeClassGeneratorRepository
     {
@@ -29,23 +29,26 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         #region Overrides of BaseCodeClassGeneratorRepository
 
-        public override string GetUsings()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("using System;");
-            sb.AppendLine("using System.Collections.Generic;");
-            sb.AppendLine("using System.Linq;");
-            sb.AppendLine("using System.Threading.Tasks;");
-            sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories;");
-            sb.AppendLine(base.GetUsings());
-
-            return sb.ToString();
-        }
-
         public override string GetClassDeclaration()
         {
             return "public partial class " + RepositoryName + " : RepositoryBase, " + RepositoryInfo.RepositoryInterfaceName;
         }
+
+        #region Overrides of BaseCodeClassGeneratorRepository
+
+        public override string GetUsings()
+        {
+            var sb = new StringBuilder(base.GetUsings());
+
+            foreach (var nameSpace in RepositoryInfo.RequiredNamespaces[RepositoryType.Cache])
+            {
+                sb.AppendLine("using "+ nameSpace + ";");
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
 
         public override string GetFields()
         {

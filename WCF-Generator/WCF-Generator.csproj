@@ -154,7 +154,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RepositoriesGeneration\Analysis\SolutionSyntaxWalker.cs" />
-    <Compile Include="RepositoriesGeneration\Analysis\VirtualizationVisitor.cs" />
     <Compile Include="RepositoriesGeneration\Configuration\Settings.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorRepository.cs" />
@@ -164,12 +163,13 @@
     <Compile Include="RepositoriesGeneration\Core\RepositoryGeneratorWorkSpace.cs" />
     <Compile Include="RepositoriesGeneration\Core\SQL\SQLScriptGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\ExtensionMethods.cs" />
-    <Compile Include="RepositoriesGeneration\Heplers\GeneratorHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Heplers\CodeHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\RepositoryDataModelHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\FilterType.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\IRepositoryClassGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\KeyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\Many2ManyInfo.cs" />

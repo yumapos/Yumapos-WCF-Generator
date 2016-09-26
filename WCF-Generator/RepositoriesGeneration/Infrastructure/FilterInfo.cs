@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
-namespace VersionedRepositoryGeneration.Generator.Infrastructure
+namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal class FilterInfo
     {

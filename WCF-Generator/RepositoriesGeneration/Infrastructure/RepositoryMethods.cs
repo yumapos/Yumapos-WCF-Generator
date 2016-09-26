@@ -1,4 +1,4 @@
-﻿namespace VersionedRepositoryGeneration.Generator.Infrastructure
+﻿namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal enum RepositoryMethod
     {
@@ -7,12 +7,5 @@
         GetBy,
         UpdateBy,
         RemoveBy
-    }
-
-    internal enum FilterType
-    {
-        PrimaryKey,
-        FilterKey,
-        VersionKey
     }
 }

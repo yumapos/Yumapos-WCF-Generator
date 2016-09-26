@@ -2,8 +2,9 @@ using System;
 using System.Linq;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
-using VersionedRepositoryGeneration.Generator.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
+using WCFGenerator.RepositoriesGeneration.Heplers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {
@@ -35,16 +36,6 @@ namespace VersionedRepositoryGeneration.Generator.Core
         public override string GetClassDeclaration()
         {
             return "internal class " + RepositoryName + " : RepositoryBase";
-        }
-
-        public override string GetUsings()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("using System;");
-            sb.AppendLine("using System.Linq;");
-            sb.AppendLine("using System.Threading.Tasks;");
-            sb.AppendLine(base.GetUsings());
-            return sb.ToString();
         }
 
         #region Overrides of BaseCodeClassGeneratorRepository
@@ -213,7 +204,7 @@ namespace VersionedRepositoryGeneration.Generator.Core
             var sb = new StringBuilder();
 
             // auto-generated header
-            sb.AppendLine(GeneratorHelper.GetGeneratedDocumentHeader());
+            sb.AppendLine(CodeHelper.GeneratedDocumentHeader);
 
             // check analysis error
             if (RepositoryAnalysisError == null)

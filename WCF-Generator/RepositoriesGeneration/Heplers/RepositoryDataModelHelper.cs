@@ -2,7 +2,7 @@
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 using VersionKeyAttribute = WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes.VersionKeyAttribute;
 
-namespace VersionedRepositoryGeneration.Generator.Heplers
+namespace WCFGenerator.RepositoriesGeneration.Heplers
 {
     internal static class RepositoryDataModelHelper
     {

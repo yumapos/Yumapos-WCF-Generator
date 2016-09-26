@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
-namespace VersionedRepositoryGeneration.Generator.Services
+namespace WCFGenerator.RepositoriesGeneration.Services
 {
     internal class AttributeAndPropeperties
     {
@@ -19,14 +19,12 @@ namespace VersionedRepositoryGeneration.Generator.Services
         public static explicit operator DataAccessAttribute(AttributeAndPropeperties obj)
         {
             var isDeleted = obj.GetParameterByKeyName("IsDeleted");
-            var identity = obj.GetParameterByKeyName("Identity");
 
             var attr = new DataAccessAttribute
             {
                 TableName = obj.GetParameterByKeyName("TableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = !string.IsNullOrEmpty(isDeleted) && Convert.ToBoolean(isDeleted),
-                Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = obj.GetParameterByKeyName("FilterKey3"),

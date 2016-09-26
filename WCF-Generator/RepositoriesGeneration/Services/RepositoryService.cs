@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using VersionedRepositoryGeneration.Generator.Analysis;
 using VersionedRepositoryGeneration.Generator.Core;
 using VersionedRepositoryGeneration.Generator.Heplers;
-using VersionedRepositoryGeneration.Generator.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Analysis;
 using WCFGenerator.RepositoriesGeneration.Configuration;
+using WCFGenerator.RepositoriesGeneration.Core;
+using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
@@ -45,7 +46,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Get all clases marked RepositoryAttribute
             var findClasses = _solutionSyntaxWalker.GetRepositoryClasses(_config.RepositoryAttributeName);
             // Get all candidates for generate repository
-            var versionedRepositories = findClasses.Select(c=> GetRepository(c)).Where(c=> c!=null);
+            var versionedRepositories = findClasses.Select(c=> GetRepository(c)).Where(c=> c!=null).ToList();
             // Skip with error
             var listOfCandidate = versionedRepositories.Where(c => c.RepositoryAnalysisError == null).ToList();
             // Apply info from base clasess
@@ -127,8 +128,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 return list;
             });
             resultRepositories = resultRepositories.Where(r => !r.RepositoryInfo.IsVersioning).Concat(versioned).ToList();
-
-            return resultRepositories;
+            
+            return resultRepositories.Concat(versionedRepositories.Where(c => c.RepositoryAnalysisError != null)).ToList();
         }
 
         #endregion
@@ -190,8 +191,6 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             #region DataAccess
 
             var dataAccess = (DataAccessAttribute)dataAccessAttr;
-
-            repositoryInfo.Identity = dataAccess.Identity;
 
             var tableName = dataAccess.TableName ?? doClass.Identifier.ToString() + 's';
             repositoryInfo.TableName = tableName;
@@ -302,16 +301,16 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 customCacheRepositoryMethods = customCacheRepository.Members.OfType<MethodDeclarationSyntax>().ToList();
                 // Check constructor exist
                 repositoryInfo.IsCacheRepositoryConstructorImplemented = customCacheRepository.ConstructorImplementationExist();
+
+                if(repositoryInfo.RepositoryNamespace == null)
+                {
+                    repositoryInfo.RepositoryNamespace = _solutionSyntaxWalker.GetCustomRepositoryNamespace(customCacheRepository);
+                }
             }
 
             #endregion
 
             #region Repository methods
-
-            if (repositoryInfo.RepositoryNamespace == null)
-            {
-                repositoryInfo.RepositoryNamespace = _config.TargetProjectName;
-            }
 
             // Search method for implementation
             var repositoryInterfaceMethods = repoInterface.Members.OfType<MethodDeclarationSyntax>().ToList();
@@ -325,6 +324,28 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             {
                 repositoryInfo.CustomCacheRepositoryMethodNames.AddRange(customCacheRepositoryMethods.Select(m => m.Identifier.Text));
             }
+
+            #endregion
+
+            #region Search required namespace
+
+            if(repositoryInfo.RepositoryNamespace==null)
+            {
+                repositoryInfo.RepositoryNamespace = _config.DefaultNamespace;
+            }
+
+            var requiredNamespaces = new List<string>
+            {
+                "System",
+                "System.Collections.Generic",
+                "System.Linq",
+                "System.Threading.Tasks"
+            };
+            
+            repositoryInfo.RequiredNamespaces.Add(RepositoryType.General, requiredNamespaces);
+
+            var repositoryInterfaceNamespace = _solutionSyntaxWalker.GetTypeNamespace(repoInterface);
+            repositoryInfo.RequiredNamespaces.Add(RepositoryType.Cache, new List<string> { repositoryInterfaceNamespace });
 
             #endregion
 

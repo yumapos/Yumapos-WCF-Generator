@@ -1,4 +1,4 @@
-namespace VersionedRepositoryGeneration.Generator.Infrastructure
+namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal interface ICodeClassGeneratorRepository : ICodeClassGenerator
     {

@@ -1,8 +1,9 @@
 using System;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
+using WCFGenerator.RepositoriesGeneration.Heplers;
 
-namespace VersionedRepositoryGeneration.Generator.Infrastructure
+namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal abstract class BaseCodeClassGeneratorRepository : ICodeClassGeneratorRepository
     {
@@ -44,7 +45,10 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("using YumaPos.Server.Data.Sql;");
+            foreach (var nameSpace in RepositoryInfo.RequiredNamespaces[RepositoryType.General])
+            {
+                sb.AppendLine("using "+ nameSpace + ";");
+            }
 
             return sb.ToString();
         }
@@ -85,7 +89,7 @@ namespace VersionedRepositoryGeneration.Generator.Infrastructure
             var sb = new StringBuilder();
 
             // auto-generated header
-            sb.AppendLine(GeneratorHelper.GetGeneratedDocumentHeader());
+            sb.AppendLine(CodeHelper.GeneratedDocumentHeader);
 
             // check analysis error
             if (RepositoryAnalysisError == null)

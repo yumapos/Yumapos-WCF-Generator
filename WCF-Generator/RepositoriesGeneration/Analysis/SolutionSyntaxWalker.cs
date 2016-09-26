@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Heplers;
 
-namespace VersionedRepositoryGeneration.Generator.Analysis
+namespace WCFGenerator.RepositoriesGeneration.Analysis
 {
     internal class SolutionSyntaxWalker 
     {
@@ -121,6 +121,14 @@ namespace VersionedRepositoryGeneration.Generator.Analysis
         public string GetCustomRepositoryNamespace(BaseTypeDeclarationSyntax codeclass)
         {
             var semanticModel = _customRepositoriesCompilation.GetSemanticModel(codeclass.SyntaxTree);
+
+            var symbol = semanticModel.GetDeclaredSymbol(codeclass);
+
+            return symbol.ContainingNamespace.ToString();
+        }
+        public string GetTypeNamespace(BaseTypeDeclarationSyntax codeclass)
+        {
+            var semanticModel = _fullCompilation.GetSemanticModel(codeclass.SyntaxTree);
 
             var symbol = semanticModel.GetDeclaredSymbol(codeclass);
 

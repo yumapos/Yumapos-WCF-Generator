@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VersionedRepositoryGeneration.Generator.Heplers;
-using VersionedRepositoryGeneration.Generator.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace VersionedRepositoryGeneration.Generator.Core
 {
@@ -81,11 +81,8 @@ namespace VersionedRepositoryGeneration.Generator.Core
 
         public override string GetUsings()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("using System;");
-            sb.AppendLine("using System.Collections.Generic;");
-            sb.AppendLine("using System.Linq;");
-            sb.AppendLine("using System.Threading.Tasks;");
+            var sb = new StringBuilder(base.GetUsings());
+
             sb.AppendLine("using YumaPos.Server.Infrastructure.Repositories;");
             sb.AppendLine("using YumaPos.Server.Infrastructure.DataObjects;");
             sb.AppendLine("using YumaPos.FrontEnd.Infrastructure.Common.DataAccess;");
@@ -411,7 +408,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 }
                 else
                 {
-                    sb.AppendLine(primaryKeyProperty + " = " + primaryKeyProperty + " != null && " + primaryKeyProperty + "!= Guid.Empty ? " + primaryKeyProperty + ": Guid.NewGuid();");
+                    sb.AppendLine("if("+ primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                    sb.AppendLine("{");
+                    sb.AppendLine("throw new ArgumentException("+ RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                    sb.AppendLine("}");
                 }
                 sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine(CacheRepositoryField + ".Insert(" + parameterName + ");");
@@ -436,7 +436,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 }
                 else
                 {
-                    sb.AppendLine(primaryKeyProperty + " = " + primaryKeyProperty + " != null && " + primaryKeyProperty + "!= Guid.Empty ? " + primaryKeyProperty + ": Guid.NewGuid();");
+                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                    sb.AppendLine("{");
+                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                    sb.AppendLine("}");
                 }
                 sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
@@ -469,7 +472,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 }
                 else
                 {
-                    sb.AppendLine(primaryKeyProperty + " = " + primaryKeyProperty + " != null && " + primaryKeyProperty + "!= Guid.Empty ? " + primaryKeyProperty + ": Guid.NewGuid();");
+                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                    sb.AppendLine("{");
+                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                    sb.AppendLine("}");
                 }
                 sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
                 sb.AppendLine("var res = " + CacheRepositoryField + ".Insert(" + parameterName + ");");
@@ -496,7 +502,10 @@ namespace VersionedRepositoryGeneration.Generator.Core
                 }
                 else
                 {
-                    sb.AppendLine(primaryKeyProperty + " = " + primaryKeyProperty + " != null && " + primaryKeyProperty + "!= Guid.Empty ? " + primaryKeyProperty + ": Guid.NewGuid();");
+                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                    sb.AppendLine("{");
+                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                    sb.AppendLine("}");
                 }
                 sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
                 sb.AppendLine("var res = await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
@@ -658,19 +667,19 @@ namespace VersionedRepositoryGeneration.Generator.Core
             // Remove by entity (use filter key)
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
-            
+
             // Synchronous method
             sb.AppendLine("public void RemoveBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".IsDeleted = true;");
-            sb.AppendLine(CacheRepositoryField + ".UpdateBy"+ filter.Key + "(" + parameterName + ");");
+            sb.AppendLine("UpdateBy" + filter.Key + "("+ parameterName + ");");
             sb.AppendLine("}");
 
             // Asynchronous method
             sb.AppendLine("public async Task RemoveBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".IsDeleted = true;");
-            sb.AppendLine("await " + CacheRepositoryField + ".UpdateBy"+ filter.Key + "Async(" + parameterName + ");");
+            sb.AppendLine("await UpdateBy" + filter.Key + "Async(" + parameterName + ");");
             sb.AppendLine("}");
 
             // Remove by filter key
