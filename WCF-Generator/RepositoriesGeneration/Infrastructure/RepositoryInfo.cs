@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using VersionedRepositoryGeneration.Generator.Heplers;
@@ -25,9 +26,9 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             PrimaryKeys = new List<ParameterInfo>();
             Elements = new List<string>();
             Many2ManyInfo = new List<Many2ManyInfo>();
-            InterfaceMethodNames = new List<string>();
-            CustomRepositoryMethodNames = new List<string>();
-            CustomCacheRepositoryMethodNames = new List<string>();
+            InterfaceMethods = new List<MethodInfo>();
+            CustomRepositoryMethodNames = new List<MethodInfo>();
+            CustomCacheRepositoryMethodNames = new List<MethodInfo>();
             MethodImplementationInfo = new List<MethodImplementationInfo>();
             CacheRepositoryMethodImplementationInfo = new List<MethodImplementationInfo>();
             RequiredNamespaces = new Dictionary<RepositoryType, List<string>>();
@@ -247,17 +248,17 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// <summary>
         ///     List of methods name in repository interface
         /// </summary>
-        public List<string> InterfaceMethodNames { get; set; }
+        public List<MethodInfo> InterfaceMethods { get; set; }
 
         /// <summary>
         ///      List of methods name in castom repository class
         /// </summary>
-        public List<string> CustomRepositoryMethodNames { get; set; }
+        public List<MethodInfo> CustomRepositoryMethodNames { get; set; }
 
         /// <summary>
         ///      List of methods name in castom cache repository class (for versioned repository)
         /// </summary>
-        public List<string> CustomCacheRepositoryMethodNames { get; set; }
+        public List<MethodInfo> CustomCacheRepositoryMethodNames { get; set; }
 
         /// <summary>
         ///     Return list of filters key for key based methods

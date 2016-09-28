@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -83,7 +84,8 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
                 .AddSyntaxTrees(allTrees)
                 .WithReferences(new List<MetadataReference>()
                 {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IEnumerable).Assembly.Location)
                 });
         }
 
@@ -143,6 +145,14 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             
             return symbol.GetMethod.ReturnType.ToString();
         }
+        public Type GetReturnType(TypeSyntax returnType)
+        {
+            var semanticModel = _fullCompilation.GetSemanticModel(returnType.SyntaxTree);
+
+            var symbol = semanticModel.GetTypeInfo(returnType);
+
+            return symbol.Type.GetType();
+        }
 
         public bool IsBaseClass(BaseTypeSyntax syntax)
         {
@@ -156,5 +166,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
             return mSyntaxTrees;
         }
+
+      
     }
 }

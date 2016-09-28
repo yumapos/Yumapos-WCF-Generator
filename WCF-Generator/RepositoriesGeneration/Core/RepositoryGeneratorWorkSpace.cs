@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 
-namespace VersionedRepositoryGeneration.Generator.Core
+namespace WCFGenerator.RepositoriesGeneration.Core
 {
     /// <summary>
     ///     Workspace of repository generator - managing project and solution

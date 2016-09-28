@@ -64,7 +64,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 				sql = sql + AndWithFilterData;
 			}
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters);
-			return result.ToList();
+			return result;
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>> GetByMenuItemIdAsync(System.Guid menuItemId, bool? isDeleted = false)
 		{
@@ -75,7 +75,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 				sql = sql + AndWithFilterData;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters));
-			return result.ToList();
+			return result;
 		}
 
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes> GetByTaxId(int taxId, bool? isDeleted = false)
@@ -87,7 +87,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 				sql = sql + AndWithFilterData;
 			}
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters);
-			return result.ToList();
+			return result;
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>> GetByTaxIdAsync(int taxId, bool? isDeleted = false)
 		{
@@ -98,7 +98,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 				sql = sql + AndWithFilterData;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters));
-			return result.ToList();
+			return result;
 		}
 
 

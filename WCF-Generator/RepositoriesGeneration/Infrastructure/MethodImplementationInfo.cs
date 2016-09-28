@@ -1,12 +1,12 @@
+using System;
 using System.Collections.Generic;
 
 namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
-    internal class MethodImplementationInfo
+    internal class MethodImplementationInfo : MethodInfo
     {
         public MethodImplementationInfo()
         {
-            Parameters = new List<ParameterInfo>();
             RequiresImplementation = false;
         }
 
@@ -21,14 +21,22 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public FilterInfo FilterInfo { get; set; }
 
         /// <summary>
-        ///     Parameters of methods
-        /// </summary>
-        public List<ParameterInfo> Parameters { get; set; }
-
-        /// <summary>
         ///     Requires of Implementation 
         /// </summary>
         public bool RequiresImplementation { get; set; }
 
+    }
+
+    internal class MethodInfo
+    {
+        /// <summary>
+        ///     Name of method
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        ///     Type of returned value
+        /// </summary>
+        public string ReturnType { get; set; }
     }
 }

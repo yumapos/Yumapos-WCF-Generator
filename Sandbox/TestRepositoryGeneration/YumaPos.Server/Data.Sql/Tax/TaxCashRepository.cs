@@ -7,7 +7,7 @@ using YumaPos.Server.Infrastructure.DataObjects;
 
 namespace YumaPos.Server.Data.Sql.Taxes
 {
-    class TaxCashRepository : RepositoryBase
+    partial class TaxCashRepository : RepositoryBase
     {
         public TaxCashRepository(IDataAccessService dataAccessService) : base(dataAccessService) {}
 

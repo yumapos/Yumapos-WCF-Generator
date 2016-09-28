@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using VersionedRepositoryGeneration.Generator.Core;
 using VersionedRepositoryGeneration.Generator.Heplers;
@@ -10,6 +11,8 @@ using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
+using MethodInfo = WCFGenerator.RepositoriesGeneration.Infrastructure.MethodInfo;
+using ParameterInfo = WCFGenerator.RepositoriesGeneration.Infrastructure.ParameterInfo;
 
 namespace WCFGenerator.RepositoriesGeneration.Services
 {
@@ -72,12 +75,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Fill method implementation info for main repositories
             foreach (var info in resultRepositories.Select(r => r.RepositoryInfo))
             {
-                var methods = GetUnimplementedMethods(info.InterfaceMethodNames, info.CustomRepositoryMethodNames, info.PossibleKeysForMethods);
+                var methods = GetUnimplementedMethods(info.InterfaceMethods, info.CustomRepositoryMethodNames, info.PossibleKeysForMethods, info.ClassFullName);
                 info.MethodImplementationInfo.AddRange(methods);
 
                 if (info.IsVersioning)
                 {
-                    var cacheRepoMethods = GetUnimplementedMethods(info.InterfaceMethodNames, info.CustomCacheRepositoryMethodNames, info.PossibleKeysForMethods);
+                    var cacheRepoMethods = GetUnimplementedMethods(info.InterfaceMethods, info.CustomCacheRepositoryMethodNames, info.PossibleKeysForMethods, info.ClassFullName);
                     info.CacheRepositoryMethodImplementationInfo.AddRange(cacheRepoMethods);
                 }
             }
@@ -277,13 +280,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var customRepository = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + _config.RepositorySuffix).FirstOrDefault();
             var customRepoExist = customRepository != null;
 
-            List<MethodDeclarationSyntax> customRepositoryMethods = null;
+            List<MethodInfo> customRepositoryMethods = null;
 
             // Get custom repository class info
             if (customRepoExist)
             {
                 // Custom repository info
-                customRepositoryMethods = customRepository.Members.OfType<MethodDeclarationSyntax>().ToList();
+                customRepositoryMethods = customRepository.Members.OfType<MethodDeclarationSyntax>()
+                    .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString() })
+                    .ToList();
                 // Check constructor exist
                 repositoryInfo.IsConstructorImplemented = customRepository.ConstructorImplementationExist();
 
@@ -293,12 +298,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var customCacheRepository = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + "Cache" + _config.RepositorySuffix).FirstOrDefault();
             var customCacheRepositoryExist = customCacheRepository != null;
 
-            List<MethodDeclarationSyntax> customCacheRepositoryMethods = null;
+            List<MethodInfo> customCacheRepositoryMethods = null;
             // Get custom cache repository class info
             if (customCacheRepositoryExist)
             {
                 // Custom repository info
-                customCacheRepositoryMethods = customCacheRepository.Members.OfType<MethodDeclarationSyntax>().ToList();
+                customCacheRepositoryMethods = customCacheRepository.Members.OfType<MethodDeclarationSyntax>()
+                    .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString() })
+                    .ToList();
+
                 // Check constructor exist
                 repositoryInfo.IsCacheRepositoryConstructorImplemented = customCacheRepository.ConstructorImplementationExist();
 
@@ -313,16 +321,19 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             #region Repository methods
 
             // Search method for implementation
-            var repositoryInterfaceMethods = repoInterface.Members.OfType<MethodDeclarationSyntax>().ToList();
-            repositoryInfo.InterfaceMethodNames.AddRange(repositoryInterfaceMethods.Select(m => m.Identifier.Text));
+            var repositoryInterfaceMethods = repoInterface.Members.OfType<MethodDeclarationSyntax>()
+                .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString()})
+                .ToList();
+
+            repositoryInfo.InterfaceMethods.AddRange(repositoryInterfaceMethods);
 
             if(customRepositoryMethods!=null)
             {
-                repositoryInfo.CustomRepositoryMethodNames.AddRange(customRepositoryMethods.Select(m => m.Identifier.Text));
+                repositoryInfo.CustomRepositoryMethodNames.AddRange(customRepositoryMethods);
             }
             if (customCacheRepositoryMethods != null)
             {
-                repositoryInfo.CustomCacheRepositoryMethodNames.AddRange(customCacheRepositoryMethods.Select(m => m.Identifier.Text));
+                repositoryInfo.CustomCacheRepositoryMethodNames.AddRange(customCacheRepositoryMethods);
             }
 
             #endregion
@@ -361,10 +372,10 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
         #region Private
 
-        private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<string> interfaceMethodNames, List<string>  customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods)
+        private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<MethodInfo> interfaceMethodNames, List<MethodInfo>  customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods, string fullRepositoryModelName)
         {
             // Check implemented methods in custom repository
-            var unimplemented = interfaceMethodNames.Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm == im || cm + "Async" == im) == null);
+            var unimplemented = interfaceMethodNames.Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null);
 
             // Set methods which possible to generate
 
@@ -379,7 +390,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var keyBasedMethods = possibleKeysForMethods
                 .SelectMany(filterInfo => new List<MethodImplementationInfo>
                 {
-                    new MethodImplementationInfo {Method = RepositoryMethod.GetBy, FilterInfo = filterInfo},
+                    new MethodImplementationInfo {Method = RepositoryMethod.GetBy, ReturnType = "IEnumerable<" + fullRepositoryModelName + ">" , FilterInfo = filterInfo},
                     new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
                     new MethodImplementationInfo {Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo}
                 });
@@ -389,10 +400,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             foreach (var um in unimplemented)
             {
                 // Seach in possible list
-                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um));
+                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um.Name));
                 if (m == null) continue;
                 // Set to implementation
                 m.RequiresImplementation = true;
+                m.ReturnType = um.Name;
+                m.ReturnType = um.ReturnType;
             }
 
             return methods;

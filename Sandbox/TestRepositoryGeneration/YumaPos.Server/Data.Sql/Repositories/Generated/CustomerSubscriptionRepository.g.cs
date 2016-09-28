@@ -51,14 +51,14 @@ namespace YumaPos.Server.Data.Sql.Settings
 		object parameters = new {customerId, customerNotificationsType};
 		var sql = SelectByQuery + WhereQueryByCustomerIdAndCustomerNotificationsType;
 		var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>(sql, parameters);
-		return result.ToList();
+		return result;
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>> GetByCustomerIdAndCustomerNotificationsTypeAsync(string customerId, int customerNotificationsType)
 		{
 		object parameters = new {customerId, customerNotificationsType};
 		var sql = SelectByQuery + WhereQueryByCustomerIdAndCustomerNotificationsType;
 		var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>(sql, parameters));
-		return result.ToList();
+		return result;
 		}
 
 

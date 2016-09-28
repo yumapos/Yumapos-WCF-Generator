@@ -62,11 +62,13 @@ namespace YumaPos.Server.Data.Sql.Menu
 
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetByMenuCategoryId(System.Guid menuCategoryId, bool? isDeleted = false)
 		{
-			return _menuItemCacheRepository.GetByMenuCategoryId(menuCategoryId, isDeleted);
+			var res = _menuItemCacheRepository.GetByMenuCategoryId(menuCategoryId, isDeleted);
+			return res;
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(System.Guid menuCategoryId, bool? isDeleted = false)
 		{
-			return await _menuItemCacheRepository.GetByMenuCategoryIdAsync(menuCategoryId, isDeleted);
+			var res = await _menuItemCacheRepository.GetByMenuCategoryIdAsync(menuCategoryId, isDeleted);
+			return res;
 		}
 
 		public YumaPos.Server.Infrastructure.DataObjects.MenuItem GetByMenuItemVersionId(System.Guid menuItemVersionId, bool? isDeleted = false)

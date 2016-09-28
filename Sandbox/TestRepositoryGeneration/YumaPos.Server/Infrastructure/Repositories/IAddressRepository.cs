@@ -24,5 +24,7 @@ namespace YumaPos.Server.Infrastructure.Repositories
         Task<Address2> GetByIdAsync(int id);
         Task<IEnumerable<Address2>> GetAllAsync();
         Task<int> InsertAsync(Address2 address);
+        Task<Address2> GetByZipCodeAsync(string code);
+        Task<IEnumerable<Address2>> GetByBuildingAsync(string building);
     }
 }

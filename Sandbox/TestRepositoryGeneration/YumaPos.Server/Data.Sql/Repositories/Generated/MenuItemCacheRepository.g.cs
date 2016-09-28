@@ -115,7 +115,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 				sql = sql + AndWithFilterData;
 			}
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters);
-			return result.ToList();
+			return result;
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem>> GetByMenuCategoryIdAsync(System.Guid menuCategoryId, bool? isDeleted = false)
 		{
@@ -126,7 +126,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 				sql = sql + AndWithFilterData;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItem>(sql, parameters));
-			return result.ToList();
+			return result;
 		}
 
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
@@ -96,6 +97,20 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
             }
 
             return false;
+        }
+
+        public static bool IsEnumerable(this string t)
+        {
+            return t.Contains("IEnumerable<");
+        }
+
+        #endregion
+
+        #region Type analysis extensions
+
+        public static bool IsEnumerable(this Type t)
+        {
+            return t != null && typeof(IEnumerable).IsAssignableFrom(t);
         }
 
         #endregion
