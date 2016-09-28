@@ -17,7 +17,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 {
 	internal class MenuItems2TaxesVersionRepository : RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO MenuItemToTaxVersions([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
+		private const string InsertQuery = @"INSERT INTO [MenuItemToTaxVersions]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
 VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
 
 		public MenuItems2TaxesVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }

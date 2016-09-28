@@ -17,11 +17,11 @@ namespace YumaPos.Server.Data.Sql
 {
 	internal class TaxVersionRepository : RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO TaxVersions([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns})
+		private const string InsertQuery = @"INSERT INTO [TaxVersions]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns})
 VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values})";
 		private const string SelectByQuery = @"SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs] ";
-		private const string WhereQueryByTaxVersionId = @"WHERE Taxs.[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
-		private const string AndWithFilterData = "AND Taxs.[IsDeleted] = @IsDeleted";
+		private const string WhereQueryByTaxVersionId = @"WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
+		private const string AndWithFilterData = "AND [Taxs].[IsDeleted] = @IsDeleted";
 
 		public TaxVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public void Insert(YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax tax)

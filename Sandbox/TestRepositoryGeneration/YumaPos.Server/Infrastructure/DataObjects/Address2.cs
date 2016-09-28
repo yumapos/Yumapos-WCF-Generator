@@ -4,7 +4,7 @@ using YumaPos.FrontEnd.Infrastructure.DataInterfaces;
 
 namespace YumaPos.Server.Infrastructure.DataObjects
 {
-    [DataAccess(TableName = "dbo.Addresses2", FilterKey1 = "ZipCode", FilterKey2 = "Building")]
+    [DataAccess(TableName = "[dbo].[Addresses2]", FilterKey1 = "ZipCode", FilterKey2 = "Building")]
     public class Address2 : ITenantUnrelated
     {
         [Key]

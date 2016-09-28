@@ -11,6 +11,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private const string _columns = "{columns}";
         private const string _values = "{values}";
 
+        public static string GenerateTableName(string tableName)
+        {
+            tableName = tableName.Trim();
+
+            var nametrue = string.Join(".", tableName.Split('.').Select(part => "[" + part.Trim('[', ']') + "]"));
+
+            return nametrue;
+        }
+
         #region Cache table
 
         public static string GenerateFields(SqlInfo info)
@@ -67,7 +76,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier);" +
                                                         "INSERT INTO "+ _tempTable + " " +
-                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyName) + " FROM " + GenerateTableName(info.TableName) + " ";
+                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyName) + " FROM " + info.TableName + " ";
         }
 
         public static string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
@@ -172,7 +181,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private static string Update(string tableName)
         {
-            return "UPDATE " + GenerateTableName(tableName);
+            return "UPDATE " + tableName;
         }
         
         private static string Set(IEnumerable<string> parameters, string ownerTableName)
@@ -197,16 +206,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private static string Delete(string tableName)
         {
-            return "DELETE FROM " + GenerateTableName(tableName);
+            return "DELETE FROM " + tableName;
         }
 
         private static string From(string tableName)
         {
-            return "FROM " + GenerateTableName(tableName);
+            return "FROM " + tableName;
         }
         private static string InnerJoin(string tableName, string tablePrimaryKey, string joinTableName, string joinTablePrimaryKey)
         {
-            return "INNER JOIN " + GenerateTableName(joinTableName) + " ON " + GenerateTableName(tableName) + ".[" + tablePrimaryKey + "] = " + GenerateTableName(joinTableName) + ".[" + joinTablePrimaryKey + "]";
+            return "INNER JOIN " + joinTableName + " ON " + tableName + ".[" + tablePrimaryKey + "] = " + joinTableName + ".[" + joinTablePrimaryKey + "]";
         }
 
         private static string Where(IEnumerable<string> parameters, string ownerTableName)
@@ -231,42 +240,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private static string AndTenantRelated(string tableName, bool isTenantRelated)
         {
-            return isTenantRelated ? "{andTenantId:" + GenerateTableName(tableName) +"}" : "";
+            return isTenantRelated ? "{andTenantId:" + tableName +"}" : "";
         }
 
         private static string WhereTenantRelated(string tableName, bool isTenantRelated)
         {
-            return isTenantRelated ? "{whereTenantId:" + GenerateTableName(tableName) + "}": "";
+            return isTenantRelated ? "{whereTenantId:" + tableName + "}": "";
         }
 
         #endregion
 
         #region Private
 
-        private static readonly Dictionary<string, string> TableNameCache = new Dictionary<string, string>();
-
-        private static string GenerateTableName(string tableName)
-        {
-            tableName = tableName.Trim();
-            string cachetableName;
-
-            TableNameCache.TryGetValue(tableName, out cachetableName);
-
-            if (cachetableName != null)
-            {
-                return cachetableName;
-            }
-
-            var nametrue = string.Join(".", tableName.Trim('[', ']').Split('.').Select(part => "[" + part + "]"));
-
-            TableNameCache.Add(tableName, nametrue);
-
-            return nametrue;
-        }
-
         private static string Field(string tableName, string fieldName)
         {
-            return GenerateTableName(tableName) + ".[" + fieldName + "]";
+            return tableName + ".[" + fieldName + "]";
         }
 
         #endregion

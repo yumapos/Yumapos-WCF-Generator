@@ -17,13 +17,13 @@ namespace YumaPos.Server.Data.Sql.Menu
 {
 	internal class MenuItemVersionRepository : RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO RecipieItemVersions([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId]{columns})
+		private const string InsertQuery = @"INSERT INTO [RecipieItemVersions]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId]{columns})
 VALUES (@MenuItemId,@MenuItemVersionId,@IsDeleted,@CategoryId{values})
-INSERT INTO MenuItemVersions([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId]{columns})
+INSERT INTO [MenuItemVersions]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId]{columns})
 VALUES (@MenuItemId,@MenuItemVersionId,@Name,@Modified,@ModifiedBy,@TaxIds,@MenuCategoryId{values})";
 		private const string SelectByQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[Name],[MenuItems].[Modified],[MenuItems].[ModifiedBy],[MenuItems].[TaxIds],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
-		private const string WhereQueryByMenuItemVersionId = @"WHERE MenuItems.[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
-		private const string AndWithFilterData = "AND RecipieItems.[IsDeleted] = @IsDeleted";
+		private const string WhereQueryByMenuItemVersionId = @"WHERE [MenuItems].[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
+		private const string AndWithFilterData = "AND [RecipieItems].[IsDeleted] = @IsDeleted";
 
 		public MenuItemVersionRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public void Insert(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)

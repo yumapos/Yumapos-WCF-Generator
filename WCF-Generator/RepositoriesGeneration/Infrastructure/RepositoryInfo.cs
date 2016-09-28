@@ -300,13 +300,13 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 var sqlInfo = new SqlInfo()
                 {
                     TableColumns = Elements,
-                    TableName = TableName,
+                    TableName = SqlScriptGenerator.GenerateTableName(TableName),
                     PrimaryKeyName = PrimaryKeyName,
                     TenantRelated = IsTenantRelated,
                     ReturnPrimarayKey = PrimaryKeys.Count == 1,
                     VersionKeyName = VersionKeyName,
                     VersionKeyType = VersionKey != null ? SystemToSqlTypeMapper.GetSqlType(VersionKey.TypeName) : null,
-                    VersionTableName = VersionTableName,
+                    VersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(VersionTableName) : null,
                     IsManyToMany = IsManyToMany,
                     SkipPrimaryKey = PrimaryKeys.Where(k => k.TypeName.Contains("int")).Select(k => k.Name),
                 };
@@ -314,9 +314,9 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 if (JoinRepositoryInfo != null)
                 {
                     sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
-                    sqlInfo.JoinTableName = JoinRepositoryInfo.TableName;
+                    sqlInfo.JoinTableName = SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.TableName);
                     sqlInfo.JoinPrimaryKeyName = JoinRepositoryInfo.PrimaryKeyName;
-                    sqlInfo.JoinVersionTableName = JoinRepositoryInfo.VersionTableName;
+                    sqlInfo.JoinVersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.VersionTableName) : null;
                     sqlInfo.JoinVersionKeyName = JoinRepositoryInfo.VersionKeyName;
                 }
                 var pk = PrimaryKeys.FirstOrDefault();
