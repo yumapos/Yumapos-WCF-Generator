@@ -81,14 +81,14 @@ namespace YumaPos.Server.Data.Sql.Customer
 			object parameters = new { building };
 			var sql = SelectByQuery + WhereQueryByBuilding;
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address2>(sql, parameters);
-			return result;
+			return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address2>> GetByBuildingAsync(string building)
 		{
 			object parameters = new { building };
 			var sql = SelectByQuery + WhereQueryByBuilding;
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address2>(sql, parameters));
-			return result;
+			return result.ToList();
 		}
 
 

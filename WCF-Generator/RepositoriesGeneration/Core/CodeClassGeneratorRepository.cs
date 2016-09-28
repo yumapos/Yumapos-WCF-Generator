@@ -319,7 +319,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var specialSqlParameter = specialParameter.Name.FirstSymbolToLower();
 
             var returnType = method.ReturnType.IsEnumerable() ? "IEnumerable<" + RepositoryInfo.ClassFullName + ">" : RepositoryInfo.ClassFullName;
-            var returnFunc = method.ReturnType.IsEnumerable() ? "return result;" : "return result.FirstOrDefault();";
+            var returnFunc = method.ReturnType.IsEnumerable() ? "return result.ToList();" : "return result.FirstOrDefault();";
 
             var methodParameters = RepositoryInfo.IsDeletedExist ? parameters + ", " + specialMethodParameter : parameters;
 

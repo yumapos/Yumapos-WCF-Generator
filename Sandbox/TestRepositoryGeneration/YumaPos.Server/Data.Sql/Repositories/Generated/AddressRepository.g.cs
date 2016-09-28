@@ -67,14 +67,14 @@ namespace YumaPos.Server.Data.Sql.Customer
 		object parameters = new {city};
 		var sql = SelectByQuery + WhereQueryByCity;
 		var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
-		return result;
+		return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetByCityAsync(string city)
 		{
 		object parameters = new {city};
 		var sql = SelectByQuery + WhereQueryByCity;
 		var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters));
-		return result;
+		return result.ToList();
 		}
 
 
@@ -84,14 +84,14 @@ namespace YumaPos.Server.Data.Sql.Customer
 			object parameters = new { zipCode };
 			var sql = SelectByQuery + WhereQueryByZipCode;
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters);
-			return result;
+			return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetByZipCodeAsync(string zipCode)
 		{
 			object parameters = new { zipCode };
 			var sql = SelectByQuery + WhereQueryByZipCode;
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters));
-			return result;
+			return result.ToList();
 		}
 
 

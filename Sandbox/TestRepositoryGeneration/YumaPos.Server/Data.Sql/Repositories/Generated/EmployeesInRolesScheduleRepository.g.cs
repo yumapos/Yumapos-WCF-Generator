@@ -71,14 +71,14 @@ namespace YumaPos.Server.Data.Sql
 		object parameters = new {userId};
 		var sql = SelectByQuery + WhereQueryByUserId;
 		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
-		return result;
+		return result.ToList();
 		}
 		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByUserIdAsync(System.Guid userId)
 		{
 		object parameters = new {userId};
 		var sql = SelectByQuery + WhereQueryByUserId;
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters));
-		return result;
+		return result.ToList();
 		}
 
 
@@ -88,14 +88,14 @@ namespace YumaPos.Server.Data.Sql
 		object parameters = new {userId, roleId, storeId};
 		var sql = SelectByQuery + WhereQueryByUserIdAndRoleIdAndStoreId;
 		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
-		return result;
+		return result.ToList();
 		}
 		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByUserIdAndRoleIdAndStoreIdAsync(System.Guid userId, System.Guid roleId, System.Guid storeId)
 		{
 		object parameters = new {userId, roleId, storeId};
 		var sql = SelectByQuery + WhereQueryByUserIdAndRoleIdAndStoreId;
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters));
-		return result;
+		return result.ToList();
 		}
 
 
