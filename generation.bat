@@ -1,0 +1,1 @@
+..\..\..\..\WCF-Generator.exe  ..\..\..\..\WCF-Generator.exe.config

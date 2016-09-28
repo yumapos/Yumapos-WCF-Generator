@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D17E53C7-1F38-45AE-A715-649DB73735B5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TestRepositoryGeneration</RootNamespace>
+    <AssemblyName>TestRepositoryGeneration</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="YumaPos.FrontEnd\Data\Repositories\Generated\GiftCardRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\Address2Repository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\AddressRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\CustomerSubscriptionRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\EmployeesInRolesScheduleRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItemCacheRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItems2TaxesCacheRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItems2TaxesVersionRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItemServiceRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItemVersionRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\TaxCacheRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\TaxServiceRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\TaxVersionRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\Address2.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Address\Address2Repository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Address\AddressRepository.cs" />
+    <Compile Include="YumaPos.Server\WCF\DataAccessContextProvider.cs" />
+    <Compile Include="YumaPos.FrontEnd\Data.Dapper\DataAccess\DataAccessService.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\DataObjects\PosFdat\GiftCard.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\DataInterfaces\IModified.cs" />
+    <Compile Include="YumaPos.FrontEnd\Data\Repositories\TransactionsHistory\GiftCardRepository.cs" />
+    <Compile Include="YumaPos.FrontEnd\Data\Repositories\RepositoryBase.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Repositories\IGiftCardRepository.cs" />
+    <Compile Include="YumaPos.FrontEnd\Data\Infrastructure\IDataAccessContextProvider.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Configuration\IDataAccessService.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\DataInterfaces\ITenantUnrelated.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IMenuCategoryRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IEmployeesInRolesScheduleRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IRecipieItemRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IMenuItemRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IMenuItemToTaxRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IAddressRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\ICustomerSubscriptionRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\ITaxRepository.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\DataObjects\Tenant.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Common\DataAccess\DataAccessAttribute.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Common\DataAccess\DataMany2ManyAttribute.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Common\DataAccess\DbIgnoreAttribute.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Common\DataAccess\VersionKey.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\Address.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\CustomerSubscription.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\EmployeesInRolesSchedule.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\MenuCategory.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\MenuItem.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\MenuItemToTax.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\RecipieItem.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\Tax.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\CustomerSubscription\CustomerSubscriptionRepository.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Common\DataAccess\IDataAccessController.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuCategory\MenuCategoryСacheRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuCategory\MenuCategoryRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuCategory\MenuCategoryVersionRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuItemsToTaxes\MenuItemsToTaxСacheRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuItemsToTaxes\MenuItemsToTaxVersionRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuItem\MenuItemСacheRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuItem\MenuItemRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\MenuItem\MenuItemVersionRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\RepositoryBase.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Tax\TaxCashRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Tax\TaxRepository.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Tax\TaxVersionRepository.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>if '$(ConfigurationName)' == 'Debug' $(SolutionDir)\generation.bat</PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
