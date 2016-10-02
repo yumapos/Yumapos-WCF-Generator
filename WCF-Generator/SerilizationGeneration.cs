@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using WCFGenerator.SerializeGeneration;
 
 namespace WCFGenerator
@@ -24,24 +25,32 @@ namespace WCFGenerator
             _includeAttribute = configuration.IncludeAtribute;
             _ignoreAttribute = configuration.IgnoreAttribute;
             _baseInterface = configuration.BaseInterface;
+            _helpProjects = configuration.AllHelpProjectNames;
+            _mappingAttribute = configuration.MappingAttribute;
+            _mappingIgnoreAttribute = configuration.MappingIgnoreAttribute;
         }
 
-        private IEnumerable<string> _projectNames;
-        private string _solutionPath;
+        private readonly IEnumerable<string> _projectNames;
+        private readonly string _solutionPath;
 
-        private static readonly MSBuildWorkspace _workspace = MSBuildWorkspace.Create();
-        private static List<Tuple<string, SourceText, string[], string>> _tasks = new List<Tuple<string, SourceText, string[], string>>();
+        private static readonly MSBuildWorkspace Workspace = MSBuildWorkspace.Create();
+        private static readonly List<Tuple<string, SourceText, string[], string>> Tasks = new List<Tuple<string, SourceText, string[], string>>();
 
-        Project _project;
-        Solution _solution;
+        private Project _project;
+        private Solution _solution;
 
-        private string _generationPrefix;
+        private readonly string _generationPrefix;
 
-        private string _includeAttribute;
+        private readonly string _includeAttribute;
 
-        private string _ignoreAttribute;
+        private readonly string _mappingIgnoreAttribute;
 
-        private string _baseInterface;
+        private readonly IEnumerable<string> _helpProjects; 
+
+        private readonly string _ignoreAttribute;
+
+        private readonly string _baseInterface;
+        private readonly string _mappingAttribute;
 
         private IEnumerable<SourceElements> GetSourceElements(string projectName)
         {
@@ -50,9 +59,15 @@ namespace WCFGenerator
             var listElements = new List<SourceElements>();
             foreach (var currentClass in neededClasses)
             {
+                if (ClassAttributeExist(currentClass, _ignoreAttribute))
+                {
+                    continue;
+                }
                 var members = currentClass.Members;
                 var generationProperty = new List<PropertyDeclarationSyntax>();
                 var generationFields = new List<FieldDeclarationSyntax>();
+                var allPublicProperties = new List<PropertyDeclarationSyntax>();
+                var exitClass = new SourceElements();
                 foreach (var member in members)
                 {
                     var field = member as FieldDeclarationSyntax;
@@ -65,6 +80,11 @@ namespace WCFGenerator
                     var property = member as PropertyDeclarationSyntax;
                     if (property != null)
                     {
+                        if (property.Modifiers.Any(x => x.Text == "public"))
+                        {
+                            allPublicProperties.Add(property);
+                        }
+
                         if (property.AttributeLists.Count == 0 || !PropertyAttributeExist(property, _ignoreAttribute))
                         {
                             if (property.Modifiers.Any(x => x.Text == "public"))
@@ -75,17 +95,42 @@ namespace WCFGenerator
                             if (PropertyAttributeExist(property, _includeAttribute))
                             {
                                 generationProperty.Add(property);
-                                continue;
                             }
                         }
                     }
                 }
-                listElements.Add(new SourceElements
+
+                if (ClassAttributeExist(currentClass, _mappingAttribute))
                 {
-                    CurrentClass = currentClass,
-                    Properties = generationProperty,
-                    Fields = generationFields
-                });
+                    var attr = GetAttributesAndPropepertiesCollection(currentClass);
+                    var className = attr.FirstOrDefault(x => x.Name == _mappingAttribute)?.GetParameterByKeyName("Name");
+                    var findedClass = GeneratorHelper.FindClass(className, _helpProjects);
+                    if (findedClass != null)
+                    {
+                        var listMappingProperties = new List<PropertyDeclarationSyntax>();
+                        foreach (var member in findedClass.Members)
+                        {
+                            var property = member as PropertyDeclarationSyntax;
+                            if (property != null)
+                            {
+                                if (property.AttributeLists.Count == 0 || !PropertyAttributeExist(property, _mappingIgnoreAttribute))
+                                {
+                                    if (property.Modifiers.Any(x => x.Text == "public"))
+                                    {
+                                        listMappingProperties.Add(property);
+                                    }
+                                }
+                            }
+                        }
+                        exitClass.MappingClass = findedClass;
+                        exitClass.MappingProperties = listMappingProperties;
+                    }
+                }
+                exitClass.AllPublicProperties = allPublicProperties;
+                exitClass.CurrentClass = currentClass;
+                exitClass.Properties = generationProperty;
+                exitClass.Fields = generationFields;
+                listElements.Add(exitClass);
             }
             return listElements;
         }
@@ -106,8 +151,10 @@ namespace WCFGenerator
         private IEnumerable<GenerationElements> GetGenerationElements(IEnumerable<SourceElements> sourceElements)
         {
             var listGenEl = new List<GenerationElements>();
+            var namespaces = new List<string>();
             foreach (var sourceElem in sourceElements)
             {
+                var textElements = new GenerationElements();
                 var nameSpace = GetNamespace(sourceElem.CurrentClass);
                 var propList = new List<GenerationProperty>();
                 foreach (var property in sourceElem.Properties)
@@ -116,7 +163,7 @@ namespace WCFGenerator
                     {
                         Name = GetPropertyName(property.Identifier.Text),
                         Type = property.Type.ToFullString(),
-                        VariableClassName = property.Identifier.Text
+                        VariableClassName = property.Identifier.Text,
                     });
                 }
 
@@ -130,15 +177,39 @@ namespace WCFGenerator
                     });
                 }
 
-                listGenEl.Add(new GenerationElements
+                textElements.IsPropertyEquals = false;
+
+                if (sourceElem.MappingClass != null)
                 {
-                    ClassName = sourceElem.CurrentClass.Identifier.Text,
-                    Properties = propList,
-                    GeneratedClassName = $"{sourceElem.CurrentClass.Identifier.Text}{_generationPrefix}",
-                    Namespace = nameSpace,
-                    UsingNamespaces = GetUsingNamespaces(sourceElem.CurrentClass),
-                    ClassAccessModificator = sourceElem.CurrentClass.Modifiers.FirstOrDefault().ValueText
-                });
+                    var mapClassName = sourceElem.MappingClass.Identifier.Text;
+                    var mappingProperies = new List<GenerationProperty>();
+                    foreach (var property in sourceElem.MappingProperties)
+                    {
+                        var mapProperty = sourceElem.AllPublicProperties.FirstOrDefault(x => x.Identifier.Text.Trim() == property.Identifier.Text.Trim());
+                        if (mapProperty == null)
+                        {
+                            continue;
+                        }
+                        mappingProperies.Add(new GenerationProperty
+                        {
+                            Name = GetPropertyName(property.Identifier.Text),
+                            Type = property.Type.ToFullString(),
+                            VariableClassName = property.Identifier.Text,
+                        });
+                    }
+                    textElements.MapClassName = mapClassName;
+                    textElements.MapProperties = mappingProperies;
+                    textElements.IsPropertyEquals = IsCollectionEquals(mappingProperies, propList);
+                    namespaces.Add(GetNamespace(sourceElem.MappingClass));
+                }
+
+                textElements.ClassName = sourceElem.CurrentClass.Identifier.Text;
+                textElements.Properties = propList;
+                textElements.GeneratedClassName = $"{sourceElem.CurrentClass.Identifier.Text}{_generationPrefix}";
+                textElements.Namespace = nameSpace;
+                textElements.UsingNamespaces = namespaces.Union(GetUsingNamespaces(sourceElem.CurrentClass));
+                textElements.ClassAccessModificator = sourceElem.CurrentClass.Modifiers.FirstOrDefault().ValueText;
+                listGenEl.Add(textElements);
             }
             return listGenEl;
         }
@@ -153,7 +224,7 @@ namespace WCFGenerator
             foreach (var member in elements.Properties)
             {
                 exitInterface.Append("\t\t public ");
-                exitInterface.Append(member.Type);
+                exitInterface.Append(member.Type.Trim() == "PosMoney" ? "decimal" : member.Type);
                 exitInterface.Append(" ");
                 exitInterface.Append(member.Name);
                 exitInterface.Append(" { get; set;}");
@@ -192,65 +263,157 @@ namespace WCFGenerator
             generation.Append("\r\n{");
             generation.Append("\r\n");
 
-            generation.Append(GenerateInterface(elements));
+            var className = elements.GeneratedClassName;
+            if (elements.IsPropertyEquals)
+            {
+                className = elements.MapClassName;
+            }
+            else
+            {
+                generation.Append(GenerateInterface(elements));
+            }
 
-            generation.AppendFormat("\t {0} partial class {1}",elements.ClassAccessModificator, elements.ClassName);
+            generation.AppendFormat("\t {0} partial class {1}", elements.ClassAccessModificator, elements.ClassName);
             generation.Append("\r\n");
             generation.Append("\t {");
             generation.Append("\r\n");
-            var variableName = FirstSymbolToLower(elements.GeneratedClassName);
-            //Generate virtual method for SetState
-            generation.AppendFormat("\t\t partial void StateCustomizationOnSet({0} {1});", elements.GeneratedClassName, variableName);
-            generation.Append("\r\n");
-            generation.Append("\r\n");
-
-            //Generate virtual method for GetState
-            generation.AppendFormat("\t\t partial void StateCustomizationOnGet({0} {1});", elements.GeneratedClassName, variableName);
-            generation.Append("\r\n");
-            generation.Append("\r\n");
-
-            //Generate Set state
-            generation.Append("\t\t public void SetState(object value)");
-            generation.Append("\r\n");
-            generation.Append("\t\t {");
-            generation.Append("\r\n");
-            generation.AppendFormat("\t\t\t var core = value as {0};", elements.GeneratedClassName);
-            generation.Append("\r\n");
-
-            foreach (var prop in elements.Properties)
+            
+            generation.Append(GenerateMethodsOrMappings(elements.Properties, className, true));
+            if (elements.MapClassName != null && elements.MapProperties != null)
             {
-                generation.AppendFormat("\t\t\t {1} = core.{0};", prop.Name, prop.VariableClassName);
                 generation.Append("\r\n");
+                generation.Append(GenerateMethodsOrMappings(elements.MapProperties, elements.MapClassName, false));
             }
-            generation.Append("\t\t\t StateCustomizationOnSet(core);");
-            generation.Append("\r\n");
-            generation.Append("\t\t }");
-            generation.Append("\r\n");
-            generation.Append("\r\n");
 
-            //Generate Get state
-            generation.Append("\t\t public object GetState()");
-            generation.Append("\r\n");
-            generation.Append("\t\t {");
-            generation.Append("\r\n");
-            generation.AppendFormat("\t\t\t var core = new {0}();", elements.GeneratedClassName);
-            generation.Append("\r\n");
-            foreach (var prop in elements.Properties)
-            {
-                generation.AppendFormat("\t\t\t core.{0} = {1};", prop.Name, prop.VariableClassName);
-                generation.Append("\r\n");
-            }
-            generation.Append("\t\t\t StateCustomizationOnGet(core);");
-            generation.Append("\r\n");
-            generation.Append("\t\t\t return core;");
-            generation.Append("\r\n");
-            generation.Append("\t\t }");
             generation.Append("\r\n");
             generation.Append("\t }");
             generation.Append("\r\n");
             generation.Append("}");
 
             return generation;
+        }
+
+        private StringBuilder GenerateMethodsOrMappings(List<GenerationProperty> mainProp, string className, bool isSerialization)
+        {
+            var variableName = FirstSymbolToLower(className);
+            var stringBuilder = new StringBuilder();
+            
+            var functionPrefix = isSerialization ? "Do" : "BDo";
+            var getMethodsName = isSerialization ? "GetDataObject" : $"Get{className}Do";
+            var setMethodsName = isSerialization ? "SetDataObject" : $"Set{className}Do";
+            //Generate private property
+            if (isSerialization)
+            {
+                stringBuilder.AppendFormat("\t\t private {0} _boDo;", className);
+                stringBuilder.Append("\r\n");
+            }
+            //Generate virtual method for SetState
+            stringBuilder.AppendFormat("\t\t partial void {2}CustomizationOnSet({0} {1} {3});", className, variableName, functionPrefix,
+                isSerialization ? ", YumaPos.FrontEnd.Infrastructure.Persistence.IDeserializationContext context" : "");
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\r\n");
+
+            //Generate virtual method for GetState
+            stringBuilder.AppendFormat("\t\t partial void {2}CustomizationOnGet(ref {0} {1});", className, variableName, functionPrefix);
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\r\n");
+
+            //Generate Set state
+            stringBuilder.AppendFormat("\t\t public void {0}(object value{1})", setMethodsName,
+                isSerialization ? ", YumaPos.FrontEnd.Infrastructure.Persistence.IDeserializationContext context" : "");
+            
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\t\t {");
+            stringBuilder.Append("\r\n");
+            stringBuilder.AppendFormat("\t\t\t var dataObject = value as {0};", className);
+            stringBuilder.Append("\r\n");
+
+            foreach (var prop in mainProp)
+            {
+                if (prop.Type.Trim() == "PosMoney")
+                {
+                    stringBuilder.AppendFormat("\t\t\t {0} = new PosMoney(context.MonetarySettings);", prop.VariableClassName);
+                    stringBuilder.Append("\r\n");
+                    stringBuilder.AppendFormat("\t\t\t  {0}.Value = dataObject.{1};", prop.VariableClassName,prop.Name);
+                    stringBuilder.Append("\r\n");
+                }
+                else
+                {
+                    stringBuilder.AppendFormat("\t\t\t {1} = dataObject.{0};", prop.Name, prop.VariableClassName);
+                    stringBuilder.Append("\r\n");
+                }
+            }
+            stringBuilder.AppendFormat("\t\t\t {0}CustomizationOnSet(dataObject{1});",functionPrefix,
+                isSerialization ? ",context" : "");
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\t\t }");
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\r\n");
+
+            //Generate Get state
+            stringBuilder.AppendFormat("\t\t public object {0}()", getMethodsName);
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\t\t {");
+            stringBuilder.Append("\r\n");
+            if (isSerialization)
+            {
+                stringBuilder.Append("\t\t\t if (_boDo == null)");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t {");
+                stringBuilder.Append("\r\n");
+                stringBuilder.AppendFormat("\t\t\t\t _boDo = new {0}();",className);
+            }
+            else
+            {
+                stringBuilder.AppendFormat("\t\t\t\t var dataObject = new {0}();", className);
+            }
+            
+            stringBuilder.Append("\r\n");
+            foreach (var prop in mainProp)
+            {
+                if (prop.Type.Trim() == "PosMoney")
+                {
+                    stringBuilder.AppendFormat("\t\t\t\t {2}.{0} = {1}.Value;", prop.Name, prop.VariableClassName,
+                        isSerialization ? "_boDo" : "dataObject");
+                    stringBuilder.Append("\r\n");
+                }
+                else
+                {
+                    stringBuilder.AppendFormat("\t\t\t\t {2}.{0} = {1};", prop.Name, prop.VariableClassName,
+                        isSerialization ? "_boDo" : "dataObject");
+                    stringBuilder.Append("\r\n");
+                }
+            }
+            stringBuilder.AppendFormat("\t\t\t\t {0}CustomizationOnGet(ref {1});", functionPrefix, 
+                isSerialization ? "_boDo" : "dataObject");
+            stringBuilder.Append("\r\n");
+            if (isSerialization)
+            {
+                stringBuilder.Append("\t\t\t }");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t return _boDo;");
+            }
+            else
+            {
+                stringBuilder.Append("\t\t\t return dataObject;");
+            }
+            
+            stringBuilder.Append("\r\n");
+            stringBuilder.Append("\t\t }");
+
+            if (isSerialization)
+            {
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t public void ResetDataObject()");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t {");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t _boDo = null;");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t }");
+            }
+
+            return stringBuilder;
         }
 
         private string FirstSymbolToLower(string parms)
@@ -292,7 +455,7 @@ namespace WCFGenerator
 
         public async void GenerateAll()
         {
-            _solution = await _workspace.OpenSolutionAsync(_solutionPath);
+            _solution = await Workspace.OpenSolutionAsync(_solutionPath);
             GeneratorHelper.Solution = _solution;
             foreach (var st in _projectNames)
             {
@@ -308,8 +471,9 @@ namespace WCFGenerator
                     var fullGenClass = GeneratePartialClass(generatedClass);
                     CreateDocument(fullGenClass.ToString(), st, "Extensions/" + generatedClass.ClassName + ".g.cs");
                 }
-                ApplyChanges(st);
+                ApplyChanges();
             }
+            Workspace.TryApplyChanges(_solution);
         }
 
         private static void CreateDocument(string code, string projectName, string fileName)
@@ -323,13 +487,13 @@ namespace WCFGenerator
                 folders = folders.Where((val, idx) => idx != folders.Length - 1).ToArray();
 
                 var sourceText = SourceText.From(code);
-                _tasks.Add(Tuple.Create(fileName, sourceText, folders, projectName));
+                Tasks.Add(Tuple.Create(fileName, sourceText, folders, projectName));
             }
         }
 
-        private void ApplyChanges(string projectChange)
+        private void ApplyChanges()
         {
-            foreach (var doc in _tasks)
+            foreach (var doc in Tasks)
             {
                 _project = _solution?.Projects.FirstOrDefault(x => x.Name == doc.Item4);
 
@@ -358,18 +522,111 @@ namespace WCFGenerator
                     _solution = _project?.Solution;
                 }
             }
-
-            _workspace.TryApplyChanges(_project.Solution);
         }
 
-        private static bool PropertyAttributeExist(PropertyDeclarationSyntax p, string attributeName)
+        private bool IsCollectionEquals(List<GenerationProperty> firstCollection, List<GenerationProperty> secondCollection)
+        {
+            if (firstCollection.Count != secondCollection.Count)
+                return false;
+            foreach (var generationProperty in firstCollection)
+            {
+                var prop = secondCollection.FirstOrDefault(x => x.Name == generationProperty.Name);
+                if (prop == null || prop.Type.Trim() != generationProperty.Type.Trim())
+                {
+                    return false;
+                }
+            }
+            return true;
+        } 
+
+        private static bool PropertyAttributeExist(BasePropertyDeclarationSyntax p, string attributeName)
         {
             return p.AttributeLists.Any(l => l.Attributes.Any(a => a.Name.ToString() == attributeName));
         }
 
-        private static bool FieldAttributeExist(FieldDeclarationSyntax p, string attributeName)
+        private bool FieldAttributeExist(FieldDeclarationSyntax p, string attributeName)
         {
             return p.AttributeLists.Any(l => l.Attributes.Any(a => a.Name.ToString() == attributeName));
+        }
+
+        private bool ClassAttributeExist(ClassDeclarationSyntax p, string attributeName)
+        {
+            return p.AttributeLists.Any(l => l.Attributes.Any(a => a.Name.ToString() == attributeName));
+        }
+
+
+        public List<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(ClassDeclarationSyntax element)
+        {
+            SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
+
+            var codeClass = element;
+            if (codeClass != null)
+                attributes = codeClass.AttributeLists;
+
+            var attributeCollection = new List<AttributeAndPropeperties>();
+            var listOfStringProperties = new List<string>();
+
+            foreach (var ca in attributes)
+            {
+                foreach (var attr in ca.Attributes)
+                {
+                    var properties = attr.ArgumentList?.ToString() ?? "";
+
+                    var dictionaryOfAttributes = new Dictionary<string, string>();
+                    var countProperties = 0;
+                    listOfStringProperties.Clear();
+
+                    Regex attributesRegex = new Regex(@"(@""(?:""""|[^""])*"")|(""(?:\\""|\\r|\\n|\\t|\\\\|[^""\\])*"")",
+                        RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    MatchCollection matchesProperties = attributesRegex.Matches(properties);
+
+                    foreach (var property in matchesProperties)
+                    {
+                        properties = properties.Replace(property.ToString(), "%%string" + countProperties + "%%");
+                        listOfStringProperties.Add(property.ToString());
+                        countProperties++;
+                    }
+
+                    countProperties = 0;
+                    foreach (string prop in properties.Split(',').ToList())
+                    {
+                        var property = prop.Replace("(", "").Replace(")", "");
+                        if (property.Contains("%%string"))
+                        {
+                            if (property.Split(':', '=').Count() == 2)
+                            {
+                                if (property.Split(':', '=')[1].Contains("%%string"))
+                                    dictionaryOfAttributes.Add(property.Split(':', '=')[0],
+                                        listOfStringProperties[
+                                            Convert.ToInt32(property.Split(':', '=')[1].Replace("%%string", "")
+                                                .Replace("%", ""))].Replace("\"", ""));
+                            }
+                            else
+                                dictionaryOfAttributes.Add(countProperties.ToString(),
+                                    listOfStringProperties[
+                                        Convert.ToInt32(property.Replace("%%string", "").Replace("%", ""))].Replace("\"", ""));
+                        }
+                        else
+                        {
+                            if (property.Split(':', '=').Count() == 2)
+                                dictionaryOfAttributes.Add(property.Split(':', '=')[0], property.Split(':', '=')[1]);
+                            else
+                                dictionaryOfAttributes.Add(countProperties.ToString(), property);
+                        }
+
+                        countProperties++;
+                    }
+
+                    attributeCollection.Add(new AttributeAndPropeperties
+                    {
+                        Name = attr.Name.ToString(),
+                        Patameters = dictionaryOfAttributes
+                    });
+
+                }
+            }
+
+            return attributeCollection;
         }
 
         private IEnumerable<string> GetUsingNamespaces(ClassDeclarationSyntax classes)
@@ -385,7 +642,10 @@ namespace WCFGenerator
         {
             public ClassDeclarationSyntax CurrentClass { get; set; }
             public List<PropertyDeclarationSyntax> Properties { get; set; }
+            public List<PropertyDeclarationSyntax> AllPublicProperties { get; set; }
             public List<FieldDeclarationSyntax> Fields { get; set; }
+            public ClassDeclarationSyntax MappingClass { get; set; }
+            public List<PropertyDeclarationSyntax> MappingProperties { get; set; } 
         }
 
         private class GenerationElements
@@ -396,13 +656,20 @@ namespace WCFGenerator
 
             public List<GenerationProperty> Properties { get; set; }
 
-            public List<GenerationProperty> Fields { get; set; }
+            public string MapClassName { get; set; }
+
+            public List<GenerationProperty> MapProperties { get; set; }
+
+            public List<GenerationProperty> AllPublicProperties { get; set; }
 
             public string Namespace { get; set; }
 
             public IEnumerable<string> UsingNamespaces { get; set; }
 
             public string ClassAccessModificator {get; set;}
+
+            public bool IsPropertyEquals { get; set; }
+            
         }
 
         private class GenerationProperty
