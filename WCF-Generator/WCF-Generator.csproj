@@ -36,7 +36,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -99,6 +99,7 @@
       <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\dotnet\System.Collections.Immutable.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Composition.AttributedModel, Version=1.0.27.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Composition.1.0.27\lib\portable-net45+win8+wp8+wpa81\System.Composition.AttributedModel.dll</HintPath>
       <Private>True</Private>
@@ -120,6 +121,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.configuration" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <Private>True</Private>
     </Reference>
@@ -152,13 +154,41 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GeneratorHelper.cs" />
-    <Compile Include="RepositoryGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Analysis\SolutionSyntaxWalker.cs" />
+    <Compile Include="RepositoriesGeneration\Configuration\Settings.cs" />
+    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionedRepositoryService.cs" />
+    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionsRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Core\RepositoryFactory.cs" />
+    <Compile Include="RepositoriesGeneration\Core\RepositoryGeneratorWorkSpace.cs" />
+    <Compile Include="RepositoriesGeneration\Core\SQL\SQLScriptGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Heplers\ExtensionMethods.cs" />
+    <Compile Include="RepositoriesGeneration\Heplers\CodeHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Heplers\RepositoryDataModelHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\FilterInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\FilterType.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\IRepositoryClassGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\KeyInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\Many2ManyInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\MethodImplementationInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryMethods.cs" />
+    <Compile Include="RepositoriesGeneration\Services\AttributeAndPropeperties.cs" />
+    <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
+    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />
+    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataMany2ManyAttribute.cs" />
+    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MappingsGenerator.cs" />
-    <Compile Include="SerializeGeneration\SerializeConfiguration.cs" />
-    <Compile Include="SerilizationGeneration.cs" />
+    <Compile Include="SerializeGeneration\Configuration\SerializeConfiguration.cs" />
+    <Compile Include="SerializeGeneration\Helpers\SyntaxSerializationHelper.cs" />
+    <Compile Include="SerializeGeneration\Generation\SerilizationGeneration.cs" />
+    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\VersionKey.cs" />
     <Compile Include="TypeSyntaxGeneratorVisitor.cs" />
     <Compile Include="VirtualizationVisitor.cs" />
     <Compile Include="WCFGenerator.cs" />

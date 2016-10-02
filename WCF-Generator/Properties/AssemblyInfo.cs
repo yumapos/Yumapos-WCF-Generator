@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("FirstRoslynApp")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("WCF-Generator")]
+[assembly: AssemblyDescription("Analyzes code on the availability of data to generate attributes in classes and generates code.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("FirstRoslynApp")]
+[assembly: AssemblyCompany("Yumasoft")]
+[assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
