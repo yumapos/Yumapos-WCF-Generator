@@ -42,5 +42,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             };
             return attr;
         }
+
+        public static explicit operator DataOne2ManyAttribute(AttributeAndPropeperties obj)
+        {
+            var attr = new DataOne2ManyAttribute
+            {
+                ManyToManyEntytyType = obj.GetParameterByKeyName("OneToManyEntytyType"),
+                EntityKey = obj.GetParameterByKeyName("EntityKey"),
+            };
+            return attr;
+        }
     }
 }

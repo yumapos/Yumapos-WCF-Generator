@@ -113,6 +113,24 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 many2Many.ManyToManyRepositoryInfo = manyToManyRepositoryInfo;
             }
 
+
+            // Fill "one-to-many" info
+            var one2ManyInfos = resultRepositories.SelectMany(repository => repository.RepositoryInfo.One2ManyInfo);
+
+            foreach (var one2Many in one2ManyInfos)
+            {
+                // get repository info by OneToManyEntytyType from [one2manyAttribute]
+                var manyToManyRepositoryInfo = resultRepositories
+                    .Where(r => r.RepositoryName.StartsWith(one2Many.OneToManyEntytyType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
+                    .Select(r => r.RepositoryInfo)
+                    .FirstOrDefault();
+                if (manyToManyRepositoryInfo != null)
+                {
+                    manyToManyRepositoryInfo.IsManyToMany = true;
+                }
+                one2Many.OneToManyRepositoryInfo = manyToManyRepositoryInfo;
+            }
+
             // Add versioned repository
             var versioned = resultRepositories.Where(r => r.RepositoryInfo.IsVersioning).SelectMany(r =>
             {
@@ -271,6 +289,17 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
 
             repositoryInfo.Many2ManyInfo.AddRange(many2ManyInfos);
+
+            // One to many
+            var one2ManyInfos = properties
+                .Where(p => p.AttributeExist(RepositoryDataModelHelper.DataOne2ManyAttributeName))
+                .SelectMany(p => SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(p))
+                .Where(p => p.Name == RepositoryDataModelHelper.DataOne2ManyAttributeName)
+                .Select(p => new Tuple<string, DataOne2ManyAttribute>(p.OwnerElementName, (DataOne2ManyAttribute)p))
+                .Select(a =>
+                new One2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityKey));
+
+            repositoryInfo.One2ManyInfo.AddRange(one2ManyInfos);
 
             #endregion
 

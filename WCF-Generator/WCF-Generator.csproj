@@ -174,12 +174,14 @@
     <Compile Include="RepositoriesGeneration\Infrastructure\KeyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\Many2ManyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\MethodImplementationInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\One2ManyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryMethods.cs" />
     <Compile Include="RepositoriesGeneration\Services\AttributeAndPropeperties.cs" />
     <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataMany2ManyAttribute.cs" />
+    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataOne2ManyAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

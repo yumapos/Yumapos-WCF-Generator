@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="YumaPos.FrontEnd\Data\Repositories\Generated\GiftCardRepository.g.cs" />
+    <Compile Include="YumaPos.FrontEnd\Infrastructure\Common\DataAccess\DataOne2ManyAttribute.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\Address2Repository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\AddressRepository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\CustomerSubscriptionRepository.g.cs" />
@@ -55,12 +56,17 @@
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItems2TaxesVersionRepository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItemServiceRepository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\MenuItemVersionRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\RecipeItemsLanguageCacheRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\RecipeItemsLanguageServiceRepository.g.cs" />
+    <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\RecipeItemsLanguageVersionRepository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\TaxCacheRepository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\TaxServiceRepository.g.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Generated\TaxVersionRepository.g.cs" />
     <Compile Include="YumaPos.Server\Infrastructure\DataObjects\Address2.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Address\Address2Repository.cs" />
     <Compile Include="YumaPos.Server\Data.Sql\Repositories\Address\AddressRepository.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\DataObjects\RecipeItemsLanguage.cs" />
+    <Compile Include="YumaPos.Server\Infrastructure\Repositories\IRecipeItemsLanguageRepository.cs" />
     <Compile Include="YumaPos.Server\WCF\DataAccessContextProvider.cs" />
     <Compile Include="YumaPos.FrontEnd\Data.Dapper\DataAccess\DataAccessService.cs" />
     <Compile Include="YumaPos.FrontEnd\Infrastructure\DataObjects\PosFdat\GiftCard.cs" />
