@@ -199,6 +199,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public bool IsManyToMany { get; set; }
 
         /// <summary>
+        ///     Repository joined to another repository as one-to-many
+        /// </summary>
+        public bool IsOneToMany { get; set; }
+
+        /// <summary>
         ///     Repository is tenant related
         /// </summary>
         public bool IsTenantRelated { get; set; }

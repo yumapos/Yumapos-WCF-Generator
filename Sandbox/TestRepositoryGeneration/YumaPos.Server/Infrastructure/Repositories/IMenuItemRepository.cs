@@ -5,7 +5,7 @@ using YumaPos.Server.Infrastructure.DataObjects;
 
 namespace YumaPos.Server.Infrastructure.Repositories
 {
-    interface IMenuItemRepository : IRepository<MenuItem>
+    public interface IMenuItemRepository : IRepository<MenuItem>
     {
         Guid Insert(MenuItem menuItem);
 

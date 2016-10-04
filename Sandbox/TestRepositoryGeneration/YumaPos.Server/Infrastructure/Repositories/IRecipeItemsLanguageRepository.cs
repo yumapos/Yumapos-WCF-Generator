@@ -12,6 +12,8 @@ namespace YumaPos.Server.Infrastructure.Repositories
         void Insert(RecipeItemsLanguage recipeItemsLanguage);
         RecipeItemsLanguage GetByItemIdAndLanguage(Guid id, string lang, bool? isDeleted = false);
         IEnumerable<RecipeItemsLanguage> GetByItemId(Guid id, bool? isDeleted = false);
+        RecipeItemsLanguage GetByItemIdVersionId(System.Guid itemIdVersionId, bool? isDeleted = false);
         void RemoveByItemId(Guid itemId);
+        void UpdateByItemId(RecipeItemsLanguage recipeItemsLanguage);
     }
 }

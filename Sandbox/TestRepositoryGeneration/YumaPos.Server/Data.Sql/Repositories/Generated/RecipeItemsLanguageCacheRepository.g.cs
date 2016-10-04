@@ -81,32 +81,30 @@ namespace YumaPos.Server.Data.Sql
 			return result.FirstOrDefault();
 		}
 
-		/*
 		public YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage GetByItemIdVersionId(System.Guid itemIdVersionId, bool? isDeleted = false)
 		{
-		object parameters = new {itemIdVersionId,isDeleted};
-		var sql = SelectByQuery + WhereQueryByItemIdVersionId;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithFilterData;
-		}
-		var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters);
-		return result.FirstOrDefault();
+			object parameters = new { itemIdVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByItemIdVersionId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithFilterData;
+			}
+			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters);
+			return result.FirstOrDefault();
 		}
 		public async Task<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage> GetByItemIdVersionIdAsync(System.Guid itemIdVersionId, bool? isDeleted = false)
 		{
-		object parameters = new {itemIdVersionId,isDeleted};
-		var sql = SelectByQuery + WhereQueryByItemIdVersionId;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithFilterData;
-		}
-		var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters));
-		return result.FirstOrDefault();
+			object parameters = new { itemIdVersionId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByItemIdVersionId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithFilterData;
+			}
+			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters));
+			return result.FirstOrDefault();
 		}
 
 
-		*/
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage> GetByItemId(System.Guid itemId, bool? isDeleted = false)
 		{
 			object parameters = new { itemId, isDeleted };
@@ -153,47 +151,46 @@ namespace YumaPos.Server.Data.Sql
 		}
 
 
-		*//*
+		*/
 		public void UpdateByItemId(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
 		{
-		var sql = UpdateQueryBy + WhereQueryByItemId; 
-		DataAccessService.PersistObject(recipeItemsLanguage, sql);
+			var sql = UpdateQueryBy + WhereQueryByItemId;
+			DataAccessService.PersistObject(recipeItemsLanguage, sql);
 		}
 		public async Task UpdateByItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
 		{
-		var sql = UpdateQueryBy + WhereQueryByItemId; 
+			var sql = UpdateQueryBy + WhereQueryByItemId;
+			await DataAccessService.PersistObjectAsync(recipeItemsLanguage, sql);
+		}
+
+
+		/*
+		public void RemoveByItemIdAndLanguage(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
+		{
+		var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
+		DataAccessService.PersistObject(recipeItemsLanguage, sql);
+		}
+		public async Task RemoveByItemIdAndLanguageAsync(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
+		{
+		var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
 		await DataAccessService.PersistObjectAsync(recipeItemsLanguage, sql);
+		}
+
+		public void RemoveByItemIdAndLanguage(System.Guid itemId, string language)
+		{
+		object parameters = new {itemId, language};
+		var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
+		DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters);
+		}
+		public async Task RemoveByItemIdAndLanguageAsync(System.Guid itemId, string language)
+		{
+		object parameters = new {itemId, language};
+		var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
+		await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters);
 		}
 
 
 		*/
-		  /*
-		  public void RemoveByItemIdAndLanguage(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
-		  {
-		  var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
-		  DataAccessService.PersistObject(recipeItemsLanguage, sql);
-		  }
-		  public async Task RemoveByItemIdAndLanguageAsync(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
-		  {
-		  var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
-		  await DataAccessService.PersistObjectAsync(recipeItemsLanguage, sql);
-		  }
-
-		  public void RemoveByItemIdAndLanguage(System.Guid itemId, string language)
-		  {
-		  object parameters = new {itemId, language};
-		  var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
-		  DataAccessService.PersistObject<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters);
-		  }
-		  public async Task RemoveByItemIdAndLanguageAsync(System.Guid itemId, string language)
-		  {
-		  object parameters = new {itemId, language};
-		  var sql = DeleteQueryBy + WhereQueryByItemIdAndLanguage; 
-		  await DataAccessService.PersistObjectAsync<YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage>(sql, parameters);
-		  }
-
-
-		  */
 		public void RemoveByItemId(YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage recipeItemsLanguage)
 		{
 			var sql = DeleteQueryBy + WhereQueryByItemId;

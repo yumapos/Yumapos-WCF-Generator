@@ -7,13 +7,19 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public string PropertyName { get; set; }
         public string OneToManyEntytyType { get; set; }
         public RepositoryInfo OneToManyRepositoryInfo { get; set; }
+        public string EntityType { get; set; }
+        public RepositoryInfo EntityRepositoryInfo { get; set; }
         public string EntityKey { get; set; }
 
-        public One2ManyInfo(string propertyName, string oneToManyEntytyType, string entityKey)
+        public List<string> RepositoryNamespaces { get; set; }
+
+        public One2ManyInfo(string propertyName, string oneToManyEntytyType, string entityType, string entityKey)
         {
+            RepositoryNamespaces = new List<string>();
             PropertyName = propertyName;
             OneToManyEntytyType = oneToManyEntytyType;
             EntityKey = entityKey;
+            EntityType = entityType;
         }
     }
 }

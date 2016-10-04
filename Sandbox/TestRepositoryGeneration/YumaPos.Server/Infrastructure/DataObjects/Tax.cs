@@ -24,7 +24,7 @@ namespace YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes
 
         public bool IsDeleted { get; set; }
 
-        [DataMany2Many(EntityType = "YumaPos.Server.Infrastructure.DataObjects.MenuItem", ManyToManyEntytyType = "YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes")]
+        [DataMany2Many(EntityType = "YumaPos.Server.Infrastructure.DataObjects.MenuItem", ManyToManyEntityType = "YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes")]
         [DbIgnore]
         public IEnumerable<Guid> MenuItemIds { get; set; }
     }

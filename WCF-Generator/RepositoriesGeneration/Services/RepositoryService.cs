@@ -87,7 +87,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             
             // Fill "many-to-many" info
             var many2ManyInfos = resultRepositories.SelectMany(repository => repository.RepositoryInfo.Many2ManyInfo);
-            
+
             foreach (var many2Many in many2ManyInfos)
             {
                 // get namespaces for generate reference in repository
@@ -113,27 +113,58 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 many2Many.ManyToManyRepositoryInfo = manyToManyRepositoryInfo;
             }
 
-
             // Fill "one-to-many" info
-            var one2ManyInfos = resultRepositories.SelectMany(repository => repository.RepositoryInfo.One2ManyInfo);
+            var one2ManyInfos = resultRepositories.SelectMany(repository => repository.RepositoryInfo.One2ManyInfo).ToList();
 
             foreach (var one2Many in one2ManyInfos)
             {
+                // get namespaces for generate reference in repository
+                one2Many.RepositoryNamespaces = resultRepositories
+                    .Where(r => (r.RepositoryName.StartsWith(one2Many.EntityType) || r.RepositoryName.StartsWith(one2Many.OneToManyEntytyType)) && r.RepositoryInfo.RepositoryNamespace != null)
+                    .Select(r => r.RepositoryInfo.RepositoryNamespace).Distinct().ToList();
+
+                // get repository info by  EntityType from [one2manyAttribute]
+                one2Many.EntityRepositoryInfo = resultRepositories
+                    .Where(r => r.RepositoryName.StartsWith(one2Many.EntityType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
+                    .Select(r => r.RepositoryInfo)
+                    .FirstOrDefault();
+
                 // get repository info by OneToManyEntytyType from [one2manyAttribute]
-                var manyToManyRepositoryInfo = resultRepositories
+                var oneToManyRepositoryInfo = resultRepositories
                     .Where(r => r.RepositoryName.StartsWith(one2Many.OneToManyEntytyType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
                     .Select(r => r.RepositoryInfo)
                     .FirstOrDefault();
-                if (manyToManyRepositoryInfo != null)
+                if (oneToManyRepositoryInfo != null)
                 {
-                    manyToManyRepositoryInfo.IsManyToMany = true;
+                    oneToManyRepositoryInfo.One2ManyInfo.Add(one2Many);
+                    oneToManyRepositoryInfo.IsOneToMany = true;
                 }
-                one2Many.OneToManyRepositoryInfo = manyToManyRepositoryInfo;
+                one2Many.OneToManyRepositoryInfo = oneToManyRepositoryInfo;
             }
 
             // Add versioned repository
             var versioned = resultRepositories.Where(r => r.RepositoryInfo.IsVersioning).SelectMany(r =>
             {
+                #region Search required namespace
+
+                var requiredNamespacesForService = new List<string>
+                {
+                    "YumaPos.Server.Infrastructure.Repositories",
+                    "YumaPos.Server.Infrastructure.DataObjects",
+                    "YumaPos.FrontEnd.Infrastructure.Common.DataAccess",
+                    "YumaPos.FrontEnd.Infrastructure.Configuration"
+                };
+
+                // add namespace of repositories which added from relation many to many 
+                var manyToMany = r.RepositoryInfo.Many2ManyInfo.SelectMany(i => i.RepositoryNamespaces).ToList();
+                // add namespace of repositories which added from relation one to many 
+                var oneToMany = r.RepositoryInfo.One2ManyInfo.SelectMany(i => i.RepositoryNamespaces).ToList();
+                requiredNamespacesForService.AddRange(manyToMany);
+                requiredNamespacesForService.AddRange(oneToMany);
+                r.RepositoryInfo.RequiredNamespaces.Add(RepositoryType.VersionService, requiredNamespacesForService.Distinct().ToList());
+
+                #endregion
+
                 var list = new List<BaseCodeClassGeneratorRepository>
                 {
                     // version repository
@@ -148,6 +179,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 }
                 return list;
             });
+
             resultRepositories = resultRepositories.Where(r => !r.RepositoryInfo.IsVersioning).Concat(versioned).ToList();
             
             return resultRepositories.Concat(versionedRepositories.Where(c => c.RepositoryAnalysisError != null)).ToList();
@@ -286,7 +318,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 .Where(p => p.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName)
                 .Select(p => new Tuple<string,DataMany2ManyAttribute>(p.OwnerElementName, (DataMany2ManyAttribute)p))
                 .Select(a => 
-                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
+                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntityType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
 
             repositoryInfo.Many2ManyInfo.AddRange(many2ManyInfos);
 
@@ -297,7 +329,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 .Where(p => p.Name == RepositoryDataModelHelper.DataOne2ManyAttributeName)
                 .Select(p => new Tuple<string, DataOne2ManyAttribute>(p.OwnerElementName, (DataOne2ManyAttribute)p))
                 .Select(a =>
-                new One2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityKey));
+                new One2ManyInfo(a.Item1, a.Item2.OneToManyEntityType.Split('.').Last(), repositoryInfo.ClassName, a.Item2.EntityKey));
 
             repositoryInfo.One2ManyInfo.AddRange(one2ManyInfos);
 

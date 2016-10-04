@@ -13,6 +13,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         public Many2ManyInfo(string propertyName, string manyToManyEntytyType, string entityType)
         {
+            RepositoryNamespaces = new List<string>();
             PropertyName = propertyName;
             ManyToManyEntytyType = manyToManyEntytyType;
             EntityType = entityType;

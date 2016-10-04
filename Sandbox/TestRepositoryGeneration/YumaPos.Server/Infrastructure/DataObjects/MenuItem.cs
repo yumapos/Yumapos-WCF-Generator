@@ -23,10 +23,10 @@ namespace YumaPos.Server.Infrastructure.DataObjects
 
         public Guid ModifiedBy { get; set; } 
 
-        [DataMany2Many(EntityType = "YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax", ManyToManyEntytyType = "YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes")]
+        [DataMany2Many(EntityType = "YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax", ManyToManyEntityType = "YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes")]
         public IEnumerable<int> TaxIds { get; set; }
 
-        [DataOne2Many(OneToManyEntytyType = "YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage", EntityKey = "ItemId")]
+        [DataOne2Many(OneToManyEntityType = "YumaPos.Server.Infrastructure.DataObjects.RecipeItemsLanguage", EntityKey = "ItemId" )]
         [DbIgnore]
         public IEnumerable<string> RecipeItemsLanguageIds { get; set; }
 

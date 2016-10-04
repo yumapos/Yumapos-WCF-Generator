@@ -37,7 +37,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             var attr = new DataMany2ManyAttribute
             {
-                ManyToManyEntytyType = obj.GetParameterByKeyName("ManyToManyEntytyType"),
+                ManyToManyEntityType = obj.GetParameterByKeyName("ManyToManyEntityType"),
                 EntityType = obj.GetParameterByKeyName("EntityType"),
             };
             return attr;
@@ -47,7 +47,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             var attr = new DataOne2ManyAttribute
             {
-                ManyToManyEntytyType = obj.GetParameterByKeyName("OneToManyEntytyType"),
+                OneToManyEntityType = obj.GetParameterByKeyName("OneToManyEntityType"),
                 EntityKey = obj.GetParameterByKeyName("EntityKey"),
             };
             return attr;
