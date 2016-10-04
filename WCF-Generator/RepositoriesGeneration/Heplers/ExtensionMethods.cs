@@ -104,6 +104,16 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
             return t.Contains("IEnumerable<");
         }
 
+        public static bool IsInt(this string t)
+        {
+            return t.Contains("int");
+        }
+
+        public static bool IsGuid(this string t)
+        {
+            return t.Contains("Guid");
+        }
+
         #endregion
 
         #region Type analysis extensions

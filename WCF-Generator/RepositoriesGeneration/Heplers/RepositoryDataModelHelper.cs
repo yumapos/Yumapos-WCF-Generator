@@ -31,5 +31,10 @@ namespace WCFGenerator.RepositoriesGeneration.Heplers
             get { return typeof(DataMany2ManyAttribute).Name.Replace("Attribute", ""); }
         }
 
+        public static string DataOne2ManyAttributeName
+        {
+            get { return typeof(DataOne2ManyAttribute).Name.Replace("Attribute", ""); }
+        }
+
     }
 }

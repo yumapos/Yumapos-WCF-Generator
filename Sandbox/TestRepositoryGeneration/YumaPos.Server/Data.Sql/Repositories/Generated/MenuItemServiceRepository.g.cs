@@ -29,6 +29,8 @@ namespace YumaPos.Server.Data.Sql.Menu
 		private MenuItems2TaxesCacheRepository _menuItems2TaxesCacheRepository;
 		private MenuItems2TaxesVersionRepository _menuItems2TaxesVersionRepository;
 		private TaxCacheRepository _taxCacheRepository;
+		private RecipeItemsLanguageCacheRepository _recipeItemsLanguageCacheRepository;
+		private RecipeItemsLanguageVersionRepository _recipeItemsLanguageVersionRepository;
 
 
 		public MenuItemRepository(IDataAccessController dataAccessController,
@@ -40,6 +42,8 @@ namespace YumaPos.Server.Data.Sql.Menu
 			_menuItems2TaxesCacheRepository = new MenuItems2TaxesCacheRepository(dataAccessService);
 			_menuItems2TaxesVersionRepository = new MenuItems2TaxesVersionRepository(dataAccessService);
 			_taxCacheRepository = new TaxCacheRepository(dataAccessService);
+			_recipeItemsLanguageCacheRepository = new RecipeItemsLanguageCacheRepository(dataAccessService);
+			_recipeItemsLanguageVersionRepository = new RecipeItemsLanguageVersionRepository(dataAccessService);
 		}
 
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItem> GetAll(bool? isDeleted = false)
@@ -92,6 +96,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			_menuItemVersionRepository.Insert(menuItem);
 			var res = _menuItemCacheRepository.Insert(menuItem);
 			UpdateMenuItems2Taxes(menuItem);
+			UpdateRecipeItemsLanguage(menuItem);
 			return (System.Guid)res;
 		}
 		public async Task<System.Guid> InsertAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
@@ -106,6 +111,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			await _menuItemVersionRepository.InsertAsync(menuItem);
 			var res = await _menuItemCacheRepository.InsertAsync(menuItem);
 			UpdateMenuItems2Taxes(menuItem);
+			UpdateRecipeItemsLanguage(menuItem);
 			return (System.Guid)res;
 		}
 
@@ -117,6 +123,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			_menuItemVersionRepository.Insert(menuItem);
 			_menuItemCacheRepository.UpdateByMenuItemId(menuItem);
 			UpdateMenuItems2Taxes(menuItem);
+			UpdateRecipeItemsLanguage(menuItem);
 		}
 		public async Task UpdateByMenuItemIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
@@ -126,6 +133,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			await _menuItemVersionRepository.InsertAsync(menuItem);
 			await _menuItemCacheRepository.UpdateByMenuItemIdAsync(menuItem);
 			UpdateMenuItems2Taxes(menuItem);
+			UpdateRecipeItemsLanguage(menuItem);
 		}
 		/*
 		public void UpdateByMenuCategoryId(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
@@ -136,6 +144,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		_menuItemVersionRepository.Insert(menuItem);
 		_menuItemCacheRepository.UpdateByMenuCategoryId(menuItem);
 		UpdateMenuItems2Taxes(menuItem);
+		UpdateRecipeItemsLanguage(menuItem);
 		}
 		public async Task UpdateByMenuCategoryIdAsync(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
 		{
@@ -145,6 +154,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 		await _menuItemVersionRepository.InsertAsync(menuItem);
 		await _menuItemCacheRepository.UpdateByMenuCategoryIdAsync(menuItem);
 		UpdateMenuItems2Taxes(menuItem);
+		UpdateRecipeItemsLanguage(menuItem);
 		}
 
 		*/
@@ -166,6 +176,31 @@ namespace YumaPos.Server.Data.Sql.Menu
 				mt.ModifiedBy = menuItem.ModifiedBy;
 				_menuItems2TaxesCacheRepository.Insert(mt);
 				_menuItems2TaxesVersionRepository.Insert(mt);
+			}
+		}
+
+		private void UpdateRecipeItemsLanguage(YumaPos.Server.Infrastructure.DataObjects.MenuItem menuItem)
+		{
+			List<RecipeItemsLanguage> items;
+
+			if (menuItem.RecipeItemsLanguageIds == null)
+			{
+				items = _recipeItemsLanguageCacheRepository.GetByItemId(menuItem.ItemId).ToList();
+			}
+			else
+			{
+				items = menuItem.RecipeItemsLanguageIds.Select(i => _recipeItemsLanguageCacheRepository.GetByItemIdAndLanguage(menuItem.ItemId, i)).ToList();
+			}
+
+			_recipeItemsLanguageCacheRepository.RemoveByItemId(menuItem.ItemId);
+
+			foreach (var item in items)
+			{
+				item.ItemIdVersionId = menuItem.MenuItemVersionId;
+				item.Modified = DateTimeOffset.Now;
+				item.ModifiedBy = menuItem.ModifiedBy;
+				_recipeItemsLanguageCacheRepository.Insert(item);
+				_recipeItemsLanguageVersionRepository.Insert(item);
 			}
 		}
 

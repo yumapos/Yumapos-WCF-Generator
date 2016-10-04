@@ -26,6 +26,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             PrimaryKeys = new List<ParameterInfo>();
             Elements = new List<string>();
             Many2ManyInfo = new List<Many2ManyInfo>();
+            One2ManyInfo = new List<One2ManyInfo>();
             InterfaceMethods = new List<MethodInfo>();
             CustomRepositoryMethodNames = new List<MethodInfo>();
             CustomCacheRepositoryMethodNames = new List<MethodInfo>();
@@ -198,6 +199,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public bool IsManyToMany { get; set; }
 
         /// <summary>
+        ///     Repository joined to another repository as one-to-many
+        /// </summary>
+        public bool IsOneToMany { get; set; }
+
+        /// <summary>
         ///     Repository is tenant related
         /// </summary>
         public bool IsTenantRelated { get; set; }
@@ -244,6 +250,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         ///     Info about relation many to many 
         /// </summary>
         public List<Many2ManyInfo> Many2ManyInfo { get; set; }
+
+        /// <summary>
+        ///     Info about relation one to many 
+        /// </summary>
+        public List<One2ManyInfo> One2ManyInfo { get; set; }
 
         /// <summary>
         ///     List of methods name in repository interface
