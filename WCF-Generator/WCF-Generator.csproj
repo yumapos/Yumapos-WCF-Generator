@@ -168,6 +168,7 @@
     <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryFieldInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterType.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\IRepositoryClassGenerator.cs" />

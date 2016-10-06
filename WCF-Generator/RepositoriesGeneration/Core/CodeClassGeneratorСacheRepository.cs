@@ -1,7 +1,6 @@
-using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
-namespace VersionedRepositoryGeneration.Generator.Core
+namespace WCFGenerator.RepositoriesGeneration.Core
 {
     internal class CodeClassGeneratorCacheRepository : CodeClassGeneratorRepository
     {

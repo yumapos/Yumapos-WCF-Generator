@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using VersionedRepositoryGeneration.Generator.Heplers;
+using WCFGenerator.RepositoriesGeneration.Heplers;
 
 namespace WCFGenerator.RepositoriesGeneration.Analysis
 {

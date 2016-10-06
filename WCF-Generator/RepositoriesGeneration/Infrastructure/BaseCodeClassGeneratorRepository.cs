@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using VersionedRepositoryGeneration.Generator.Heplers;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 
 namespace WCFGenerator.RepositoriesGeneration.Infrastructure
@@ -139,8 +138,6 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
       
 
         #endregion
-
-        
     }
 
     internal enum RepositoryType

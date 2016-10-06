@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using VersionedRepositoryGeneration.Generator.Core;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Services;

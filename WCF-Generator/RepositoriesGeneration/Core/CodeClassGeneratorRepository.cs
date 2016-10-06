@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Text;
-using VersionedRepositoryGeneration.Generator.Heplers;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
+using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core
