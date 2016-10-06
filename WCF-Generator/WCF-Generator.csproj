@@ -186,9 +186,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MappingsGenerator.cs" />
     <Compile Include="SerializeGeneration\Configuration\SerializeConfiguration.cs" />
+    <Compile Include="SerializeGeneration\Generation\TextSerializationPatterns.cs" />
+    <Compile Include="SerializeGeneration\Helpers\EditingSerializationHelper.cs" />
+    <Compile Include="SerializeGeneration\Models\GenerationElements.cs" />
     <Compile Include="SerializeGeneration\Helpers\SyntaxSerializationHelper.cs" />
     <Compile Include="SerializeGeneration\Generation\SerilizationGeneration.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\VersionKey.cs" />
+    <Compile Include="SerializeGeneration\Helpers\TextSerializationHelper.cs" />
+    <Compile Include="SerializeGeneration\Models\GenerationProperty.cs" />
+    <Compile Include="SerializeGeneration\Models\SourceElements.cs" />
     <Compile Include="TypeSyntaxGeneratorVisitor.cs" />
     <Compile Include="VirtualizationVisitor.cs" />
     <Compile Include="WCFGenerator.cs" />
@@ -221,8 +227,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Fody.1.28.3\build\Fody.targets" Condition="Exists('..\packages\Fody.1.28.3\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
