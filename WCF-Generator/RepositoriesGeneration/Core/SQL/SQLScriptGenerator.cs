@@ -65,7 +65,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var joinClassValues = Values(values);
 
                 // return inset into table and join table
-                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + (info.TenantRelated ?_columns : "") + ") VALUES(" + joinClassValues + (info.TenantRelated ? _values : "") + ")\n "
+                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + (info.TenantRelated ?_columns : "") + ") VALUES(" + joinClassValues + (info.TenantRelated ? _values : "") + ")\r\n "
                      + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + (info.TenantRelated ? _columns : "")+ ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + (info.TenantRelated ? _values : "" ) + ") ";
             }
             // return select from table
@@ -138,19 +138,19 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var values = info.JoinTableColumns.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
                 var joinClassValues = Values(values);
 
-                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + (info.TenantRelated ? _columns : "") + ")\n" +
-                       "VALUES (" + joinClassValues + (info.TenantRelated ? _values : "") + ")\n" +
-                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
+                       "VALUES (" + joinClassValues + (info.TenantRelated ? _values : "") + ")\r\n" +
+                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
                    "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
             }
 
             if(!info.IsManyToMany)
             {
-                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
                         "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
             }
 
-            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\n" +
+            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
                        "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
         }
 
