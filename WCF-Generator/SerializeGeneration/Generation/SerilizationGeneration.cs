@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using VersionedRepositoryGeneration.Generator.Heplers;
 using WCFGenerator.RepositoriesGeneration.Services;
 using WCFGenerator.SerializeGeneration;
 using WCFGenerator.SerializeGeneration.Configuration;
@@ -58,6 +59,7 @@ namespace WCFGenerator
         {
             var findClasses = SyntaxSerilizationHelper.GetAllClasses(projectName, true, "");
             var neededClasses = findClasses.Where(i => i.BaseList != null && i.BaseList.Types.Any(t => t.Type.ToString() == _baseInterface));
+            SyntaxSerilizationHelper.InitVisitor(_helpProjects.Union(_projectNames));
             var listElements = new List<SourceElements>();
             foreach (var currentClass in neededClasses)
             {
@@ -106,7 +108,7 @@ namespace WCFGenerator
                 {
                     var attr = GetAttributesAndPropepertiesCollection(currentClass);
                     var className = attr.FirstOrDefault(x => x.Name == _mappingAttribute)?.GetParameterByKeyName("Name");
-                    var findedClass = SyntaxSerilizationHelper.FindClass(className, _helpProjects);
+                    var findedClass = SyntaxSerilizationHelper.FindClass(className);
                     if (findedClass != null)
                     {
                         var listMappingProperties = new List<PropertyDeclarationSyntax>();
@@ -137,27 +139,45 @@ namespace WCFGenerator
             return listElements;
         }
 
-        private string GetNamespace(ClassDeclarationSyntax currentClass)
+        private Tuple<string, string> GetNamespace(ClassDeclarationSyntax currentClass)
         {
             var compilation = CSharpCompilation.Create("compilation").AddSyntaxTrees(currentClass.SyntaxTree);
 
             var model = compilation.GetSemanticModel(currentClass.SyntaxTree);
             var symbol = model.GetDeclaredSymbol(currentClass);
 
+            var baseClass = FindBaseStatefulClass(symbol.BaseType);
+
             var fullName = symbol.ToString();
             var indexClassName = fullName.LastIndexOf('.');
             var nameSpace = fullName.Substring(0, indexClassName); 
-            return nameSpace;
+            return new Tuple<string, string>(nameSpace, baseClass);
+        }
+
+        private string FindBaseStatefulClass(INamedTypeSymbol baseClass)
+        {
+            var findedClass = SyntaxSerilizationHelper.FindClass(baseClass.Name);
+            if (findedClass != null)
+            {
+                var isImplementStatefulObject = findedClass.BaseList.Types.Any(t => t.Type.ToString() == _baseInterface);
+                if (isImplementStatefulObject)
+                {
+                    return baseClass.Name+_generationPrefix;
+                }
+            }
+
+            return string.Empty;
         }
 
         private IEnumerable<GenerationElements> GetGenerationElements(IEnumerable<SourceElements> sourceElements)
         {
             var listGenEl = new List<GenerationElements>();
+            SyntaxSerilizationHelper.InitVisitor(_projectNames);
             var namespaces = new List<string>();
             foreach (var sourceElem in sourceElements)
             {
                 var textElements = new GenerationElements();
-                var nameSpace = GetNamespace(sourceElem.CurrentClass);
+                var nameSpaceAndBaseClass = GetNamespace(sourceElem.CurrentClass);
                 var propList = new List<GenerationProperty>();
                 foreach (var property in sourceElem.Properties)
                 {
@@ -202,15 +222,16 @@ namespace WCFGenerator
                     textElements.MapClassName = mapClassName;
                     textElements.MapProperties = mappingProperies;
                     textElements.IsPropertyEquals = IsCollectionEquals(mappingProperies, propList);
-                    namespaces.Add(GetNamespace(sourceElem.MappingClass));
+                    namespaces.Add(GetNamespace(sourceElem.MappingClass).Item1);
                 }
 
                 textElements.ClassName = sourceElem.CurrentClass.Identifier.Text;
                 textElements.Properties = propList;
                 textElements.GeneratedClassName = $"{sourceElem.CurrentClass.Identifier.Text}{_generationPrefix}";
-                textElements.Namespace = nameSpace;
+                textElements.Namespace = nameSpaceAndBaseClass.Item1;
                 textElements.UsingNamespaces = namespaces.Union(GetUsingNamespaces(sourceElem.CurrentClass));
                 textElements.ClassAccessModificator = sourceElem.CurrentClass.Modifiers.FirstOrDefault().ValueText;
+                textElements.SerializableBaseClassName = nameSpaceAndBaseClass.Item2;
                 listGenEl.Add(textElements);
             }
             return listGenEl;
@@ -219,7 +240,8 @@ namespace WCFGenerator
         private StringBuilder GenerateInterface(GenerationElements elements)
         {
             var exitInterface = new StringBuilder();
-            exitInterface.AppendFormat("\t internal partial class {0}", elements.GeneratedClassName);
+            exitInterface.AppendFormat("\t {1} partial class {0} : {2}IBoDo", elements.GeneratedClassName, elements.ClassAccessModificator, 
+                string.IsNullOrEmpty(elements.SerializableBaseClassName) ? "" : elements.SerializableBaseClassName + ",");
             exitInterface.Append("\r\n");
             exitInterface.Append("\t {");
             exitInterface.Append("\r\n");
@@ -275,7 +297,8 @@ namespace WCFGenerator
                 generation.Append(GenerateInterface(elements));
             }
 
-            generation.AppendFormat("\t {0} partial class {1}", elements.ClassAccessModificator, elements.ClassName);
+            generation.AppendFormat("\t {0} partial class {1} {2}", elements.ClassAccessModificator, elements.ClassName,
+                !string.IsNullOrEmpty(elements.SerializableBaseClassName) ? "" : ": StatefulObject");
             generation.Append("\r\n");
             generation.Append("\t {");
             generation.Append("\r\n");
@@ -295,7 +318,7 @@ namespace WCFGenerator
             return generation;
         }
 
-        private StringBuilder GenerateMethodsOrMappings(List<GenerationProperty> mainProp, string className, bool isSerialization)
+        private StringBuilder GenerateMethodsOrMappings(List<GenerationProperty> mainProp, string className,bool isSerialization)
         {
             var variableName = FirstSymbolToLower(className);
             var stringBuilder = new StringBuilder();
@@ -303,12 +326,7 @@ namespace WCFGenerator
             var functionPrefix = isSerialization ? "Do" : "BDo";
             var getMethodsName = isSerialization ? "GetDataObject" : $"Get{className}Do";
             var setMethodsName = isSerialization ? "SetDataObject" : $"Set{className}Do";
-            //Generate private property
-            if (isSerialization)
-            {
-                stringBuilder.AppendFormat("\t\t private {0} _boDo;", className);
-                stringBuilder.Append("\r\n");
-            }
+            
             //Generate virtual method for SetState
             stringBuilder.AppendFormat("\t\t partial void {2}CustomizationOnSet({0} {1} {3});", className, variableName, functionPrefix,
                 isSerialization ? ", YumaPos.FrontEnd.Infrastructure.Persistence.IDeserializationContext context" : "");
@@ -321,11 +339,16 @@ namespace WCFGenerator
             stringBuilder.Append("\r\n");
 
             //Generate Set state
-            stringBuilder.AppendFormat("\t\t public void {0}(object value{1})", setMethodsName,
-                isSerialization ? ", YumaPos.FrontEnd.Infrastructure.Persistence.IDeserializationContext context" : "");
+            stringBuilder.AppendFormat("\t\t public{2} void {0}(IBoDo value{1})", setMethodsName,
+                isSerialization ? ", YumaPos.FrontEnd.Infrastructure.Persistence.IDeserializationContext context" : "", isSerialization ? " override" : "");
             
             stringBuilder.Append("\r\n");
             stringBuilder.Append("\t\t {");
+            if (isSerialization)
+            {
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t base.SetDataObject(value, context);");
+            }
             stringBuilder.Append("\r\n");
             stringBuilder.AppendFormat("\t\t\t var dataObject = value as {0};", className);
             stringBuilder.Append("\r\n");
@@ -353,17 +376,16 @@ namespace WCFGenerator
             stringBuilder.Append("\r\n");
 
             //Generate Get state
-            stringBuilder.AppendFormat("\t\t public object {0}()", getMethodsName);
+            stringBuilder.AppendFormat("\t\t public {1} {0}({2})", getMethodsName,
+                isSerialization ? "override IBoDo" : "object", isSerialization ? "IBoDo childBoDo = null" : "");
             stringBuilder.Append("\r\n");
             stringBuilder.Append("\t\t {");
             stringBuilder.Append("\r\n");
             if (isSerialization)
             {
-                stringBuilder.Append("\t\t\t if (_boDo == null)");
+                stringBuilder.AppendFormat("\t\t\t {0} bodo = ({0})(childBoDo ?? BoDoInstance);", className);
                 stringBuilder.Append("\r\n");
-                stringBuilder.Append("\t\t\t {");
-                stringBuilder.Append("\r\n");
-                stringBuilder.AppendFormat("\t\t\t\t _boDo = new {0}();",className);
+                stringBuilder.AppendFormat("\t\t\t bodo = ({0}) base.GetDataObject(bodo);", className);
             }
             else
             {
@@ -375,25 +397,23 @@ namespace WCFGenerator
             {
                 if (prop.Type.Trim() == "PosMoney")
                 {
-                    stringBuilder.AppendFormat("\t\t\t\t {2}.{0} = {1}.Value;", prop.Name, prop.VariableClassName,
-                        isSerialization ? "_boDo" : "dataObject");
+                    stringBuilder.AppendFormat("\t\t\t {2}.{0} = {1}.Value;", prop.Name, prop.VariableClassName,
+                        isSerialization ? "bodo" : "dataObject");
                     stringBuilder.Append("\r\n");
                 }
                 else
                 {
-                    stringBuilder.AppendFormat("\t\t\t\t {2}.{0} = {1};", prop.Name, prop.VariableClassName,
-                        isSerialization ? "_boDo" : "dataObject");
+                    stringBuilder.AppendFormat("\t\t\t {2}.{0} = {1};", prop.Name, prop.VariableClassName,
+                        isSerialization ? "bodo" : "dataObject");
                     stringBuilder.Append("\r\n");
                 }
             }
-            stringBuilder.AppendFormat("\t\t\t\t {0}CustomizationOnGet(ref {1});", functionPrefix, 
-                isSerialization ? "_boDo" : "dataObject");
+            stringBuilder.AppendFormat("\t\t\t {0}CustomizationOnGet(ref {1});", functionPrefix, 
+                isSerialization ? "bodo" : "dataObject");
             stringBuilder.Append("\r\n");
             if (isSerialization)
             {
-                stringBuilder.Append("\t\t\t }");
-                stringBuilder.Append("\r\n");
-                stringBuilder.Append("\t\t\t return _boDo;");
+                stringBuilder.Append("\t\t\t return bodo;");
             }
             else
             {
@@ -406,13 +426,30 @@ namespace WCFGenerator
             if (isSerialization)
             {
                 stringBuilder.Append("\r\n");
-                stringBuilder.Append("\t\t public void ResetDataObject()");
+                stringBuilder.Append("\t\t protected override IBoDo BoDoInstance");
                 stringBuilder.Append("\r\n");
                 stringBuilder.Append("\t\t {");
                 stringBuilder.Append("\r\n");
-                stringBuilder.Append("\t\t\t _boDo = null;");
+                stringBuilder.Append("\t\t\t get");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t {");
+                stringBuilder.Append("\r\n");
+                stringBuilder.AppendFormat("\t\t\t\t if (_BoDo == null) _BoDo = new {0}();", className);
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t\t return _BoDo;");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t }");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t set");
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t {");
+                stringBuilder.Append("\r\n");
+                stringBuilder.AppendFormat("\t\t\t\t this._BoDo = value as {0};", className);
+                stringBuilder.Append("\r\n");
+                stringBuilder.Append("\t\t\t }");
                 stringBuilder.Append("\r\n");
                 stringBuilder.Append("\t\t }");
+                stringBuilder.Append("\r\n");
             }
 
             return stringBuilder;
@@ -662,8 +699,6 @@ namespace WCFGenerator
 
             public List<GenerationProperty> MapProperties { get; set; }
 
-            public List<GenerationProperty> AllPublicProperties { get; set; }
-
             public string Namespace { get; set; }
 
             public IEnumerable<string> UsingNamespaces { get; set; }
@@ -671,6 +706,8 @@ namespace WCFGenerator
             public string ClassAccessModificator {get; set;}
 
             public bool IsPropertyEquals { get; set; }
+
+            public string SerializableBaseClassName { get; set; }
             
         }
 

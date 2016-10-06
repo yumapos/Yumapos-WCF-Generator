@@ -14,6 +14,7 @@ namespace WCFGenerator
 
         public static Project Project { get; set; }
 
+        public static List<ClassVirtualizationVisitor> Visitors { get; set; } 
 
 
         public static IEnumerable<ClassDeclarationSyntax> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
@@ -34,24 +35,25 @@ namespace WCFGenerator
 
                 if (!isSkipAttribute)
                 {
-                    classes = classVisitor.classes.Where(x => x.AttributeLists
+                    classes = classVisitor.Classes.Where(x => x.AttributeLists
                         .Any(att => att.Attributes
                             .Any(att2 => att2.Name.ToString() == attribute))).ToList();
                 }
                 else
                 {
-                    classes = classVisitor.classes;
+                    classes = classVisitor.Classes;
                 }
             }
 
             return classes;
         }
 
-        public static ClassDeclarationSyntax FindClass(string className, IEnumerable<string> projectNames)
+        public static void InitVisitor(IEnumerable<string> projectNames)
         {
+            Visitors = new List<ClassVirtualizationVisitor>();
             foreach (var name in projectNames)
             {
-                var project = Solution.Projects.First(x => x.Name == name);
+                var project = Solution.Projects.FirstOrDefault(x => x.Name == name);
                 if (project != null)
                 {
                     var mDocuments = project.Documents.Where(d => !d.Name.Contains(".g.cs"));
@@ -62,12 +64,19 @@ namespace WCFGenerator
                     {
                         classVisitor.Visit(syntaxTree.GetRoot());
                     }
+                    Visitors.Add(classVisitor);
+                }
+            }
+        }
 
-                    if (classVisitor.classes.FirstOrDefault(x => x.Identifier.ToString().Trim() == className) != null)
-                    {
-                        var findedClass = classVisitor.classes.FirstOrDefault(x => x.Identifier.ToString().Trim() == className);
-                        return findedClass;
-                    }
+        public static ClassDeclarationSyntax FindClass(string className)
+        {
+            foreach (var classVirtualizationVisitor in Visitors)
+            {
+                var findedClass = classVirtualizationVisitor.Classes.FirstOrDefault(x => x.Identifier.ToString().Trim() == className);
+                if (findedClass != null)
+                {
+                    return findedClass;
                 }
             }
             return null;
