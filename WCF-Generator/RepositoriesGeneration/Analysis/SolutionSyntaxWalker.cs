@@ -15,16 +15,16 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         private readonly CSharpCompilation _customRepositoriesCompilation;
         private readonly CSharpCompilation _fullCompilation;
 
-        // classes from all projects with repository models marked repostiry attribute
+        // Classes from all projects with repository models marked repostiry attribute
         private readonly List<ClassDeclarationSyntax> _repositoryModelClasses;
 
-        // classes from target projects
+        // Classes from target projects
         private readonly List<ClassDeclarationSyntax> _customRepositoryClasses;
 
         // interfaces from all projects with repository interfaces
         private readonly List<InterfaceDeclarationSyntax> _repositoryInterfaces;
 
-        // classes from all configured projects
+        // Classes from all configured projects
         private readonly List<ClassDeclarationSyntax> _allClasses;
 
         public SolutionSyntaxWalker(Solution solution, List<string> repositoryModelsProjects, string repositoryAttributeName, List<string> repositoryInterfaceProjects, string targetProject,  List<string> additionalProjectsForAnalysis)
@@ -40,7 +40,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             _repositoryModelClasses = new List<ClassDeclarationSyntax>();
             _repositoryInterfaces = new List<InterfaceDeclarationSyntax>();
 
-            // Get repository model classes
+            // Get repository model Classes
             var repositoryModelTrees = GetTrees(solution, repositoryModelsProjects);
             var allClasses = repositoryModelTrees
                 .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
@@ -50,7 +50,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var repositoryModels = allClasses.Where(c => c.AttributeExist(repositoryAttributeName));
             _repositoryModelClasses.AddRange(repositoryModels);
 
-            // Get repository classes
+            // Get repository Classes
             var repositoryTrees = GetTrees(solution, new List<string> {targetProject});
             var customClasses = repositoryTrees
                 .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
@@ -64,7 +64,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
                 .ToList();
             _repositoryInterfaces.AddRange(repositoryInterfaces);
 
-            // Get additional classes
+            // Get additional Classes
             var additionalTrees = GetTrees(solution, additionalProjectsForAnalysis);
             var additionalClasses = repositoryTrees
                 .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
@@ -95,7 +95,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         }
 
         /// <summary>
-        ///     Search custom repository class by name. Skip genereted classes.
+        ///     Search custom repository class by name. Skip genereted Classes.
         /// </summary>
         public IEnumerable<ClassDeclarationSyntax> FindCustomRepositoryClassByName(string className)
         {
