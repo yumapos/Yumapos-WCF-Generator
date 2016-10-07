@@ -477,13 +477,13 @@ namespace WCFGenerator
 
             if (!isSkipAttribute)
             {
-                classes = classVisitor.classes.Where(x => x.AttributeLists
+                classes = classVisitor.Classes.Where(x => x.AttributeLists
                     .Any(att => att.Attributes
                         .Any(att2 => att2.Name.ToString() == attribute))).ToList();
             }
             else
             {
-                classes = classVisitor.classes;
+                classes = classVisitor.Classes;
             }
 
             return classes;

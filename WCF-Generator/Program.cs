@@ -32,7 +32,16 @@ namespace WCFGenerator
             }
             catch (Exception e)
             {
-               throw new ApplicationException("Error occured on repository generation", e);
+                throw new ApplicationException("Error occured on repository generation", e);
+            }
+
+            try
+            {
+                RunSerializeGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Error occured on serialize generation", e);
             }
 
             try
@@ -109,6 +118,27 @@ namespace WCFGenerator
             AsyncContext.Run(() => repositoryGenerator.GenerateRepository());
 
             Console.WriteLine("Repository generation completed.");
+        }
+
+        private static void RunSerializeGeneration()
+        {
+            Console.WriteLine("Start serialize generation...");
+
+            // Configure generator 
+            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+            var absoluteSlnPath = Path.GetFullPath(solutionPath);
+
+            if (!File.Exists(absoluteSlnPath))
+            {
+                throw new ArgumentException("File of solution not found. " + absoluteSlnPath);
+            }
+
+            var repositoryGenerator = new SerilizationGeneration(solutionPath);
+
+            // run generation
+            AsyncContext.Run(() => repositoryGenerator.GenerateAll());
+
+            Console.WriteLine("Serialize generation completed.");
         }
     }
 

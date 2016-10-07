@@ -7,13 +7,13 @@ namespace WCFGenerator
 {
     public class ClassVirtualizationVisitor : CSharpSyntaxRewriter
     {
-        public readonly List<ClassDeclarationSyntax> classes = new List<ClassDeclarationSyntax>();
+        public readonly List<ClassDeclarationSyntax> Classes = new List<ClassDeclarationSyntax>();
 
         public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
         {
             node = (ClassDeclarationSyntax)base.VisitClassDeclaration(node);
 
-            classes.Add(node);
+            Classes.Add(node);
             return node;
         }
     }

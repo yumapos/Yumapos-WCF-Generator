@@ -22,11 +22,11 @@ namespace YumaPos.FrontEnd.Data.Repositories.TransactionsHistory
 		private const string Values = @"@GiftCardId,@Balance,@OpenDate,@ExpDate,@Active,@Modified{values}";
 		private const string SelectAllQuery = @"SELECT [dbo].[GiftCards].[GiftCardId],[dbo].[GiftCards].[Balance],[dbo].[GiftCards].[OpenDate],[dbo].[GiftCards].[ExpDate],[dbo].[GiftCards].[Active],[dbo].[GiftCards].[Modified] FROM [dbo].[GiftCards]  {whereTenantId:[dbo].[GiftCards]} ";
 		private const string SelectByQuery = @"SELECT [dbo].[GiftCards].[GiftCardId],[dbo].[GiftCards].[Balance],[dbo].[GiftCards].[OpenDate],[dbo].[GiftCards].[ExpDate],[dbo].[GiftCards].[Active],[dbo].[GiftCards].[Modified] FROM [dbo].[GiftCards] ";
-		private const string InsertQuery = @"INSERT INTO dbo.GiftCards([dbo].[GiftCards].[GiftCardId],[dbo].[GiftCards].[Balance],[dbo].[GiftCards].[OpenDate],[dbo].[GiftCards].[ExpDate],[dbo].[GiftCards].[Active],[dbo].[GiftCards].[Modified]{columns}) OUTPUT INSERTED.GiftCardId VALUES(@GiftCardId,@Balance,@OpenDate,@ExpDate,@Active,@Modified{values}) ";
-		private const string UpdateQueryBy = @"UPDATE [dbo].[GiftCards] SET dbo.GiftCards.[GiftCardId] = @GiftCardId,dbo.GiftCards.[Balance] = @Balance,dbo.GiftCards.[OpenDate] = @OpenDate,dbo.GiftCards.[ExpDate] = @ExpDate,dbo.GiftCards.[Active] = @Active,dbo.GiftCards.[Modified] = @Modified FROM [dbo].[GiftCards] ";
+		private const string InsertQuery = @"INSERT INTO [dbo].[GiftCards]([dbo].[GiftCards].[GiftCardId],[dbo].[GiftCards].[Balance],[dbo].[GiftCards].[OpenDate],[dbo].[GiftCards].[ExpDate],[dbo].[GiftCards].[Active],[dbo].[GiftCards].[Modified]{columns}) OUTPUT INSERTED.GiftCardId VALUES(@GiftCardId,@Balance,@OpenDate,@ExpDate,@Active,@Modified{values}) ";
+		private const string UpdateQueryBy = @"UPDATE [dbo].[GiftCards] SET [dbo].[GiftCards].[GiftCardId] = @GiftCardId,[dbo].[GiftCards].[Balance] = @Balance,[dbo].[GiftCards].[OpenDate] = @OpenDate,[dbo].[GiftCards].[ExpDate] = @ExpDate,[dbo].[GiftCards].[Active] = @Active,[dbo].[GiftCards].[Modified] = @Modified FROM [dbo].[GiftCards] ";
 		private const string DeleteQueryBy = @"DELETE FROM [dbo].[GiftCards] ";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [dbo].[GiftCards].[GiftCardId] FROM [dbo].[GiftCards] ";
-		private const string WhereQueryByGiftCardId = "WHERE dbo.GiftCards.[GiftCardId] = @GiftCardId{andTenantId:[dbo].[GiftCards]} ";
+		private const string WhereQueryByGiftCardId = "WHERE [dbo].[GiftCards].[GiftCardId] = @GiftCardId{andTenantId:[dbo].[GiftCards]} ";
 
 
 		/*
