@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -201,169 +202,131 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             return sb.ToString();
         }
 
-
         #endregion
 
         #region Private
 
         private string GenerateGetAll(MethodImplementationInfo method)
         {
+            var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
+            var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+            var specialMethodParameterIsDeletedName = specialParameterIsDeleted.Name.FirstSymbolToLower();
+
+            var addIsDeletedFilter = RepositoryInfo.IsVersioning && RepositoryInfo.IsDeletedExist;
+            var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
+
+            var parameters = addIsDeletedFilter ? specialMethodParameterIsDeleted : "";
+            var parameterNames = addIsDeletedFilter ? specialMethodParameterIsDeletedName : "";
+
             var sb = new StringBuilder();
 
-            if (RepositoryInfo.IsDeletedExist)
-            {
-                var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
-                var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
+            // Synchronous method
+            sb.AppendLine("public " + returnType + " GetAll(" + parameters + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("return " + CacheRepositoryField + ".GetAll(" + parameterNames + ");");
+            sb.AppendLine("}");
 
-                // Synchronous method
-                sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll(" + specialMethodParameter + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return " + CacheRepositoryField + ".GetAll(" + specialParameter.Name.FirstSymbolToLower() + ");");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync(" + specialMethodParameter + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync(" + specialParameter.Name.FirstSymbolToLower() + ");");
-                sb.AppendLine("}");
-            }
-            else
-            {
-                // Synchronous method
-                sb.AppendLine("public IEnumerable<" + RepositoryInfo.ClassFullName + "> GetAll()");
-                sb.AppendLine("{");
-                sb.AppendLine("return " + CacheRepositoryField + ".GetAll();");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<IEnumerable<" + RepositoryInfo.ClassFullName + ">> GetAllAsync()");
-                sb.AppendLine("{");
-                sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync();");
-                sb.AppendLine("}");
-            }
+            // Asynchronous method
+            sb.AppendLine("public async Task<" + returnType + "> GetAllAsync(" + parameters + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync(" + parameterNames + ");");
+            sb.AppendLine("}");
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
         private string GenerateGetByPrimaryKey(MethodImplementationInfo method)
         {
-            var filter = method.FilterInfo;
-            var sb = new StringBuilder();
-            var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
-            var methodParameterNames = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
-
-            if (RepositoryInfo.IsDeletedExist)
-            {
-                var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
-                var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
-                var specialMethodParameterName = specialParameter.Name.FirstSymbolToLower();
-
-                // Synchronous method
-                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return " + CacheRepositoryField + ".GetBy" + filter.Key + "(" + methodParameterNames + ", " + specialMethodParameterName + ");");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async(" + methodParameters + ", " + specialMethodParameter + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return await " + CacheRepositoryField + ".GetBy" + filter.Key + "Async(" + methodParameterNames + ", " + specialMethodParameterName + ");");
-                sb.AppendLine("}");
-            }
-            else
-            {
-                // Synchronous method
-                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return " + CacheRepositoryField + ".GetBy" + filter.Key + "(" + methodParameterNames + ");");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async(" + methodParameters + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return await " + CacheRepositoryField + ".GetBy" + filter.Key + "Async(" + methodParameterNames + ");");
-                sb.AppendLine("}");
-            }
-
-            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+            var code = GenerateGetByKey(method);
+            return method.RequiresImplementation ? code : code.SurroundWithComments();
         }
 
         private string GenerateGetByFilterKey(MethodImplementationInfo method)
         {
-            var filter = method.FilterInfo;
-            var sb = new StringBuilder();
-            var parameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
-            var parameterNames = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
-
-            var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
-            var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
-            var specialMethodParameterName = specialParameter.Name.FirstSymbolToLower();
-
-            var returnType = method.ReturnType.IsEnumerable() ? "IEnumerable<" + RepositoryInfo.ClassFullName + ">" : RepositoryInfo.ClassFullName;
-            var returnFunc = method.ReturnType.IsEnumerable() ? "return res;" : "return res.FirstOrDefault();";
-
-            var methodParameters = RepositoryInfo.IsDeletedExist ? parameters + ", " + specialMethodParameter : parameters;
-            var methodParameterNames = RepositoryInfo.IsDeletedExist ? parameterNames + ", " + specialMethodParameterName : parameterNames;
-
-
-            // Synchronous method
-            sb.AppendLine("public " + returnType + "GetBy" + filter.Key + "(" + methodParameters + ")");
-            sb.AppendLine("{");
-            sb.AppendLine("var res = " + CacheRepositoryField + ".GetBy" + filter.Key + "(" + methodParameterNames + ");");
-            sb.AppendLine(returnFunc);
-            sb.AppendLine("}");
-
-            //Asynchronous method
-            sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async(" + methodParameters + ")");
-            sb.AppendLine("{");
-            sb.AppendLine("var res = await " + CacheRepositoryField + ".GetBy" + filter.Key + "Async(" + methodParameterNames + ");");
-            sb.AppendLine(returnFunc);
-            sb.AppendLine("}");
-
-            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+            var code = GenerateGetByKey(method);
+            return method.RequiresImplementation ? code : code.SurroundWithComments();
         }
 
         private string GenerateGetByVersionKey(MethodImplementationInfo method)
         {
+            var code = GenerateGetByKey(method);
+            return method.RequiresImplementation ? code : code.SurroundWithComments();
+        }
+
+        private string GenerateGetByKey(MethodImplementationInfo method)
+        {
             var filter = method.FilterInfo;
             var sb = new StringBuilder();
-            var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
-            var methodParameterNames = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
 
-            if (RepositoryInfo.IsDeletedExist)
+            var parameters = filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
+            var parameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
+
+            var firstOverloadParameters = filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
+            var firstOverloadParameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
+
+            var filterBySliceDate = filter.FilterType != FilterType.VersionKey && RepositoryInfo.IsModifiedExist;
+            var filterByIsDeleted = RepositoryInfo.IsModifiedExist;
+
+            if (filterBySliceDate)
             {
-                var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
-                var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
-                var specialMethodParameterName = specialParameter.Name.FirstSymbolToLower();
+                var specialParameterModified = RepositoryInfo.SpecialOptionsModified.Parameters.First();
+                var specialMethodParameterModified = specialParameterModified.TypeName + " " + specialParameterModified.Name.FirstSymbolToLower();
+                var specialMethodParameterModifiedName = specialParameterModified.Name.FirstSymbolToLower();
 
-                // Synchronous method
-                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return " + VersionRepositoryField + ".GetBy" + filter.Key + "(" + methodParameterNames + ", " + specialMethodParameterName + ");");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async(" + methodParameters + ", " + specialMethodParameter + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return await " + VersionRepositoryField + ".GetBy" + filter.Key + "Async(" + methodParameterNames + ", " + specialMethodParameterName + ");");
-                sb.AppendLine("}");
-            }
-            else
-            {
-                // Synchronous method
-                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return " + VersionRepositoryField + ".GetBy" + filter.Key + "(" + methodParameterNames + ");");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async(" + methodParameters + ")");
-                sb.AppendLine("{");
-                sb.AppendLine("return await " + VersionRepositoryField + ".GetBy" + filter.Key + "Async(" + methodParameterNames + ");");
-                sb.AppendLine("}");
+                parameters.Add(specialMethodParameterModified);
+                parameterNames.Add(specialMethodParameterModifiedName);
             }
 
-            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+            // last parameter - because have default value
+            if (filterByIsDeleted)
+            {
+                var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
+                var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+                var specialMethodParameterIsDeletedName = specialParameterIsDeleted.Name.FirstSymbolToLower();
+
+                parameters.Add(specialMethodParameterIsDeleted);
+                parameterNames.Add(specialMethodParameterIsDeletedName);
+                firstOverloadParameters.Add(specialMethodParameterIsDeleted);
+                firstOverloadParameterNames.Add(specialMethodParameterIsDeletedName);
+            }
+
+            var methodParameters = string.Join(", ", parameters);
+            var methodParameterNames = string.Join(", ", parameterNames);
+
+            var firstOverloadMethodParameters = string.Join(", ", firstOverloadParameters);
+            var firstOverloadMethodParameterNames = string.Join(", ", firstOverloadParameterNames);
+
+            var returnType = method.ReturnType.IsEnumerable() ? "IEnumerable<" + RepositoryInfo.ClassFullName + ">" : RepositoryInfo.ClassFullName;
+            var returnFunc = method.ReturnType.IsEnumerable() ? "return result.ToList();" : "return result;";
+
+            var overloads = new[]
+            {
+                new {repository = VersionRepositoryField, parameters = methodParameters, parameterNames = methodParameterNames, needImplement = true},
+                new {repository = CacheRepositoryField, parameters = firstOverloadMethodParameters, parameterNames = firstOverloadMethodParameterNames, needImplement = filter.FilterType != FilterType.VersionKey}
+            };
+
+            var methods = overloads.Where(m => m.needImplement).ToList();
+
+            foreach (var overload in methods)
+            {
+                // Synchronous method
+                sb.AppendLine("public " + returnType + " GetBy" + filter.Key + "(" + overload.parameters + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("var result = " + overload.repository + ".GetBy" + filter.Key + "(" + overload.parameterNames + ");");
+                sb.AppendLine(returnFunc);
+                sb.AppendLine("}");
+                sb.AppendLine();
+
+                //Asynchronous method
+                sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async(" + overload.parameters + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("var result = await " + overload.repository + ".GetBy" + filter.Key + "Async(" + overload.parameterNames + ");");
+                sb.AppendLine(returnFunc);
+                sb.AppendLine("}");
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
 
         private string GenerateInsert(MethodImplementationInfo method)

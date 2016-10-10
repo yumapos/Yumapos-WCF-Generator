@@ -231,10 +231,11 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 });
 
             repositoryInfo.FilterInfos.AddRange(filterKeys);
-
-            // Common filter - isDeleted
-            repositoryInfo.SpecialOptions = new FilterInfo("IsDeleted", new List<ParameterInfo> { new ParameterInfo("IsDeleted", "bool", Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower()) }, FilterType.FilterKey);
-
+           
+            // Common filter - isDeleted, modified
+            repositoryInfo.SpecialOptionsIsDeleted = new FilterInfo("IsDeleted", new List<ParameterInfo> {new ParameterInfo("IsDeleted", "bool", Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower())}, FilterType.FilterKey);
+            repositoryInfo.SpecialOptionsModified = new FilterInfo("Modified", new List<ParameterInfo> {new ParameterInfo("Modified", "DateTimeOffset")}, FilterType.FilterKey);
+            
             repositoryInfo.VersionTableName = dataAccess.TableVersion;
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;

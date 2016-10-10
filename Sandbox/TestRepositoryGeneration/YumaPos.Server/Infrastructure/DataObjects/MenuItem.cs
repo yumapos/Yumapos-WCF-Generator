@@ -16,14 +16,11 @@ namespace YumaPos.Server.Infrastructure.DataObjects
 
         [VersionKey]
         public Guid MenuItemVersionId { get; set; }
-
+        [DbIgnore]
         public string Name { get; set; }
 
-        public DateTimeOffset Modified { get; set; }
-
-        public Guid ModifiedBy { get; set; } 
-
         [DataMany2Many(EntityType = "YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax", ManyToManyEntytyType = "YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes")]
+        [DbIgnore]
         public IEnumerable<int> TaxIds { get; set; }
 
         public Guid MenuCategoryId { get; set; }

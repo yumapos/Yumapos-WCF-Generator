@@ -16,40 +16,40 @@ using YumaPos.Server.Infrastructure.Repositories;
 
 namespace YumaPos.Server.Data.Sql.Menu
 {
-	internal partial class MenuItems2TaxesCacheRepository : RepositoryBase, IMenuItems2TaxesRepository
+	internal partial class MenuItems2TaxesCacheRepository : RepositoryBase
 	{
 		private const string Fields = @"[MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted]{columns}";
 		private const string Values = @"@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted{values}";
-		private const string SelectAllQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess]   ";
-		private const string SelectByQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess] ";
+		private const string SelectAllQuery = @"SELECT  [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess]	";
+		private const string SelectByQuery = @"SELECT  [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess]  ";
 		private const string InsertQuery = @"INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted) ";
-		private const string UpdateQueryBy = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess] ";
+		private const string UpdateQueryBy = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess]  ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems2Taxess] ";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItems2Taxess].[] FROM [MenuItems2Taxess] ";
 		private const string WhereQueryByMenuItemId = "WHERE [MenuItems2Taxess].[MenuItemId] = @MenuItemId ";
 		private const string WhereQueryByTaxId = "WHERE [MenuItems2Taxess].[TaxId] = @TaxId ";
-		private const string AndWithFilterData = "AND [MenuItems2Taxess].[IsDeleted] = @IsDeleted";
+		private const string AndWithIsDeletedFilter = "AND [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
 
 
 		public MenuItems2TaxesCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes> GetAll(bool? isDeleted = false)
 		{
-			object parameters = new { isDeleted };
 			var sql = SelectAllQuery;
+			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters).ToList();
 			return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>> GetAllAsync(bool? isDeleted = false)
 		{
-			object parameters = new { isDeleted };
 			var sql = SelectAllQuery;
+			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters));
 			return result.ToList();
@@ -61,7 +61,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			var sql = SelectByQuery + WhereQueryByMenuItemId;
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters);
 			return result.ToList();
@@ -72,7 +72,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			var sql = SelectByQuery + WhereQueryByMenuItemId;
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters));
 			return result.ToList();
@@ -84,7 +84,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			var sql = SelectByQuery + WhereQueryByTaxId;
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters);
 			return result.ToList();
@@ -95,7 +95,7 @@ namespace YumaPos.Server.Data.Sql.Menu
 			var sql = SelectByQuery + WhereQueryByTaxId;
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.MenuItems2Taxes>(sql, parameters));
 			return result.ToList();

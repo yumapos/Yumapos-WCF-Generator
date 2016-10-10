@@ -14,7 +14,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         ///    Allowable type of method
         /// </summary>
         public RepositoryMethod Method { get; set; }
-        
+
         /// <summary>
         ///     Key based methods filter
         /// </summary>

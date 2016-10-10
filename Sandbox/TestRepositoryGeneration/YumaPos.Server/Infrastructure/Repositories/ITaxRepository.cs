@@ -14,6 +14,6 @@ namespace YumaPos.Server.Infrastructure.Repositories
 
         void RemoveByTaxId(Tax tax);
 
-        Tax GetByTaxId(int taxId, bool? isDeleted = false);
+        Tax GetByTaxId(int taxId, DateTimeOffset sliceDate, bool? isDeleted = false);
     }
 }

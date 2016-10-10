@@ -154,7 +154,12 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// <summary>
         ///     Special filter options (it is "isDeleted")
         /// </summary>
-        public FilterInfo SpecialOptions { get; set; }
+        public FilterInfo SpecialOptionsIsDeleted { get; set; }
+
+        /// <summary>
+        ///     Special filter options (by "Modified")
+        /// </summary>
+        public FilterInfo SpecialOptionsModified { get; set; }
 
         /// <summary>
         ///     Name of member of repository model which marked as version key (for versioned repository)
@@ -217,7 +222,23 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         {
             get
             {
-                var specialOption = SpecialOptions.Parameters.First().Name;
+                var specialOption = "IsDeleted";
+                if (JoinRepositoryInfo != null)
+                {
+                    return JoinRepositoryInfo.Elements.Exists(s => s == specialOption);
+                }
+                return Elements.Exists(s => s == specialOption);
+            }
+        }
+
+        /// <summary>
+        ///     Return true if need create argument Modified in "Get" methods
+        /// </summary>
+        public bool IsModifiedExist
+        {
+            get
+            {
+                var specialOption = "Modified";
 
                 if (JoinRepositoryInfo != null)
                 {
@@ -299,7 +320,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 {
                     TableColumns = Elements,
                     TableName = SqlScriptGenerator.GenerateTableName(TableName),
-                    PrimaryKeyName = PrimaryKeyName,
+                    PrimaryKeyNames = PrimaryKeys.Select(k=>k.Name),
                     TenantRelated = IsTenantRelated,
                     ReturnPrimarayKey = PrimaryKeys.Count == 1,
                     VersionKeyName = VersionKeyName,
@@ -313,7 +334,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 {
                     sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
                     sqlInfo.JoinTableName = SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.TableName);
-                    sqlInfo.JoinPrimaryKeyName = JoinRepositoryInfo.PrimaryKeyName;
+                    sqlInfo.JoinPrimaryKeyNames = JoinRepositoryInfo.PrimaryKeys.Select(k => k.Name);
                     sqlInfo.JoinVersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.VersionTableName) : null;
                     sqlInfo.JoinVersionKeyName = JoinRepositoryInfo.VersionKeyName;
                 }

@@ -52,23 +52,27 @@ namespace YumaPos.Server.Data.Sql
 		}
 
 		*/
-		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(int taxId, bool? isDeleted = false)
+		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxId(int taxId, DateTimeOffset modified, bool? isDeleted = false)
 		{
-			return _taxCacheRepository.GetByTaxId(taxId, isDeleted);
+			var result = _taxVersionRepository.GetByTaxId(taxId, modified, isDeleted);
+			return result;
 		}
-		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(int taxId, bool? isDeleted = false)
+		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxIdAsync(int taxId, DateTimeOffset modified, bool? isDeleted = false)
 		{
-			return await _taxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
+			var result = await _taxVersionRepository.GetByTaxIdAsync(taxId, modified, isDeleted);
+			return result;
 		}
 
 		/*
-		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
+		public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
 		{
-		return _taxVersionRepository.GetByTaxVersionId(taxVersionId, isDeleted);
+		var result = _taxVersionRepository.GetByTaxVersionId(taxVersionId, isDeleted);
+		return result.ToList();
 		}
-		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
+		public async Task<IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
 		{
-		return await _taxVersionRepository.GetByTaxVersionIdAsync(taxVersionId, isDeleted);
+		var result = await _taxVersionRepository.GetByTaxVersionIdAsync(taxVersionId, isDeleted);
+		return result.ToList();
 		}
 
 		*/

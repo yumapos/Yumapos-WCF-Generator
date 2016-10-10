@@ -29,7 +29,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         public override string GetClassDeclaration()
         {
-            return "internal partial class " + RepositoryName + " : RepositoryBase, " + RepositoryInfo.RepositoryInterfaceName;
+            return "internal partial class " + RepositoryName + " : RepositoryBase";
         }
 
         #endregion
