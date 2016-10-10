@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WCF-Generator")]
-[assembly: AssemblyDescription("Analyzes code on the availability of data to generate attributes in classes and generates code.")]
+[assembly: AssemblyDescription("Analyzes code on the availability of data to generate attributes in Classes and generates code.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Yumasoft")]
 [assembly: AssemblyProduct("")]
