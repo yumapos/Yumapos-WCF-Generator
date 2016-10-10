@@ -12,9 +12,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         public static string RepositoryKind = "Version";
         private string _insertQueryName = "InsertQuery";
         private string _whereQueryBy = "WhereQueryBy";
-        private string _selectByQuery = "SelectByKeyAndSliceDateQuery";
+        private string _whereQueryByWithAlias = "WhereQueryByWithAlias";
+        private string _selectByQuery = "SelectBy";
+        private string _selectByKeyAndSliceDateQuery = "SelectByKeyAndSliceDateQuery";
         private string _andWithIsDeletedFilter = "AndWithIsDeletedFilter";
         private string _andWithSliceDateFilter = "AndWithSliceDateFilter";
+        private string _andWithIsDeletedFilterWithAlias = "AndWithIsDeletedFilterWithAlias";
 
         private string _join = "Join";
         private string _pk = "Pk";
@@ -57,16 +60,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             if(!RepositoryInfo.IsManyToMany)
             {
                 // Version filter
-                var selectByQuery = SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo).SurroundWithQuotes();
+                var selectBy = (SqlScriptGenerator.GenerateSelectBy(sqlInfo) + " {filter} ").SurroundWithQuotes();
+                var selectByKeyAndSliceDateQuery = SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo).SurroundWithQuotes();
                 
-                sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
+                sb.AppendLine("private const string " + _selectByQuery + " = @" + selectBy + ";");
+                sb.AppendLine("private const string " + _selectByKeyAndSliceDateQuery + " = @" + selectByKeyAndSliceDateQuery + ";");
 
                 foreach (var method in RepositoryInfo.PossibleKeysForMethods)
                 {
                     var key = method.Key;
                     var parametrs = method.Parameters.Select(p => p.Name).ToList();
-                    var sql = SqlScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
+                    var sql = SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+                    var sqlV = SqlScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
+
                     sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
+                    sb.AppendLine("private const string " + _whereQueryByWithAlias + key + " = " + sqlV + ";");
 
                 }
                 // where by join PK
@@ -80,15 +88,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 if (RepositoryInfo.IsDeletedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
-                    var andFilter = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo).SurroundWithQuotes();
+                    var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName??sqlInfo.TableName).SurroundWithQuotes();
+                    var andFilterV = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo).SurroundWithQuotes();
                     sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + andFilter + ";");
+                    sb.AppendLine("private const string " + _andWithIsDeletedFilterWithAlias + " = " + andFilterV + ";");
                 }
 
                 // Is sliceDate filter (modified)
                 if (RepositoryInfo.IsModifiedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsModified.Parameters.First().Name;
-                    var filter = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo, "<");
+                    var filter = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo, "<=");
                     sb.AppendLine("private const string " + _andWithSliceDateFilter + " = " + filter.SurroundWithQuotes() + ";");
                 }
             }
@@ -181,12 +191,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var returnType = method.ReturnType.IsEnumerable() ? "IEnumerable<" + RepositoryInfo.ClassFullName + ">" : RepositoryInfo.ClassFullName;
             var returnFunc = method.ReturnType.IsEnumerable() ? "return result.ToList();" : "return result.FirstOrDefault();";
             var filter = method.FilterInfo;
-            var filterBySliceDate = filter.FilterType != FilterType.VersionKey && RepositoryInfo.IsModifiedExist;
+            var isVersionKeyFilter = filter.FilterType == FilterType.VersionKey;
+            var filterBySliceDate = !isVersionKeyFilter && RepositoryInfo.IsModifiedExist;
             var filterByIsDeleted = RepositoryInfo.IsModifiedExist;
 
-            var sqlWhere = _whereQueryBy + filter.Key;
+            var sqlWhere = (!isVersionKeyFilter ? _whereQueryByWithAlias : _whereQueryBy) + filter.Key;
 
-            var selectQuery = _selectByQuery;
+            var selectQuery = isVersionKeyFilter ? _selectByQuery : _selectByKeyAndSliceDateQuery;
+            var isDeletedFilter = isVersionKeyFilter ? _andWithIsDeletedFilter : _andWithIsDeletedFilterWithAlias;
 
             var parameters = filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
             var parameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
@@ -215,6 +227,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var methodParameters = string.Join(", ", parameters);
             var methodParameterNames = string.Join(", ", parameterNames);
 
+
             var sb = new StringBuilder();
 
             // Synchronous method
@@ -228,7 +241,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("filter = filter + " + _andWithIsDeletedFilter + ";");
+                sb.AppendLine("filter = filter + " + isDeletedFilter + ";");
                 sb.AppendLine("}");
             }
             if (filterBySliceDate)
@@ -251,7 +264,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("filter = filter + " + _andWithIsDeletedFilter + ";");
+                sb.AppendLine("filter = filter + " + isDeletedFilter + ";");
                 sb.AppendLine("}");
             }
             if (filterBySliceDate)

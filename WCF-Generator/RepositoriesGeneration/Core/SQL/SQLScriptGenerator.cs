@@ -43,7 +43,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return GenerateSelectBy(info, null) + " " + WhereTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateSelectBy(SqlInfo info, int? topNumber)
+        public static string GenerateSelectBy(SqlInfo info, int? topNumber = null)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
