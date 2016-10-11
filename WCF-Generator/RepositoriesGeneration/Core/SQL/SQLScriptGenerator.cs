@@ -64,7 +64,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
                 var columnsJonedWithoutSelectedPk = info.JoinTableColumns.Where(c => info.SkipPrimaryKey.All(pk => pk != c)).ToList();
-                var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyNames.First()) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyNames; //TODO FIX TO MANY KEYS
+                var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyNames.First()) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyNames.First(); //TODO FIX TO MANY KEYS
 
                 // use pk from inherite model
                 var values = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c);//TODO FIX TO MANY KEYS
