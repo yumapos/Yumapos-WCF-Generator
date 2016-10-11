@@ -3,7 +3,7 @@
 namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    internal sealed class DataAccessAttribute : Attribute
+    public sealed class DataAccessAttribute : Attribute
     {
         public string TableName { get; set; }
 

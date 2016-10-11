@@ -20,12 +20,12 @@ namespace YumaPos.Server.Data.Sql.Customer
 	{
 		private const string Fields = @"[dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude]{columns}";
 		private const string Values = @"@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude{values}";
-		private const string SelectAllQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude] FROM [dbo].[Addresses]   ";
-		private const string SelectByQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude] FROM [dbo].[Addresses] ";
+		private const string SelectAllQuery = @"SELECT  [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude] FROM [dbo].[Addresses]   ";
+		private const string SelectByQuery = @"SELECT  [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude] FROM [dbo].[Addresses] ";
 		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude])  VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
 		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude FROM [dbo].[Addresses] ";
 		private const string DeleteQueryBy = @"DELETE FROM [dbo].[Addresses] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [dbo].[Addresses].[IdAndZipCode] FROM [dbo].[Addresses] ";
+		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [dbo].[Addresses].[Id] FROM [dbo].[Addresses] ";
 		private const string WhereQueryByIdAndZipCode = "WHERE [dbo].[Addresses].[Id] = @Id AND [dbo].[Addresses].[ZipCode] = @ZipCode ";
 		private const string WhereQueryByCity = "WHERE [dbo].[Addresses].[City] = @City ";
 		private const string WhereQueryByZipCode = "WHERE [dbo].[Addresses].[ZipCode] = @ZipCode ";
@@ -35,13 +35,15 @@ namespace YumaPos.Server.Data.Sql.Customer
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address> GetAll()
 		{
 			var sql = SelectAllQuery;
-			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, null).ToList();
+			object parameters = null;
+			var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters).ToList();
 			return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.Address>> GetAllAsync()
 		{
 			var sql = SelectAllQuery;
-			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, null));
+			object parameters = null;
+			var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.Address>(sql, parameters));
 			return result.ToList();
 		}
 

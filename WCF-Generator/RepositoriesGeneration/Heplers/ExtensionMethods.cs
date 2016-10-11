@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace VersionedRepositoryGeneration.Generator.Heplers
+namespace WCFGenerator.RepositoriesGeneration.Heplers
 {
     internal static class ExtensionMethods
     {
@@ -102,6 +101,16 @@ namespace VersionedRepositoryGeneration.Generator.Heplers
         public static bool IsEnumerable(this string t)
         {
             return t.Contains("IEnumerable<");
+        }
+
+        public static bool IsInt(this string t)
+        {
+            return t.Contains("int");
+        }
+
+        public static bool IsGuid(this string t)
+        {
+            return t.Contains("Guid");
         }
 
         #endregion

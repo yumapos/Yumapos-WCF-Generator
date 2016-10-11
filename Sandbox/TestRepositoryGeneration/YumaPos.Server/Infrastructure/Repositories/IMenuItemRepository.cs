@@ -13,12 +13,12 @@ namespace YumaPos.Server.Infrastructure.Repositories
 
         void RemoveByMenuItemId(MenuItem itemId);
 
-        MenuItem GetByMenuItemId(Guid itemId, bool? isDeleted);
+        MenuItem GetByMenuItemId(Guid itemId, DateTimeOffset sliceDate, bool? isDeleted);
 
         MenuItem GetByMenuItemVersionId(Guid itemVersionId, bool? isDeleted);
 
         IEnumerable<MenuItem> GetAll(bool? isDeleted);
 
-        IEnumerable<MenuItem> GetByMenuCategoryId(Guid menuCategoryId, bool? isDeleted);
+        IEnumerable<MenuItem> GetByMenuCategoryId(Guid menuCategoryId, DateTimeOffset sliceDate, bool? isDeleted);
     }
 }

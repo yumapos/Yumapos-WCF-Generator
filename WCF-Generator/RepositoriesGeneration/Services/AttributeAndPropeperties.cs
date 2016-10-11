@@ -5,7 +5,7 @@ using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attribute
 
 namespace WCFGenerator.RepositoriesGeneration.Services
 {
-    internal class AttributeAndPropeperties
+    public class AttributeAndPropeperties
     {
         public string Name { get; set; }
         public string OwnerElementName { get; set; }
