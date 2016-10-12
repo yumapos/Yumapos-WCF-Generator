@@ -25,7 +25,6 @@ namespace YumaPos.Server.Data.Sql
 		private const string InsertQuery = @"INSERT INTO [Taxs]([Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns}) OUTPUT INSERTED.TaxId VALUES(@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values}) ";
 		private const string UpdateQueryBy = @"UPDATE [Taxs] SET [Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs] ";
 		private const string DeleteQueryBy = @"DELETE FROM [Taxs] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [Taxs].[TaxId] FROM [Taxs] ";
 		private const string WhereQueryByTaxId = "WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]} ";
 		private const string WhereQueryByTaxVersionId = "WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
 		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";

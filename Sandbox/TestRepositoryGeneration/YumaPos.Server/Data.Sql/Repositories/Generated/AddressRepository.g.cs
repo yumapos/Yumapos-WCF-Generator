@@ -25,7 +25,6 @@ namespace YumaPos.Server.Data.Sql.Customer
 		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude])  VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
 		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude FROM [dbo].[Addresses] ";
 		private const string DeleteQueryBy = @"DELETE FROM [dbo].[Addresses] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [dbo].[Addresses].[Id] FROM [dbo].[Addresses] ";
 		private const string WhereQueryByIdAndZipCode = "WHERE [dbo].[Addresses].[Id] = @Id AND [dbo].[Addresses].[ZipCode] = @ZipCode ";
 		private const string WhereQueryByCity = "WHERE [dbo].[Addresses].[City] = @City ";
 		private const string WhereQueryByZipCode = "WHERE [dbo].[Addresses].[ZipCode] = @ZipCode ";

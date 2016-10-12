@@ -25,7 +25,6 @@ namespace YumaPos.Server.Data.Sql.Customer
 		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses2]([dbo].[Addresses2].[Country],[dbo].[Addresses2].[City],[dbo].[Addresses2].[State],[dbo].[Addresses2].[Street],[dbo].[Addresses2].[Building],[dbo].[Addresses2].[ZipCode],[dbo].[Addresses2].[Latitude],[dbo].[Addresses2].[Longitude]) OUTPUT INSERTED.Id VALUES(@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
 		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses2] SET [dbo].[Addresses2].[Country] = @Country,[dbo].[Addresses2].[City] = @City,[dbo].[Addresses2].[State] = @State,[dbo].[Addresses2].[Street] = @Street,[dbo].[Addresses2].[Building] = @Building,[dbo].[Addresses2].[ZipCode] = @ZipCode,[dbo].[Addresses2].[Latitude] = @Latitude,[dbo].[Addresses2].[Longitude] = @Longitude FROM [dbo].[Addresses2] ";
 		private const string DeleteQueryBy = @"DELETE FROM [dbo].[Addresses2] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [dbo].[Addresses2].[Id] FROM [dbo].[Addresses2] ";
 		private const string WhereQueryById = "WHERE [dbo].[Addresses2].[Id] = @Id ";
 		private const string WhereQueryByZipCode = "WHERE [dbo].[Addresses2].[ZipCode] = @ZipCode ";
 		private const string WhereQueryByBuilding = "WHERE [dbo].[Addresses2].[Building] = @Building ";

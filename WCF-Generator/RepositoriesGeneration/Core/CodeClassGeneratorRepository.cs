@@ -65,7 +65,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var insertQuery = SqlScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
             var updateBy = SqlScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
             var deleteBy = SqlScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
-            var selectIntoTemp = SqlScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
 
             sb.AppendLine("private const string Fields = @" + fields.SurroundWithQuotes() + ";");
             sb.AppendLine("private const string Values = @" + values.SurroundWithQuotes() + ";");
@@ -74,12 +73,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
-            sb.AppendLine("private const string " + _selectIntoTemp + " = @" + selectIntoTemp + ";");
+
 
             if (RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var updateJoin = SqlScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _updateQuery + _join + " = " + updateJoin + ";");
+
+                var selectIntoTemp = SqlScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
+                sb.AppendLine("private const string " + _selectIntoTemp + " = @" + selectIntoTemp + ";");
             }
 
             foreach (var method in RepositoryInfo.PossibleKeysForMethods)
