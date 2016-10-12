@@ -133,9 +133,13 @@ namespace WCFGenerator.SerializeGeneration.Generation
             {
                 if (prop.Type.Trim() == "PosMoney")
                 {
-                    stringBuilder.AppendFormat("\t\t\t {0} = new PosMoney(context.MonetarySettings);", prop.VariableClassName);
+                    stringBuilder.AppendFormat("\t\t\t {0} = new PosMoney(context.MonetarySettings)", prop.VariableClassName);
                     stringBuilder.Append("\r\n");
-                    stringBuilder.AppendFormat("\t\t\t  {0}.Value = dataObject.{1};", prop.VariableClassName, prop.Name);
+                    stringBuilder.Append("\t\t\t {");
+                    stringBuilder.Append("\r\n");
+                    stringBuilder.AppendFormat("\t\t\t\t Value = dataObject.{0}", prop.Name);
+                    stringBuilder.Append("\r\n");
+                    stringBuilder.Append("\t\t\t };");
                     stringBuilder.Append("\r\n");
                 }
                 else
