@@ -8,8 +8,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
     {
 
         private const string _tempTable = "@Temp";
-        private const string _columns = "{columns}";
-        private const string _values = "{values}";
+        private const string _tenantId = "TenantId";
 
         public static string GenerateTableName(string tableName)
         {
@@ -24,12 +23,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateFields(SqlInfo info)
         {
-            return Fields(info.TableColumns, info.TableName) + _columns;
+            var columns = GetFullColumnList(info);
+            return Fields(columns, info.TableName);
         }
 
         public static string GenerateValues(SqlInfo info)
         {
-            return Values(info.TableColumns) + _values;
+            var columns = GetFullColumnList(info);
+            return Values(columns);
         }
 
         public static string GenerateSelectAll(SqlInfo info)
@@ -54,10 +55,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public static string GenerateInsert(SqlInfo info)
         {
             var columnsWithoutSelectedPk = info.TableColumns.Where(c => info.SkipPrimaryKey.All(pk => pk != c)).ToList();
-
+            if (info.TenantRelated && !columnsWithoutSelectedPk.Contains(_tenantId))
+            {
+                columnsWithoutSelectedPk.Add(_tenantId);
+            }
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
                 var columnsJonedWithoutSelectedPk = info.JoinTableColumns.Where(c => info.SkipPrimaryKey.All(pk => pk != c)).ToList();
+                if (info.TenantRelated && !columnsJonedWithoutSelectedPk.Contains(_tenantId))
+                {
+                    columnsJonedWithoutSelectedPk.Add(_tenantId);
+                }
                 var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyName) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyName;
 
                 // use pk from inherite model
@@ -65,11 +73,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var joinClassValues = Values(values);
 
                 // return inset into table and join table
-                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + (info.TenantRelated ?_columns : "") + ") VALUES(" + joinClassValues + (info.TenantRelated ? _values : "") + ")\r\n "
-                     + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + (info.TenantRelated ? _columns : "")+ ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + (info.TenantRelated ? _values : "" ) + ") ";
+                return "INSERT INTO " + info.JoinTableName + "(" + Fields(columnsJonedWithoutSelectedPk, info.JoinTableName) + ") VALUES(" + joinClassValues + ")\r\n "
+                     + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + ") ";
             }
             // return select from table
-            return Insert(columnsWithoutSelectedPk, info.TableName,info.TenantRelated, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
+            return Insert(columnsWithoutSelectedPk, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
         }
 
         public static string GenerateInsertToTemp(SqlInfo info)
@@ -128,30 +136,32 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateInsertToVersionTable(SqlInfo info)
         {
-            var classProperties = Fields(info.TableColumns, info.TableName);
-            var classValues = Values(info.TableColumns);
+            var columns = GetFullColumnList(info);
+            var classProperties = Fields(columns, info.TableName);
+            var classValues = Values(columns);
 
             if (info.JoinTableName != null)
             {
-                var joinClassProperties = Fields(info.JoinTableColumns, info.JoinTableName);
+                var joinFields = GetFullJoinedColumnList(info);
+                var joinClassProperties = Fields(joinFields, info.JoinTableName);
                 // use versionId & primary key from inherite model
-                var values = info.JoinTableColumns.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
+                var values = joinFields.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c).ToList();
                 var joinClassValues = Values(values);
 
-                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
-                       "VALUES (" + joinClassValues + (info.TenantRelated ? _values : "") + ")\r\n" +
-                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
-                   "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
+                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + ")\r\n" +
+                       "VALUES (" + joinClassValues + ")\r\n" +
+                   "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
+                   "VALUES (" + classValues + ")";
             }
 
             if(!info.IsManyToMany)
             {
-                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
-                        "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
+                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
+                        "VALUES (" + classValues + ")";
             }
 
-            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + (info.TenantRelated ? _columns : "") + ")\r\n" +
-                       "VALUES (" + classValues + (info.TenantRelated ? _values : "") + ")";
+            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
+                       "VALUES (" + classValues + ")";
         }
 
         #endregion
@@ -172,11 +182,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "SELECT " + Fields(columns, table);
         }
 
-        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, bool tenantRelated, string primaryKey = null)
+        private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string primaryKey = null)
         {
             var columns = tableColumns.ToList();
             var outputKey = string.IsNullOrEmpty(primaryKey) ? "" : "OUTPUT INSERTED." + primaryKey;
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + (tenantRelated ? _columns : "") + ") " + outputKey + " VALUES(" + Values(columns) + (tenantRelated ? _values : "") + ")";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ")";
         }
 
         private static string Update(string tableName)
@@ -257,8 +267,27 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return tableName + ".[" + fieldName + "]";
         }
 
-        #endregion
+        private static List<string> GetFullColumnList(SqlInfo info)
+        {
+            var list = info.TableColumns.ToList();
+            if (info.TenantRelated && !list.Contains(_tenantId))
+            {
+                list.Add(_tenantId);
+            }
+            return list;
+        }
 
+        private static List<string> GetFullJoinedColumnList(SqlInfo info)
+        {
+            var list = info.JoinTableColumns.ToList();
+            if (info.TenantRelated && !list.Contains(_tenantId))
+            {
+                list.Add(_tenantId);
+            }
+            return list;
+        }
+
+        #endregion
     }
 
     internal struct SqlInfo
