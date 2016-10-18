@@ -231,7 +231,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private static string Select(IEnumerable<string> columns, string table, int? topNumber = null)
         {
-            return "SELECT " + (topNumber.HasValue ? "TOP " + topNumber : "") + " " + Fields(columns, table);
+            return "SELECT " + (topNumber.HasValue ? " TOP " + topNumber : "") + Fields(columns, table);
         }
 
         private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, bool tenantRelated, string primaryKey = null)
