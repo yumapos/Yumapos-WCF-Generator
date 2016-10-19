@@ -9,7 +9,6 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using VersionedRepositoryGeneration.Generator.Heplers;
 using WCFGenerator.RepositoriesGeneration.Services;
 using WCFGenerator.SerializeGeneration;
 using WCFGenerator.SerializeGeneration.Configuration;

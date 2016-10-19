@@ -20,12 +20,11 @@ namespace YumaPos.Server.Data.Sql
 	{
 		private const string Fields = @"[EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End]{columns}";
 		private const string Values = @"@ScheduleId,@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End{values}";
-		private const string SelectAllQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End] FROM [EmployeesInRolesSchedule]  {whereTenantId:[EmployeesInRolesSchedule]} ";
-		private const string SelectByQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End] FROM [EmployeesInRolesSchedule] ";
+		private const string SelectAllQuery = @"SELECT  [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End] FROM [EmployeesInRolesSchedule]  {whereTenantId:[EmployeesInRolesSchedule]} ";
+		private const string SelectByQuery = @"SELECT  [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End] FROM [EmployeesInRolesSchedule] ";
 		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End]{columns}) OUTPUT INSERTED.ScheduleId VALUES(@ScheduleId,@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End{values}) ";
 		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId,[EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End FROM [EmployeesInRolesSchedule] ";
 		private const string DeleteQueryBy = @"DELETE FROM [EmployeesInRolesSchedule] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [EmployeesInRolesSchedule].[ScheduleId] FROM [EmployeesInRolesSchedule] ";
 		private const string WhereQueryByScheduleId = "WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]} ";
 		private const string WhereQueryByUserId = "WHERE [EmployeesInRolesSchedule].[UserId] = @UserId{andTenantId:[EmployeesInRolesSchedule]} ";
 		private const string WhereQueryByUserIdAndRoleIdAndStoreId = "WHERE [EmployeesInRolesSchedule].[UserId] = @UserId AND [EmployeesInRolesSchedule].[RoleId] = @RoleId AND [EmployeesInRolesSchedule].[StoreId] = @StoreId{andTenantId:[EmployeesInRolesSchedule]} ";
@@ -36,31 +35,33 @@ namespace YumaPos.Server.Data.Sql
 		public IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetAll()
 		{
 		var sql = SelectAllQuery;
-		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, null).ToList();
+		object parameters = null;
+		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters).ToList();
 		return result.ToList();
 		}
 		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetAllAsync()
 		{
 		var sql = SelectAllQuery;
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, null));
+		object parameters = null;
+		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters));
 		return result.ToList();
 		}
 
 		*/
 		/*
-		public TestRepositoryGeneration.Models.EmployeesInRolesSchedule GetByScheduleId(System.Guid scheduleId)
+		public IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByScheduleId(System.Guid scheduleId)
 		{
 		object parameters = new {scheduleId};
 		var sql = SelectByQuery + WhereQueryByScheduleId;
 		var result = DataAccessService.Get<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters);
-		return result.FirstOrDefault();
+		return result.ToList();
 		}
-		public async Task<TestRepositoryGeneration.Models.EmployeesInRolesSchedule> GetByScheduleIdAsync(System.Guid scheduleId)
+		public async Task<IEnumerable<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>> GetByScheduleIdAsync(System.Guid scheduleId)
 		{
 		object parameters = new {scheduleId};
 		var sql = SelectByQuery + WhereQueryByScheduleId;
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.Models.EmployeesInRolesSchedule>(sql, parameters));
-		return result.FirstOrDefault();
+		return result.ToList();
 		}
 
 

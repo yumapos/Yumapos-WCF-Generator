@@ -169,10 +169,11 @@
     <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryFieldInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterType.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\IRepositoryClassGenerator.cs" />
-    <Compile Include="RepositoriesGeneration\Infrastructure\KeyInfo.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\ParameterInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\Many2ManyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\MethodImplementationInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
