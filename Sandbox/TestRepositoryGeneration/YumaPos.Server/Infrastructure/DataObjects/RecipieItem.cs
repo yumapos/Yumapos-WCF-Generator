@@ -15,6 +15,11 @@ namespace YumaPos.Server.Infrastructure.DataObjects
         public Guid ItemVersionId { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public DateTimeOffset Modified { get; set; }
+
+        public Guid ModifiedBy { get; set; }
+
         public string CategoryId { get; set; }
 
     }
