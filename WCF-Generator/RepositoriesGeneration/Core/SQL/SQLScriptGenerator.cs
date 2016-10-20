@@ -7,14 +7,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
     internal class SqlScriptGenerator
     {
-
         private const string _tempTable = "@Temp";
         private const string _tenantId = "TenantId";
         private const string _sliceDateColumnName = "Modified";
         private const string _versionTableAlias1 = "versionTable1";
         private const string _joinVersionTableAlias1 = "joinVersionTable1";
-
-
 
         public static string GenerateTableName(string tableName)
         {
