@@ -67,7 +67,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var deleteBy = SqlScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
 
             sb.AppendLine("private const string Fields = @" + fields.SurroundWithQuotes() + ";");
-            sb.AppendLine("private const string Values = @" + values.SurroundWithQuotes() + ";");
+            //sb.AppendLine("private const string Values = @" + values.SurroundWithQuotes() + ";");
             sb.AppendLine("private const string " + _selectAllQuery + " = @" + selectAllQuery + ";");
             sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
