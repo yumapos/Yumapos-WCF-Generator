@@ -23,14 +23,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateFields(SqlInfo info)
         {
-            var columns = GetFullColumnList(info);
-            return Fields(columns, info.TableName);
+            return Fields(info.TableColumns, info.TableName);
         }
 
         public static string GenerateValues(SqlInfo info)
         {
-            var columns = GetFullColumnList(info);
-            return Values(columns);
+            return Values(info.TableColumns);
         }
 
         public static string GenerateSelectAll(SqlInfo info)
