@@ -121,7 +121,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                     "YumaPos.Server.Infrastructure.Repositories",
                     "YumaPos.Server.Infrastructure.DataObjects",
                     "YumaPos.FrontEnd.Infrastructure.Common.DataAccess",
-                    "YumaPos.FrontEnd.Infrastructure.Configuration"
+                    "YumaPos.FrontEnd.Infrastructure.Configuration",
+                    "YumaPos.FrontEnd.Infrastructure.Common.DateTime"
                 };
 
                 // add namespace of repositories which added from relation many to many 
