@@ -16,6 +16,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private readonly string _cacheRepository = CodeClassGeneratorCacheRepository.RepositoryKind + "Repository";
         private readonly string _versionRepository = CodeClassGeneratorVersionsRepository.RepositoryKind + "Repository";
         private const string DataAccessControllerField = "_dataAccessController";
+        private const string DateTimeServiceField = "_dateTimeService";
 
         #endregion
 
@@ -89,7 +90,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var constructorParamers = new List<string>()
             {
                 "IDataAccessController dataAccessController",
-                "IDataAccessService dataAccessService"
+                "IDataAccessService dataAccessService",
+                "IDateTimeService dateTimeService"
             };
             constructorParamers.AddRange(AllFieldInfos.Where(i => !i.InitNew).Select(f => f.InterfaceName + " " + f.TypeName.FirstSymbolToLower()).ToList());
 
@@ -102,6 +104,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine(")");
             sb.AppendLine("{");
             sb.AppendLine(DataAccessControllerField + " = " + "dataAccessController;");
+            sb.AppendLine(DateTimeServiceField + " = " + "dateTimeService;");
 
             foreach (var f in AllFieldInfos)
             {
@@ -118,6 +121,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         {
             var sb = new StringBuilder();
             sb.AppendLine("private IDataAccessController " + DataAccessControllerField + ";");
+            sb.AppendLine("private IDateTimeService " + DateTimeServiceField + ";");
             foreach (var f in GetFieldInfos())
             {
                 sb.AppendLine("private " + f.TypeName + " " + f.Name + ";");
@@ -349,7 +353,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // synchronous method
             sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
             sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
             sb.AppendLine(versionKeyProperty + " = Guid.NewGuid();");
 
@@ -385,7 +389,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Asynchronous method
             sb.AppendLine("public async " + returnTypeAsync + " InsertAsync(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
             sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
             sb.AppendLine(versionKeyProperty + " = Guid.NewGuid();");
 
@@ -433,7 +437,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Synchronous method
             sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
             sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
             sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
             sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
@@ -452,7 +456,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Asynchronous method
             sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
-            sb.AppendLine(parameterName + ".Modified = DateTimeOffset.Now;");
+            sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
             sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
             sb.AppendLine(parameterName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
             sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
@@ -513,7 +517,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
                 sb.AppendLine("foreach (var mt in listOf" + manyToManyEntityName + ")");
                 sb.AppendLine("{");
-                sb.AppendLine("mt.Modified = DateTimeOffset.Now;");
+                sb.AppendLine("mt.Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
                 sb.AppendLine("mt.ModifiedBy = " + parameterName + ".ModifiedBy;");
                 sb.AppendLine(manyToManyCacheRepositoryFieldName + ".Insert(mt);");
                 sb.AppendLine(manyToManyVersionRepositoryFieldName + ".Insert(mt);");
@@ -674,7 +678,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var list = new List<RepositoryFieldInfo>
             {
                 new RepositoryFieldInfo(CacheRepositoryType, CacheRepositoryField),
-                new RepositoryFieldInfo(VersionRepositoryType, VersionRepositoryField)
+                new RepositoryFieldInfo(VersionRepositoryType, VersionRepositoryField),
             };
 
             var many2ManyRepositories = RepositoryInfo.Many2ManyInfo
