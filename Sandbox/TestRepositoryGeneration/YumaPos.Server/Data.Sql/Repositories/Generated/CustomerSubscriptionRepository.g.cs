@@ -25,7 +25,6 @@ namespace YumaPos.Server.Data.Sql.Settings
 		private const string InsertQuery = @"INSERT INTO [CustomerSubscriptions]([CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod]{columns})  VALUES(@CustomerId,@CustomerNotificationsType,@Email,@SMS,@Push,@IsCustomizable,@ResendPeriod{values}) ";
 		private const string UpdateQueryBy = @"UPDATE [CustomerSubscriptions] SET [CustomerSubscriptions].[CustomerId] = @CustomerId,[CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType,[CustomerSubscriptions].[Email] = @Email,[CustomerSubscriptions].[SMS] = @SMS,[CustomerSubscriptions].[Push] = @Push,[CustomerSubscriptions].[IsCustomizable] = @IsCustomizable,[CustomerSubscriptions].[ResendPeriod] = @ResendPeriod FROM [CustomerSubscriptions] ";
 		private const string DeleteQueryBy = @"DELETE FROM [CustomerSubscriptions] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [CustomerSubscriptions].[] FROM [CustomerSubscriptions] ";
 		private const string WhereQueryByCustomerIdAndCustomerNotificationsType = "WHERE [CustomerSubscriptions].[CustomerId] = @CustomerId AND [CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType{andTenantId:[CustomerSubscriptions]} ";
 
 
@@ -34,13 +33,15 @@ namespace YumaPos.Server.Data.Sql.Settings
 		public IEnumerable<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription> GetAll()
 		{
 		var sql = SelectAllQuery;
-		var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>(sql, null).ToList();
+		object parameters = null;
+		var result = DataAccessService.Get<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>(sql, parameters).ToList();
 		return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>> GetAllAsync()
 		{
 		var sql = SelectAllQuery;
-		var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>(sql, null));
+		object parameters = null;
+		var result = (await DataAccessService.GetAsync<YumaPos.Server.Infrastructure.DataObjects.CustomerSubscription>(sql, parameters));
 		return result.ToList();
 		}
 

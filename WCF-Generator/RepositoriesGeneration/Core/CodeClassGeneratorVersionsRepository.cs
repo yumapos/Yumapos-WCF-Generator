@@ -1,21 +1,27 @@
 using System;
 using System.Linq;
 using System.Text;
-using VersionedRepositoryGeneration.Generator.Heplers;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
-namespace VersionedRepositoryGeneration.Generator.Core
+namespace WCFGenerator.RepositoriesGeneration.Core
 {
     internal class CodeClassGeneratorVersionsRepository : BaseCodeClassGeneratorRepository
     {
         public static string RepositoryKind = "Version";
         private string _insertQueryName = "InsertQuery";
         private string _whereQueryBy = "WhereQueryBy";
-        private string _selectByQuery = "SelectByQuery";
-        private string _andWithfilterData = "AndWithFilterData";
-        
+        private string _whereQueryByWithAlias = "WhereQueryByWithAlias";
+        private string _selectByQuery = "SelectBy";
+        private string _selectByKeyAndSliceDateQuery = "SelectByKeyAndSliceDateQuery";
+        private string _andWithIsDeletedFilter = "AndWithIsDeletedFilter";
+        private string _andWithSliceDateFilter = "AndWithSliceDateFilter";
+        private string _andWithIsDeletedFilterWithAlias = "AndWithIsDeletedFilterWithAlias";
+
+        private string _join = "Join";
+        private string _pk = "Pk";
+
         #region Overrides of BaseCodeClassGeneratorRepository
 
         public override string RepositoryName
@@ -54,21 +60,46 @@ namespace VersionedRepositoryGeneration.Generator.Core
             if(!RepositoryInfo.IsManyToMany)
             {
                 // Version filter
-                var selectByQuery = SqlScriptGenerator.GenerateSelectBy(sqlInfo).SurroundWithQuotes();
-                var vk = RepositoryInfo.PossibleKeysForMethods.First(info =>info.FilterType == FilterType.VersionKey);
-                var key = vk.Key;
-                var parametrs = vk.Parameters.Select(p => p.Name).ToList();
-                var sql = SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+                var selectBy = (SqlScriptGenerator.GenerateSelectBy(sqlInfo) + " {filter} ").SurroundWithQuotes();
+                var selectByKeyAndSliceDateQuery = SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo).SurroundWithQuotes();
+                
+                sb.AppendLine("private const string " + _selectByQuery + " = @" + selectBy + ";");
+                sb.AppendLine("private const string " + _selectByKeyAndSliceDateQuery + " = @" + selectByKeyAndSliceDateQuery + ";");
 
-                sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
-                sb.AppendLine("private const string " + _whereQueryBy + key + " = @" + sql + ";");
+                foreach (var method in RepositoryInfo.PossibleKeysForMethods)
+                {
+                    var key = method.Key;
+                    var parametrs = method.Parameters.Select(p => p.Name).ToList();
+                    var sql = SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+                    var sqlV = SqlScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
+
+                    sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
+                    sb.AppendLine("private const string " + _whereQueryByWithAlias + key + " = " + sqlV + ";");
+
+                }
+                // where by join PK
+                if (RepositoryInfo.JoinRepositoryInfo != null)
+                {
+                    var sqlJoin = SqlScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
+                    sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
+                }
 
                 // Is deleted filter
                 if (RepositoryInfo.IsDeletedExist)
                 {
-                    var specialOption = RepositoryInfo.SpecialOptions.Parameters.Select(p => p.Name);
-                    var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName).SurroundWithQuotes();
-                    sb.AppendLine("private const string " + _andWithfilterData + " = " + andFilter + ";");
+                    var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
+                    var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName??sqlInfo.TableName).SurroundWithQuotes();
+                    var andFilterV = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo).SurroundWithQuotes();
+                    sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + andFilter + ";");
+                    sb.AppendLine("private const string " + _andWithIsDeletedFilterWithAlias + " = " + andFilterV + ";");
+                }
+
+                // Is sliceDate filter (modified)
+                if (RepositoryInfo.IsModifiedExist)
+                {
+                    var specialOption = RepositoryInfo.SpecialOptionsModified.Parameters.First().Name;
+                    var filter = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo, "<=");
+                    sb.AppendLine("private const string " + _andWithSliceDateFilter + " = " + filter.SurroundWithQuotes() + ";");
                 }
             }
 
@@ -86,8 +117,23 @@ namespace VersionedRepositoryGeneration.Generator.Core
             if (!string.IsNullOrEmpty(insert))
                 sb.AppendLine(insert);
 
-            if(!RepositoryInfo.IsManyToMany)
+            if (!RepositoryInfo.IsManyToMany)
             {
+                // RepositoryMethod.GetBy - for primary key
+                var getByPrimaryKeyMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.PrimaryKey)
+                    .Aggregate("", (s, method) => s + GenerateGetByPrimaryKey(method));
+
+                if (!string.IsNullOrEmpty(getByPrimaryKeyMethods))
+                    sb.AppendLine(getByPrimaryKeyMethods);
+
+                // RepositoryMethod.GetBy - for filter key
+                var getByFilterKeyMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.FilterKey)
+                    .Aggregate("", (s, method) => s + GenerateGetByFilterKey(method));
+
+                if (!string.IsNullOrEmpty(getByFilterKeyMethods))
+                    sb.AppendLine(getByFilterKeyMethods);
                 // RepositoryMethod.GetBy - for version key
                 var getByVersionKeyMethods = RepositoryInfo.MethodImplementationInfo
                     .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.VersionKey)
@@ -122,82 +168,117 @@ namespace VersionedRepositoryGeneration.Generator.Core
             return sb.ToString();
         }
 
+        private string GenerateGetByPrimaryKey(MethodImplementationInfo method)
+        {
+            var code = GenerateGetByKey(method);
+            return method.RequiresImplementation ? code : code.SurroundWithComments();
+        }
+
+        private string GenerateGetByFilterKey(MethodImplementationInfo method)
+        {
+            var code = GenerateGetByKey(method);
+            return method.RequiresImplementation ? code : code.SurroundWithComments();
+        }
+
         private string GenerateGetByVersionKey(MethodImplementationInfo method)
         {
+            var code = GenerateGetByKey(method);
+            return method.RequiresImplementation ? code : code.SurroundWithComments();
+        }
+
+        private string GenerateGetByKey(MethodImplementationInfo method)
+        {
+            var returnType = method.ReturnType.IsEnumerable() ? "IEnumerable<" + RepositoryInfo.ClassFullName + ">" : RepositoryInfo.ClassFullName;
+            var returnFunc = method.ReturnType.IsEnumerable() ? "return result.ToList();" : "return result.FirstOrDefault();";
             var filter = method.FilterInfo;
+            var isVersionKeyFilter = filter.FilterType == FilterType.VersionKey;
+            var filterBySliceDate = !isVersionKeyFilter && RepositoryInfo.IsModifiedExist;
+            var filterByIsDeleted = RepositoryInfo.IsModifiedExist;
 
-            var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
-            var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
-            var sqlWhere = _whereQueryBy + filter.Key;
+            var sqlWhere = (!isVersionKeyFilter ? _whereQueryByWithAlias : _whereQueryBy) + filter.Key;
 
-            var specialParameter = RepositoryInfo.SpecialOptions.Parameters.First();
-            var specialMethodParameter = specialParameter.TypeName + "? " + specialParameter.Name.FirstSymbolToLower() + " = " + specialParameter.DefaultValue;
-            var specialSqlParameter = specialParameter.Name.FirstSymbolToLower();
+            var selectQuery = isVersionKeyFilter ? _selectByQuery : _selectByKeyAndSliceDateQuery;
+            var isDeletedFilter = isVersionKeyFilter ? _andWithIsDeletedFilter : _andWithIsDeletedFilterWithAlias;
+
+            var parameters = filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
+            var parameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
+
+            if (filterBySliceDate)
+            {
+                var specialParameterModified = RepositoryInfo.SpecialOptionsModified.Parameters.First();
+                var specialMethodParameterModified = specialParameterModified.TypeName + " " + specialParameterModified.Name.FirstSymbolToLower();
+                var specialMethodParameterModifiedName = specialParameterModified.Name.FirstSymbolToLower();
+
+                parameters.Add(specialMethodParameterModified);
+                parameterNames.Add(specialMethodParameterModifiedName);
+            }
+
+            // last parameter - because have default value
+            if (filterByIsDeleted)
+            {
+                var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
+                var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+                var specialMethodParameterIsDeletedName = specialParameterIsDeleted.Name.FirstSymbolToLower();
+
+                parameters.Add(specialMethodParameterIsDeleted);
+                parameterNames.Add(specialMethodParameterIsDeletedName);
+            }
+
+            var methodParameters = string.Join(", ", parameters);
+            var methodParameterNames = string.Join(", ", parameterNames);
+
 
             var sb = new StringBuilder();
 
-            if (RepositoryInfo.IsDeletedExist)
+            // Synchronous method
+            sb.AppendLine("public " + returnType + " GetBy" + filter.Key + "(" + methodParameters + ")");
+            sb.AppendLine("{");
+
+            sb.AppendLine("object parameters = new {" + methodParameterNames + "};");
+            sb.AppendLine("var filter = " + sqlWhere + ";");
+            if (filterByIsDeleted)
             {
-                // Synchronous method
-                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ", " + specialMethodParameter + ")");
+                var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
+                sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-
-                sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
-                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
-                sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
+                sb.AppendLine("filter = filter + " + isDeletedFilter + ";");
                 sb.AppendLine("}");
-
-                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
-                sb.AppendLine("return result.FirstOrDefault();");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async" + "(" + methodParameters + ", " + specialMethodParameter + ")");
-                sb.AppendLine("{");
-
-                sb.AppendLine("object parameters = new {" + sqlParameters + "," + specialSqlParameter + "};");
-                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
-                sb.AppendLine("if (" + specialSqlParameter + ".HasValue)");
-                sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _andWithfilterData + ";");
-                sb.AppendLine("}");
-
-                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
-                sb.AppendLine("return result.FirstOrDefault();");
-                sb.AppendLine("}");
-                sb.AppendLine("");
             }
-            else
+            if (filterBySliceDate)
             {
-                // Synchronous method
-                sb.AppendLine("public " + RepositoryInfo.ClassFullName + " GetBy" + filter.Key + "(" + methodParameters + ")");
-                sb.AppendLine("{");
-
-                sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
-
-                sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
-                sb.AppendLine("return result.FirstOrDefault();");
-                sb.AppendLine("}");
-
-                // Asynchronous method
-                sb.AppendLine("public async Task<" + RepositoryInfo.ClassFullName + "> GetBy" + filter.Key + "Async" + "(" + methodParameters + ")");
-                sb.AppendLine("{");
-
-                sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-                sb.AppendLine("var sql = " + _selectByQuery + " + " + sqlWhere + ";");
-
-                sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
-                sb.AppendLine("return result.FirstOrDefault();");
-                sb.AppendLine("}");
-                sb.AppendLine("");
+                sb.AppendLine("filter = filter + " + _andWithSliceDateFilter + ";");
             }
+            sb.AppendLine("var sql = " + selectQuery + ".Replace(\"{filter}\", filter);");
+            sb.AppendLine("var result = DataAccessService.Get<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
+            sb.AppendLine(returnFunc);
+            sb.AppendLine("}");
 
-            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+            // Asynchronous method
+            sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async" + "(" + methodParameters + ")");
+            sb.AppendLine("{");
+
+            sb.AppendLine("object parameters = new {" + methodParameterNames + "};");
+            sb.AppendLine("var filter = " + sqlWhere + ";");
+            if (filterByIsDeleted)
+            {
+                var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
+                sb.AppendLine("if (" + parameter + ".HasValue)");
+                sb.AppendLine("{");
+                sb.AppendLine("filter = filter + " + isDeletedFilter + ";");
+                sb.AppendLine("}");
+            }
+            if (filterBySliceDate)
+            {
+                sb.AppendLine("filter = filter + " + _andWithSliceDateFilter + ";");
+            }
+            sb.AppendLine("var sql = " + selectQuery + ".Replace(\"{filter}\", filter);");
+            sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+            sb.AppendLine(returnFunc);
+            sb.AppendLine("}");
+            sb.AppendLine("");
+
+            return sb.ToString();
         }
-
 
         public override string GetFullCode()
         {

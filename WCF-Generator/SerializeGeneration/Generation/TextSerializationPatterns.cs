@@ -24,7 +24,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             foreach (var member in elements.Properties)
             {
                 exitInterface.Append("\t\t public ");
-                exitInterface.Append(member.Type.Trim() == "PosMoney" ? "decimal" : member.Type);
+                exitInterface.Append(member.Type.Trim() == "PosMoney" ? "decimal?" : member.Type);
                 exitInterface.Append(" ");
                 exitInterface.Append(member.Name);
                 exitInterface.Append(" { get; set;}");
@@ -133,9 +133,13 @@ namespace WCFGenerator.SerializeGeneration.Generation
             {
                 if (prop.Type.Trim() == "PosMoney")
                 {
-                    stringBuilder.AppendFormat("\t\t\t {0} = new PosMoney(context.MonetarySettings);", prop.VariableClassName);
+                    stringBuilder.AppendFormat("\t\t\t {0} = dataObject.{1}.HasValue ? new PosMoney(context.MonetarySettings)", prop.VariableClassName, prop.Name);
                     stringBuilder.Append("\r\n");
-                    stringBuilder.AppendFormat("\t\t\t  {0}.Value = dataObject.{1};", prop.VariableClassName, prop.Name);
+                    stringBuilder.Append("\t\t\t {");
+                    stringBuilder.Append("\r\n");
+                    stringBuilder.AppendFormat("\t\t\t\t Value = dataObject.{0}.Value", prop.Name);
+                    stringBuilder.Append("\r\n");
+                    stringBuilder.Append("\t\t\t } : null;");
                     stringBuilder.Append("\r\n");
                 }
                 else
@@ -173,7 +177,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             {
                 if (prop.Type.Trim() == "PosMoney")
                 {
-                    stringBuilder.AppendFormat("\t\t\t {2}.{0} = {1}.Value;", prop.Name, prop.VariableClassName,
+                    stringBuilder.AppendFormat("\t\t\t {2}.{0} = {1} != null ? {1}.Value : (decimal?) null;", prop.Name, prop.VariableClassName,
                         isSerialization ? "bodo" : "dataObject");
                     stringBuilder.Append("\r\n");
                 }

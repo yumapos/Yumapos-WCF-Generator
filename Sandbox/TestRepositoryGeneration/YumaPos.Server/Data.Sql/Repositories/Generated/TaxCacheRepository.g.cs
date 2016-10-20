@@ -16,7 +16,7 @@ using YumaPos.Server.Infrastructure.Repositories;
 
 namespace YumaPos.Server.Data.Sql
 {
-	internal partial class TaxCacheRepository : RepositoryBase, ITaxRepository
+	internal partial class TaxCacheRepository : RepositoryBase
 	{
 		private const string Fields = @"[Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns}";
 		private const string Values = @"@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values}";
@@ -25,32 +25,31 @@ namespace YumaPos.Server.Data.Sql
 		private const string InsertQuery = @"INSERT INTO [Taxs]([Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]{columns}) OUTPUT INSERTED.TaxId VALUES(@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted{values}) ";
 		private const string UpdateQueryBy = @"UPDATE [Taxs] SET [Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs] ";
 		private const string DeleteQueryBy = @"DELETE FROM [Taxs] ";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [Taxs].[TaxId] FROM [Taxs] ";
 		private const string WhereQueryByTaxId = "WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]} ";
 		private const string WhereQueryByTaxVersionId = "WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
-		private const string AndWithFilterData = "AND [Taxs].[IsDeleted] = @IsDeleted";
+		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";
 
 
 		public TaxCacheRepository(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		/*
 		public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetAll(bool? isDeleted = false)
 		{
-		object parameters = new {isDeleted};
 		var sql = SelectAllQuery;
+		object parameters = new {isDeleted};
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithFilterData;
+		sql = sql + AndWithIsDeletedFilter;
 		}
 		var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters).ToList();
 		return result.ToList();
 		}
 		public async Task<IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>> GetAllAsync(bool? isDeleted = false)
 		{
-		object parameters = new {isDeleted};
 		var sql = SelectAllQuery;
+		object parameters = new {isDeleted};
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithFilterData;
+		sql = sql + AndWithIsDeletedFilter;
 		}
 		var result = (await DataAccessService.GetAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters));
 		return result.ToList();
@@ -63,7 +62,7 @@ namespace YumaPos.Server.Data.Sql
 			var sql = SelectByQuery + WhereQueryByTaxId;
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
 			return result.FirstOrDefault();
@@ -74,34 +73,35 @@ namespace YumaPos.Server.Data.Sql
 			var sql = SelectByQuery + WhereQueryByTaxId;
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithFilterData;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters));
 			return result.FirstOrDefault();
 		}
 
+
 		/*
-		public YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
+		public IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
 		{
-		object parameters = new {taxVersionId,isDeleted};
+		object parameters = new {taxVersionId, isDeleted};
 		var sql = SelectByQuery + WhereQueryByTaxVersionId;
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithFilterData;
+		sql = sql + AndWithIsDeletedFilter;
 		}
 		var result = DataAccessService.Get<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters);
-		return result.FirstOrDefault();
+		return result.ToList();
 		}
-		public async Task<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
+		public async Task<IEnumerable<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
 		{
-		object parameters = new {taxVersionId,isDeleted};
+		object parameters = new {taxVersionId, isDeleted};
 		var sql = SelectByQuery + WhereQueryByTaxVersionId;
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithFilterData;
+		sql = sql + AndWithIsDeletedFilter;
 		}
 		var result = (await DataAccessService.GetAsync<YumaPos.FrontEnd.Infrastructure.DataObjects.PosFdat.Taxes.Tax>(sql, parameters));
-		return result.FirstOrDefault();
+		return result.ToList();
 		}
 
 

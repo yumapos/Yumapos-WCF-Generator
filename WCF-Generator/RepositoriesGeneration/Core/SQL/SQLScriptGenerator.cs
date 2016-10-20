@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private const string _tempTable = "@Temp";
         private const string _tenantId = "TenantId";
+        private const string _sliceDateColumnName = "Modified";
+        private const string _versionTableAlias1 = "versionTable1";
+        private const string _joinVersionTableAlias1 = "joinVersionTable1";
+
+
 
         public static string GenerateTableName(string tableName)
         {
@@ -33,21 +39,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateSelectAll(SqlInfo info)
         {
-            return GenerateSelectBy(info) + " " + WhereTenantRelated(info.TableName, info.TenantRelated) + " ";
+            return GenerateSelectBy(info, null) + " " + WhereTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateSelectBy(SqlInfo info)
+        public static string GenerateSelectBy(SqlInfo info, int? topNumber = null)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
                 // return select from table and join table
-                return Select(info.TableColumns, info.TableName) + ","
+                return Select(info.TableColumns, info.TableName, topNumber) + ","
                        + Fields(info.JoinTableColumns, info.JoinTableName) + " "
                        + From(info.TableName) + " "
-                       + InnerJoin(info.TableName, info.PrimaryKeyName, info.JoinTableName, info.JoinPrimaryKeyName) + " ";
+                       + InnerJoin(info.TableName, info.PrimaryKeyNames.First(), info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " ";//TODO FIX TO MANY KEYS
             }
             // return select from table
-            return Select(info.TableColumns, info.TableName) + " " + From(info.TableName) + " ";
+            return Select(info.TableColumns, info.TableName, topNumber) + " " + From(info.TableName) + " ";
         }
 
         public static string GenerateInsert(SqlInfo info)
@@ -64,10 +70,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 {
                     columnsJonedWithoutSelectedPk.Add(_tenantId);
                 }
-                var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyName) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyName;
+                var outputKey = info.ReturnPrimarayKey && string.IsNullOrEmpty(info.PrimaryKeyNames.First()) ? "" : "OUTPUT INSERTED." + info.PrimaryKeyNames.First(); //TODO FIX TO MANY KEYS
 
                 // use pk from inherite model
-                var values = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c);
+                var values = columnsJonedWithoutSelectedPk.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c);//TODO FIX TO MANY KEYS
                 var joinClassValues = Values(values);
 
                 // return inset into table and join table
@@ -75,14 +81,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                      + "INSERT INTO " + info.TableName + "(" + Fields(columnsWithoutSelectedPk, info.TableName) + ") " + outputKey + " VALUES(" + Values(columnsWithoutSelectedPk) + ") ";
             }
             // return select from table
-            return Insert(columnsWithoutSelectedPk, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyName : null) + " ";
+            return Insert(columnsWithoutSelectedPk, info.TableName, info.ReturnPrimarayKey ? info.PrimaryKeyNames.First() : null) + " "; //TODO FIX TO MANY KEYS
         }
 
         public static string GenerateInsertToTemp(SqlInfo info)
         {
             return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier);" +
                                                         "INSERT INTO "+ _tempTable + " " +
-                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyName) + " FROM " + info.TableName + " ";
+                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyNames.First()) + " FROM " + info.TableName + " ";//TODO FIX TO MANY KEYS
         }
 
         public static string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
@@ -92,13 +98,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateWhereJoinPk( SqlInfo info)
         {
-            return Where(new [] { info.JoinPrimaryKeyName }, info.JoinTableName) + AndTenantRelated(info.JoinTableName, info.TenantRelated) + " ";
+            return Where(new [] { info.JoinPrimaryKeyNames.First() }, info.JoinTableName) + AndTenantRelated(info.JoinTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
         }
 
 
-        public static string GenerateAnd(IEnumerable<string> selectedFilters, string ownerTable)
+        public static string GenerateAnd(string selectedFilter, string ownerTable, string condition = "=")
         {
-            return And(selectedFilters, ownerTable);
+            return And(new []{selectedFilter}, ownerTable, condition);
+        }
+
+        public static string GenerateOrderBySliceDate(SqlInfo info)
+        {
+            return OrderBy("Modified", info.JoinTableName, true);
         }
 
         public static string GenerateUpdate(SqlInfo info)
@@ -112,7 +123,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public static string GenerateUpdateJoin(SqlInfo info)
         {
             // use pk from inherite model
-            var values = info.JoinTableColumns.Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c));
+            var values = info.JoinTableColumns.Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c));//TODO FIX TO MANY KEYS
 
             return Update(info.JoinTableName) + " "
                    + Set(values, info.JoinTableName) + " "
@@ -122,8 +133,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public static string GenerateRemove(SqlInfo info)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
-                return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyName) + " IN (SELECT ItemId FROM " + _tempTable + ");" +
-                   Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyName) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " ";
+                return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" +//TODO FIX TO MANY KEYS
+                   Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " ";//TODO FIX TO MANY KEYS
 
             return Delete(info.TableName) + " ";
         }
@@ -143,7 +154,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var joinFields = GetFullJoinedColumnList(info);
                 var joinClassProperties = Fields(joinFields, info.JoinTableName);
                 // use versionId & primary key from inherite model
-                var values = joinFields.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyName ? info.PrimaryKeyName : c).ToList();
+                var values = joinFields.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList(); //TODO FIX TO MANY KEYS
                 var joinClassValues = Values(values);
 
                 return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + ")\r\n" +
@@ -162,6 +173,57 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                        "VALUES (" + classValues + ")";
         }
 
+        public static string GenerateSelectByToVersionTable(SqlInfo info, int? topNumber = null)
+        {
+            var versionTableAlias = "versionTable";
+            
+            var joined = info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName);
+
+            if (joined)
+            {
+                var selectMaxModifiedJoin = @"(SELECT " + string.Join(",", info.PrimaryKeyNames.Select(pk => Field(_versionTableAlias1, pk))) + ", MAX(" + Field(_joinVersionTableAlias1, _sliceDateColumnName) + ") as " + _sliceDateColumnName + " "
+                                            + From(info.VersionTableName + " " + _versionTableAlias1) + " "
+                                            + InnerJoin(info.JoinTableName + " " + _joinVersionTableAlias1, Field(_versionTableAlias1, info.VersionKeyName) + " = " + Field(_joinVersionTableAlias1, info.JoinVersionKeyName)) + " "
+                                            + "{filter} "
+                                            + " GROUP BY " + string.Join(",", info.PrimaryKeyNames.Select(pk => Field(_versionTableAlias1, pk))) + ") " + versionTableAlias;
+
+                // join all columns from main table
+                var comparePrimaryKey = string.Join(" AND ", info.PrimaryKeyNames.Select(pk => Field(versionTableAlias, pk) + " = " + Field(info.JoinVersionTableName, info.JoinPrimaryKeyNames.First())));
+                var compareSliceDate = Field(versionTableAlias, _sliceDateColumnName) + " = " + Field(info.JoinVersionTableName, _sliceDateColumnName);
+                var join1 = InnerJoin(info.JoinVersionTableName, comparePrimaryKey + " AND " + compareSliceDate);
+
+                // join all columns from joinned table
+                var compareVersionId = Field(info.JoinVersionTableName, info.JoinVersionKeyName) + " = " + Field(info.VersionTableName, info.VersionKeyName);
+                var join2 = InnerJoin(info.VersionTableName, compareVersionId);
+                return Select(info.TableColumns, info.VersionTableName) + " FROM " + selectMaxModifiedJoin + " " + join1 + " " + join2;
+            }
+            else
+            {
+                var selectMaxModified = @"(SELECT " + string.Join(",", info.PrimaryKeyNames.Select(pk => Field(_versionTableAlias1, pk))) + ", MAX(" + Field(_versionTableAlias1, _sliceDateColumnName) + ") as " + _sliceDateColumnName + " "
+                                        + From(info.VersionTableName, _versionTableAlias1) + " "
+                                        + " {filter} "
+                                        + " GROUP BY " + string.Join(",", info.PrimaryKeyNames.Select(pk => Field(_versionTableAlias1, pk))) + ") " + versionTableAlias;
+
+                // join all columns from main table
+                var comparePrimaryKey = string.Join(" AND ", info.PrimaryKeyNames.Select(pk => Field(versionTableAlias, pk) + " = " + Field(info.VersionTableName, pk)));
+                var compareSliceDate = Field(versionTableAlias, _sliceDateColumnName) + " = " + Field(info.VersionTableName, _sliceDateColumnName);
+                var join1 = InnerJoin(info.VersionTableName, comparePrimaryKey + " AND " + compareSliceDate);
+
+                return Select(info.TableColumns, info.VersionTableName) + " FROM " + selectMaxModified + " " + join1;
+            }
+        }
+
+        public static string GenerateWhereVersions(IEnumerable<string> selectedFilters, SqlInfo info)
+        {
+            return Where(selectedFilters, _versionTableAlias1) + AndTenantRelated(_versionTableAlias1, info.TenantRelated) + " ";
+        }
+
+        public static string GenerateAndVersions(string selectedFilter, SqlInfo info, string condition = "=")
+        {
+            var tableAlias = info.JoinTableName != null ? _joinVersionTableAlias1 : _versionTableAlias1;
+            return And(new[] { selectedFilter }, tableAlias, condition);
+        }
+
         #endregion
 
         #region SQL operators
@@ -175,9 +237,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return string.Join(",", columns.Select(e => "@" + e));
         }
 
-        private static string Select(IEnumerable<string> columns, string table)
+        private static string Select(IEnumerable<string> columns, string table, int? topNumber = null)
         {
-            return "SELECT " + Fields(columns, table);
+            return "SELECT " + (topNumber.HasValue ? " TOP " + topNumber : "") + Fields(columns, table);
         }
 
         private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string primaryKey = null)
@@ -217,13 +279,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "DELETE FROM " + tableName;
         }
 
-        private static string From(string tableName)
+        private static string From(string tableName, string alias = null)
         {
-            return "FROM " + tableName;
+            return "FROM " + tableName +  (alias!=null ? " " + alias : "");
         }
         private static string InnerJoin(string tableName, string tablePrimaryKey, string joinTableName, string joinTablePrimaryKey)
         {
             return "INNER JOIN " + joinTableName + " ON " + tableName + ".[" + tablePrimaryKey + "] = " + joinTableName + ".[" + joinTablePrimaryKey + "]";
+        }
+
+        private static string InnerJoin(string joinTableName, string conditions)
+        {
+            return "INNER JOIN " + joinTableName + " ON " + conditions;
         }
 
         private static string Where(IEnumerable<string> parameters, string ownerTableName)
@@ -236,12 +303,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return sb.ToString();
         }
 
-        private static string And(IEnumerable<string> parameters, string ownerTableName)
+        private static string And(IEnumerable<string> parameters, string ownerTableName, string condition = "=")
         {
             var sb = new StringBuilder();
 
             sb.Append("AND ");
-            sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
+            sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] "+ condition + " @" + i)));
+            sb.Append(" ");
 
             return sb.ToString();
         }
@@ -250,6 +318,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             return isTenantRelated ? "{andTenantId:" + tableName +"}" : "";
         }
+
+        private static string OrderBy(string columnName, string ownerTableName, bool desc)
+        {
+            return "ORDER BY " + ownerTableName + "." + columnName + (desc ? " DESC":"");
+        }
+
 
         private static string WhereTenantRelated(string tableName, bool isTenantRelated)
         {
@@ -286,6 +360,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         }
 
         #endregion
+        
     }
 
     internal struct SqlInfo
@@ -296,9 +371,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool ReturnPrimarayKey;
         public string JoinTableName;
         public IEnumerable<string> JoinTableColumns;
-        public string JoinPrimaryKeyName;
+        public IEnumerable<string> JoinPrimaryKeyNames;
         public bool TenantRelated;
-        public string PrimaryKeyName;
+        public IEnumerable<string> PrimaryKeyNames;
         public string VersionKeyName;
         public string VersionTableName;
         public string JoinVersionKeyName;
