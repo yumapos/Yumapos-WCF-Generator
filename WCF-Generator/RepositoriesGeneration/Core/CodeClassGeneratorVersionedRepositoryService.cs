@@ -343,10 +343,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var updateMethodNames = GetUpdateMethodNames();
             var updateMethods = updateMethodNames.Select(name => name + "(" + parameterName + ");").ToList();
 
-            var returnType = RepositoryInfo.PrimaryKeys.Count == 1 ? RepositoryInfo.PrimaryKeys.First().TypeName : "void"; // If PrimaryKeys > 1 then should not return identifier
-            var returnTypeAsync = RepositoryInfo.PrimaryKeys.Count == 1 ? "Task<" + RepositoryInfo.PrimaryKeys.First().TypeName + ">" : "Task"; // If PrimaryKeys > 1 then should not return identifier
-            var returnFunc = RepositoryInfo.PrimaryKeys.Count == 1 ? "return (" + returnType + ")res;" : null;
-            var varRes = returnFunc != null ? "var res = " : "";
+            var returnType = "Guid";
+            var returnTypeAsync = "Task<" + returnType + ">";
+            var returnFunc = "return " + versionKeyProperty + ";";
 
             var sb = new StringBuilder();
 
@@ -375,7 +374,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             sb.AppendLine(VersionRepositoryField + ".Insert(" + parameterName + ");");
-            sb.AppendLine(varRes + CacheRepositoryField + ".Insert(" + parameterName + ");");
+            sb.AppendLine(CacheRepositoryField + ".Insert(" + parameterName + ");");
 
             foreach (var m in updateMethods)
             {
@@ -411,7 +410,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             sb.AppendLine("await " + VersionRepositoryField + ".InsertAsync(" + parameterName + ");");
-            sb.AppendLine(varRes + "await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
+            sb.AppendLine("await " + CacheRepositoryField + ".InsertAsync(" + parameterName + ");");
 
             foreach (var m in updateMethods)
             {
