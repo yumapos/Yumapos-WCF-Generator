@@ -60,8 +60,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             if(!RepositoryInfo.IsManyToMany)
             {
                 // Version filter
-                var selectBy = (SqlScriptGenerator.GenerateSelectBy(sqlInfo) + " {filter} ").SurroundWithQuotes();
-                var selectByKeyAndSliceDateQuery = SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo).SurroundWithQuotes();
+                var selectBy = (SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo) + " {filter} ").SurroundWithQuotes();
+                var selectByKeyAndSliceDateQuery = SqlScriptGenerator.GenerateSelectByKeyAndSliceDateToVersionTable(sqlInfo).SurroundWithQuotes();
                 
                 sb.AppendLine("private const string " + _selectByQuery + " = @" + selectBy + ";");
                 sb.AppendLine("private const string " + _selectByKeyAndSliceDateQuery + " = @" + selectByKeyAndSliceDateQuery + ";");
@@ -70,17 +70,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 {
                     var key = method.Key;
                     var parametrs = method.Parameters.Select(p => p.Name).ToList();
-                    var sql = SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
                     var sqlV = SqlScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
+                    var sqlA = SqlScriptGenerator.GenerateWhereVersionsWithAlias(parametrs, sqlInfo).SurroundWithQuotes();
 
-                    sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
-                    sb.AppendLine("private const string " + _whereQueryByWithAlias + key + " = " + sqlV + ";");
+                    sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sqlV + ";");
+                    sb.AppendLine("private const string " + _whereQueryByWithAlias + key + " = " + sqlA + ";");
 
                 }
                 // where by join PK
                 if (RepositoryInfo.JoinRepositoryInfo != null)
                 {
-                    var sqlJoin = SqlScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
+                    var sqlJoin = SqlScriptGenerator.GenerateWhereJoinPkVersion(sqlInfo).SurroundWithQuotes();
                     sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
                 }
 
@@ -88,17 +88,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 if (RepositoryInfo.IsDeletedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
-                    var andFilter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName??sqlInfo.TableName).SurroundWithQuotes();
                     var andFilterV = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo).SurroundWithQuotes();
-                    sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + andFilter + ";");
-                    sb.AppendLine("private const string " + _andWithIsDeletedFilterWithAlias + " = " + andFilterV + ";");
+                    var andFilterA = SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo).SurroundWithQuotes();
+                    sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + andFilterV + ";");
+                    sb.AppendLine("private const string " + _andWithIsDeletedFilterWithAlias + " = " + andFilterA + ";");
                 }
 
                 // Is sliceDate filter (modified)
                 if (RepositoryInfo.IsModifiedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsModified.Parameters.First().Name;
-                    var filter = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo, "<=");
+                    var filter = SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo, "<=");
                     sb.AppendLine("private const string " + _andWithSliceDateFilter + " = " + filter.SurroundWithQuotes() + ";");
                 }
             }
