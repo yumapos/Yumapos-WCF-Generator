@@ -229,11 +229,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Where(selectedFilters, info.VersionTableName) + AndTenantRelated(info.VersionTableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateAndVersions(string selectedFilter, SqlInfo info, string condition = "=")
-        {
-            return And(new[] { selectedFilter }, info.VersionTableName, condition);
-        }
-
         public static string GenerateWhereVersionsWithAlias(IEnumerable<string> selectedFilters, SqlInfo info)
         {
             return Where(selectedFilters, _versionTableAlias1) + AndTenantRelated(_versionTableAlias1, info.TenantRelated) + " ";
@@ -241,7 +236,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateAndVersionsWithAlias(string selectedFilter, SqlInfo info, string condition = "=")
         {
-            var tableAlias = info.JoinTableName != null ? _joinVersionTableAlias1 : _versionTableAlias1;
+            var tableAlias = info.JoinVersionTableName != null ? _joinVersionTableAlias1 : _versionTableAlias1;
             return And(new[] { selectedFilter }, tableAlias, condition);
         }
 

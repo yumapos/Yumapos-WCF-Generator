@@ -88,7 +88,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 if (RepositoryInfo.IsDeletedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
-                    var andFilterV = SqlScriptGenerator.GenerateAndVersions(specialOption, sqlInfo).SurroundWithQuotes();
+                    var andFilterV = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinVersionTableName?? sqlInfo.VersionTableName ).SurroundWithQuotes();
                     var andFilterA = SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo).SurroundWithQuotes();
                     sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + andFilterV + ";");
                     sb.AppendLine("private const string " + _andWithIsDeletedFilterWithAlias + " = " + andFilterA + ";");
