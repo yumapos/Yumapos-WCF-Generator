@@ -170,7 +170,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                        "VALUES (" + classValues + ")";
         }
 
-        public static string GenerateSelectByToVersionTable(SqlInfo info, int? topNumber = null)
+        public static string GenerateSelectByToVersionTable(SqlInfo info)
+        {
+            if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
+            {
+                // return select from table and join table
+                return Select(info.TableColumns, info.VersionTableName) + ","
+                       + Fields(info.JoinTableColumns, info.JoinVersionTableName) + " "
+                       + From(info.VersionTableName) + " "
+                       + InnerJoin(info.VersionTableName, info.PrimaryKeyNames.First(), info.JoinVersionTableName, info.JoinPrimaryKeyNames.First()) + " ";//TODO FIX TO MANY KEYS
+            }
+            // return select from table
+            return Select(info.TableColumns, info.VersionTableName) + " " + From(info.VersionTableName) + " ";
+        }
+
+        public static string GenerateSelectByKeyAndSliceDateToVersionTable(SqlInfo info)
         {
             var versionTableAlias = "versionTable";
             
@@ -212,13 +226,23 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateWhereVersions(IEnumerable<string> selectedFilters, SqlInfo info)
         {
+            return Where(selectedFilters, info.VersionTableName) + AndTenantRelated(info.VersionTableName, info.TenantRelated) + " ";
+        }
+
+        public static string GenerateWhereVersionsWithAlias(IEnumerable<string> selectedFilters, SqlInfo info)
+        {
             return Where(selectedFilters, _versionTableAlias1) + AndTenantRelated(_versionTableAlias1, info.TenantRelated) + " ";
         }
 
-        public static string GenerateAndVersions(string selectedFilter, SqlInfo info, string condition = "=")
+        public static string GenerateAndVersionsWithAlias(string selectedFilter, SqlInfo info, string condition = "=")
         {
-            var tableAlias = info.JoinTableName != null ? _joinVersionTableAlias1 : _versionTableAlias1;
+            var tableAlias = info.JoinVersionTableName != null ? _joinVersionTableAlias1 : _versionTableAlias1;
             return And(new[] { selectedFilter }, tableAlias, condition);
+        }
+
+        public static string GenerateWhereJoinPkVersion(SqlInfo info)
+        {
+            return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinVersionTableName) + AndTenantRelated(info.JoinVersionTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
         }
 
         #endregion
