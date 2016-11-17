@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Services;
 using WCFGenerator.SerializeGeneration;
 using WCFGenerator.SerializeGeneration.Configuration;
@@ -188,6 +189,7 @@ namespace WCFGenerator
                         Name = EditingSerializationHelper.GetPropertyName(property.Identifier.Text),
                         Type = property.Type.ToFullString(),
                         VariableClassName = property.Identifier.Text,
+                        IsSetterExist = property.SetterExist(),
                     });
                 }
 
@@ -197,7 +199,8 @@ namespace WCFGenerator
                     {
                         Name = EditingSerializationHelper.GetPropertyName(field.Declaration.Variables.First().Identifier.ValueText),
                         Type = field.Declaration.Type.ToFullString(),
-                        VariableClassName = field.Declaration.Variables.First().Identifier.ValueText
+                        VariableClassName = field.Declaration.Variables.First().Identifier.ValueText,
+                        IsSetterExist = true
                     });
                 }
 
@@ -219,6 +222,7 @@ namespace WCFGenerator
                             Name = EditingSerializationHelper.GetPropertyName(property.Identifier.Text),
                             Type = property.Type.ToFullString(),
                             VariableClassName = property.Identifier.Text,
+                            IsSetterExist = property.SetterExist()
                         });
                     }
                     textElements.MapClassName = mapClassName;
@@ -311,8 +315,5 @@ namespace WCFGenerator
                 }
             }
         }
-
-         
-
     }
 }
