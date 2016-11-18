@@ -95,13 +95,13 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
                 // get repository info by  EntityType from [many2manyAttribute]
                 many2Many.EntityRepositoryInfo = resultRepositories
-                    .Where(r => r.RepositoryName.StartsWith(many2Many.EntityType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
+                    .Where(r => r.RepositoryName == many2Many.EntityType + r.RepositoryInfo.RepositorySuffix)
                     .Select(r => r.RepositoryInfo)
                     .FirstOrDefault();
 
                 // get repository info by ManyToManyEntytyType from [many2manyAttribute]
                 var manyToManyRepositoryInfo = resultRepositories
-                    .Where(r => r.RepositoryName.StartsWith(many2Many.ManyToManyEntytyType) && r.RepositoryName.EndsWith(r.RepositoryInfo.RepositorySuffix))
+                    .Where(r => r.RepositoryName == many2Many.ManyToManyEntytyType + r.RepositoryInfo.RepositorySuffix)
                     .Select(r => r.RepositoryInfo)
                     .FirstOrDefault();
                 if (manyToManyRepositoryInfo != null)
