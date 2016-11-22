@@ -131,6 +131,10 @@ namespace WCFGenerator.SerializeGeneration.Generation
 
             foreach (var prop in mainProp)
             {
+                if (!prop.IsSetterExist)
+                {
+                    continue;
+                }
                 if (prop.Type.Trim() == "PosMoney")
                 {
                     stringBuilder.AppendFormat("\t\t\t {0} = dataObject.{1}.HasValue ? new PosMoney(context.MonetarySettings)", prop.VariableClassName, prop.Name);
