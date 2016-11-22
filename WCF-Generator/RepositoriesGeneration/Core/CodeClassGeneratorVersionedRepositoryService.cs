@@ -24,25 +24,25 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private string CacheRepositoryType
         {
-            get { return RepositoryInfo.ClassName + _cacheRepository; }
+            get { return RepositoryInfo.RepositoryNamespace + "." + RepositoryInfo.ClassName + _cacheRepository; }
         }
 
         private string CacheRepositoryField
         {
-            get { return "_" + CacheRepositoryType.FirstSymbolToLower(); }
+            get { return "_" + CacheRepositoryType.Split('.').Last().FirstSymbolToLower(); }
         }
 
         private string VersionRepositoryType
         {
-            get { return RepositoryInfo.ClassName + _versionRepository; }
+            get { return RepositoryInfo.RepositoryNamespace + "." + RepositoryInfo.ClassName + _versionRepository; }
         }
 
         private string VersionRepositoryField
         {
-            get { return "_" + VersionRepositoryType.FirstSymbolToLower(); }
+            get { return "_" + VersionRepositoryType.Split('.').Last().FirstSymbolToLower(); }
         }
 
-        private IEnumerable<RepositoryFieldInfo> AllFieldInfos
+        private IEnumerable<RepositoryFieldInfo> AllRepositoryFieldInfos
         {
             get
             {
@@ -89,11 +89,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         {
             var constructorParamers = new List<string>()
             {
-                "IDataAccessController dataAccessController",
-                "IDataAccessService dataAccessService",
-                "IDateTimeService dateTimeService"
+                RepositoryInfo.DataAccessControllerTypeName + " dataAccessController",
+                RepositoryInfo.DataAccessServiceTypeName + " dataAccessService",
+                RepositoryInfo.DateTimeServiceTypeName + " dateTimeService"
             };
-            constructorParamers.AddRange(AllFieldInfos.Where(i => !i.InitNew).Select(f => f.InterfaceName + " " + f.TypeName.FirstSymbolToLower()).ToList());
+            constructorParamers.AddRange(AllRepositoryFieldInfos.Where(i => !i.InitNew).Select(f => f.InterfaceName + " " + f.TypeName.FirstSymbolToLower()).ToList());
 
             var parameters = string.Join(",\r\n", constructorParamers);
 
@@ -106,7 +106,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine(DataAccessControllerField + " = " + "dataAccessController;");
             sb.AppendLine(DateTimeServiceField + " = " + "dateTimeService;");
 
-            foreach (var f in AllFieldInfos)
+            foreach (var f in AllRepositoryFieldInfos)
             {
                 var init = f.InitNew ? f.Name + " = new " + f.TypeName + "(dataAccessService)" : f.Name + " = (" + f.TypeName + ")" + f.TypeName.FirstSymbolToLower();
                 sb.AppendLine(init + ";");
@@ -120,9 +120,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         public override string GetFields()
         {
             var sb = new StringBuilder();
-            sb.AppendLine("private IDataAccessController " + DataAccessControllerField + ";");
-            sb.AppendLine("private IDateTimeService " + DateTimeServiceField + ";");
-            foreach (var f in GetFieldInfos())
+            sb.AppendLine("private " + RepositoryInfo.DataAccessControllerTypeName + " " + DataAccessControllerField + ";");
+            sb.AppendLine("private " + RepositoryInfo.DateTimeServiceTypeName + " " + DateTimeServiceField + ";");
+            foreach (var f in AllRepositoryFieldInfos)
             {
                 sb.AppendLine("private " + f.TypeName + " " + f.Name + ";");
             }
@@ -484,12 +484,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             foreach (var info in RepositoryInfo.Many2ManyInfo)
             {
                 var manyToManyEntityName = info.ManyToManyRepositoryInfo.ClassName;
-                var manyToManyCacheRepositoryName = info.ManyToManyEntytyType + _cacheRepository;
-                var manyToManyVersionRepositoryName = info.ManyToManyEntytyType + _versionRepository;
-                var manyToManyCacheRepositoryFieldName = "_" + manyToManyCacheRepositoryName.FirstSymbolToLower();
-                var manyToManyVersionRepositoryFieldName = "_" + manyToManyVersionRepositoryName.FirstSymbolToLower();
+                var manyToManyCacheRepositoryFieldName = AllRepositoryFieldInfos.First(f => f.TypeName.EndsWith(info.ManyToManyEntytyType.Split('.').Last() + _cacheRepository)).Name;
+                var manyToManyVersionRepositoryFieldName = AllRepositoryFieldInfos.First(f => f.TypeName.EndsWith(info.ManyToManyEntytyType.Split('.').Last() + _versionRepository)).Name;
 
-                var entityCacheRepositoryName = "_" + info.EntityRepositoryInfo.ClassName.FirstSymbolToLower() + _cacheRepository;
+                var entityCacheRepositoryName = AllRepositoryFieldInfos.First(f => f.TypeName.Split('.').Last()== info.EntityRepositoryInfo.ClassName + _cacheRepository).Name;
 
                 var primaryKeyName = RepositoryInfo.PrimaryKeyName;
                 var versionKeyName = RepositoryInfo.VersionKeyName;
@@ -504,7 +502,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("if (" + parameterName + "." + propertyName + " == null)");
                 sb.AppendLine(parameterName + "." + propertyName + " = " + manyToManyCacheRepositoryFieldName + ".GetBy" + primaryKeyName + "(" + parameterName + "." + primaryKeyName + ").Select(i => i." + primaryKeyName2 + ");");
 
-                sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName + ".Select(ids => new " + manyToManyEntityName + "()");
+                sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName + ".Select(ids => new " + info.ManyToManyEntytyType + "()");
                 sb.AppendLine("{");
                 sb.AppendLine(primaryKeyName2 + " = ids,");
                 sb.AppendLine(versionKeyName2 + " = " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(ids)." + versionKeyName2 + ",");
@@ -683,15 +681,28 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var many2ManyRepositories = RepositoryInfo.Many2ManyInfo
                 .SelectMany(i => new List<RepositoryFieldInfo>
                 {
-                    new RepositoryFieldInfo(i.ManyToManyEntytyType + _cacheRepository, "_" + i.ManyToManyEntytyType.FirstSymbolToLower() + _cacheRepository),
-                    new RepositoryFieldInfo(i.ManyToManyEntytyType + _versionRepository, "_" + i.ManyToManyEntytyType.FirstSymbolToLower() + _versionRepository),
-                    new RepositoryFieldInfo(i.EntityType + _cacheRepository, "_" + i.EntityType.FirstSymbolToLower() + _cacheRepository)
+                    CashField(i.ManyToManyEntytyType, i.ManyToManyRepositoryInfo.RepositoryNamespace),
+                    VersionField(i.ManyToManyEntytyType, i.ManyToManyRepositoryInfo.RepositoryNamespace),
+                    CashField(i.EntityType, i.EntityRepositoryInfo.RepositoryNamespace),
                 });
 
             list.AddRange(many2ManyRepositories);
 
             return list;
         }
+
+        private RepositoryFieldInfo CashField(string entityTypeName, string nameSpace)
+        {
+            var shortName = entityTypeName.Split('.').Last() + _cacheRepository;
+            return new RepositoryFieldInfo(nameSpace + "." + shortName, "_" + shortName.FirstSymbolToLower());
+        }
+
+        private RepositoryFieldInfo VersionField(string entityTypeName, string nameSpace)
+        {
+            var shortName = entityTypeName.Split('.').Last() + _versionRepository;
+            return new RepositoryFieldInfo(nameSpace + "." + shortName, "_" + shortName.FirstSymbolToLower());
+        }
+
 
         #endregion
     }

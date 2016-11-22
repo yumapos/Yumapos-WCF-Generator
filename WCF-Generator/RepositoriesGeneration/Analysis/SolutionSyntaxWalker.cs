@@ -89,7 +89,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
                 });
         }
 
-        public IEnumerable<ClassDeclarationSyntax> GetRepositoryClasses(string attribute)
+        public IEnumerable<ClassDeclarationSyntax> GetRepositoryClasses()
         {
             return _repositoryModelClasses;
         }
@@ -102,6 +102,15 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var resultList = _customRepositoryClasses.Where(c => c.Identifier.Text == className);
 
             return resultList;
+        }
+
+        /// <summary>
+        ///     Search type name
+        /// </summary>
+        public string GetFullTypeName(string typeName)
+        {
+            var resultList = _fullCompilation.GetSymbolsWithName(s => s == typeName);
+            return resultList.FirstOrDefault().ToString();
         }
 
         public IEnumerable<InterfaceDeclarationSyntax> GetInheritedInterfaces(string interfaceName)
