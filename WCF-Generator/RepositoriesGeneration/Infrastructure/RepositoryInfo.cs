@@ -345,6 +345,21 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             }
         }
 
+        /// <summary>
+        ///     Full type of data access service
+        /// </summary>
+        public string DataAccessServiceTypeName { get; set; }
+
+        /// <summary>
+        ///     Full type of data access controller
+        /// </summary>
+        public string DataAccessControllerTypeName { get; set; }
+
+        /// <summary>
+        ///     Full type of date time service
+        /// </summary>
+        public string DateTimeServiceTypeName { get; set; }
+
         #endregion
     } 
 }

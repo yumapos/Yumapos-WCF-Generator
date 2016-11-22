@@ -45,11 +45,16 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         public IEnumerable<ICodeClassGeneratorRepository> GetRepositories()
         {
             // Get all clases marked RepositoryAttribute
-            var findClasses = _solutionSyntaxWalker.GetRepositoryClasses(_config.RepositoryAttributeName);
+            var findClasses = _solutionSyntaxWalker.GetRepositoryClasses();
             // Get all candidates for generate repository
             var versionedRepositories = findClasses.Select(c => GetRepository(c)).Where(c => c != null).ToList();
             // Skip with error
             var listOfCandidate = versionedRepositories.Where(c => c.RepositoryAnalysisError == null).ToList();
+
+            var dataAccessServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDataAccessService");
+            var dataControllerServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDataAccessController");
+            var dateTimeServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDateTimeService");
+
             // Apply info from base clasess
             foreach (var r in listOfCandidate)
             {
@@ -66,6 +71,10 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                         repositoryInfo.JoinRepositoryInfo = baseSimilarClass.RepositoryInfo;
                     }
                 }
+
+                repositoryInfo.DataAccessServiceTypeName = dataAccessServiceNamespace;
+                repositoryInfo.DataAccessControllerTypeName = dataControllerServiceNamespace;
+                repositoryInfo.DateTimeServiceTypeName = dateTimeServiceNamespace;
             }
             // Skip attached (it can not generate)
             var resultRepositories = listOfCandidate.Where(r => r.RepositoryInfo.IsJoned == false).ToList();
@@ -95,13 +104,13 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
                 // get repository info by  EntityType from [many2manyAttribute]
                 many2Many.EntityRepositoryInfo = resultRepositories
-                    .Where(r => r.RepositoryName == many2Many.EntityType + r.RepositoryInfo.RepositorySuffix)
+                    .Where(r => r.RepositoryName == many2Many.EntityType.Split('.').Last() + r.RepositoryInfo.RepositorySuffix)
                     .Select(r => r.RepositoryInfo)
                     .FirstOrDefault();
 
                 // get repository info by ManyToManyEntytyType from [many2manyAttribute]
                 var manyToManyRepositoryInfo = resultRepositories
-                    .Where(r => r.RepositoryName == many2Many.ManyToManyEntytyType + r.RepositoryInfo.RepositorySuffix)
+                    .Where(r => r.RepositoryName == many2Many.ManyToManyEntytyType.Split('.').Last() + r.RepositoryInfo.RepositorySuffix)
                     .Select(r => r.RepositoryInfo)
                     .FirstOrDefault();
                 if (manyToManyRepositoryInfo != null)
@@ -116,14 +125,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             {
                 #region Search required namespace
 
-                var requiredNamespacesForService = new List<string>
-                {
-                    "YumaPos.Server.Infrastructure.Repositories",
-                    "YumaPos.Server.Infrastructure.DataObjects",
-                    "YumaPos.FrontEnd.Infrastructure.Common.DataAccess",
-                    "YumaPos.FrontEnd.Infrastructure.Configuration",
-                    "YumaPos.FrontEnd.Infrastructure.Common.DateTime"
-                };
+                var requiredNamespacesForService = new List<string>();
 
                 // add namespace of repositories which added from relation many to many 
                 var manyToMany = r.RepositoryInfo.Many2ManyInfo.SelectMany(i => i.RepositoryNamespaces).ToList();
@@ -202,7 +204,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             }
 
             // Repository interface info
-            repositoryInfo.RepositoryInterfaceName = repoInterface.Identifier.Text;
+            repositoryInfo.RepositoryInterfaceName = _solutionSyntaxWalker.GetTypeNamespace(repoInterface) + "." + repoInterface.Identifier.Text;
 
             #endregion
 
@@ -286,7 +288,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 .Where(p => p.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName)
                 .Select(p => new Tuple<string, DataMany2ManyAttribute>(p.OwnerElementName, (DataMany2ManyAttribute)p))
                 .Select(a =>
-                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType.Split('.').Last(), a.Item2.EntityType.Split('.').Last()));
+                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType, a.Item2.EntityType));
 
             repositoryInfo.Many2ManyInfo.AddRange(many2ManyInfos);
 
