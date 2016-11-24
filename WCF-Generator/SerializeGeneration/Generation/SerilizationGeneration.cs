@@ -26,14 +26,17 @@ namespace WCFGenerator
             _solutionPath = solutionPath;
 
             var configuration = ConfigurationSettings.GetConfig("serialize") as SerializeConfiguration;
-            _projectNames = configuration.AllProjectNames;
-            _generationPrefix = configuration.GenerationPrefix;
-            _includeAttribute = configuration.IncludeAtribute;
-            _ignoreAttribute = configuration.IgnoreAttribute;
-            _baseInterface = configuration.BaseInterface;
-            _helpProjects = configuration.AllHelpProjectNames;
-            _mappingAttribute = configuration.MappingAttribute;
-            _mappingIgnoreAttribute = configuration.MappingIgnoreAttribute;
+            if (configuration != null)
+            {
+                _projectNames = configuration.AllProjectNames;
+                _generationPrefix = configuration.GenerationPrefix;
+                _includeAttribute = configuration.IncludeAtribute;
+                _ignoreAttribute = configuration.IgnoreAttribute;
+                _baseInterface = configuration.BaseInterface;
+                _helpProjects = configuration.AllHelpProjectNames;
+                _mappingAttribute = configuration.MappingAttribute;
+                _mappingIgnoreAttribute = configuration.MappingIgnoreAttribute;
+            }
         }
 
         private readonly IEnumerable<string> _projectNames;
@@ -247,23 +250,27 @@ namespace WCFGenerator
         {
             _solution = await Workspace.OpenSolutionAsync(_solutionPath);
             SyntaxSerilizationHelper.Solution = _solution;
-            foreach (var st in _projectNames)
+            if (_projectNames != null)
             {
-                _project = _solution.Projects.First(x => x.Name == st);
-
-                SyntaxSerilizationHelper.Project = _project;
-
-                var allElements = GetSourceElements(st);
-                var structElements = GetGenerationElements(allElements);
-
-                foreach (var generatedClass in structElements)
+                foreach (var st in _projectNames)
                 {
-                    var patternText = new TextSerializationPatterns(generatedClass);
-                    var fullGenClass = patternText.GeneratePartialClass();
-                    CreateDocument(fullGenClass.ToString(), st, "Extensions/" + generatedClass.ClassName + ".g.cs");
+                    _project = _solution.Projects.First(x => x.Name == st);
+
+                    SyntaxSerilizationHelper.Project = _project;
+
+                    var allElements = GetSourceElements(st);
+                    var structElements = GetGenerationElements(allElements);
+
+                    foreach (var generatedClass in structElements)
+                    {
+                        var patternText = new TextSerializationPatterns(generatedClass);
+                        var fullGenClass = patternText.GeneratePartialClass();
+                        CreateDocument(fullGenClass.ToString(), st, "Extensions/" + generatedClass.ClassName + ".g.cs");
+                    }
+                    ApplyChanges();
                 }
-                ApplyChanges();
             }
+
             Workspace.TryApplyChanges(_solution);
             Workspace.CloseSolution();
         }
