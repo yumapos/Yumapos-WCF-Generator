@@ -44,6 +44,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         {
             if (Solution == null) throw new InvalidOperationException("At first open solution");
             Project = Solution.Projects.First(x => x.Name == projectName);
+            _filesToCreation.Clear();
         }
 
         #endregion
@@ -61,7 +62,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             if (string.IsNullOrEmpty(code)) throw new ArgumentException("code"); 
             if (string.IsNullOrEmpty(fileName)) throw new ArgumentException("fileName"); 
             if (string.IsNullOrEmpty(folder)) throw new ArgumentException("folder"); 
-
+            if(_filesToCreation.Any(f => f.FileName == fileName && f.ProjectFolder == folder)) throw new ArgumentException(fileName + " - file already exists.");
             _filesToCreation.Add(new SrcFile(fileName, folder, code));
         }
 
