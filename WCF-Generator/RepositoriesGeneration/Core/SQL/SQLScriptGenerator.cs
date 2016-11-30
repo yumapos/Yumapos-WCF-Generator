@@ -387,20 +387,20 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
     internal struct SqlInfo
     {
         public string TableName;
-        public IEnumerable<string> TableColumns;
+        public IList<string> TableColumns;
         public string VersionKeyType;
         public bool ReturnPrimarayKey;
         public string JoinTableName;
-        public IEnumerable<string> JoinTableColumns;
-        public IEnumerable<string> JoinPrimaryKeyNames;
+        public IList<string> JoinTableColumns;
+        public IList<string> JoinPrimaryKeyNames;
         public bool TenantRelated;
-        public IEnumerable<string> PrimaryKeyNames;
+        public IList<string> PrimaryKeyNames;
         public string VersionKeyName;
         public string VersionTableName;
         public string JoinVersionKeyName;
         public string JoinVersionTableName;
         public bool IsManyToMany;
-        public IEnumerable<string> SkipPrimaryKey;
+        public IList<string> SkipPrimaryKey;
         public string PrimaryKeyType;
     }
 }
