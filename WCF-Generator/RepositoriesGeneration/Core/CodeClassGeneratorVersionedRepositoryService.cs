@@ -504,11 +504,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
                 sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName);
                 sb.AppendLine(".Select(ids => " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(ids, null))");
-                sb.AppendLine(".Where(item => !item.IsDeleted)");
                 sb.AppendLine(".Select(item => new " + info.ManyToManyEntytyType + "()");
                 sb.AppendLine("{");
                 sb.AppendLine(primaryKeyName2 + " = item." + primaryKeyName2 + ",");
-                sb.AppendLine(versionKeyName2 + " = " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(item." + primaryKeyName2 + ", null)." + versionKeyName2 + ",");
+                sb.AppendLine(versionKeyName2 + " = item." + versionKeyName2 + ",");
                 sb.AppendLine(primaryKeyName + " = " + parameterName + "." + primaryKeyName + ",");
                 sb.AppendLine(versionKeyName + " = " + parameterName + "." + versionKeyName + ",");
                 sb.AppendLine("}).ToList();");
