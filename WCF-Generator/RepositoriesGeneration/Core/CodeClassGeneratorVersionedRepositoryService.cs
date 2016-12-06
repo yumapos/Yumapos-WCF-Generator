@@ -502,10 +502,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("if (" + parameterName + "." + propertyName + " == null)");
                 sb.AppendLine(parameterName + "." + propertyName + " = " + manyToManyCacheRepositoryFieldName + ".GetBy" + primaryKeyName + "(" + parameterName + "." + primaryKeyName + ").Select(i => i." + primaryKeyName2 + ");");
 
-                sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName + ".Select(ids => new " + info.ManyToManyEntytyType + "()");
+                sb.AppendLine("var listOf" + manyToManyEntityName + " = " + parameterName + "." + propertyName);
+                sb.AppendLine(".Select(ids => " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(ids, null))");
+                sb.AppendLine(".Select(item => new " + info.ManyToManyEntytyType + "()");
                 sb.AppendLine("{");
-                sb.AppendLine(primaryKeyName2 + " = ids,");
-                sb.AppendLine(versionKeyName2 + " = " + entityCacheRepositoryName + ".GetBy" + primaryKeyName2 + "(ids)." + versionKeyName2 + ",");
+                sb.AppendLine(primaryKeyName2 + " = item." + primaryKeyName2 + ",");
+                sb.AppendLine(versionKeyName2 + " = item." + versionKeyName2 + ",");
                 sb.AppendLine(primaryKeyName + " = " + parameterName + "." + primaryKeyName + ",");
                 sb.AppendLine(versionKeyName + " = " + parameterName + "." + versionKeyName + ",");
                 sb.AppendLine("}).ToList();");
