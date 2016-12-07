@@ -1,29 +1,27 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Heplers;
-using WCFGenerator.RepositoriesGeneration.Services;
-using WCFGenerator.SerializeGeneration;
 using WCFGenerator.SerializeGeneration.Configuration;
-using WCFGenerator.SerializeGeneration.Generation;
 using WCFGenerator.SerializeGeneration.Helpers;
 using WCFGenerator.SerializeGeneration.Models;
 
-namespace WCFGenerator
+namespace WCFGenerator.SerializeGeneration.Generation
 {
     public class SerilizationGeneration
     {
-        public SerilizationGeneration(string solutionPath)
+        private readonly GeneratorWorkspace _generatorWorkspace;
+
+        public SerilizationGeneration(GeneratorWorkspace generatorWorkspace)
         {
-            _solutionPath = solutionPath;
+            _generatorWorkspace = generatorWorkspace;
 
             var configuration = ConfigurationSettings.GetConfig("serialize") as SerializeConfiguration;
             if (configuration != null)
@@ -40,13 +38,11 @@ namespace WCFGenerator
         }
 
         private readonly IEnumerable<string> _projectNames;
-        private readonly string _solutionPath;
 
         private static readonly MSBuildWorkspace Workspace = MSBuildWorkspace.Create();
         private static readonly List<Tuple<string, SourceText, string[], string>> Tasks = new List<Tuple<string, SourceText, string[], string>>();
 
         private Project _project;
-        private Solution _solution;
 
         private readonly string _generationPrefix;
 
@@ -248,13 +244,12 @@ namespace WCFGenerator
 
         public async void GenerateAll()
         {
-            _solution = await Workspace.OpenSolutionAsync(_solutionPath);
-            SyntaxSerilizationHelper.Solution = _solution;
+            SyntaxSerilizationHelper.Solution = _generatorWorkspace.Solution;
             if (_projectNames != null)
             {
                 foreach (var st in _projectNames)
                 {
-                    _project = _solution.Projects.First(x => x.Name == st);
+                    _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == st);
 
                     SyntaxSerilizationHelper.Project = _project;
 
@@ -271,8 +266,7 @@ namespace WCFGenerator
                 }
             }
 
-            Workspace.TryApplyChanges(_solution);
-            Workspace.CloseSolution();
+            _generatorWorkspace.ApplyChanges();
         }
 
         private static void CreateDocument(string code, string projectName, string fileName)
@@ -294,7 +288,7 @@ namespace WCFGenerator
         {
             foreach (var doc in Tasks)
             {
-                _project = _solution?.Projects.FirstOrDefault(x => x.Name == doc.Item4);
+                _project = _generatorWorkspace.Solution?.Projects.FirstOrDefault(x => x.Name == doc.Item4);
 
                 var oldDocument = _project?.Documents.FirstOrDefault(x => x.Name == doc.Item1);
 
@@ -311,14 +305,14 @@ namespace WCFGenerator
 
                         var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
                         _project = newDocument?.Project;
-                        _solution = _project?.Solution;
+                        _generatorWorkspace.Solution = _project?.Solution;
                     }
                 }
                 else
                 {
                     var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
                     _project = newDocument?.Project;
-                    _solution = _project?.Solution;
+                    _generatorWorkspace.Solution = _project?.Solution;
                 }
             }
         }

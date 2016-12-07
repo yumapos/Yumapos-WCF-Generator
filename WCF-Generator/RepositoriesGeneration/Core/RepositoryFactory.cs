@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Services;
@@ -17,16 +19,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         #region Fields
 
         private IEnumerable<RepositoryProject> _configurations;
-        private readonly string _slnPath;
+        private GeneratorWorkspace _generatorWorkspace;
 
         #endregion
 
         #region Constructor
 
-        public RepositoryCodeFactory(IEnumerable<RepositoryProject> configs, string slnPath)
+        public RepositoryCodeFactory(IEnumerable<RepositoryProject> configs, GeneratorWorkspace ws)
         {
             _configurations = configs;
-            _slnPath = slnPath;
+            _generatorWorkspace = ws;
         }
 
         #endregion
@@ -38,7 +40,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         {
             var repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace();
             // open target solution
-            repositoryGeneratorWorkSpace.OpenSolution(_slnPath);
+            repositoryGeneratorWorkSpace.OpenSolution(_generatorWorkspace);
 
             // Generate repositories for configured project
             foreach (var config in _configurations)

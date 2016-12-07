@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
+using WCFGenerator.Common;
 
 namespace WCFGenerator.RepositoriesGeneration.Core
 {
@@ -16,7 +16,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
     {
         #region Fields
 
-        private readonly MSBuildWorkspace _workspace;
         private readonly List<SrcFile> _filesToCreation = new List<SrcFile>();
 
         #endregion
@@ -24,26 +23,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         #region Properties
 
         public Project Project { get; private set; }
-        public Solution Solution { get; private set; }
+        public GeneratorWorkspace GeneratorWorkspace { get; private set; }
 
         #endregion
 
         #region Constructor
 
-        public RepositoryGeneratorWorkSpace()
+        public void OpenSolution(GeneratorWorkspace generatorWorkspace)
         {
-            _workspace = MSBuildWorkspace.Create();
-        }
-
-        public void OpenSolution(string solutionPath)
-        {
-            Solution = _workspace.OpenSolutionAsync(solutionPath).Result;
+            GeneratorWorkspace = generatorWorkspace;
         }
 
         public void OpenProject(string projectName)
         {
-            if (Solution == null) throw new InvalidOperationException("At first open solution");
-            Project = Solution.Projects.First(x => x.Name == projectName);
+            if (GeneratorWorkspace.Solution == null) throw new InvalidOperationException("At first open solution");
+            Project = GeneratorWorkspace.Solution.Projects.First(x => x.Name == projectName);
             _filesToCreation.Clear();
         }
 
@@ -97,7 +91,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 project = document.Project;
             }
             // Apply project changes
-            _workspace.TryApplyChanges(project.Solution);
+            GeneratorWorkspace.Solution = project.Solution;
+            GeneratorWorkspace.ApplyChanges();
         }
 
         private Document Formatting(Document doc)

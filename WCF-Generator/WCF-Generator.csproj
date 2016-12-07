@@ -154,6 +154,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\GeneratorWorkspace.cs" />
     <Compile Include="RepositoriesGeneration\Analysis\SolutionSyntaxWalker.cs" />
     <Compile Include="RepositoriesGeneration\Configuration\Settings.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs" />
@@ -185,7 +186,7 @@
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MappingsGenerator.cs" />
+    <Compile Include="MappingsGenerator\MappingsGenerator.cs" />
     <Compile Include="SerializeGeneration\Configuration\SerializeConfiguration.cs" />
     <Compile Include="SerializeGeneration\Generation\TextSerializationPatterns.cs" />
     <Compile Include="SerializeGeneration\Helpers\EditingSerializationHelper.cs" />
@@ -196,9 +197,12 @@
     <Compile Include="SerializeGeneration\Helpers\TextSerializationHelper.cs" />
     <Compile Include="SerializeGeneration\Models\GenerationProperty.cs" />
     <Compile Include="SerializeGeneration\Models\SourceElements.cs" />
-    <Compile Include="TypeSyntaxGeneratorVisitor.cs" />
-    <Compile Include="VirtualizationVisitor.cs" />
-    <Compile Include="WCFGenerator.cs" />
+    <Compile Include="WcfClientGeneration\EndPoint.cs" />
+    <Compile Include="WcfClientGeneration\Fault.cs" />
+    <Compile Include="WcfClientGeneration\ServiceDetail.cs" />
+    <Compile Include="Common\VirtualizationVisitor.cs" />
+    <Compile Include="WcfClientGeneration\Configuration\Settings.cs" />
+    <Compile Include="WcfClientGeneration\WCFGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
