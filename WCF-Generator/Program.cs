@@ -8,6 +8,7 @@ using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.SerializeGeneration.Generation;
+using WCFGenerator.WcfClientGeneration;
 using WCFGenerator.WcfClientGeneration.Configuration;
 
 namespace WCFGenerator
@@ -85,20 +86,22 @@ namespace WCFGenerator
             // Configure generator 
             var configs = WcfServiceClientGeneratorSettings.GetConfigs();
 
-            var wcf = new WcfClientGeneration.WcfGenerator(_generatorWorkspace)
+            var wcf = new WcfGenerator(_generatorWorkspace)
             {
-                ProjectName = "YumaPos.Client.WCF",
-                ProjectFolders = new List<string>(),
-                FaultProject = "YumaPos.Shared.API.Faults",
-                ProjectApi = "YumaPos.Shared.Infrastructure",
+                // TODO сделать возможность генерить клиенты в разные проекты
+                // Перенести эти настройки в ServiceDetail
+                ProjectName = configs.First().TargetProjectName, 
+                FaultProject = configs.First().FaultNamespace,
+                ProjectApi = configs.First().ApiInterfaceProjectName,
                 ProjectApiFolders = new List<string>()
                     {
-                        "API"
+                        configs.First().ApiInterfaceProjectFolder
                     },
+
                 Services = configs.Select(c => new ServiceDetail()
                 {
                     UserName = c.ClientInterfaceName,
-                    FileName = c.ClientInterfaceFileName
+                    FileName = c.ClientInterfaceFileName,
                 }).ToList()
             };
 

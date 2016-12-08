@@ -1,4 +1,4 @@
-namespace WCFGenerator
+namespace WCFGenerator.WcfClientGeneration
 {
     public class ServiceDetail
     {

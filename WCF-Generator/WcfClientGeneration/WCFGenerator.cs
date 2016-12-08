@@ -37,7 +37,6 @@ namespace WCFGenerator.WcfClientGeneration
 
         public List<ServiceDetail> Services { get; set; }
         public string ProjectName { get; set; }
-        public List<string> ProjectFolders { get; set; }
         public string ProjectApi { get; set; }
         public List<string> ProjectApiFolders { get; set; }
         public object FaultProject { get; set; }

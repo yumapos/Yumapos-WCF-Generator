@@ -7,13 +7,13 @@ namespace WCFGenerator.WcfClientGeneration.Configuration
 {
     public static class WcfServiceClientGeneratorSettings
     {
-        public static IEnumerable<WcfService> GetConfigs()
+        public static IReadOnlyCollection<WcfService> GetConfigs()
         {
             try
             {
                 var section = ConfigurationManager.GetSection("wcfClientGenerator") as WcfClientGenerator;
                 if (section == null) throw new ConfigurationErrorsException("wcfClientGenerator section not found at " + AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
-                return section.RepositoryProjects.Cast<WcfService>();
+                return section.RepositoryProjects.Cast<WcfService>().ToList();
             }
             catch (ConfigurationErrorsException e)
             {
@@ -86,6 +86,42 @@ namespace WCFGenerator.WcfClientGeneration.Configuration
         public string ClientInterfaceFileName
         {
             get { return ((string)(base["ServiceInterfaceFileName"])); }
+        }
+
+        /// <summary>
+        ///     Name of project for save client
+        /// </summary>
+        [ConfigurationProperty("TargetProjectName", DefaultValue = "", IsRequired = true)]
+        public string TargetProjectName
+        {
+            get { return ((string)(base["TargetProjectName"])); }
+        }
+
+        /// <summary>
+        ///     Namespce of faults
+        /// </summary>
+        [ConfigurationProperty("FaultNamespace", DefaultValue = "", IsRequired = true)]
+        public string FaultNamespace
+        {
+            get { return ((string)(base["FaultNamespace"])); }
+        } 
+        
+        /// <summary>
+        ///     Name of project for api interfaces
+        /// </summary>
+        [ConfigurationProperty("ApiInterfaceProjectName", DefaultValue = "", IsRequired = true)]
+        public string ApiInterfaceProjectName
+        {
+            get { return ((string)(base["ApiInterfaceProjectName"])); }
+        }
+
+        /// <summary>
+        ///     Name of folder in project for api interfaces
+        /// </summary>
+        [ConfigurationProperty("ApiInterfaceProjectFolder", DefaultValue = "", IsRequired = true)]
+        public string ApiInterfaceProjectFolder
+        {
+            get { return ((string)(base["ApiInterfaceProjectFolder"])); }
         }
     }
 }
