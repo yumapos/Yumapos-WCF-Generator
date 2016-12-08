@@ -4,13 +4,19 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using Nito.AsyncEx;
+using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
+using WCFGenerator.SerializeGeneration.Generation;
+using WCFGenerator.WcfClientGeneration;
+using WCFGenerator.WcfClientGeneration.Configuration;
 
 namespace WCFGenerator
 {
-    class Program
+    internal class Program
     {
+        private static GeneratorWorkspace _generatorWorkspace;
+
         static void Main(string[] args)
         {
             // Set path to app.config for current application domain
@@ -25,6 +31,22 @@ namespace WCFGenerator
                 
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", absoluteConfigPath);
             }
+
+            // Get solution
+            Console.WriteLine("Open solulion");
+
+            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+            var absoluteSlnPath = Path.GetFullPath(solutionPath);
+
+            if (!File.Exists(absoluteSlnPath))
+            {
+                throw new ArgumentException("File of solution not found");
+            }
+
+            // Create workspace - open solution
+            _generatorWorkspace = new GeneratorWorkspace(absoluteSlnPath);
+
+            Console.WriteLine("Solulion opened");
 
             try
             {
@@ -52,50 +74,40 @@ namespace WCFGenerator
             {
                 throw new ApplicationException("Error occured on wcf generation. ", e);
             }
+
+            // Apply Changes, close solution
+            _generatorWorkspace.CloseSolution();
         }
 
         private static void RunWcfGeneration()
         {
-            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
-            var absoluteSlnPath = Path.GetFullPath(solutionPath);
+            Console.WriteLine("Start Wcf client generation...");
 
-            if (!File.Exists(absoluteSlnPath))
-            {
-                throw new ArgumentException("File of solution not found");
-            }
+            // Configure generator 
+            var configs = WcfServiceClientGeneratorSettings.GetConfigs();
 
-            WCFGenerator wcf = new WCFGenerator
+            var wcf = new WcfGenerator(_generatorWorkspace)
             {
-                SolutionPath = absoluteSlnPath,
-                ProjectName = "YumaPos.Client.WCF",
-                ProjectFolders = new List<string>(),
-                FaultProject = "YumaPos.Shared.API.Faults",
-                ProjectApi = "YumaPos.Shared.Infrastructure",
+                // TODO сделать возможность генерить клиенты в разные проекты
+                // Перенести эти настройки в ServiceDetail
+                ProjectName = configs.First().TargetProjectName, 
+                FaultProject = configs.First().FaultNamespace,
+                ProjectApi = configs.First().ApiInterfaceProjectName,
                 ProjectApiFolders = new List<string>()
                     {
-                        "API"
+                        configs.First().ApiInterfaceProjectFolder
                     },
-                Services = new List<ServiceDetail>
-                    {
-                        new ServiceDetail()
-                        {
-                            UserName = "IBackOffice",
-                            FileName = "IBackOfficeService.cs"
-                        },
-                        new ServiceDetail()
-                        {
-                            UserName = "ITerminal",
-                            FileName = "IService.cs"
-                        },
-                        new ServiceDetail()
-                        {
-                            UserName = "IOnlineService",
-                            FileName = "IOnlineService.cs"
-                        }
-                    }
+
+                Services = configs.Select(c => new ServiceDetail()
+                {
+                    UserName = c.ClientInterfaceName,
+                    FileName = c.ClientInterfaceFileName,
+                }).ToList()
             };
 
-            AsyncContext.Run(() => wcf.Start(new []{solutionPath}));
+            AsyncContext.Run(() => wcf.Start());
+
+            Console.WriteLine("Wcf client generation completed.");
         }
 
         private static void RunRepositoryGeneration()
@@ -104,15 +116,8 @@ namespace WCFGenerator
 
             // Configure generator 
             var config = RepositoryGeneratorSettings.GetConfigs();
-            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
-            var absoluteSlnPath = Path.GetFullPath(solutionPath);
 
-            if (!File.Exists(absoluteSlnPath))
-            {
-                throw new ArgumentException("File of solution not found. " + absoluteSlnPath);
-            }
-
-            var repositoryGenerator = new RepositoryCodeFactory(config, absoluteSlnPath);
+            var repositoryGenerator = new RepositoryCodeFactory(config, _generatorWorkspace);
 
             // run generation
             AsyncContext.Run(() => repositoryGenerator.GenerateRepository());
@@ -124,27 +129,12 @@ namespace WCFGenerator
         {
             Console.WriteLine("Start serialize generation...");
 
-            // Configure generator 
-            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
-            var absoluteSlnPath = Path.GetFullPath(solutionPath);
-
-            if (!File.Exists(absoluteSlnPath))
-            {
-                throw new ArgumentException("File of solution not found. " + absoluteSlnPath);
-            }
-
-            var repositoryGenerator = new SerilizationGeneration(solutionPath);
+            var repositoryGenerator = new SerilizationGeneration(_generatorWorkspace);
 
             // run generation
             AsyncContext.Run(() => repositoryGenerator.GenerateAll());
 
             Console.WriteLine("Serialize generation completed.");
         }
-    }
-
-    public class ServiceDetail
-    {
-        public string UserName { get; set; }
-        public string FileName { get; set; }
     }
 }

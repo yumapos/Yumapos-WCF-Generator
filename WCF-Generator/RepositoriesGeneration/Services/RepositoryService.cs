@@ -35,7 +35,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var additionalProjectsForAnalysis = _config.AdditionalProjects.Split(',').Select(p => p.Trim()).ToList();
             additionalProjectsForAnalysis.Add(_config.TargetProjectName);
 
-            _solutionSyntaxWalker = new SolutionSyntaxWalker(workSpace.Solution, repositoryModelsProjects, _config.RepositoryAttributeName, repositoryInterfaceProjects, _config.TargetProjectName, additionalProjectsForAnalysis);
+            _solutionSyntaxWalker = new SolutionSyntaxWalker(workSpace.GeneratorWorkspace.Solution, repositoryModelsProjects, _config.RepositoryAttributeName, repositoryInterfaceProjects, _config.TargetProjectName, additionalProjectsForAnalysis);
         }
 
         #endregion
