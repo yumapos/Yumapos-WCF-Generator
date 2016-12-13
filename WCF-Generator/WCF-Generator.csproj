@@ -155,6 +155,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\GeneratorWorkspace.cs" />
+    <Compile Include="DecoratorGeneration\Analysis\SolutionSyntaxWalker.cs" />
+    <Compile Include="DecoratorGeneration\Configuration\Settings.cs" />
+    <Compile Include="DecoratorGeneration\Core\CodeClassGeneratorDecorator.cs" />
+    <Compile Include="DecoratorGeneration\Core\DecoratorService.cs" />
+    <Compile Include="DecoratorGeneration\Infrastructure\ICodeClassGeneratorDecorator.cs" />
+    <Compile Include="DecoratorGeneration\Infrastructure\MethodImplementationInfo.cs" />
+    <Compile Include="DecoratorGeneration\Infrastructure\DecoratorInfo.cs" />
     <Compile Include="RepositoriesGeneration\Analysis\SolutionSyntaxWalker.cs" />
     <Compile Include="RepositoriesGeneration\Configuration\Settings.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs" />
@@ -162,6 +169,7 @@
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionedRepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionsRepository.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryFactory.cs" />
+    <Compile Include="DecoratorGeneration\Core\DecoratorCodeFactory.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryGeneratorWorkSpace.cs" />
     <Compile Include="RepositoriesGeneration\Core\SQL\SQLScriptGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\ExtensionMethods.cs" />
@@ -170,6 +178,7 @@
     <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
+    <Compile Include="Common\Infrastructure\ICodeClassGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryFieldInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterType.cs" />
