@@ -43,16 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DecoratorExample.g - Copy.cs" />
-    <Compile Include="DecoratorExample.g.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="ManagerDecorator.cs" />
+    <Compile Include="ManagerDecorator.g.cs" />
     <Compile Include="ServiceDecorator.cs" />
-    <Compile Include="ServiceDecorator.g.cs" />
+    <Compile Include="ServiceDecorator.Example.g.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="ItemDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseDto.cs" />
-    <Compile Include="WrappedMethodType.cs" />
+    <Compile Include="ServiceDecorator.g.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

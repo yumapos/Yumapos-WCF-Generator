@@ -1,11 +1,12 @@
 using System;
+using System.Linq;
 using System.Text;
 using WCFGenerator.DecoratorGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 
 namespace WCFGenerator.DecoratorGeneration.Core
 {
-    internal class CodeClassGeneratorDecorator : ICodeClassGeneratorDecorator
+    internal class CodeClassDecoratorGenerator : ICodeClassDecoratorGenerator
     {
         public DecoratorInfo DecoratorInfo { get; set; }
 
@@ -26,12 +27,12 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         public string GetNamespaceDeclaration()
         {
-            return "namespace " + DecoratorInfo.DecoratorNamespace;
+            return "namespace " + DecoratorInfo.Namespace;
         }
 
         public string GetClassDeclaration()
         {
-            return "public partial class " + DecoratorInfo.ClassName + " : " + string.Join("," , DecoratorInfo.ImplementedInterfaces);
+            return "public partial class " + DecoratorInfo.DecoratorClassTypeShortName + " : " + string.Join("," , DecoratorInfo.ImplementedInterfaces);
         }
 
         public string GetFields()
@@ -51,7 +52,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         public string GetMethods()
         {
-            return "";
+            return DecoratorInfo.MethodInfos.Aggregate("", (s, method) => s + GenerateMethod(method));
         }
 
         public string GetFullCode()
@@ -105,10 +106,20 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         #region Implementation of ICodeClassGeneratorDecorator
 
-        public string FileName { get { return DecoratorInfo.ClassName + ".g.cs"; } }
+        public string FileName { get { return DecoratorInfo.DecoratorClassTypeShortName + ".g.cs"; } }
 
         public string AnalysisError { get; set; }
 
         #endregion
+
+        #region Private
+
+        private object GenerateMethod(MethodInfo methodInfo)
+        {
+            return "// " + methodInfo.Name + " " + "can be generate";
+        }
+
+        #endregion
+
     }
 }

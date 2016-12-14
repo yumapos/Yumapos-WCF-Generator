@@ -69,5 +69,10 @@ namespace TestDecoratorGeneration
         {
             
         }
+
+        private void OnFinally()
+        {
+            
+        }
     }
 }

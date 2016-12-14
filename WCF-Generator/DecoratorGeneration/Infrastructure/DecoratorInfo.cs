@@ -7,47 +7,26 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         public DecoratorInfo()
         {
             RequiredNamespaces = new List<string>();
+            MethodInfos = new List<MethodInfo>();
+            ImplementedInterfaces = new List<string>();
+            RequiredNamespaces = new List<string>();
         }
 
-        /// <summary>
-        ///     Type name
-        /// </summary>
-        public string ClassName { get; set; }
+        public string Namespace { get; set; }
 
-        /// <summary>
-        ///     Namespace of repository class
-        /// </summary>
-        public string DecoratorNamespace { get; set; }
+        // Decorated class
+        public string DecoratedClassTypeShortName { get; set; }
+        public string DecoratedClassTypeFullName { get; set; }
 
-        /// <summary>
-        ///     Full type name
-        /// </summary>
-        public string ClassFullName
-        {
-            get
-            {
-                return DecoratorNamespace + "." + ClassName;
-            }
-        }
-
-        /// <summary>
-        ///     Required namespaces
-        /// </summary>
+        // Decorator class
+        public string DecoratorClassTypeShortName { get; set; }
+        public List<MethodInfo> MethodInfos { get; set; }
+        public List<string> ImplementedInterfaces { get; set; }
         public List<string> RequiredNamespaces { get; set; }
 
-        /// <summary>
-        ///     Implemented Interfaces
-        /// </summary>
-        public List<string> ImplementedInterfaces { get; set; }
-
-        /// <summary>
-        ///     List of method implementation info
-        /// </summary>
-        public List<MethodImplementationInfo> MethodImplementationInfo { get; set; }
-        
-        /// <summary>
-        ///      List of methods name in castom part decorator class
-        /// </summary>
-        public List<MethodInfo> CustomRepositoryMethodNames { get; set; }
+        public bool OnEntryExist { get; set; }
+        public bool OnExitExist { get; set; }
+        public bool OnExceptionExist { get; set; }
+        public bool OnFinallyExist { get; set; }
     } 
 }

@@ -154,8 +154,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\GeneratorWorkspace.cs" />
-    <Compile Include="DecoratorGeneration\Analysis\SolutionSyntaxWalker.cs" />
+    <Compile Include="DecoratorGeneration\Analysis\SyntaxWalker.cs" />
     <Compile Include="DecoratorGeneration\Configuration\Settings.cs" />
     <Compile Include="DecoratorGeneration\Core\CodeClassGeneratorDecorator.cs" />
     <Compile Include="DecoratorGeneration\Core\DecoratorService.cs" />

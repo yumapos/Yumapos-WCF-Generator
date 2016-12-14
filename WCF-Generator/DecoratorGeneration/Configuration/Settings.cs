@@ -6,20 +6,22 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
 {
     public static class DecoratorGeneratorSettings
     {
-        public static IEnumerable<DecoratorProject> GetConfigs()
+        public static IReadOnlyCollection<DecoratorConfiguration> GetConfigs()
         {
             var section = ConfigurationManager.GetSection("decoratorGenerator") as DecoratorGenerator;
-            return section.RepositoryProjects.Cast<DecoratorProject>();
-        }
-
-        public static bool GenerationEnabled
-        {
-            get
+            if(section==null) throw new ConfigurationErrorsException("decoratorGenerator configuration section not found");
+            return section.RepositoryProjects.Cast<DecoratorProject>().Select(s=> new DecoratorConfiguration()
             {
-                var section = ConfigurationManager.GetSection("decoratorGenerator") as DecoratorGenerator;
-                return section.CommonSettings.Enable;
-            }
+                SolutionProjectName = s.Name,
+                DecoratedClassNames = s.DecoratedClasses.Cast<DecoratedClass>().Select(c=>c.FullTypeName).ToList()
+            }).ToList();
         }
+    }
+
+    public class DecoratorConfiguration
+    {
+        public string SolutionProjectName { get; set; }
+        public List<string> DecoratedClassNames { get; set; }
     }
 
     /// <summary>
@@ -27,14 +29,6 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// </summary>
     public class DecoratorGenerator : ConfigurationSection
     {
-        /// <summary>
-        ///    Common Settings
-        /// </summary>
-        [ConfigurationProperty("commonSettings")]
-        public CommonSettings CommonSettings
-        {
-            get { return ((CommonSettings)(base["commonSettings"])); }
-        }
         /// <summary>
         ///     All projects where search class for decorate
         /// </summary>
@@ -48,7 +42,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// <summary>
     ///     Collection of element
     /// </summary>
-    [ConfigurationCollection(typeof(DecoratorProject))]
+    [ConfigurationCollection(typeof(DecoratorProject), AddItemName = "project")]
     public class DecoratorProjects : ConfigurationElementCollection
     {
         protected override ConfigurationElement CreateNewElement()
@@ -58,7 +52,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DecoratorProject)(element)).Project;
+            return ((DecoratorProject)(element)).Name;
         }
 
         public DecoratorProject this[int idx]
@@ -75,22 +69,56 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         /// <summary>
         ///      Project for analysis
         /// </summary>
-        [ConfigurationProperty("Project", DefaultValue = "", IsRequired = false)]
-        public string Project
+        [ConfigurationProperty("name", DefaultValue = "", IsRequired = false)]
+        public string Name
         {
-            get { return ((string)(base["Project"])); }
+            get { return ((string)(base["name"])); }
+        }
+
+        /// <summary>
+        ///     All classes
+        /// </summary>
+        [ConfigurationProperty("decoratedClasses")]
+        public DecoratedClasses DecoratedClasses
+        {
+            get { return ((DecoratedClasses)(base["decoratedClasses"])); }
         }
     }
 
     /// <summary>
-    ///     Common Settings
+    ///     Collection of element
     /// </summary>
-    public class CommonSettings : ConfigurationElement
+    [ConfigurationCollection(typeof(DecoratedClass))]
+    public class DecoratedClasses : ConfigurationElementCollection
     {
-        [ConfigurationProperty("Enable", DefaultValue = "false", IsKey = true, IsRequired = true)]
-        public bool Enable
+        protected override ConfigurationElement CreateNewElement()
         {
-            get { return ((bool)(base["Enable"])); }
+            return new DecoratedClass();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((DecoratedClass)(element)).FullTypeName;
+        }
+
+        public DecoratedClass this[int idx]
+        {
+            get { return (DecoratedClass)BaseGet(idx); }
+        }
+    }
+
+    /// <summary>
+    ///     Decorator Class
+    /// </summary>
+    public class DecoratedClass : ConfigurationElement
+    {
+        /// <summary>
+        ///      Types for analysis
+        /// </summary>
+        [ConfigurationProperty("fullTypeName", DefaultValue = "", IsRequired = true)]
+        public string FullTypeName
+        {
+            get { return ((string)(base["fullTypeName"])); }
         }
     }
 }

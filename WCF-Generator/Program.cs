@@ -150,8 +150,6 @@ namespace WCFGenerator
 
         private static void RunDecoratorGeneration()
         {
-            if (!DecoratorGeneratorSettings.GenerationEnabled) return;
-
             Console.WriteLine("Start decoration generation...");
 
             // Configure generator 

@@ -2,7 +2,7 @@ using WCFGenerator.Common.Infrastructure;
 
 namespace WCFGenerator.DecoratorGeneration.Infrastructure
 {
-    internal interface ICodeClassGeneratorDecorator : ICodeClassGenerator
+    internal interface ICodeClassDecoratorGenerator : ICodeClassGenerator
     {
         string FileName { get; }
 

@@ -1,19 +1,7 @@
+using System.Collections.Generic;
+
 namespace WCFGenerator.DecoratorGeneration.Infrastructure
 {
-    internal class MethodImplementationInfo : MethodInfo
-    {
-        public MethodImplementationInfo()
-        {
-            RequiresImplementation = false;
-        }
-
-        /// <summary>
-        ///     Requires of Implementation 
-        /// </summary>
-        public bool RequiresImplementation { get; set; }
-
-    }
-
     internal class MethodInfo
     {
         /// <summary>
@@ -21,9 +9,29 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         /// </summary>
         public string Name { get; set; }
 
+        public bool IsAsync { get; set; }
+
+        /// <summary>
+        ///     Method parameters
+        /// </summary>
+        public List<ParameterInfo> Parameters { get; set; }
+
         /// <summary>
         ///     Type of returned value
         /// </summary>
         public string ReturnType { get; set; }
+    }
+
+    internal class ParameterInfo
+    {
+        /// <summary>
+        ///     Name of parameter
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        ///     Type of parameter
+        /// </summary>
+        public string Type { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WCFGenerator.Common;
 using WCFGenerator.DecoratorGeneration.Configuration;
@@ -16,14 +17,14 @@ namespace WCFGenerator.DecoratorGeneration.Core
     {
         #region Fields
 
-        private IEnumerable<DecoratorProject> _configurations;
+        private IReadOnlyCollection<DecoratorConfiguration> _configurations;
         private GeneratorWorkspace _generatorWorkspace;
 
         #endregion
 
         #region Constructor
 
-        public DecoratorCodeFactory(IEnumerable<DecoratorProject> configs, GeneratorWorkspace ws)
+        public DecoratorCodeFactory(IReadOnlyCollection<DecoratorConfiguration> configs, GeneratorWorkspace ws)
         {
             _configurations = configs;
             _generatorWorkspace = ws;
@@ -37,16 +38,16 @@ namespace WCFGenerator.DecoratorGeneration.Core
         public async Task Generate()
         {
             // Generate decorators for configured project
-            foreach (var config in _configurations)
+            foreach (var configuration in _configurations)
             {
                 // Configure service
-                var decoratorService = new DecoratorService(_generatorWorkspace, config.Project);
+                var decoratorService = new DecoratorService(_generatorWorkspace, configuration);
 
                 // Set target project for saving generated classes
-                _generatorWorkspace.SetTargetProject(config.Project);
+                _generatorWorkspace.SetTargetProject(configuration.SolutionProjectName);
 
                 // Create list of decorators for generate
-                IEnumerable<ICodeClassGeneratorDecorator> candidatesDecorator;
+                IEnumerable<ICodeClassDecoratorGenerator> candidatesDecorator;
 
                 try
                 {
