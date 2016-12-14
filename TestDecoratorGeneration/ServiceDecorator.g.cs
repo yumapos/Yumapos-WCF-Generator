@@ -11,11 +11,29 @@
 
 namespace TestDecoratorGeneration
 {
-	public partial class ServiceDecorator :
+	public partial class ServiceDecorator
 	{
 
+		private TestDecoratorGeneration.Service DecoratedComponent { get; set; }
 
+		public System.Threading.Tasks.Task Open()
+		{
+			OnEntry();
+			DecoratedComponent.Open();
+			OnExit();
+		}
+		public System.Threading.Tasks.Task AddItem(System.Guid id, System.String name)
+		{
+			OnEntry();
+			DecoratedComponent.AddItem(id, name);
+			OnExit();
+		}
+		public System.Threading.Tasks.Task GetItems()
+		{
+			OnEntry();
+			DecoratedComponent.GetItems();
+			OnExit();
+		}
 
-		// Open can be generate// AddItem can be generate// GetItems can be generate
 	}
 }

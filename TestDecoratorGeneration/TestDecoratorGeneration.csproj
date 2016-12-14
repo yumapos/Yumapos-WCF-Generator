@@ -46,6 +46,7 @@
     <Compile Include="Manager.cs" />
     <Compile Include="ManagerDecorator.cs" />
     <Compile Include="ManagerDecorator.g.cs" />
+    <Compile Include="ServiceDecorator.Example.cs" />
     <Compile Include="ServiceDecorator.cs" />
     <Compile Include="ServiceDecorator.Example.g.cs" />
     <Compile Include="Service.cs" />

@@ -8,7 +8,6 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         {
             RequiredNamespaces = new List<string>();
             MethodInfos = new List<MethodInfo>();
-            ImplementedInterfaces = new List<string>();
             RequiredNamespaces = new List<string>();
         }
 
@@ -21,7 +20,6 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         // Decorator class
         public string DecoratorClassTypeShortName { get; set; }
         public List<MethodInfo> MethodInfos { get; set; }
-        public List<string> ImplementedInterfaces { get; set; }
         public List<string> RequiredNamespaces { get; set; }
 
         public bool OnEntryExist { get; set; }

@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 
 namespace TestDecoratorGeneration
 {
-    public partial class ServiceDecorator : TestDecoratorGeneration.IService, IDisposable
+    public partial class ServiceDecoratorExample : TestDecoratorGeneration.IService, IDisposable
     {
         private string _methodName;
         private object[] _args;
         private bool _isInitialized;
 
-        public ServiceDecorator()
+        public ServiceDecoratorExample()
         {
             try
             {

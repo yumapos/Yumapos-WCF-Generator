@@ -11,11 +11,19 @@
 
 namespace TestDecoratorGeneration
 {
-	public partial class ManagerDecorator :
+	public partial class ManagerDecorator
 	{
 
+		private TestDecoratorGeneration.Manager DecoratedComponent { get; set; }
 
+		public System.Threading.Tasks.Task Start()
+		{
+			DecoratedComponent.Start();
+		}
+		public System.Threading.Tasks.Task Stop()
+		{
+			DecoratedComponent.Stop();
+		}
 
-		// Start can be generate// Stop can be generate
 	}
 }

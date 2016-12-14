@@ -93,12 +93,12 @@ namespace WCFGenerator.DecoratorGeneration.Core
                     decoratedClassInfo.MethodInfos.Add(new MethodInfo()
                     {
                         Name = m.Name,
-                        ReturnType = m.ReturnType.Name,
+                        ReturnType = m.ReturnType.ContainingNamespace + "." + m.ReturnType.Name,
                         IsAsync = m.IsAsync,
                         Parameters = m.Parameters.Select(p=> new ParameterInfo()
                         {
                             Name = p.Name,
-                            Type = p.Type.Name
+                            Type = p.Type.ContainingNamespace + "." + p.Type.Name
                         }).ToList(),
                     });
                 }

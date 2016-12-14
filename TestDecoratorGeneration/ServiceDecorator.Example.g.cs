@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 
 namespace TestDecoratorGeneration
 {
-    public partial class ServiceDecorator
+    public partial class ServiceDecoratorExample
     {
+        private TestDecoratorGeneration.Service DecoratedComponent { get; set; }
+
         public async Task Open()
         {
             try
@@ -54,6 +56,7 @@ namespace TestDecoratorGeneration
                 throw;
             }
         }
+
 
         
         

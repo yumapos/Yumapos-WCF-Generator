@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,7 +24,14 @@ namespace WCFGenerator.DecoratorGeneration.Analysis
             _allClasses = new List<ClassDeclarationSyntax>();
             var trees = solution.GetTrees(new[] {project});
             _allClasses = trees.SelectMany(t => t.GetClasses()).ToList();
-            _projectCompilation = CSharpCompilation.Create("ProjectCompilation").AddSyntaxTrees(trees);
+            _projectCompilation = CSharpCompilation.Create("ProjectCompilation")
+                .AddSyntaxTrees(trees)
+                .WithReferences(new List<MetadataReference>()
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IEnumerable).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Task).Assembly.Location)
+                }); ;
         }
 
         public INamedTypeSymbol GetClassByFullName(string className)

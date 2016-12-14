@@ -8,6 +8,8 @@ namespace WCFGenerator.DecoratorGeneration.Core
 {
     internal class CodeClassDecoratorGenerator : ICodeClassDecoratorGenerator
     {
+        private string _decoratedComponent = "DecoratedComponent";
+
         public DecoratorInfo DecoratorInfo { get; set; }
 
 
@@ -32,7 +34,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         public string GetClassDeclaration()
         {
-            return "public partial class " + DecoratorInfo.DecoratorClassTypeShortName + " : " + string.Join("," , DecoratorInfo.ImplementedInterfaces);
+            return "public partial class " + DecoratorInfo.DecoratorClassTypeShortName;
         }
 
         public string GetFields()
@@ -42,7 +44,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         public string GetProperties()
         {
-            return "";
+            return "private "+ DecoratorInfo.DecoratedClassTypeFullName + " " +_decoratedComponent + "{get;set;}";
         }
 
         public string GetConstructors()
@@ -114,9 +116,30 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         #region Private
 
-        private object GenerateMethod(MethodInfo methodInfo)
+        private string GenerateMethod(MethodInfo methodInfo)
         {
-            return "// " + methodInfo.Name + " " + "can be generate";
+            var sb = new StringBuilder();
+
+            var methodParameters = string.Join(",", methodInfo.Parameters.Select(p => p.Type + " " + p.Name));
+            var methodParameterNames = string.Join(",", methodInfo.Parameters.Select(p => p.Name));
+
+            sb.AppendLine("public " + methodInfo.ReturnType + " " + methodInfo.Name + "(" + methodParameters + ")");
+            sb.AppendLine("{");
+
+            if (DecoratorInfo.OnEntryExist)
+            {
+                sb.AppendLine("OnEntry();");
+            }
+
+            sb.AppendLine(_decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");");
+
+            if (DecoratorInfo.OnExitExist)
+            {
+                sb.AppendLine("OnExit();");
+            }
+
+            sb.AppendLine("}");
+            return sb.ToString();
         }
 
         #endregion
