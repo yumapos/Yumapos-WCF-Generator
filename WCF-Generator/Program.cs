@@ -86,6 +86,11 @@ namespace WCFGenerator
             // Configure generator 
             var configs = WcfServiceClientGeneratorSettings.GetConfigs();
 
+            if (configs == null)
+            {
+                return;
+            }
+
             var wcf = new WcfGenerator(_generatorWorkspace)
             {
                 // TODO сделать возможность генерить клиенты в разные проекты
