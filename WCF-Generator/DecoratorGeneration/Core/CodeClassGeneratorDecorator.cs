@@ -122,20 +122,69 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
             var methodParameters = string.Join(",", methodInfo.Parameters.Select(p => p.Type + " " + p.Name));
             var methodParameterNames = string.Join(",", methodInfo.Parameters.Select(p => p.Name));
+            var typesNotReturned = new[] {"void", "System.Threading.Tasks.Task"};
+            var returnValue = typesNotReturned.All(t => t != methodInfo.ReturnTypeName);
 
-            sb.AppendLine("public " + methodInfo.ReturnType + " " + methodInfo.Name + "(" + methodParameters + ")");
+            // Method declaration
+            sb.AppendLine("public " + (methodInfo.IsAsync? "async ":"") + methodInfo.ReturnTypeName + " " + methodInfo.Name + "(" + methodParameters + ")");
             sb.AppendLine("{");
 
+            if(returnValue)
+            {
+                var retType = methodInfo.IsAsync ? methodInfo.GetTaskRetunTypeName() : methodInfo.ReturnTypeName;
+                sb.AppendLine(retType + " ret = " + (methodInfo.ReturnTypeIsNullble ? "null" : "default("+ retType + ")") + ";");
+            }
+
+            // Try-catch
+            if (DecoratorInfo.OnExceptionExist)
+            {
+                sb.AppendLine("try");
+                sb.AppendLine("{");
+            }
+
+            // Init
+            sb.AppendLine((methodInfo.IsAsync ? "await InitAsync" : "Init") + "(\""+ methodInfo.Name + "\", new object[] { " + methodParameterNames + " });");
+
+            // OnEntry method
             if (DecoratorInfo.OnEntryExist)
             {
                 sb.AppendLine("OnEntry();");
             }
 
-            sb.AppendLine(_decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");");
+            if (returnValue)
+            {
+                sb.Append("ret = ");
+            }
+            sb.AppendLine((methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");");
 
+            // OnExit method
             if (DecoratorInfo.OnExitExist)
             {
                 sb.AppendLine("OnExit();");
+            }
+
+            // Try-catch
+            if (DecoratorInfo.OnExceptionExist)
+            {
+                sb.AppendLine("}");
+                sb.AppendLine("catch(System.Exception e)");
+                sb.AppendLine("{");
+                sb.AppendLine("OnException(e);");
+                sb.AppendLine("}");
+
+                // Finally
+                if (DecoratorInfo.OnFinallyExist)
+                {
+                    sb.AppendLine("finally");
+                    sb.AppendLine("{");
+                    sb.AppendLine("OnFinally();");
+                    sb.AppendLine("}");
+                }
+            }
+
+            if (returnValue)
+            {
+                sb.AppendLine("return ret;");
             }
 
             sb.AppendLine("}");

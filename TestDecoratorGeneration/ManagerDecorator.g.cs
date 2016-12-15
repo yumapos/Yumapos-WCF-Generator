@@ -16,13 +16,15 @@ namespace TestDecoratorGeneration
 
 		private TestDecoratorGeneration.Manager DecoratedComponent { get; set; }
 
-		public System.Threading.Tasks.Task Start()
+		public async System.Threading.Tasks.Task Start()
 		{
-			DecoratedComponent.Start();
+			await InitAsync("Start", new object[] { });
+			await DecoratedComponent.Start();
 		}
-		public System.Threading.Tasks.Task Stop()
+		public async System.Threading.Tasks.Task Stop()
 		{
-			DecoratedComponent.Stop();
+			await InitAsync("Stop", new object[] { });
+			await DecoratedComponent.Stop();
 		}
 
 	}

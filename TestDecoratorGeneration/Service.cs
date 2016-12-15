@@ -22,6 +22,20 @@ namespace TestDecoratorGeneration
         {
             return new List<ItemDto>();
         }
+        public void Stop()
+        {
+            
+        }
+
+        public Guid GetGuid()
+        {
+            return Guid.Empty;
+        }
+
+        public int GetInt()
+        {
+            return 0;
+        }
 
         public void Dispose(){}
     }

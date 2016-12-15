@@ -43,7 +43,12 @@ namespace TestDecoratorGeneration
             }
         }
 
-        private async Task Init(string methodName, object[] args)
+        private async Task InitAsync(string methodName, object[] args)
+        {
+            Init(methodName, args);
+        }
+
+        private void Init(string methodName, object[] args)
         {
             if (!_isInitialized)
             {
@@ -58,7 +63,7 @@ namespace TestDecoratorGeneration
             
         }
 
-        private void OnExit()
+        private  void OnExit()
         {
             
         }

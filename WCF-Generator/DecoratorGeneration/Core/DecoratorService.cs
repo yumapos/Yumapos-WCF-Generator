@@ -19,7 +19,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
         private string _suffix = "Decorator";
         private string _entryMethodName = "OnEntry";
         private string _exitMethodName = "OnExit";
-        private string _exceptionMethodName = "OnExeption";
+        private string _exceptionMethodName = "OnException";
         private string _finallyMethodName = "OnFinally";
 
         #endregion
@@ -90,17 +90,20 @@ namespace WCFGenerator.DecoratorGeneration.Core
                     // Skip already decorated methods
                     if(decoratorImplementedMethods.Any(dm => dm.Name == m.Name)) continue;
 
-                    decoratedClassInfo.MethodInfos.Add(new MethodInfo()
+                    var method = new MethodInfo()
                     {
                         Name = m.Name,
-                        ReturnType = m.ReturnType.ContainingNamespace + "." + m.ReturnType.Name,
+                        ReturnTypeName = m.ReturnType.ToString(),
                         IsAsync = m.IsAsync,
-                        Parameters = m.Parameters.Select(p=> new ParameterInfo()
+                        ReturnTypeIsNullble = m.ReturnType.IsReferenceType,
+                        Parameters = m.Parameters.Select(p => new ParameterInfo()
                         {
                             Name = p.Name,
                             Type = p.Type.ContainingNamespace + "." + p.Type.Name
                         }).ToList(),
-                    });
+                    };
+
+                    decoratedClassInfo.MethodInfos.Add(method);
                 }
 
                 // Set flags for include decorator methods

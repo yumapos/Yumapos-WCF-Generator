@@ -16,23 +16,121 @@ namespace TestDecoratorGeneration
 
 		private TestDecoratorGeneration.Service DecoratedComponent { get; set; }
 
-		public System.Threading.Tasks.Task Open()
+		public async System.Threading.Tasks.Task Open()
 		{
-			OnEntry();
-			DecoratedComponent.Open();
-			OnExit();
+			try
+			{
+				await InitAsync("Open", new object[] { });
+				OnEntry();
+				await DecoratedComponent.Open();
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
 		}
-		public System.Threading.Tasks.Task AddItem(System.Guid id, System.String name)
+		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, System.String name)
 		{
-			OnEntry();
-			DecoratedComponent.AddItem(id, name);
-			OnExit();
+			TestDecoratorGeneration.ResponseDto ret = null;
+			try
+			{
+				await InitAsync("AddItem", new object[] { id, name });
+				OnEntry();
+				ret = await DecoratedComponent.AddItem(id, name);
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
 		}
-		public System.Threading.Tasks.Task GetItems()
+		public async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>> GetItems()
 		{
-			OnEntry();
-			DecoratedComponent.GetItems();
-			OnExit();
+			System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto> ret = null;
+			try
+			{
+				await InitAsync("GetItems", new object[] { });
+				OnEntry();
+				ret = await DecoratedComponent.GetItems();
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
+		}
+		public void Stop()
+		{
+			try
+			{
+				Init("Stop", new object[] { });
+				OnEntry();
+				DecoratedComponent.Stop();
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+		}
+		public System.Guid GetGuid()
+		{
+			System.Guid ret = default(System.Guid);
+			try
+			{
+				Init("GetGuid", new object[] { });
+				OnEntry();
+				ret = DecoratedComponent.GetGuid();
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
+		}
+		public int GetInt()
+		{
+			int ret = default(int);
+			try
+			{
+				Init("GetInt", new object[] { });
+				OnEntry();
+				ret = DecoratedComponent.GetInt();
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
 		}
 
 	}
