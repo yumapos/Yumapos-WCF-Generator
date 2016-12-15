@@ -8,10 +8,18 @@ namespace TestDecoratorGeneration
     {
         public Service(){}
 
+        public int Id { get; set; }
+
         public async Task Open()
         {
             
         }
+
+        public async Task<bool> AddItem2(Guid id, string name)
+        {
+            return true;
+        }
+
 
         public async Task<ResponseDto> AddItem(Guid id, string name)
         {
@@ -25,6 +33,11 @@ namespace TestDecoratorGeneration
         public void Stop()
         {
             
+        }
+
+        public async Task<string> GetSystemSettings(string[] listOfSystemSettings)
+        {
+            return "";
         }
 
         public Guid GetGuid()

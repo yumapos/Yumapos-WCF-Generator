@@ -62,7 +62,8 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 }
 
                 decoratedClassInfo.DecoratedClassTypeShortName = decoratedClass.Name;
-                decoratedClassInfo.Namespace = decoratedClass.ContainingNamespace.Name;
+                decoratedClassInfo.Namespace = decoratedClass.ContainingNamespace.ToString();
+                //decoratedClassInfo.RequiredNamespaces = _syntaxWalker.GetUsings(decoratedClass);
 
                 // Get decorator class
                 var decoratorClass = _syntaxWalker.GetClassByFullName(cls + _suffix);
@@ -75,8 +76,9 @@ namespace WCFGenerator.DecoratorGeneration.Core
                
                 // Get methods for decorating
                 var methods = decoratedClass.GetMembers()
-                    .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public)
+                    .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public && m.MetadataName != ".ctor")
                     .Select(m=> m as IMethodSymbol)
+                    .Where(m => m.AssociatedSymbol == null || m.AssociatedSymbol.Kind != SymbolKind.Property)
                     .ToList();
 
                 // Get methods from decorator
@@ -95,11 +97,11 @@ namespace WCFGenerator.DecoratorGeneration.Core
                         Name = m.Name,
                         ReturnTypeName = m.ReturnType.ToString(),
                         IsAsync = m.IsAsync,
-                        ReturnTypeIsNullble = m.ReturnType.IsReferenceType,
+                        ReturnTypeIsNullble = !m.ReturnType.IsValueType,
                         Parameters = m.Parameters.Select(p => new ParameterInfo()
                         {
                             Name = p.Name,
-                            Type = p.Type.ContainingNamespace + "." + p.Type.Name
+                            Type = p.Type.ToString()
                         }).ToList(),
                     };
 

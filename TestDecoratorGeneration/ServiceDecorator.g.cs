@@ -34,9 +34,29 @@ namespace TestDecoratorGeneration
 				OnFinally();
 			}
 		}
-		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, System.String name)
+		public async System.Threading.Tasks.Task<bool> AddItem2(System.Guid id, string name)
 		{
-			TestDecoratorGeneration.ResponseDto ret = null;
+			var ret = default(bool);
+			try
+			{
+				await InitAsync("AddItem2", new object[] { id, name });
+				OnEntry();
+				ret = await DecoratedComponent.AddItem2(id, name);
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
+		}
+		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, string name)
+		{
+			var ret = default(TestDecoratorGeneration.ResponseDto);
 			try
 			{
 				await InitAsync("AddItem", new object[] { id, name });
@@ -56,7 +76,7 @@ namespace TestDecoratorGeneration
 		}
 		public async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>> GetItems()
 		{
-			System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto> ret = null;
+			var ret = default(System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>);
 			try
 			{
 				await InitAsync("GetItems", new object[] { });
@@ -92,9 +112,29 @@ namespace TestDecoratorGeneration
 				OnFinally();
 			}
 		}
+		public async System.Threading.Tasks.Task<string> GetSystemSettings(string[] listOfSystemSettings)
+		{
+			var ret = default(string);
+			try
+			{
+				await InitAsync("GetSystemSettings", new object[] { listOfSystemSettings });
+				OnEntry();
+				ret = await DecoratedComponent.GetSystemSettings(listOfSystemSettings);
+				OnExit();
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
+		}
 		public System.Guid GetGuid()
 		{
-			System.Guid ret = default(System.Guid);
+			var ret = default(System.Guid);
 			try
 			{
 				Init("GetGuid", new object[] { });
@@ -114,7 +154,7 @@ namespace TestDecoratorGeneration
 		}
 		public int GetInt()
 		{
-			int ret = default(int);
+			var ret = default(int);
 			try
 			{
 				Init("GetInt", new object[] { });

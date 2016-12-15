@@ -132,7 +132,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
             if(returnValue)
             {
                 var retType = methodInfo.IsAsync ? methodInfo.GetTaskRetunTypeName() : methodInfo.ReturnTypeName;
-                sb.AppendLine(retType + " ret = " + (methodInfo.ReturnTypeIsNullble ? "null" : "default("+ retType + ")") + ";");
+                sb.AppendLine("var ret = default("+ retType + ");");
             }
 
             // Try-catch
