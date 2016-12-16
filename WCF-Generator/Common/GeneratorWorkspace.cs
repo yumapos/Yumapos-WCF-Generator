@@ -1,10 +1,27 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Text;
 
 namespace WCFGenerator.Common
 {
+    /// <summary>
+    ///     Workspace for any generators of code
+    /// </summary>
     public class GeneratorWorkspace
     {
+        /* How it work:
+         * 1. Create new GeneratorWorkspace by absolute solution path 
+         * 2. Set target project for saving code
+         * 3. Update files in project (create new)
+         * 4. Apply target project changes
+         * 5. Close solution if all project updated
+         */
+
         public GeneratorWorkspace(string absoluteSlnPath)
         {
             MsBuildWorkspace = MSBuildWorkspace.Create();
@@ -26,5 +43,119 @@ namespace WCFGenerator.Common
             ApplyChanges();
             MsBuildWorkspace.CloseSolution();
         }
+
+        #region Fields
+
+        private readonly List<SrcFile> _filesToCreation = new List<SrcFile>();
+
+        #endregion
+
+        #region Properties
+
+        public Project Project { get; private set; }
+
+        #endregion
+
+        /// <summary>
+        ///     Set target project for saving generated code.
+        /// </summary>
+        /// <param name="projectName"></param>
+        public void SetTargetProject(string projectName)
+        {
+            if (Solution == null) throw new InvalidOperationException("At first open solution");
+            Project = Solution.Projects.First(x => x.Name == projectName);
+            _filesToCreation.Clear();
+        }
+
+        #region Documents operation
+
+        /// <summary>
+        ///     Add new file to list of new file. If file alredy exist, file append removing list.
+        /// </summary>
+        /// <param name="fileName">File name with extention</param>
+        /// <param name="folder">Path to foldel in project</param>
+        /// <param name="code">Text of source code</param>
+        public void UpdateFile(string fileName, string folder, string code)
+        {
+            if (string.IsNullOrEmpty(code)) throw new ArgumentException("code");
+            if (string.IsNullOrEmpty(fileName)) throw new ArgumentException("fileName");
+            if (folder==null) throw new ArgumentException("folder");
+            if (_filesToCreation.Any(f => f.FileName == fileName && f.ProjectFolder == folder)) throw new ArgumentException(fileName + " - file already exists.");
+            _filesToCreation.Add(new SrcFile(fileName, folder, code));
+        }
+
+        /// <summary>
+        ///     Apply all changes (adding and removing files) for current workspace project
+        /// </summary>
+        public async Task ApplyTargetProjectChanges(bool standartFormatting)
+        {
+            var project = Project;
+
+            foreach (var doc in _filesToCreation)
+            {
+                Document document;
+
+                var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.EndsWith(doc.ProjectFolder + "\\" + doc.FileName));
+                // check changes
+                if (old != null)
+                {
+                    var st = SourceText.From(doc.SrcText);
+                    var newDoc = old.WithText(st);
+                    if(standartFormatting)
+                    {
+                        newDoc = Formatting(newDoc);
+                    }
+                    var c = await newDoc.GetTextChangesAsync(old);
+                    document = c.Any() ? newDoc : old;
+                }
+                // create new document
+                else
+                {
+                    document = project.AddDocument(doc.FileName, doc.SrcText, doc.ProjectFolder.Split('\\'));
+                    document = Formatting(document);
+                }
+
+                project = document.Project;
+            }
+            // Apply project changes
+            Solution = project.Solution;
+            ApplyChanges();
+        }
+
+        private Document Formatting(Document doc)
+        {
+            // general format
+            var formattedDoc = Formatter.FormatAsync(doc).Result;
+            var text = formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t");
+            formattedDoc = formattedDoc.WithText(SourceText.From(text));
+            return formattedDoc;
+        }
+
+        #endregion
+
+        #region Private
+
+        private struct SrcFile
+        {
+            public readonly string FileName;
+            public readonly string ProjectFolder;
+            public readonly string SrcText;
+
+            /// <summary>
+            ///     New source code file
+            /// </summary>
+            /// <param name="fileName">File name with extension</param>
+            /// <param name="projectFolder">Folder in project where file can be saved (for example: "Models\Generated" )</param>
+            /// <param name="srcText">Text of code</param>
+            public SrcFile(string fileName, string projectFolder, string srcText)
+            {
+                FileName = fileName;
+                ProjectFolder = projectFolder;
+                SrcText = srcText;
+            }
+        }
+
+        #endregion
+
     }
 }

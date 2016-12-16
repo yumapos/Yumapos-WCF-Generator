@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using Nito.AsyncEx;
 using WCFGenerator.Common;
+using WCFGenerator.DecoratorGeneration.Configuration;
+using WCFGenerator.DecoratorGeneration.Core;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.SerializeGeneration.Generation;
@@ -72,7 +74,16 @@ namespace WCFGenerator
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error occured on wcf generation. ", e);
+                throw new ApplicationException("Error occured on wcf generation.", e);
+            }
+
+            try
+            {
+                RunDecoratorGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Error occured on decorator generation.", e);
             }
 
             // Apply Changes, close solution
@@ -140,6 +151,21 @@ namespace WCFGenerator
             AsyncContext.Run(() => repositoryGenerator.GenerateAll());
 
             Console.WriteLine("Serialize generation completed.");
+        }
+
+        private static void RunDecoratorGeneration()
+        {
+            Console.WriteLine("Start decoration generation...");
+
+            // Configure generator 
+            var config = DecoratorGeneratorSettings.GetConfigs();
+
+            var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
+
+            // run generation
+            AsyncContext.Run(() => generator.Generate());
+
+            Console.WriteLine("Decoration generation completed.");
         }
     }
 }
