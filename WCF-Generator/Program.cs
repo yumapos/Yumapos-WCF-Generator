@@ -61,7 +61,7 @@ namespace WCFGenerator
 
             try
             {
-               RunSerializeGeneration();
+                RunSerializeGeneration();
             }
             catch (Exception e)
             {

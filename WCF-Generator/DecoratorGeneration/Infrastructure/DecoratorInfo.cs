@@ -18,6 +18,7 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         public string DecoratedClassTypeFullName { get; set; }
 
         // Decorator class
+        public string DecoratorClassTypeFullName { get; set; }
         public string DecoratorClassTypeShortName { get; set; }
         public List<MethodInfo> MethodInfos { get; set; }
         public List<string> RequiredNamespaces { get; set; }

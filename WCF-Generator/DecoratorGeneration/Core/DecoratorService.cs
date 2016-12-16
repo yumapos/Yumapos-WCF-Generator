@@ -16,7 +16,6 @@ namespace WCFGenerator.DecoratorGeneration.Core
         private readonly GeneratorWorkspace _workSpace;
         private readonly DecoratorConfiguration _configuration;
 
-        private string _suffix = "Decorator";
         private string _entryMethodName = "OnEntry";
         private string _exitMethodName = "OnExit";
         private string _exceptionMethodName = "OnException";
@@ -41,35 +40,36 @@ namespace WCFGenerator.DecoratorGeneration.Core
         {
             var ret = new List<ICodeClassDecoratorGenerator>();
 
-            foreach (var cls in _configuration.DecoratedClassNames)
+            foreach (var cls in _configuration.DecoratedClass)
             {
                 // Init
                 var codeClassGenerator = new CodeClassDecoratorGenerator();
                 var decoratedClassInfo = new DecoratorInfo()
                 {
-                    DecoratedClassTypeFullName = cls,
-                    DecoratorClassTypeShortName = cls.Split('.').Last() + _suffix
+                    DecoratedClassTypeFullName = cls.SourceClassName,
+                    DecoratorClassTypeShortName = cls.TargetClassName
                 };
                 codeClassGenerator.DecoratorInfo = decoratedClassInfo;
 
                 // Get decorated class
-                var decoratedClass = _syntaxWalker.GetClassByFullName(cls);
+                var decoratedClass = _syntaxWalker.GetClassByFullName(cls.SourceClassName);
                 if(decoratedClass==null)
                 {
-                    codeClassGenerator.AnalysisError = string.Format("Decorated class {0} not found!", cls);
+                    codeClassGenerator.AnalysisError = string.Format("Decorated class {0} not found!", cls.SourceClassName);
                     ret.Add(codeClassGenerator);
                     continue;
                 }
 
                 decoratedClassInfo.DecoratedClassTypeShortName = decoratedClass.Name;
                 decoratedClassInfo.Namespace = decoratedClass.ContainingNamespace.ToString();
+                decoratedClassInfo.DecoratorClassTypeFullName = decoratedClassInfo.Namespace + "." + cls.TargetClassName;
                 //decoratedClassInfo.RequiredNamespaces = _syntaxWalker.GetUsings(decoratedClass);
 
                 // Get decorator class
-                var decoratorClass = _syntaxWalker.GetClassByFullName(cls + _suffix);
+                var decoratorClass = _syntaxWalker.GetClassByFullName(decoratedClassInfo.DecoratorClassTypeFullName);
                 if (decoratorClass == null)
                 {
-                    codeClassGenerator.AnalysisError = string.Format("Partial decorator class {0} not found!", decoratedClassInfo.DecoratorClassTypeShortName);
+                    codeClassGenerator.AnalysisError = string.Format("Partial decorator class {0} not found!", decoratedClassInfo.DecoratorClassTypeFullName);
                     ret.Add(codeClassGenerator);
                     continue;
                 }

@@ -13,7 +13,11 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
             return section.RepositoryProjects.Cast<DecoratorProject>().Select(s=> new DecoratorConfiguration()
             {
                 SolutionProjectName = s.Name,
-                DecoratedClassNames = s.DecoratedClasses.Cast<DecoratedClass>().Select(c=>c.FullTypeName).ToList()
+                DecoratedClass = s.DecoratedClasses.Cast<DecoratedClass>().Select(c=> new ClassInfo()
+                {
+                  SourceClassName  = c.SourceClass,
+                  TargetClassName = c.TargetClass
+                } ).ToList()
             }).ToList();
         }
     }
@@ -21,7 +25,13 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     public class DecoratorConfiguration
     {
         public string SolutionProjectName { get; set; }
-        public List<string> DecoratedClassNames { get; set; }
+        public List<ClassInfo> DecoratedClass { get; set; }
+    }
+
+    public class ClassInfo
+    {
+        public string SourceClassName { get; set; }
+        public string TargetClassName { get; set; }
     }
 
     /// <summary>
@@ -98,7 +108,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DecoratedClass)(element)).FullTypeName;
+            return ((DecoratedClass)(element)).SourceClass;
         }
 
         public DecoratedClass this[int idx]
@@ -113,12 +123,21 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     public class DecoratedClass : ConfigurationElement
     {
         /// <summary>
-        ///      Types for analysis
+        ///      Source class for decorate
         /// </summary>
-        [ConfigurationProperty("fullTypeName", DefaultValue = "", IsRequired = true)]
-        public string FullTypeName
+        [ConfigurationProperty("sourceClass", DefaultValue = "", IsRequired = true)]
+        public string SourceClass
         {
-            get { return ((string)(base["fullTypeName"])); }
+            get { return ((string)(base["sourceClass"])); }
+        }
+
+        /// <summary>
+        ///      Target decorator
+        /// </summary>
+        [ConfigurationProperty("targetClass", DefaultValue = "", IsRequired = true)]
+        public string TargetClass
+        {
+            get { return ((string)(base["targetClass"])); }
         }
     }
 }
