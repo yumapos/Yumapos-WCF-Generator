@@ -12,8 +12,7 @@ namespace WCFGenerator.WcfClientGeneration.Configuration
             try
             {
                 var section = ConfigurationManager.GetSection("wcfClientGenerator") as WcfClientGenerator;
-                if (section == null) throw new ConfigurationErrorsException("wcfClientGenerator section not found at " + AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
-                return section.RepositoryProjects.Cast<WcfService>().ToList();
+                return section?.RepositoryProjects.Cast<WcfService>().ToList();
             }
             catch (ConfigurationErrorsException e)
             {
