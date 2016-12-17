@@ -18,12 +18,12 @@ namespace TestDecoratorGeneration
 
 		public async System.Threading.Tasks.Task Start()
 		{
-			await InitAsync("Start", new object[] { });
+			await OnEntryAsync("Start", new object[] { });
 			await DecoratedComponent.Start();
 		}
 		public async System.Threading.Tasks.Task Stop()
 		{
-			await InitAsync("Stop", new object[] { });
+			await OnEntryAsync("Stop", new object[] { });
 			await DecoratedComponent.Stop();
 		}
 

@@ -9,9 +9,12 @@ namespace TestDecoratorGeneration
             DecoratedComponent = new Manager();
         }
 
-        private Task InitAsync(string start, object[] objects)
+        private async Task OnEntryAsync(string start, object[] objects)
         {
-            throw new System.NotImplementedException();
+            OnEntry(start, objects);
+        }
+        private void OnEntry(string start, object[] objects)
+        {
         }
     }
 }
