@@ -20,10 +20,9 @@ namespace TestDecoratorGeneration
 		{
 			try
 			{
-				await InitAsync("Open", new object[] { });
-				OnEntry();
+				await OnEntryAsync("Open", new object[] { });
 				await DecoratedComponent.Open();
-				OnExit();
+				await OnExitAsync();
 			}
 			catch (System.Exception e)
 			{
@@ -39,10 +38,9 @@ namespace TestDecoratorGeneration
 			var ret = default(bool);
 			try
 			{
-				await InitAsync("AddItem2", new object[] { id, name });
-				OnEntry();
+				await OnEntryAsync("AddItem2", new object[] { id, name });
 				ret = await DecoratedComponent.AddItem2(id, name);
-				OnExit();
+				await OnExitAsync();
 			}
 			catch (System.Exception e)
 			{
@@ -59,10 +57,9 @@ namespace TestDecoratorGeneration
 			var ret = default(TestDecoratorGeneration.ResponseDto);
 			try
 			{
-				await InitAsync("AddItem", new object[] { id, name });
-				OnEntry();
+				await OnEntryAsync("AddItem", new object[] { id, name });
 				ret = await DecoratedComponent.AddItem(id, name);
-				OnExit();
+				await OnExitAsync();
 			}
 			catch (System.Exception e)
 			{
@@ -79,10 +76,9 @@ namespace TestDecoratorGeneration
 			var ret = default(System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>);
 			try
 			{
-				await InitAsync("GetItems", new object[] { });
-				OnEntry();
+				await OnEntryAsync("GetItems", new object[] { });
 				ret = await DecoratedComponent.GetItems();
-				OnExit();
+				await OnExitAsync();
 			}
 			catch (System.Exception e)
 			{
@@ -98,8 +94,7 @@ namespace TestDecoratorGeneration
 		{
 			try
 			{
-				Init("Stop", new object[] { });
-				OnEntry();
+				OnEntry("Stop", new object[] { });
 				DecoratedComponent.Stop();
 				OnExit();
 			}
@@ -117,10 +112,9 @@ namespace TestDecoratorGeneration
 			var ret = default(string);
 			try
 			{
-				await InitAsync("GetSystemSettings", new object[] { listOfSystemSettings });
-				OnEntry();
+				await OnEntryAsync("GetSystemSettings", new object[] { listOfSystemSettings });
 				ret = await DecoratedComponent.GetSystemSettings(listOfSystemSettings);
-				OnExit();
+				await OnExitAsync();
 			}
 			catch (System.Exception e)
 			{
@@ -137,8 +131,7 @@ namespace TestDecoratorGeneration
 			var ret = default(System.Guid);
 			try
 			{
-				Init("GetGuid", new object[] { });
-				OnEntry();
+				OnEntry("GetGuid", new object[] { });
 				ret = DecoratedComponent.GetGuid();
 				OnExit();
 			}
@@ -157,8 +150,7 @@ namespace TestDecoratorGeneration
 			var ret = default(int);
 			try
 			{
-				Init("GetInt", new object[] { });
-				OnEntry();
+				OnEntry("GetInt", new object[] { });
 				ret = DecoratedComponent.GetInt();
 				OnExit();
 			}

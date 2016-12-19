@@ -142,13 +142,10 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 sb.AppendLine("{");
             }
 
-            // Init
-            sb.AppendLine((methodInfo.IsAsync ? "await InitAsync" : "Init") + "(\""+ methodInfo.Name + "\", new object[] { " + methodParameterNames + " });");
-
             // OnEntry method
             if (DecoratorInfo.OnEntryExist)
             {
-                sb.AppendLine("OnEntry();");
+                sb.AppendLine((methodInfo.IsAsync ? "await OnEntryAsync" : "OnEntry") + "(\"" + methodInfo.Name + "\", new object[] { " + methodParameterNames + " });");
             }
 
             if (returnValue)
@@ -160,7 +157,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
             // OnExit method
             if (DecoratorInfo.OnExitExist)
             {
-                sb.AppendLine("OnExit();");
+                sb.AppendLine((methodInfo.IsAsync ? "await OnExitAsync" : "OnExit") + "();");
             }
 
             // Try-catch
