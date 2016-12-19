@@ -109,8 +109,8 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 }
 
                 // Set flags for include decorator methods
-                decoratedClassInfo.OnEntryExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _entryMethodName) != null;
-                decoratedClassInfo.OnExitExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exitMethodName) != null;
+                decoratedClassInfo.OnEntryExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _entryMethodName || m.Name == _entryMethodName + "Async") != null;
+                decoratedClassInfo.OnExitExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exitMethodName || m.Name == _exitMethodName + "Async") != null;
                 decoratedClassInfo.OnExceptionExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exceptionMethodName) != null;
                 decoratedClassInfo.OnFinallyExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _finallyMethodName) != null;
 
