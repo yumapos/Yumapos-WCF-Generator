@@ -160,6 +160,11 @@ namespace WCFGenerator
             // Configure generator 
             var config = DecoratorGeneratorSettings.GetConfigs();
 
+            if (config == null)
+            {
+                return;
+            }
+
             var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
 
             // run generation

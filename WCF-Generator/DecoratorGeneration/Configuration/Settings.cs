@@ -9,14 +9,13 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         public static IReadOnlyCollection<DecoratorConfiguration> GetConfigs()
         {
             var section = ConfigurationManager.GetSection("decoratorGenerator") as DecoratorGenerator;
-            if(section==null) throw new ConfigurationErrorsException("decoratorGenerator configuration section not found");
-            return section.RepositoryProjects.Cast<DecoratorProject>().Select(s=> new DecoratorConfiguration()
+            return section?.RepositoryProjects.Cast<DecoratorProject>().Select(s=> new DecoratorConfiguration()
             {
                 SolutionProjectName = s.Name,
                 DecoratedClass = s.DecoratedClasses.Cast<DecoratedClass>().Select(c=> new ClassInfo()
                 {
-                  SourceClassName  = c.SourceClass,
-                  TargetClassName = c.TargetClass
+                    SourceClassName  = c.SourceClass,
+                    TargetClassName = c.TargetClass
                 } ).ToList()
             }).ToList();
         }
