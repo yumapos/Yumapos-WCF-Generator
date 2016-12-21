@@ -167,6 +167,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 sb.AppendLine("catch(System.Exception e)");
                 sb.AppendLine("{");
                 sb.AppendLine("OnException(e);");
+                sb.AppendLine("throw;");
                 sb.AppendLine("}");
 
                 // Finally
