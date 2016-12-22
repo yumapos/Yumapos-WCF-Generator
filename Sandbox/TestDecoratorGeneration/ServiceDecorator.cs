@@ -22,7 +22,7 @@ namespace TestDecoratorGeneration
             }
             finally
             {
-                OnExit();
+                OnExit(null);
             }
         }
 
@@ -41,7 +41,7 @@ namespace TestDecoratorGeneration
             }
             finally
             {
-                OnExit();
+                OnExit(null);
             }
         }
         private async Task OnEntryAsync(string methodName, object[] args)
@@ -59,12 +59,13 @@ namespace TestDecoratorGeneration
             }
         }
 
-        private  void OnExit()
+        private  void OnExit(object res = null)
         {
             
         }
 
-        private async Task OnExitAsync()
+        
+        private async Task OnExitAsync(object res = null)
         {
 
         }
