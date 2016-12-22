@@ -15,13 +15,18 @@ namespace WCFGenerator.DecoratorGeneration.Analysis
         private readonly List<SyntaxTree> _allTrees;
         private readonly CSharpCompilation _projectCompilation;
         private readonly CSharpCompilation _solutionCompilation;
+        private Solution _solution;
+        private Project _project;
 
         public SyntaxWalker(Solution solution, string project)
         {
             if (solution == null) throw new ArgumentException("solution");
             if (project == null) throw new ArgumentException("classProject");
 
-            var solutionTrees = solution.GetTrees();
+            _solution = solution;
+            _project = solution.Projects.First(proj => proj.Name == project);
+
+                var solutionTrees = solution.GetTrees();
             _solutionCompilation = CSharpCompilation.Create("SolutionCompilation")
                 .AddSyntaxTrees(solutionTrees)
                 .WithReferences(new List<MetadataReference>()
@@ -45,6 +50,17 @@ namespace WCFGenerator.DecoratorGeneration.Analysis
         public INamedTypeSymbol GetClassByFullName(string className)
         {
             return _solutionCompilation.GetClass(className);
+        }
+
+        public string GetSrcFileProjectFolder(INamedTypeSymbol type)
+        {
+            var tree = type.Locations.First().SourceTree.GetRoot().SyntaxTree.GetText();
+            var doc = _project.Documents.FirstOrDefault(d => 
+            {
+                var t = d.GetSyntaxTreeAsync().Result.GetText();
+                return t == tree;
+            });
+            return doc !=null ? string.Join("/", doc.Folders) : "";
         }
 
         public List<string> GetUsings(INamedTypeSymbol cls)

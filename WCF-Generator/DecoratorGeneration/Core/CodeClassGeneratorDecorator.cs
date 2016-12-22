@@ -110,6 +110,8 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
         public string FileName { get { return DecoratorInfo.DecoratorClassTypeShortName + ".g.cs"; } }
 
+        public string ProjectFolder { get { return DecoratorInfo.DecoratedClassProjectFolder ?? ""; } }
+
         public string AnalysisError { get; set; }
 
         #endregion
@@ -157,7 +159,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
             // OnExit method
             if (DecoratorInfo.OnExitExist)
             {
-                sb.AppendLine((methodInfo.IsAsync ? "await OnExitAsync" : "OnExit") + "();");
+                sb.AppendLine((methodInfo.IsAsync ? "await OnExitAsync" : "OnExit") + "("+ (returnValue ? "ret" : "")  + ");");
             }
 
             // Try-catch

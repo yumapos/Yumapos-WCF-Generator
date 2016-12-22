@@ -5,6 +5,7 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
     internal interface ICodeClassDecoratorGenerator : ICodeClassGenerator
     {
         string FileName { get; }
+        string ProjectFolder { get; }
 
         /// <summary>
         ///    Errors arising in the analysis

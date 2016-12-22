@@ -16,6 +16,7 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         // Decorated class
         public string DecoratedClassTypeShortName { get; set; }
         public string DecoratedClassTypeFullName { get; set; }
+        public string DecoratedClassProjectFolder { get; set; }
 
         // Decorator class
         public string DecoratorClassTypeFullName { get; set; }
