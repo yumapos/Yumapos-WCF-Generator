@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace TestDecoratorGeneration
+namespace TestDecoratorGeneration.Managers
 {
     public partial class ManagerDecorator
     {

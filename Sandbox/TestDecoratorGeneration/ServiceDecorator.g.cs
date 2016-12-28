@@ -27,6 +27,7 @@ namespace TestDecoratorGeneration
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -40,11 +41,12 @@ namespace TestDecoratorGeneration
 			{
 				await OnEntryAsync("AddItem2", new object[] { id, name });
 				ret = await DecoratedComponent.AddItem2(id, name);
-				await OnExitAsync();
+				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -59,11 +61,12 @@ namespace TestDecoratorGeneration
 			{
 				await OnEntryAsync("AddItem", new object[] { id, name });
 				ret = await DecoratedComponent.AddItem(id, name);
-				await OnExitAsync();
+				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -78,11 +81,12 @@ namespace TestDecoratorGeneration
 			{
 				await OnEntryAsync("GetItems", new object[] { });
 				ret = await DecoratedComponent.GetItems();
-				await OnExitAsync();
+				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -101,6 +105,7 @@ namespace TestDecoratorGeneration
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -114,11 +119,12 @@ namespace TestDecoratorGeneration
 			{
 				await OnEntryAsync("GetSystemSettings", new object[] { listOfSystemSettings });
 				ret = await DecoratedComponent.GetSystemSettings(listOfSystemSettings);
-				await OnExitAsync();
+				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -133,11 +139,12 @@ namespace TestDecoratorGeneration
 			{
 				OnEntry("GetGuid", new object[] { });
 				ret = DecoratedComponent.GetGuid();
-				OnExit();
+				OnExit(ret);
 			}
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{
@@ -152,11 +159,12 @@ namespace TestDecoratorGeneration
 			{
 				OnEntry("GetInt", new object[] { });
 				ret = DecoratedComponent.GetInt();
-				OnExit();
+				OnExit(ret);
 			}
 			catch (System.Exception e)
 			{
 				OnException(e);
+				throw;
 			}
 			finally
 			{

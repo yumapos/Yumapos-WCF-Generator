@@ -63,6 +63,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 decoratedClassInfo.DecoratedClassTypeShortName = decoratedClass.Name;
                 decoratedClassInfo.Namespace = decoratedClass.ContainingNamespace.ToString();
                 decoratedClassInfo.DecoratorClassTypeFullName = decoratedClassInfo.Namespace + "." + cls.TargetClassName;
+               
                 //decoratedClassInfo.RequiredNamespaces = _syntaxWalker.GetUsings(decoratedClass);
 
                 // Get decorator class
@@ -70,10 +71,12 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 if (decoratorClass == null)
                 {
                     codeClassGenerator.AnalysisError = string.Format("Partial decorator class {0} not found!", decoratedClassInfo.DecoratorClassTypeFullName);
+                    decoratedClassInfo.DecoratedClassProjectFolder = _syntaxWalker.GetSrcFileProjectFolder(decoratedClass);
                     ret.Add(codeClassGenerator);
                     continue;
                 }
-               
+                decoratedClassInfo.DecoratedClassProjectFolder = _syntaxWalker.GetSrcFileProjectFolder(decoratorClass);
+
                 // Get methods for decorating
                 var methods = decoratedClass.GetMembers()
                     .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public && m.MetadataName != ".ctor")
