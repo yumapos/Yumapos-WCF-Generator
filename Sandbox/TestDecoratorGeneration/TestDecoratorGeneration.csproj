@@ -43,9 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Manager.cs" />
-    <Compile Include="ManagerDecorator.cs" />
-    <Compile Include="ManagerDecorator.g.cs" />
+    <Compile Include="Managers\Manager.cs" />
+    <Compile Include="Managers\ManagerDecorator.cs" />
+    <Compile Include="Managers\ManagerDecorator.g.cs" />
     <Compile Include="ServiceDecorator.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="IService.cs" />

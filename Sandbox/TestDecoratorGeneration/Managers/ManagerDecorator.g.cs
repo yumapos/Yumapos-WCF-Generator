@@ -9,12 +9,12 @@
 
 
 
-namespace TestDecoratorGeneration
+namespace TestDecoratorGeneration.Managers
 {
 	public partial class ManagerDecorator
 	{
 
-		private TestDecoratorGeneration.Manager DecoratedComponent { get; set; }
+		private TestDecoratorGeneration.Managers.Manager DecoratedComponent { get; set; }
 
 		public async System.Threading.Tasks.Task Start()
 		{
