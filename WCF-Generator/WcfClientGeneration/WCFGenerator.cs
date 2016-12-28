@@ -28,18 +28,15 @@ namespace WCFGenerator.WcfClientGeneration
 
         #endregion
 
-        public WcfGenerator(GeneratorWorkspace generatorWorkspace)
+        public WcfGenerator(GeneratorWorkspace generatorWorkspace, List<ServiceDetail> srvs)
         {
             _generatorWorkspace = generatorWorkspace;
+            Services = srvs;
         }
 
         #region Properties
 
         public List<ServiceDetail> Services { get; set; }
-        public string ProjectName { get; set; }
-        public string ProjectApi { get; set; }
-        public List<string> ProjectApiFolders { get; set; }
-        public object FaultProject { get; set; }
 
         #endregion
 
@@ -48,19 +45,16 @@ namespace WCFGenerator.WcfClientGeneration
         /// </summary>
         public void Start()
         {
-            _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == ProjectName);
-
-            GenerateBaseFiles(ProjectName);
-
             foreach (var service in Services)
             {
+                _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == service.ProjectName);
+
+                GenerateBaseFiles(service.ProjectName);
                 GenerateService(service);
                 GenerateApi(service);
+                GenerateCompletedEventArgs(service.ProjectName);
+                ApplyChanges();
             }
-
-            GenerateCompletedEventArgs(ProjectName);
-
-            ApplyChanges();
         }
 
         #region Generate
@@ -71,14 +65,15 @@ namespace WCFGenerator.WcfClientGeneration
 
             if (service.UserName != null)
             {
-                GenerateInterfaceAndChannel(service, ProjectName);
-                GenerateServiceClient(service, ProjectName);
+                GenerateInterfaceAndChannel(service, service.ProjectName);
+                GenerateServiceClient(service, service.ProjectName);
             }
         }
 
         private void GenerateApi(ServiceDetail service)
         {
             var svcName = service.UserName;
+            var prjName = service.ProjectName;
 
             var extIndex = svcName.IndexOf(".", StringComparison.Ordinal);
             svcName = extIndex > 0 ? svcName.Remove(extIndex) : svcName;
@@ -88,7 +83,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
-            sb.Append(" namespace " + ProjectName + "\r\n { \r\n");
+            sb.Append(" namespace " + prjName + "\r\n { \r\n");
             sb.Append("\t public partial class " + svcName + "Api\r\n\t { \r\n");
 
             sb.Append("\t\t private ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\r\n\t\t { \r\n");
@@ -158,16 +153,16 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t }");
             sb.Append(" }");
 
-            CreateDocument(sb.ToString(), ProjectName, svcName + "Api.g.cs");
+            CreateDocument(sb.ToString(), prjName, svcName + "Api.g.cs");
 
             sb.Clear();
 
             sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
-            sb.Append(" namespace " + ProjectApi + "\r\n { \r\n");
+            sb.Append(" namespace " + service.ProjectApi + "\r\n { \r\n");
             sb.Append("\t public partial interface I" + svcName + "Api\r\n\t { \r\n");
 
-            var projectIApi = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == ProjectApi);
+            var projectIApi = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == service.ProjectApi);
             if (projectIApi != null)
             {
                 var iApi = projectIApi.Documents.FirstOrDefault(x => x.Name == "I" + svcName + "Api.cs");
@@ -195,7 +190,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t }");
             sb.Append(" }");
 
-            CreateDocument(sb.ToString(), ProjectApi, String.Join("/", ProjectApiFolders) + (ProjectApiFolders.Any() ? "/" : "") + "I" + svcName + "Api.g.cs");
+            CreateDocument(sb.ToString(), service.ProjectApi, String.Join("/", service.ProjectApiFolders) + (service.ProjectApiFolders.Any() ? "/" : "") + "I" + svcName + "Api.g.cs");
         }
 
         private string GenerateParameters(ParameterListSyntax parametersList)
@@ -516,7 +511,7 @@ namespace WCFGenerator.WcfClientGeneration
                 foreach (var fault in method.Faults)
                 {
                     var faultType = fault.Attributes.First().ArgumentList.Arguments.First().Expression.ToString().Replace("typeof(", "").Replace(")", "");
-                    sb.Append("\t\t [System.ServiceModel.FaultContractAttribute(typeof(" + (FaultProject ?? ProjectApi) +
+                    sb.Append("\t\t [System.ServiceModel.FaultContractAttribute(typeof(" + (iService.FaultProject ?? iService.ProjectApi) +
                                "." + faultType + "), Action=\"http://tempuri.org/" + serviceFileName + "/" + method.Name + faultType +
                                "Fault\", Name=\"" + faultType + "\", Namespace=\"http://schemas.datacontract.org/2004/07/YumaPos.Shared.API.Faults\")]\r\n");
                 }

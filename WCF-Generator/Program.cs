@@ -102,24 +102,20 @@ namespace WCFGenerator
                 return;
             }
 
-            var wcf = new WcfGenerator(_generatorWorkspace)
+            var srvs = configs.Select(c => new ServiceDetail()
             {
-                // TODO сделать возможность генерить клиенты в разные проекты
-                // Перенести эти настройки в ServiceDetail
-                ProjectName = configs.First().TargetProjectName, 
-                FaultProject = configs.First().FaultNamespace,
-                ProjectApi = configs.First().ApiInterfaceProjectName,
+                UserName = c.ClientInterfaceName,
+                FileName = c.ClientInterfaceFileName,
+                ProjectName = c.TargetProjectName,
+                FaultProject = c.FaultNamespace,
+                ProjectApi = c.ApiInterfaceProjectName,
                 ProjectApiFolders = new List<string>()
-                    {
-                        configs.First().ApiInterfaceProjectFolder
-                    },
-
-                Services = configs.Select(c => new ServiceDetail()
                 {
-                    UserName = c.ClientInterfaceName,
-                    FileName = c.ClientInterfaceFileName,
-                }).ToList()
-            };
+                    configs.First().ApiInterfaceProjectFolder
+                },
+            }).ToList();
+
+            var wcf = new WcfGenerator(_generatorWorkspace, srvs);
 
             AsyncContext.Run(() => wcf.Start());
 
