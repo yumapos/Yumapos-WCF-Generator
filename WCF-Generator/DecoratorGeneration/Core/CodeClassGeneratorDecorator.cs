@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using WCFGenerator.Common;
 using WCFGenerator.DecoratorGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 
@@ -60,9 +61,6 @@ namespace WCFGenerator.DecoratorGeneration.Core
         public string GetFullCode()
         {
             var sb = new StringBuilder();
-
-            // auto-generated header
-            sb.AppendLine(CodeHelper.GeneratedDocumentHeader);
 
             // check analysis error
             if (AnalysisError == null)

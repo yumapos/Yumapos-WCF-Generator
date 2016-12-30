@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
@@ -283,9 +284,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         public override string GetFullCode()
         {
             var sb = new StringBuilder();
-
-            // auto-generated header
-            sb.AppendLine(CodeHelper.GeneratedDocumentHeader);
 
             // check analysis error
             if (RepositoryAnalysisError == null)

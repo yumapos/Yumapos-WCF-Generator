@@ -104,7 +104,7 @@ namespace WCFGenerator
 
             var srvs = configs.Select(c => new ServiceDetail()
             {
-                UserName = c.ClientInterfaceName,
+                ClientInterfaceName = c.ClientInterfaceName,
                 FileName = c.ClientInterfaceFileName,
                 ProjectName = c.TargetProjectName,
                 FaultProject = c.FaultNamespace,
@@ -117,7 +117,7 @@ namespace WCFGenerator
 
             var wcf = new WcfGenerator(_generatorWorkspace, srvs);
 
-            AsyncContext.Run(() => wcf.Start());
+            AsyncContext.Run(wcf.Start);
 
             Console.WriteLine("Wcf client generation completed.");
         }
@@ -132,7 +132,7 @@ namespace WCFGenerator
             var repositoryGenerator = new RepositoryCodeFactory(config, _generatorWorkspace);
 
             // run generation
-            AsyncContext.Run(() => repositoryGenerator.GenerateRepository());
+            AsyncContext.Run(repositoryGenerator.GenerateRepository);
 
             Console.WriteLine("Repository generation completed.");
         }

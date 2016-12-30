@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.CodeAnalysis.Text;
 using WCFGenerator.Common;
 
 namespace WCFGenerator.WcfClientGeneration
@@ -19,12 +16,8 @@ namespace WCFGenerator.WcfClientGeneration
 
         #region Fields
 
-        private static List<EndPoint> _methods;
-        private static List<EndPoint> _competedArgsMethods;
-        private static Project _project = null;
         private static List<string> _serviceUsings = new List<string>();
         private static List<string> _allUsings = new List<string>();
-        private static List<Tuple<string, SourceText, string[], string>> tasks;
 
         #endregion
 
@@ -43,36 +36,59 @@ namespace WCFGenerator.WcfClientGeneration
         /// <summary>
         ///     Start generation and save files
         /// </summary>
-        public void Start()
+        public async Task Start()
         {
             foreach (var service in Services)
             {
-                _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == service.ProjectName);
+                // add infirmation for generate
+                var serviceDetails = await GetServiceDetails(service);
 
-                GenerateBaseFiles(service.ProjectName);
-                GenerateService(service);
-                GenerateApi(service);
-                GenerateCompletedEventArgs(service.ProjectName);
-                ApplyChanges();
+                #region Generate Api
+
+                // Set target project - for save client
+                _generatorWorkspace.SetTargetProject(service.ProjectName);
+                
+                // Genarate common code
+                var apiProjectFiles = GenerateBaseFiles(serviceDetails.ProjectName);
+                
+                if (service.ClientInterfaceName != null)
+                {
+                    GenerateInterfaceAndChannel(serviceDetails, serviceDetails.ProjectName, serviceDetails.ServiceMethods);
+                    GenerateServiceClient(serviceDetails, serviceDetails.ProjectName, serviceDetails.ServiceMethods);
+                }
+
+                // generate api
+                var generatedApi = GenerateApi(serviceDetails, serviceDetails.ServiceMethods);
+                apiProjectFiles.Add(generatedApi);
+
+                var eventArgs = GenerateCompletedEventArgs(serviceDetails.ProjectName, serviceDetails.ServiceMethods);
+                apiProjectFiles.AddRange(eventArgs);
+
+                // Save all files
+                _generatorWorkspace.UpdateFileInTargetProject(apiProjectFiles);
+                await _generatorWorkspace.ApplyTargetProjectChanges();
+
+                #endregion
+
+                #region Generate api interface
+
+                // Set target project - for save client interface
+                _generatorWorkspace.SetTargetProject(service.ProjectApi);
+
+                // Generate api interface
+                var generatedApiInterface = GenerateApiInterface(serviceDetails, serviceDetails.ServiceMethods);
+                _generatorWorkspace.UpdateFileInTargetProject(generatedApiInterface);
+                await _generatorWorkspace.ApplyTargetProjectChanges();
+
+                #endregion
             }
         }
 
         #region Generate
 
-        private void GenerateService(ServiceDetail service)
+        private SrcFile GenerateApi(ServiceDetail service, List<EndPoint> methods)
         {
-            GetService(_generatorWorkspace.Solution, service);
-
-            if (service.UserName != null)
-            {
-                GenerateInterfaceAndChannel(service, service.ProjectName);
-                GenerateServiceClient(service, service.ProjectName);
-            }
-        }
-
-        private void GenerateApi(ServiceDetail service)
-        {
-            var svcName = service.UserName;
+            var svcName = service.ClientInterfaceName;
             var prjName = service.ProjectName;
 
             var extIndex = svcName.IndexOf(".", StringComparison.Ordinal);
@@ -81,7 +97,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             var sb = new StringBuilder();
 
-            sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
+            sb.Append(string.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
             sb.Append(" namespace " + prjName + "\r\n { \r\n");
             sb.Append("\t public partial class " + svcName + "Api\r\n\t { \r\n");
@@ -90,15 +106,9 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t\t\t var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); \r\n");
             sb.Append("\t\t\t return clientContainer; \r\n\t\t } \r\n\r\n");
 
-            var api = _project.Documents.FirstOrDefault(x => x.Name == svcName + "Api.cs");
-            var declaredApiMethods = new List<MethodDeclarationSyntax>();
-
-            if (api != null)
-                declaredApiMethods = GetMethodSyntaxesFromTree(api.GetSyntaxTreeAsync().Result);
-
-            foreach (var method in _methods)
+            foreach (var method in methods)
             {
-                if (!declaredApiMethods.Any(x => x.Identifier.ToString() == method.Name
+                if (!service.ImplementedMethods.Any(x => x.Identifier.ToString() == method.Name
                                                  && x.ParameterList.Parameters.ToString() == method.ParametersList.Parameters.ToString()))
                 {
                     var parameters = GenerateParameters(method.ParametersList);
@@ -153,31 +163,27 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t }");
             sb.Append(" }");
 
-            CreateDocument(sb.ToString(), prjName, svcName + "Api.g.cs");
+            return new SrcFile(svcName + "Api.g.cs", "", sb.ToString());
+        }
 
-            sb.Clear();
+        internal SrcFile GenerateApiInterface(ServiceDetail service, List<EndPoint> methods)
+        {
+            var svcName = service.ClientInterfaceName;
 
-            sb.Append(String.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
+            var extIndex = svcName.IndexOf(".", StringComparison.Ordinal);
+            svcName = extIndex > 0 ? svcName.Remove(extIndex) : svcName;
+            svcName = svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName;
+
+            var sb = new StringBuilder();
+
+            sb.Append(string.Join("; \r\n", _serviceUsings) + "; \r\n\r\n");
 
             sb.Append(" namespace " + service.ProjectApi + "\r\n { \r\n");
             sb.Append("\t public partial interface I" + svcName + "Api\r\n\t { \r\n");
 
-            var projectIApi = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == service.ProjectApi);
-            if (projectIApi != null)
+            foreach (var method in methods)
             {
-                var iApi = projectIApi.Documents.FirstOrDefault(x => x.Name == "I" + svcName + "Api.cs");
-
-                if (iApi != null)
-                    declaredApiMethods = GetMethodSyntaxesFromTree(iApi.GetSyntaxTreeAsync().Result);
-            }
-            else
-            {
-                throw new Exception("Project for Interface Api doesn't exist");
-            }
-
-            foreach (var method in _methods)
-            {
-                if (!declaredApiMethods.Any(x => x.Identifier.ToString() == method.Name && x.ParameterList.Parameters.ToString() == method.ParametersList.Parameters.ToString()))
+                if (!service.ImplementedMethods.Any(x => x.Identifier.ToString() == method.Name && x.ParameterList.Parameters.ToString() == method.ParametersList.Parameters.ToString()))
                 {
                     var parameters = GenerateParameters(method.ParametersList);
 
@@ -190,7 +196,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t }");
             sb.Append(" }");
 
-            CreateDocument(sb.ToString(), service.ProjectApi, String.Join("/", service.ProjectApiFolders) + (service.ProjectApiFolders.Any() ? "/" : "") + "I" + svcName + "Api.g.cs");
+            return new SrcFile("I" + svcName + "Api.g.cs", string.Join("/", service.ProjectApiFolders), sb.ToString());
         }
 
         private string GenerateParameters(ParameterListSyntax parametersList)
@@ -220,19 +226,20 @@ namespace WCFGenerator.WcfClientGeneration
             return parameters;
         }
 
-        private static void GenerateBaseFiles(string projectName)
+        private List<SrcFile> GenerateBaseFiles(string defaultNamespace)
         {
             var sb = new StringBuilder();
-            tasks = new List<Tuple<string, SourceText, string[], string>>();
+
+            var files = new List<SrcFile>();
 
             #region Create IProperter 
 
-            sb.Append("namespace " + projectName + " \r\n{");
+            sb.Append("namespace " + defaultNamespace + " \r\n{");
             sb.Append("\r\n\t public interface IProperter \r\n\t {\r\n");
             sb.Append("\t\t bool IsCaughtException { get; set; } \r\n");
             sb.Append("\t } \r\n}");
 
-            CreateDocument(sb.ToString(), projectName, "ServiceReferences/IProperter.g.cs");
+            files.Add(new SrcFile("IProperter.g.cs", "ServiceReferences", sb.ToString()));
 
             #endregion
 
@@ -241,7 +248,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             sb.Append("using System;\r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("namespace " + defaultNamespace + "\r\n");
             sb.Append("{\r\n\t public class ChannelContainer<TClient> : IDisposable\r\n");
             sb.Append("\t{ \r\n ");
 
@@ -258,7 +265,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t\t public void Dispose()\r\n \t\t { \r\n \t\t\t var dispose = Disposing; \r\n \t\t\t if (dispose != null) dispose(this, new EventArgs()); \r\n");
             sb.Append("\t\t } \r\n \t } \r\n } ");
 
-            CreateDocument(sb.ToString(), projectName, "ChannelContainer.g.cs");
+            files.Add(new SrcFile("ChannelContainer.g.cs", "", sb.ToString()));
 
             #endregion
 
@@ -270,7 +277,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("using System.Collections.Concurrent;" + " \r\n\r\n");
             sb.Append("using System.ServiceModel;" + " \r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("namespace " + defaultNamespace + "\r\n");
             sb.Append("{\r\n\t public static class ClientFactory<TClient> where TClient : class, IProperter , new()\r\n \t { \r\n");
             sb.Append("\t\t private static ConcurrentDictionary<string, ConcurrentBag<TClient>> FreeChannelsChannels { get; set; } \r\n");
             sb.Append("\t\t private static ConcurrentDictionary<int, ChannelContainer<TClient>> UsedChannels { get; set; } \r\n\r\n");
@@ -308,7 +315,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t\t\t\t System.Diagnostics.Debug.WriteLine(\"Client has an exception\"); \r\n \t\t\t }\r\n");
             sb.Append("\t\t } \r\n \t } \r\n }");
 
-            CreateDocument(sb.ToString(), projectName, "ClientFactory.g.cs");
+            files.Add(new SrcFile("ClientFactory.g.cs", "", sb.ToString()));
 
             #endregion
 
@@ -319,7 +326,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("using System;\r\n");
             sb.Append("using System.ServiceModel;\r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("namespace " + defaultNamespace + "\r\n");
             sb.Append("{\r\n\t public sealed class FlowOperationContextScope : IDisposable\r\n");
             sb.Append("\t { \r\n");
             sb.Append("\t\t private bool _inFlight; \r\n");
@@ -357,7 +364,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t\t\t OperationContext.Current = _thisContext; \r\n");
             sb.Append("\t\t } \r\n \t } \r\n }");
 
-            CreateDocument(sb.ToString(), projectName, "FlowOperationContextScope.g.cs");
+            files.Add(new SrcFile("FlowOperationContextScope.g.cs","", sb.ToString()));
 
             #endregion
 
@@ -370,7 +377,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("using System.Runtime.CompilerServices;\r\n");
             sb.Append("using System.Threading;\r\n\r\n");
 
-            sb.Append("\r\n\r\n namespace " + projectName);
+            sb.Append("\r\n\r\n namespace " + defaultNamespace);
             sb.Append("\r\n {\r\n\t public class SimpleAwaiter : INotifyCompletion");
             sb.Append("\r\n\t {");
 
@@ -445,7 +452,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             sb.Append("\r\n\t\t }\r\n\t }\r\n}\r\n");
 
-            CreateDocument(sb.ToString(), projectName, "SimpleAwaiter.g.cs");
+            files.Add(new SrcFile("SimpleAwaiter.g.cs", "", sb.ToString()));
 
             #endregion
 
@@ -456,7 +463,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("using System;\r\n");
             sb.Append("using System.Threading.Tasks;\r\n\r\n");
 
-            sb.Append("namespace " + projectName + "\r\n");
+            sb.Append("namespace " + defaultNamespace + "\r\n");
             sb.Append("{\r\n\t public static class TaskExt\r\n");
             sb.Append("\t {\r\n");
             sb.Append("\t\t public static SimpleAwaiter<TResult> ContinueOnScope<TResult>(this Task<TResult> @this, FlowOperationContextScope scope) \r\n");
@@ -468,7 +475,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t\t\t return new SimpleAwaiter(@this, scope.BeforeAwait, scope.AfterAwait);\r\n");
             sb.Append("\t\t }\r\n\t }\r\n}");
 
-            CreateDocument(sb.ToString(), projectName, "TaskExt.g.cs");
+            files.Add(new SrcFile("TaskExt.g.cs", "", sb.ToString()));
 
             #endregion
 
@@ -478,17 +485,19 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Clear();
 
             sb.Append("using System; \r\n\r\n");
-            sb.Append("namespace " + projectName + "\r\n { \r\n");
+            sb.Append("namespace " + defaultNamespace + "\r\n { \r\n");
             sb.Append("\t public enum EndpointConfiguration \r\n\t { \r\n");
             sb.Append("\t\t BasicHttpBinding_Client \r\n");
             sb.Append("\t } \r\n }");
 
-            CreateDocument(sb.ToString(), projectName, "ServiceReferences/EndpointConfiguration.g.cs");
+            files.Add(new SrcFile("EndpointConfiguration.g.cs", "ServiceReferences", sb.ToString()));
 
             #endregion
+
+            return files;
         }
 
-        private void GenerateInterfaceAndChannel(ServiceDetail iService, string projectName)
+        private void GenerateInterfaceAndChannel(ServiceDetail iService, string projectName, List<EndPoint> methods)
         {
             var sb = new StringBuilder();
             var serviceFileName = iService.FileName.Remove(iService.FileName.IndexOf(".", StringComparison.Ordinal));
@@ -498,10 +507,10 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("namespace " + projectName + "\r\n { \r\n");
             sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\r\n");
             sb.Append("\t [System.ServiceModel.ServiceContractAttribute(ConfigurationName = \"" + serviceFileName + "Client\")]\r\n");
-            sb.Append("\t public interface " + iService.UserName + "Client\r\n \t{ \r\n");
+            sb.Append("\t public interface " + iService.ClientInterfaceName + "Client\r\n \t{ \r\n");
             sb.Append("\t\t bool IsCaughtException { get; set; } \r\n\r\n");
 
-            foreach (var method in _methods)
+            foreach (var method in methods)
             {
                 var parameters = method.ParametersList.ToString().Replace("(", "").Replace(")", "");
                 var pm = parameters != "" ? parameters + ", " : "";
@@ -521,16 +530,17 @@ namespace WCFGenerator.WcfClientGeneration
             }
             sb.Append("\t } \r\n\r\n");
             sb.Append("\t [System.CodeDom.Compiler.GeneratedCodeAttribute(\"System.ServiceModel\", \"4.0.0.0\")]\r\n");
-            sb.Append("\t public interface " + iService.UserName + "Channel : " + iService.UserName + "Client, System.ServiceModel.IClientChannel{} \r\n }");
+            sb.Append("\t public interface " + iService.ClientInterfaceName + "Channel : " + iService.ClientInterfaceName + "Client, System.ServiceModel.IClientChannel{} \r\n }");
 
-            CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + iService.UserName + "Client.g.cs");
+            _generatorWorkspace.UpdateFileInTargetProject(iService.ClientInterfaceName + "Client.g.cs", "ServiceReferences", sb.ToString());
         }
 
-        private static void GenerateCompletedEventArgs(string projectName)
+        private List<SrcFile> GenerateCompletedEventArgs(string projectName, List<EndPoint> competedArgsMethods)
         {
             var sb = new StringBuilder();
+            var ret = new List<SrcFile>();
 
-            foreach (var method in _competedArgsMethods)
+            foreach (var method in competedArgsMethods)
             {
                 sb.Clear();
 
@@ -560,38 +570,37 @@ namespace WCFGenerator.WcfClientGeneration
                 sb.Append("\t }\r\n");
                 sb.Append(" }");
 
-                CreateDocument(sb.ToString(), projectName, "ServiceReferences/CompletedEventArgs/" + method.Service + "_" + method.Name + "CompletedEventArgs.g.cs");
+               ret.Add(new SrcFile(method.Service + "_" + method.Name + "CompletedEventArgs.g.cs", "ServiceReferences\\CompletedEventArgs", sb.ToString()));
             }
+
+            return ret;
         }
 
-        private void GenerateServiceClient(ServiceDetail sd, string projectName)
+        private void GenerateServiceClient(ServiceDetail sd, string projectName, List<EndPoint> methods)
         {
             var sb = new StringBuilder();
-            var svcName = sd.UserName;
+            var svcName = sd.ClientInterfaceName;
 
             var channelName = (svcName.IndexOf("I", StringComparison.Ordinal) == 0 ? svcName.Remove(0, 1) : svcName) + "Client";
 
-            sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n");
+            sb.Append(string.Join("; \r\n", _allUsings) + "; \r\n");
 
             sb.Append(" namespace " + projectName + "\r\n { \r\n");
             sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter\r\n ");
             sb.Append("\t {");
 
             sb.Append(GeneratePropertiesAndConstructors(svcName));
-            sb.Append(GenerateMethods(svcName + "Client"));
+            sb.Append(GenerateMethods(svcName + "Client", methods));
             sb.Append(GenerateAdditionMathods(svcName + "Client"));
-            sb.Append(GenerateClientChannel(svcName + "Client"));
+            sb.Append(GenerateClientChannel(svcName + "Client", methods));
 
             sb.Append("    } \r\n");
             sb.Append("}");
 
-            CreateDocument(sb.ToString(), projectName, "ServiceReferences/" + channelName + ".g.cs");
-
-            _competedArgsMethods = _competedArgsMethods == null ? _methods
-                                                                : _methods.Concat(_competedArgsMethods).ToList();
+            _generatorWorkspace.UpdateFileInTargetProject(channelName + ".g.cs", "ServiceReferences", sb.ToString());
         }
 
-        private static string GenerateClientChannel(string svcClient)
+        private static string GenerateClientChannel(string svcClient, List<EndPoint> methods)
         {
             var sb = new StringBuilder();
             var channelName = (svcClient.IndexOf("I", StringComparison.Ordinal) == 0 ? svcClient.Remove(0, 1) : svcClient) + "Channel";
@@ -601,7 +610,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             sb.Append("\t\t public " + channelName + "(System.ServiceModel.ClientBase<" + svcClient + "> client) : base(client) { } \r\n\r\n");
 
-            foreach (var method in _methods)
+            foreach (var method in methods)
             {
                 var parameters = "";
 
@@ -691,7 +700,7 @@ namespace WCFGenerator.WcfClientGeneration
                    "\t\t public " + client + "Client(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : base(binding, remoteAddress) {\r\n \t\t\t _remoteAddress =  remoteAddress.Uri.AbsoluteUri; \r\n \t\t  } \r\n\r\n";
         }
 
-        private static string GenerateMethods(string client)
+        private static string GenerateMethods(string client, List<EndPoint> methods)
         {
             var result = new StringBuilder();
 
@@ -699,7 +708,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             #region Delegates And Event
 
-            foreach (var method in _methods)
+            foreach (var method in methods)
             {
                 result.Append("\t\t private BeginOperationDelegate onBegin" + method.Name + "Delegate; \r\n");
                 result.Append("\t\t private EndOperationDelegate onEnd" + method.Name + "Delegate; \r\n");
@@ -717,7 +726,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             #endregion
 
-            foreach (var method in _methods)
+            foreach (var method in methods)
             {
                 #region Begin-End
 
@@ -849,86 +858,82 @@ namespace WCFGenerator.WcfClientGeneration
             return result.ToString();
         }
 
-        private static string GetBadResponse(string returnType)
-        {
-            if (returnType == "bool" || returnType == "System.Boolean" || returnType == "Boolean")
-            {
-                return "false";
-            }
-
-            if (returnType == "Guid")
-            {
-                return "Guid.Empty";
-            }
-
-            if (returnType == "long" || returnType == "int")
-            {
-                return "0";
-            }
-
-            return "null";
-        }
-
         #endregion
 
         #region Analyze
 
-        private Document GetService(Solution solution, ServiceDetail iService)
+        private async Task<ServiceDetail> GetServiceDetails(ServiceDetail service)
         {
-            _methods = new List<EndPoint>();
-            Document svc = null;
+            // Get target project
+            var project = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == service.ProjectName);
 
-            foreach (var project in solution.Projects)
-            {
-                foreach (var document in project.Documents)
-                {
-                    if (document.Name == iService.FileName)
-                    {
-                        svc = document;
-                        break;
-                    }
-                }
-            }
+            // Target project not found
+            if (project == null) throw new ArgumentException(service.ProjectName + " project not found.");
 
-            if (svc != null)
-            {
-                SyntaxNode documentRoot = svc.GetSyntaxRootAsync().Result;
-                var rootCompUnit = (CompilationUnitSyntax) documentRoot;
-                var defaultUsings = rootCompUnit.Usings.Select(x => x.Name.ToString()).ToList();
+            // Find svc document
+            var svc = _generatorWorkspace.Solution.Projects
+                .SelectMany(p => p.Documents)
+                .FirstOrDefault(document => document.Name == service.FileName);
 
-                var methodDeclarationSyntaxs = GetMethodSyntaxesFromTree(svc.GetSyntaxTreeAsync().Result);
+            // service not found
+            if (svc == null) throw new ArgumentException(service.FileName + " file not found.");
 
-                _serviceUsings = GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
-                _allUsings.AddRange(_serviceUsings.Except(_allUsings));
+            // Get service methods
+            service.ServiceMethods = await GetServiceMethods(svc, service, project);
 
-                _methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
-                {
-                    Service = iService.UserName.IndexOf("I", StringComparison.Ordinal) == 0 ? iService.UserName.Remove(0, 1) : iService.UserName,
-                    Name = sm.Identifier.ToString(),
-                    ReturnType = GetFullReturnType(sm.ReturnType),
-                    ReturnTypeApi = GetFullReturnType(sm.ReturnType),
-                    InterfaceReturnType = GetFullReturnType(sm.ReturnType),
-                    ParametersList = sm.ParameterList,
-                    Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
-                }));
 
-                foreach (var method in _methods)
-                {
-                    method.ReturnType = ChangeType(method.ReturnType);
-                    method.ReturnTypeApi = ChangeType(method.ReturnTypeApi);
-                }
+            // Get methods for generate
+            var api = _generatorWorkspace.Solution.Projects
+                .First(p => p.Name == service.ProjectApi).Documents.FirstOrDefault(x => x.Name == service.ClientInterfaceName + "Api.cs");
 
-                _methods = _methods.OrderBy(o => o.Name).ToList();
+            if (api == null) throw new ArgumentException(service.ClientInterfaceName + "Api.cs not found.");
 
-                return svc;
-            }
+            var tree = await api.GetSyntaxTreeAsync();
+            var customMethods = GetMethodSyntaxesFromTree(tree);
 
-            Console.WriteLine("Service wasn't found");
+            service.ImplementedMethods = customMethods;
 
-            return null;
+
+            return service;
         }
 
-        private string GetFullReturnType(TypeSyntax returnType)
+        private static async Task<List<EndPoint>> GetServiceMethods(Document svc, ServiceDetail iService, Project proj)
+        {
+            var documentRoot = await svc.GetSyntaxRootAsync();
+            var rootCompUnit = (CompilationUnitSyntax) documentRoot;
+            var defaultUsings = rootCompUnit.Usings.Select(x => x.Name.ToString()).ToList();
+
+            var tree = await svc.GetSyntaxTreeAsync();
+            var methodDeclarationSyntaxs = GetMethodSyntaxesFromTree(tree);
+
+            _serviceUsings = GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
+            _allUsings.AddRange(_serviceUsings.Except(_allUsings));
+
+
+            var methods = new List<EndPoint>();
+            methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
+            {
+                Service = iService.ClientInterfaceName.IndexOf("I", StringComparison.Ordinal) == 0 ? iService.ClientInterfaceName.Remove(0, 1) : iService.ClientInterfaceName,
+                Name = sm.Identifier.ToString(),
+                ReturnType = GetFullReturnType(sm.ReturnType, proj),
+                ReturnTypeApi = GetFullReturnType(sm.ReturnType, proj),
+                InterfaceReturnType = GetFullReturnType(sm.ReturnType, proj),
+                ParametersList = sm.ParameterList,
+                Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
+            }));
+
+            foreach (var method in methods)
+            {
+                method.ReturnType = ChangeType(method.ReturnType);
+                method.ReturnTypeApi = ChangeType(method.ReturnTypeApi);
+            }
+
+            methods = methods.OrderBy(o => o.Name).ToList();
+
+            return methods;
+        }
+
+        private static string GetFullReturnType(TypeSyntax returnType, Project project)
         {
             var fullReturnType = returnType.ToString();
             var node = returnType.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
@@ -942,7 +947,7 @@ namespace WCFGenerator.WcfClientGeneration
 
             if (node != null && systemTypes.All(x => x != node.Identifier.ToString() && x != returnType.ToString()))
             {
-                var nameSpace = SymbolFinder.FindDeclarationsAsync(_project, node.Identifier.ValueText, ignoreCase: false).Result.Last().ContainingNamespace.ToString();
+                var nameSpace = SymbolFinder.FindDeclarationsAsync(project, node.Identifier.ValueText, ignoreCase: false).Result.Last().ContainingNamespace.ToString();
 
                 fullReturnType = fullReturnType.Replace(node.Identifier.ToString(), nameSpace + "." + node.Identifier);
             }
@@ -950,7 +955,7 @@ namespace WCFGenerator.WcfClientGeneration
             return fullReturnType;
         }
 
-        private List<string> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
+        private static List<string> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
         {
             var usingsCollection = new List<string>()
             {
@@ -992,13 +997,13 @@ namespace WCFGenerator.WcfClientGeneration
             return usingsCollection;
         }
 
-        private List<MethodDeclarationSyntax> GetMethodSyntaxesFromTree(SyntaxTree syntaxTree)
+        private static List<MethodDeclarationSyntax> GetMethodSyntaxesFromTree(SyntaxTree syntaxTree)
         {
             var syntaxRoot = syntaxTree.GetRoot();
             return syntaxRoot.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
         }
 
-        private string ChangeType(string method)
+        private static string ChangeType(string method)
         {
             var returnType = method;
 
@@ -1027,72 +1032,5 @@ namespace WCFGenerator.WcfClientGeneration
         }
 
         #endregion
-
-        #region Workspace
-
-        private static void CreateDocument(string code, string projectName, string fileName)
-        {
-            if (fileName != null && projectName != null)
-            {
-                code = "//The file " + fileName + " was automatically generated using WCF-Generator.exe\r\n\r\n\r\n" + code;
-
-                var folders = fileName.Split('/');
-                fileName = folders[folders.Length - 1];
-                folders = folders.Where((val, idx) => idx != folders.Length - 1).ToArray();
-
-                var sourceText = SourceText.From(code);
-                tasks.Add(Tuple.Create(fileName, sourceText, folders, projectName));
-            }
-        }
-
-        private void ApplyChanges()
-        {
-            var dirCompletedEventArgs = new DirectoryInfo(_project.FilePath.Remove(_project.FilePath.LastIndexOf("\\", StringComparison.Ordinal)) + "\\ServiceReferences\\CompletedEventArgs");
-
-            foreach (FileInfo file in dirCompletedEventArgs.GetFiles())
-            {
-                var redundantDocument = _project?.Documents.FirstOrDefault(x => x.Name == file.Name);
-
-                if (redundantDocument != null && _competedArgsMethods.All(x => (x.Service + "_" + x.Name + "CompletedEventArgs") != file.Name.Remove(file.Name.IndexOf(".", StringComparison.Ordinal))))
-                    _project = _project?.RemoveDocument(redundantDocument.Id);
-
-            }
-
-            foreach (var doc in tasks)
-            {
-                _project = _generatorWorkspace.Solution?.Projects.FirstOrDefault(x => x.Name == doc.Item4);
-
-                var oldDocument = _project?.Documents.FirstOrDefault(x => x.Name == doc.Item1);
-
-                if (oldDocument != null)
-                {
-                    if (oldDocument.GetTextAsync().Result.ToString() != doc.Item2.ToString())
-                    {
-                        bool isEqual = oldDocument.Folders.SequenceEqual(doc.Item3);
-
-                        if (isEqual)
-                        {
-                            _project = _project.RemoveDocument(oldDocument.Id);
-                        }
-
-                        var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
-                        _project = newDocument?.Project;
-                        _generatorWorkspace.Solution = _project?.Solution;
-                    }
-                }
-                else
-                {
-                    var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
-                    _project = newDocument?.Project;
-                    _generatorWorkspace.Solution = _project?.Solution;
-                }
-            }
-
-            _generatorWorkspace.Solution = _project.Solution;
-            _generatorWorkspace.ApplyChanges();
-        }
-
-        #endregion
-        
     }
 }
