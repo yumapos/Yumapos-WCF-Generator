@@ -40,6 +40,10 @@ namespace WCFGenerator.WcfClientGeneration
         {
             foreach (var service in Services)
             {
+                // Clear usings
+                _allUsings.Clear();
+                _serviceUsings.Clear();
+
                 // add infirmation for generate
                 var serviceDetails = await GetServiceDetails(service);
 
