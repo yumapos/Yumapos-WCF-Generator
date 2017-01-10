@@ -33,9 +33,9 @@ namespace WCFGenerator.Common
 
         public bool ApplyChanges()
         {
-            if (MsBuildWorkspace.CanApplyChange(ApplyChangesKind.AddDocument) || MsBuildWorkspace.CanApplyChange(ApplyChangesKind.ChangeDocument))
-                return MsBuildWorkspace.TryApplyChanges(Solution);
-            return true;
+            var ret = MsBuildWorkspace.TryApplyChanges(Solution);
+            Solution = MsBuildWorkspace.CurrentSolution;
+            return ret;
         }
 
         public void CloseSolution()
@@ -75,19 +75,37 @@ namespace WCFGenerator.Common
         /// <param name="fileName">File name with extention</param>
         /// <param name="folder">Path to foldel in project</param>
         /// <param name="code">Text of source code</param>
-        public void UpdateFile(string fileName, string folder, string code)
+        public void UpdateFileInTargetProject(string fileName, string folder, string code)
         {
-            if (string.IsNullOrEmpty(code)) throw new ArgumentException("code");
-            if (string.IsNullOrEmpty(fileName)) throw new ArgumentException("fileName");
-            if (folder==null) throw new ArgumentException("folder");
-            if (_filesToCreation.Any(f => f.FileName == fileName && f.ProjectFolder == folder)) throw new ArgumentException(fileName + " - file already exists.");
-            _filesToCreation.Add(new SrcFile(fileName, folder, code));
+            var file = new SrcFile(fileName, folder, code);
+            UpdateFileInTargetProject(file);
+        }
+        public void UpdateFileInTargetProject(SrcFile file)
+        {
+            ValidateFile(file);
+            _filesToCreation.Add(file);
+        }
+
+        public void UpdateFileInTargetProject(List<SrcFile> files)
+        {
+            foreach (var file in files)
+            {
+                UpdateFileInTargetProject(file);
+            }
+        }
+
+        private void ValidateFile(SrcFile file)
+        {
+            if (string.IsNullOrEmpty(file.SrcText)) throw new ArgumentException("SrcText");
+            if (string.IsNullOrEmpty(file.FileName)) throw new ArgumentException("FileName");
+            if (file.ProjectFolder == null) throw new ArgumentException("ProjectFolder");
+            if (_filesToCreation.Any(f => f.FileName == file.FileName && f.ProjectFolder == file.ProjectFolder)) throw new ArgumentException(file.FileName + " - file already exists.");
         }
 
         /// <summary>
         ///     Apply all changes (adding and removing files) for current workspace project
         /// </summary>
-        public async Task ApplyTargetProjectChanges(bool standartFormatting)
+        public async Task ApplyTargetProjectChanges(bool standartFormatting = false)
         {
             var project = Project;
 
@@ -96,10 +114,13 @@ namespace WCFGenerator.Common
                 Document document;
 
                 var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.EndsWith(doc.ProjectFolder + "\\" + doc.FileName));
+
+                var code = CodeHelper.GeneratedDocumentHeader + "\r\n" + doc.SrcText;
+
                 // check changes
                 if (old != null)
                 {
-                    var st = SourceText.From(doc.SrcText);
+                    var st = SourceText.From(code);
                     var newDoc = old.WithText(st);
                     if(standartFormatting)
                     {
@@ -111,8 +132,11 @@ namespace WCFGenerator.Common
                 // create new document
                 else
                 {
-                    document = project.AddDocument(doc.FileName, doc.SrcText, doc.ProjectFolder.Split('\\'));
-                    document = Formatting(document);
+                    document = project.AddDocument(doc.FileName, code, doc.ProjectFolder.Split('\\'));
+                    if (standartFormatting)
+                    {
+                        document = Formatting(document);
+                    }
                 }
 
                 project = document.Project;
@@ -129,30 +153,6 @@ namespace WCFGenerator.Common
             var text = formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t");
             formattedDoc = formattedDoc.WithText(SourceText.From(text));
             return formattedDoc;
-        }
-
-        #endregion
-
-        #region Private
-
-        private struct SrcFile
-        {
-            public readonly string FileName;
-            public readonly string ProjectFolder;
-            public readonly string SrcText;
-
-            /// <summary>
-            ///     New source code file
-            /// </summary>
-            /// <param name="fileName">File name with extension</param>
-            /// <param name="projectFolder">Folder in project where file can be saved (for example: "Models\Generated" )</param>
-            /// <param name="srcText">Text of code</param>
-            public SrcFile(string fileName, string projectFolder, string srcText)
-            {
-                FileName = fileName;
-                ProjectFolder = projectFolder;
-                SrcText = srcText;
-            }
         }
 
         #endregion

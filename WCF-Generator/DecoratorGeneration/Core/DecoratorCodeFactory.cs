@@ -65,7 +65,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                     var code = decorator.GetFullCode();
 
                     // Add document to creation
-                    _generatorWorkspace.UpdateFile(decorator.FileName, decorator.ProjectFolder, code);
+                    _generatorWorkspace.UpdateFileInTargetProject(decorator.FileName, decorator.ProjectFolder, code);
                 }
 
                 // Save all files

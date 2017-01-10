@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 
 namespace WCFGenerator.RepositoriesGeneration.Infrastructure
@@ -86,9 +87,6 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public virtual string GetFullCode()
         {
             var sb = new StringBuilder();
-
-            // auto-generated header
-            sb.AppendLine(CodeHelper.GeneratedDocumentHeader);
 
             // check analysis error
             if (RepositoryAnalysisError == null)

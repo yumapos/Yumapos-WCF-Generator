@@ -38,17 +38,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         /// </summary>
         public async Task GenerateRepository()
         {
-            var repositoryGeneratorWorkSpace = new RepositoryGeneratorWorkSpace();
-            // open target solution
-            repositoryGeneratorWorkSpace.OpenSolution(_generatorWorkspace);
-
             // Generate repositories for configured project
             foreach (var config in _configurations)
             {
                 // open target project
-                repositoryGeneratorWorkSpace.OpenProject(config.TargetProjectName);
+                _generatorWorkspace.SetTargetProject(config.TargetProjectName);
 
-                var repositoryService = new RepositoryService(repositoryGeneratorWorkSpace, config);
+                var repositoryService = new RepositoryService(_generatorWorkspace, config);
 
                 // Create list of repository for generate
                 IEnumerable<ICodeClassGeneratorRepository> candidatesRepository;
@@ -69,11 +65,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                     var code = repository.GetFullCode();
 
                     // Add document to creation
-                    repositoryGeneratorWorkSpace.AddFileToCreation(repository.FileName, config.RepositoryTargetFolder, code);
+                    _generatorWorkspace.UpdateFileInTargetProject(repository.FileName, config.RepositoryTargetFolder, code);
                 }
 
                 // Save all files
-                await repositoryGeneratorWorkSpace.ApplyChanges();
+                _generatorWorkspace.ApplyChanges();
             }
         }
     }

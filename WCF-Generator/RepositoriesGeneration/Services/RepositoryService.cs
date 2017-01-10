@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Analysis;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
@@ -25,7 +26,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
         #region Constructor
 
-        public RepositoryService(RepositoryGeneratorWorkSpace workSpace, RepositoryProject config)
+        public RepositoryService(GeneratorWorkspace workSpace, RepositoryProject config)
         {
             _config = config;
 
@@ -35,7 +36,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var additionalProjectsForAnalysis = _config.AdditionalProjects.Split(',').Select(p => p.Trim()).ToList();
             additionalProjectsForAnalysis.Add(_config.TargetProjectName);
 
-            _solutionSyntaxWalker = new SolutionSyntaxWalker(workSpace.GeneratorWorkspace.Solution, repositoryModelsProjects, _config.RepositoryAttributeName, repositoryInterfaceProjects, _config.TargetProjectName, additionalProjectsForAnalysis);
+            _solutionSyntaxWalker = new SolutionSyntaxWalker(workSpace.Solution, repositoryModelsProjects, _config.RepositoryAttributeName, repositoryInterfaceProjects, _config.TargetProjectName, additionalProjectsForAnalysis);
         }
 
         #endregion
