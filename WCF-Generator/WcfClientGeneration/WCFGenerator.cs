@@ -910,7 +910,7 @@ namespace WCFGenerator.WcfClientGeneration
             var tree = await svc.GetSyntaxTreeAsync();
             var methodDeclarationSyntaxs = GetMethodSyntaxesFromTree(tree);
 
-            _serviceUsings = GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
+            _serviceUsings = await GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
             _allUsings.AddRange(_serviceUsings.Except(_allUsings));
 
 
@@ -959,7 +959,7 @@ namespace WCFGenerator.WcfClientGeneration
             return fullReturnType;
         }
 
-        private static List<string> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
+        private static async Task<List<string>> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
         {
             var usingsCollection = new List<string>()
             {
@@ -976,15 +976,15 @@ namespace WCFGenerator.WcfClientGeneration
                 var nodes = method.ParameterList.DescendantNodes().OfType<IdentifierNameSyntax>().ToList();
                 nodes.AddRange(method.ReturnType.DescendantNodes().OfType<IdentifierNameSyntax>().ToList());
 
-                if (nodes.Any())
+                foreach (var node in nodes)
                 {
-                    var dyclarationSyntax =
-                        SymbolFinder.FindDeclarationsAsync(svc.Project, nodes.First().Identifier.ValueText,
-                            ignoreCase: false).Result;
+                    var dyclarationSyntax = await SymbolFinder.FindDeclarationsAsync(svc.Project, node.Identifier.ValueText, false);
 
-                    if (dyclarationSyntax != null && dyclarationSyntax.Any())
+                    if (dyclarationSyntax == null) continue;
+
+                    foreach (var syntax in dyclarationSyntax)
                     {
-                        var newUsing = dyclarationSyntax.First().ContainingNamespace.ToString();
+                        var newUsing = syntax.ContainingNamespace.ToString();
 
                         if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
                         {
