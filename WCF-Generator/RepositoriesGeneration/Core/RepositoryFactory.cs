@@ -69,7 +69,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 }
 
                 // Save all files
-                _generatorWorkspace.ApplyChanges();
+                await _generatorWorkspace.ApplyTargetProjectChanges(true);
             }
         }
     }
