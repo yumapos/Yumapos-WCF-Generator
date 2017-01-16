@@ -543,12 +543,14 @@ namespace WCFGenerator.WcfClientGeneration
         {
             var sb = new StringBuilder();
             var ret = new List<SrcFile>();
+            // TODO Remove HACK - use full type name for all types in generated classes
+            var usings = _allUsings.Where(n => !n.Contains("YumaPos.Shared.API.ResponseDtos")).ToList();
 
             foreach (var method in competedArgsMethods)
             {
                 sb.Clear();
 
-                sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
+                sb.Append(String.Join("; \r\n", usings) + "; \r\n\r\n");
 
                 sb.Append(" namespace " + projectName + "\r\n { \r\n");
                 sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \r\n");
