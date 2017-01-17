@@ -44,9 +44,11 @@ namespace TestDecoratorGeneration
                 OnExit(null);
             }
         }
-        private async Task OnEntryAsync(string methodName, object[] args)
+        private async Task<ICommandExecutionResult> OnEntryAsync(string methodName, object[] args)
         {
             OnEntry(methodName, args);
+
+            return new CommandExecutionResult();
         }
 
         private void OnEntry(string methodName, object[] args)
