@@ -21,28 +21,39 @@ namespace WCFGenerator
 
         static void Main(string[] args)
         {
+            Console.WriteLine("WCF-Generator.exe started.");
+
             // Set path to app.config for current application domain
+            var absoluteConfigPath = string.Empty;
             if (args != null && args.Any() && !string.IsNullOrEmpty(args[0]))
             {
-                var absoluteConfigPath = Path.GetFullPath(args[0]);
-
-                if (!File.Exists(absoluteConfigPath))
-                {
-                    throw new ArgumentException("File of configuration file not found");
-                }
-                
+                absoluteConfigPath = Path.GetFullPath(args[0]);
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", absoluteConfigPath);
             }
+            else
+            {
+                absoluteConfigPath = AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString();
+            }
+            if (!File.Exists(absoluteConfigPath))
+            {
+                throw new ArgumentException("File of configuration file not found. " + absoluteConfigPath);
+            }
+            Console.WriteLine("Configuration: " + absoluteConfigPath);
 
             // Get solution
-            Console.WriteLine("Open solulion");
-
+            Console.Write("Open solulion: " );
             var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+            //Path to solution relative config file
+            if (!Path.IsPathRooted(solutionPath))
+            {
+                var config = new FileInfo(absoluteConfigPath);
+                solutionPath = Path.Combine(config.Directory.FullName, solutionPath);
+            }
             var absoluteSlnPath = Path.GetFullPath(solutionPath);
-
+            Console.WriteLine(absoluteSlnPath);
             if (!File.Exists(absoluteSlnPath))
             {
-                throw new ArgumentException("File of solution not found");
+                throw new ArgumentException("File of solution not found." + absoluteSlnPath);
             }
 
             // Create workspace - open solution
