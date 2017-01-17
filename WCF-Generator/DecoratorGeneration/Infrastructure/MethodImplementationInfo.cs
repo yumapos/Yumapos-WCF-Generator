@@ -30,6 +30,11 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
         public bool IsAsync { get; set; }
 
         /// <summary>
+        ///     Pattern for use result of OnEntry method
+        /// </summary>
+        public string OnEntryResultMap { get; set; }
+
+        /// <summary>
         ///    Type name of parameter generic type
         /// </summary>
         public string GetTaskRetunTypeName()

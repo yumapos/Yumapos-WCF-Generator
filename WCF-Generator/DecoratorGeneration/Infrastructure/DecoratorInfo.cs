@@ -9,6 +9,10 @@ namespace WCFGenerator.DecoratorGeneration.Infrastructure
             RequiredNamespaces = new List<string>();
             MethodInfos = new List<MethodInfo>();
             RequiredNamespaces = new List<string>();
+            OnEntryExist = true;
+            OnExceptionExist = true;
+            OnExitExist = true;
+            OnFinallyExist = true;
         }
 
         public string Namespace { get; set; }

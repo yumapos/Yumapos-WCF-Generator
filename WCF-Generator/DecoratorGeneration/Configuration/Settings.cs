@@ -15,7 +15,8 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
                 DecoratedClass = s.DecoratedClasses.Cast<DecoratedClass>().Select(c=> new ClassInfo()
                 {
                     SourceClassName  = c.SourceClass,
-                    TargetClassName = c.TargetClass
+                    TargetClassName = c.TargetClass,
+                    UseAllOption = c.UseAllOptions
                 } ).ToList()
             }).ToList();
         }
@@ -31,6 +32,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     {
         public string SourceClassName { get; set; }
         public string TargetClassName { get; set; }
+        public bool UseAllOption { get; set; }
     }
 
     /// <summary>
@@ -137,6 +139,15 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         public string TargetClass
         {
             get { return ((string)(base["targetClass"])); }
+        }
+
+        /// <summary>
+        ///      Use all options
+        /// </summary>
+        [ConfigurationProperty("useAllOptions", DefaultValue = "true", IsRequired = false)]
+        public bool UseAllOptions
+        {
+            get { return ((bool)(base["useAllOptions"])); }
         }
     }
 }

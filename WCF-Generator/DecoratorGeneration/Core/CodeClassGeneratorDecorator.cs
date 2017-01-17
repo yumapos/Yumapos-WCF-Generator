@@ -145,7 +145,18 @@ namespace WCFGenerator.DecoratorGeneration.Core
             // OnEntry method
             if (DecoratorInfo.OnEntryExist)
             {
-                sb.AppendLine((methodInfo.IsAsync ? "await OnEntryAsync" : "OnEntry") + "(\"" + methodInfo.Name + "\", new object[] { " + methodParameterNames + " });");
+                var onEntryInvoke = (methodInfo.IsAsync ? "await OnEntryAsync" : "OnEntry") + "(\"" + methodInfo.Name + "\", new object[] { " + methodParameterNames + " });";
+
+                if (!string.IsNullOrEmpty(methodInfo.OnEntryResultMap))
+                {
+                    sb.Append("var res = ");
+                    sb.Append(onEntryInvoke);
+                    sb.AppendLine(methodInfo.OnEntryResultMap);
+                }
+                else
+                {
+                    sb.AppendLine(onEntryInvoke);
+                }
             }
 
             if (returnValue)
