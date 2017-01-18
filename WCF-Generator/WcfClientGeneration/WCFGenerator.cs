@@ -543,12 +543,14 @@ namespace WCFGenerator.WcfClientGeneration
         {
             var sb = new StringBuilder();
             var ret = new List<SrcFile>();
+            // TODO Remove HACK - use full type name for all types in generated classes
+            var usings = _allUsings.Where(n => !n.Contains("YumaPos.Shared.API.ResponseDtos")).ToList();
 
             foreach (var method in competedArgsMethods)
             {
                 sb.Clear();
 
-                sb.Append(String.Join("; \r\n", _allUsings) + "; \r\n\r\n");
+                sb.Append(String.Join("; \r\n", usings) + "; \r\n\r\n");
 
                 sb.Append(" namespace " + projectName + "\r\n { \r\n");
                 sb.Append("\t [System.Diagnostics.DebuggerStepThroughAttribute()] \r\n");
@@ -910,7 +912,7 @@ namespace WCFGenerator.WcfClientGeneration
             var tree = await svc.GetSyntaxTreeAsync();
             var methodDeclarationSyntaxs = GetMethodSyntaxesFromTree(tree);
 
-            _serviceUsings = GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
+            _serviceUsings = await GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
             _allUsings.AddRange(_serviceUsings.Except(_allUsings));
 
 
@@ -959,7 +961,7 @@ namespace WCFGenerator.WcfClientGeneration
             return fullReturnType;
         }
 
-        private static List<string> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
+        private static async Task<List<string>> GetUsings(Document svc, IList<MethodDeclarationSyntax> methodDeclarationSyntaxs, List<string> defaultUsings)
         {
             var usingsCollection = new List<string>()
             {
@@ -976,15 +978,15 @@ namespace WCFGenerator.WcfClientGeneration
                 var nodes = method.ParameterList.DescendantNodes().OfType<IdentifierNameSyntax>().ToList();
                 nodes.AddRange(method.ReturnType.DescendantNodes().OfType<IdentifierNameSyntax>().ToList());
 
-                if (nodes.Any())
+                foreach (var node in nodes)
                 {
-                    var dyclarationSyntax =
-                        SymbolFinder.FindDeclarationsAsync(svc.Project, nodes.First().Identifier.ValueText,
-                            ignoreCase: false).Result;
+                    var dyclarationSyntax = await SymbolFinder.FindDeclarationsAsync(svc.Project, node.Identifier.ValueText, false);
 
-                    if (dyclarationSyntax != null && dyclarationSyntax.Any())
+                    if (dyclarationSyntax == null) continue;
+
+                    foreach (var syntax in dyclarationSyntax)
                     {
-                        var newUsing = dyclarationSyntax.First().ContainingNamespace.ToString();
+                        var newUsing = syntax.ContainingNamespace.ToString();
 
                         if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
                         {
