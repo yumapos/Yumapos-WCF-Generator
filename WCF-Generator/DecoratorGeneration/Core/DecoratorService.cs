@@ -79,7 +79,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
                 // Get methods for decorating
                 var methods = decoratedClass.GetMembers()
-                    .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public && m.MetadataName != ".ctor")
+                    .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public && m.MetadataName != ".ctor" )
                     .Select(m=> m as IMethodSymbol)
                     .Where(m => m.AssociatedSymbol == null || m.AssociatedSymbol.Kind != SymbolKind.Property)
                     .ToList();
@@ -94,6 +94,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 {
                     // Skip already decorated methods
                     if(decoratorImplementedMethods.Any(dm => dm.Name == m.Name)) continue;
+                    if(_configuration.IgnoreMethodAttributeName != null && m.GetAttributes().All(a => a.AttributeClass.Name != _configuration.IgnoreMethodAttributeName)) continue;
 
                     var method = new MethodInfo()
                     {

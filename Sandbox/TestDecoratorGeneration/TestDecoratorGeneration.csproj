@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IgnoreDecorationAttribute.cs" />
     <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\HelperDecorator.cs" />
     <Compile Include="Helpers\HelperDecorator.g.cs" />

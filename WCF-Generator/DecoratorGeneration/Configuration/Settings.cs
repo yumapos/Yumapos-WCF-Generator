@@ -17,7 +17,8 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
                     SourceClassName  = c.SourceClass,
                     TargetClassName = c.TargetClass,
                     UseAllOption = c.UseAllOptions
-                } ).ToList()
+                } ).ToList(),
+                IgnoreMethodAttributeName = s.IgnoreMethodAttributeName
             }).ToList();
         }
     }
@@ -26,6 +27,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     {
         public string SolutionProjectName { get; set; }
         public List<ClassInfo> DecoratedClass { get; set; }
+        public string IgnoreMethodAttributeName { get; set; }
     }
 
     public class ClassInfo
@@ -40,6 +42,8 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// </summary>
     public class DecoratorGenerator : ConfigurationSection
     {
+        private string _ignoreMethodAttributeName;
+
         /// <summary>
         ///     All projects where search class for decorate
         /// </summary>
@@ -77,6 +81,8 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// </summary>
     public class DecoratorProject : ConfigurationElement
     {
+        private string _ignoreMethodAttributeName;
+
         /// <summary>
         ///      Project for analysis
         /// </summary>
@@ -93,6 +99,16 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         public DecoratedClasses DecoratedClasses
         {
             get { return ((DecoratedClasses)(base["decoratedClasses"])); }
+        }
+
+
+        /// <summary>
+        ///      Ignore method attribute
+        /// </summary>
+        [ConfigurationProperty("ignoreMethodAttributeName", DefaultValue = "", IsRequired = false)]
+        public string IgnoreMethodAttributeName
+        {
+            get { return ((string)(base["ignoreMethodAttributeName"])); }
         }
     }
 
