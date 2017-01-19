@@ -62,13 +62,16 @@ namespace TestDecoratorGeneration
 				var res = await OnEntryAsync("AddItem", new object[] { id, name });
 				if (!res.Success)
 				{
-					return new TestDecoratorGeneration.ResponseDto()
+					ret = new TestDecoratorGeneration.ResponseDto()
 					{
 						PostprocessingType = res.PostprocessingType,
 						Context = res.Context.ToString()
 					};
 				}
-				ret = await DecoratedComponent.AddItem(id, name);
+				else
+				{
+					ret = await DecoratedComponent.AddItem(id, name);
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
@@ -119,6 +122,26 @@ namespace TestDecoratorGeneration
 			{
 				OnFinally();
 			}
+		}
+		public async System.Threading.Tasks.Task<string> GetSystemSettings(string[] listOfSystemSettings)
+		{
+			var ret = default(string);
+			try
+			{
+				await OnEntryAsync("GetSystemSettings", new object[] { listOfSystemSettings });
+				ret = await DecoratedComponent.GetSystemSettings(listOfSystemSettings);
+				await OnExitAsync(ret);
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+				throw;
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
 		}
 		public System.Guid GetGuid()
 		{

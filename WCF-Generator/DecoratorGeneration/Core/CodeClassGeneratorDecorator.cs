@@ -158,12 +158,11 @@ namespace WCFGenerator.DecoratorGeneration.Core
                     sb.AppendLine(onEntryInvoke);
                 }
             }
+            var invokeDecoratedMethod = (returnValue ? "ret = " : "") + (methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");";
 
-            if (returnValue)
-            {
-                sb.Append("ret = ");
-            }
-            sb.AppendLine((methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");");
+            if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
+                invokeDecoratedMethod = methodInfo.ReturnValueWrap.Replace("{replace}", invokeDecoratedMethod);
+            sb.AppendLine(invokeDecoratedMethod);
 
             // OnExit method
             if (DecoratorInfo.OnExitExist)

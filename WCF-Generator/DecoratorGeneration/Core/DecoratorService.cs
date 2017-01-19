@@ -94,7 +94,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 {
                     // Skip already decorated methods
                     if(decoratorImplementedMethods.Any(dm => dm.Name == m.Name)) continue;
-                    if(_configuration.IgnoreMethodAttributeName != null && m.GetAttributes().All(a => a.AttributeClass.Name != _configuration.IgnoreMethodAttributeName)) continue;
+                    if(_configuration.IgnoreMethodAttributeName != null && m.GetAttributes().Any(a => a.AttributeClass.Name == _configuration.IgnoreMethodAttributeName)) continue;
 
                     var method = new MethodInfo()
                     {
@@ -121,7 +121,8 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
                         if(postprocessingTypeExist && contextExist)
                         {
-                            method.OnEntryResultMap = "\r\nif (!res.Success)\r\n{\r\nreturn new " + fullName + "()\r\n{\r\nPostprocessingType = res.PostprocessingType,\r\nContext = res.Context.ToString()\r\n};\r\n}";
+                            method.OnEntryResultMap = "\r\nif (!res.Success)\r\n{\r\nret = new " + fullName + "()\r\n{\r\nPostprocessingType = res.PostprocessingType,\r\nContext = res.Context.ToString()\r\n};}";
+                            method.ReturnValueWrap = "else\r\n{{replace}\r\n}";
                         }
                     }
 
