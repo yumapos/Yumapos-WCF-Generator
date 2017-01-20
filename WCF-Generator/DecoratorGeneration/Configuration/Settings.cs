@@ -16,9 +16,11 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
                 {
                     SourceClassName  = c.SourceClass,
                     TargetClassName = c.TargetClass,
-                    UseAllOption = c.UseAllOptions
-                } ).ToList(),
-                IgnoreMethodAttributeName = s.IgnoreMethodAttributeName
+                    UseAllOption = c.UseAllOptions,
+                    OnEntryReturnType = c.OnEntryReturnType
+
+                }).ToList(),
+                IgnoreMethodAttributeName = s.IgnoreMethodAttributeName,
             }).ToList();
         }
     }
@@ -35,6 +37,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         public string SourceClassName { get; set; }
         public string TargetClassName { get; set; }
         public bool UseAllOption { get; set; }
+        public string OnEntryReturnType { get; set; }
     }
 
     /// <summary>
@@ -82,6 +85,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     public class DecoratorProject : ConfigurationElement
     {
         private string _ignoreMethodAttributeName;
+        private string _onEntryReturnType;
 
         /// <summary>
         ///      Project for analysis
@@ -110,6 +114,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         {
             get { return ((string)(base["ignoreMethodAttributeName"])); }
         }
+        
     }
 
     /// <summary>
@@ -164,6 +169,15 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         public bool UseAllOptions
         {
             get { return ((bool)(base["useAllOptions"])); }
+        }
+
+        /// <summary>
+        ///      Type of returned value of OnEntry method
+        /// </summary>
+        [ConfigurationProperty("onEntryReturnType", DefaultValue = "", IsRequired = false)]
+        public string OnEntryReturnType
+        {
+            get { return ((string)(base["onEntryReturnType"])); }
         }
     }
 }

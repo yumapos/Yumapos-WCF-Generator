@@ -112,18 +112,12 @@ namespace WCFGenerator.DecoratorGeneration.Core
                     method.IsAsync = m.IsAsync || retTask;
 
                     // Map ResponseDto TODO think about good idia
-                    if (method.ReturnTypeName.Contains("ResponseDto"))
+                    if (cls.OnEntryReturnType.Contains("ICommandExecutionResult"))
                     {
                         var fullName = retTask ? method.GetTaskRetunTypeName() : method.ReturnTypeName;
-                        var typeMembers = _syntaxWalker.GetClassByFullName(fullName).MemberNames.ToList();
-                        var postprocessingTypeExist = typeMembers.Any(i => i == "PostprocessingType");
-                        var contextExist = typeMembers.Any(i => i == "Context");
 
-                        if(postprocessingTypeExist && contextExist)
-                        {
-                            method.OnEntryResultMap = "\r\nif (!res.Success)\r\n{\r\nret = new " + fullName + "()\r\n{\r\nPostprocessingType = res.PostprocessingType,\r\nContext = res.Context.ToString()\r\n};}";
-                            method.ReturnValueWrap = "else\r\n{{replace}\r\n}";
-                        }
+                        method.OnEntryResultMap = "\r\nif (!res.Success)\r\n{\r\nret = new " + fullName + "()\r\n{\r\nPostprocessingType = res.PostprocessingType,\r\nContext = res.Context.ToString()\r\n};}";
+                        method.ReturnValueWrap = "else\r\n{{replace}\r\n}";
                     }
 
                     decoratedClassInfo.MethodInfos.Add(method);
