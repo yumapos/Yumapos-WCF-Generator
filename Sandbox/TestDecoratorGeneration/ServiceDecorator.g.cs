@@ -59,8 +59,19 @@ namespace TestDecoratorGeneration
 			var ret = default(TestDecoratorGeneration.ResponseDto);
 			try
 			{
-				await OnEntryAsync("AddItem", new object[] { id, name });
-				ret = await DecoratedComponent.AddItem(id, name);
+				var res = await OnEntryAsync("AddItem", new object[] { id, name });
+				if (!res.Success)
+				{
+					ret = new TestDecoratorGeneration.ResponseDto()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = res.Context.ToString()
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.AddItem(id, name);
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)

@@ -145,14 +145,24 @@ namespace WCFGenerator.DecoratorGeneration.Core
             // OnEntry method
             if (DecoratorInfo.OnEntryExist)
             {
-                sb.AppendLine((methodInfo.IsAsync ? "await OnEntryAsync" : "OnEntry") + "(\"" + methodInfo.Name + "\", new object[] { " + methodParameterNames + " });");
-            }
+                var onEntryInvoke = (methodInfo.IsAsync ? "await OnEntryAsync" : "OnEntry") + "(\"" + methodInfo.Name + "\", new object[] { " + methodParameterNames + " });";
 
-            if (returnValue)
-            {
-                sb.Append("ret = ");
+                if (!string.IsNullOrEmpty(methodInfo.OnEntryResultMap))
+                {
+                    sb.Append("var res = ");
+                    sb.Append(onEntryInvoke);
+                    sb.AppendLine(methodInfo.OnEntryResultMap);
+                }
+                else
+                {
+                    sb.AppendLine(onEntryInvoke);
+                }
             }
-            sb.AppendLine((methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");");
+            var invokeDecoratedMethod = (returnValue ? "ret = " : "") + (methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");";
+
+            if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
+                invokeDecoratedMethod = methodInfo.ReturnValueWrap.Replace("{replace}", invokeDecoratedMethod);
+            sb.AppendLine(invokeDecoratedMethod);
 
             // OnExit method
             if (DecoratorInfo.OnExitExist)

@@ -15,8 +15,12 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
                 DecoratedClass = s.DecoratedClasses.Cast<DecoratedClass>().Select(c=> new ClassInfo()
                 {
                     SourceClassName  = c.SourceClass,
-                    TargetClassName = c.TargetClass
-                } ).ToList()
+                    TargetClassName = c.TargetClass,
+                    UseAllOption = c.UseAllOptions,
+                    OnEntryReturnType = c.OnEntryReturnType
+
+                }).ToList(),
+                IgnoreMethodAttributeName = s.IgnoreMethodAttributeName,
             }).ToList();
         }
     }
@@ -25,12 +29,15 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     {
         public string SolutionProjectName { get; set; }
         public List<ClassInfo> DecoratedClass { get; set; }
+        public string IgnoreMethodAttributeName { get; set; }
     }
 
     public class ClassInfo
     {
         public string SourceClassName { get; set; }
         public string TargetClassName { get; set; }
+        public bool UseAllOption { get; set; }
+        public string OnEntryReturnType { get; set; }
     }
 
     /// <summary>
@@ -38,6 +45,8 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// </summary>
     public class DecoratorGenerator : ConfigurationSection
     {
+        private string _ignoreMethodAttributeName;
+
         /// <summary>
         ///     All projects where search class for decorate
         /// </summary>
@@ -75,6 +84,9 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// </summary>
     public class DecoratorProject : ConfigurationElement
     {
+        private string _ignoreMethodAttributeName;
+        private string _onEntryReturnType;
+
         /// <summary>
         ///      Project for analysis
         /// </summary>
@@ -92,6 +104,17 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         {
             get { return ((DecoratedClasses)(base["decoratedClasses"])); }
         }
+
+
+        /// <summary>
+        ///      Ignore method attribute
+        /// </summary>
+        [ConfigurationProperty("ignoreMethodAttributeName", DefaultValue = "", IsRequired = false)]
+        public string IgnoreMethodAttributeName
+        {
+            get { return ((string)(base["ignoreMethodAttributeName"])); }
+        }
+        
     }
 
     /// <summary>
@@ -137,6 +160,24 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
         public string TargetClass
         {
             get { return ((string)(base["targetClass"])); }
+        }
+
+        /// <summary>
+        ///      Use all options
+        /// </summary>
+        [ConfigurationProperty("useAllOptions", DefaultValue = "true", IsRequired = false)]
+        public bool UseAllOptions
+        {
+            get { return ((bool)(base["useAllOptions"])); }
+        }
+
+        /// <summary>
+        ///      Type of returned value of OnEntry method
+        /// </summary>
+        [ConfigurationProperty("onEntryReturnType", DefaultValue = "", IsRequired = false)]
+        public string OnEntryReturnType
+        {
+            get { return ((string)(base["onEntryReturnType"])); }
         }
     }
 }

@@ -47,7 +47,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 var decoratedClassInfo = new DecoratorInfo()
                 {
                     DecoratedClassTypeFullName = cls.SourceClassName,
-                    DecoratorClassTypeShortName = cls.TargetClassName
+                    DecoratorClassTypeShortName = cls.TargetClassName,
                 };
                 codeClassGenerator.DecoratorInfo = decoratedClassInfo;
 
@@ -79,7 +79,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
                 // Get methods for decorating
                 var methods = decoratedClass.GetMembers()
-                    .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public && m.MetadataName != ".ctor")
+                    .Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public && m.MetadataName != ".ctor" )
                     .Select(m=> m as IMethodSymbol)
                     .Where(m => m.AssociatedSymbol == null || m.AssociatedSymbol.Kind != SymbolKind.Property)
                     .ToList();
@@ -94,12 +94,12 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 {
                     // Skip already decorated methods
                     if(decoratorImplementedMethods.Any(dm => dm.Name == m.Name)) continue;
+                    if(_configuration.IgnoreMethodAttributeName != null && m.GetAttributes().Any(a => a.AttributeClass.Name == _configuration.IgnoreMethodAttributeName)) continue;
 
                     var method = new MethodInfo()
                     {
                         Name = m.Name,
                         ReturnTypeName = m.ReturnType.ToString(),
-                        IsAsync = m.IsAsync,
                         ReturnTypeIsNullble = !m.ReturnType.IsValueType,
                         Parameters = m.Parameters.Select(p => new ParameterInfo()
                         {
@@ -107,15 +107,30 @@ namespace WCFGenerator.DecoratorGeneration.Core
                             Type = p.Type.ToString()
                         }).ToList(),
                     };
+                    var retTask = method.ReturnTypeName.Contains("System.Threading.Tasks.Task");
+                    // Method with return type "Task" has not mark as async, but method decorator should be generate as async
+                    method.IsAsync = m.IsAsync || retTask;
+
+                    // Map ResponseDto TODO think about good idia
+                    if (cls.OnEntryReturnType.Contains("ICommandExecutionResult"))
+                    {
+                        var fullName = retTask ? method.GetTaskRetunTypeName() : method.ReturnTypeName;
+
+                        method.OnEntryResultMap = "\r\nif (!res.Success)\r\n{\r\nret = new " + fullName + "()\r\n{\r\nPostprocessingType = res.PostprocessingType,\r\nContext = res.Context.ToString()\r\n};}";
+                        method.ReturnValueWrap = "else\r\n{{replace}\r\n}";
+                    }
 
                     decoratedClassInfo.MethodInfos.Add(method);
                 }
 
                 // Set flags for include decorator methods
-                decoratedClassInfo.OnEntryExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _entryMethodName || m.Name == _entryMethodName + "Async") != null;
-                decoratedClassInfo.OnExitExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exitMethodName || m.Name == _exitMethodName + "Async") != null;
-                decoratedClassInfo.OnExceptionExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exceptionMethodName) != null;
-                decoratedClassInfo.OnFinallyExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _finallyMethodName) != null;
+                if(!cls.UseAllOption)
+                {
+                    decoratedClassInfo.OnEntryExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _entryMethodName || m.Name == _entryMethodName + "Async") != null;
+                    decoratedClassInfo.OnExitExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exitMethodName || m.Name == _exitMethodName + "Async") != null;
+                    decoratedClassInfo.OnExceptionExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _exceptionMethodName) != null;
+                    decoratedClassInfo.OnFinallyExist = decoratorImplementedMethods.FirstOrDefault(m => m.Name == _finallyMethodName) != null;
+                }
 
                 ret.Add(codeClassGenerator);
             }

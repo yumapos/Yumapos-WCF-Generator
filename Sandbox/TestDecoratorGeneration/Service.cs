@@ -20,7 +20,6 @@ namespace TestDecoratorGeneration
             return true;
         }
 
-
         public async Task<ResponseDto> AddItem(Guid id, string name)
         {
             return new ResponseDto();
@@ -35,6 +34,7 @@ namespace TestDecoratorGeneration
             
         }
 
+        [IgnoreDecoration]
         public async Task<string> GetSystemSettings(string[] listOfSystemSettings)
         {
             return "";
@@ -49,6 +49,7 @@ namespace TestDecoratorGeneration
         {
             return 0;
         }
+
 
         public void Dispose(){}
     }
