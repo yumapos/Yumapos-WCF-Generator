@@ -43,7 +43,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
         #region Find versioned repositories
 
-        public IEnumerable<ICodeClassGeneratorRepository> GetRepositories()
+        public IEnumerable<ICodeClassGeneratorRepository> GetRepositories(RepositoryProject config)
         {
             // Get all clases marked RepositoryAttribute
             var findClasses = _solutionSyntaxWalker.GetRepositoryClasses();
@@ -55,6 +55,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var dataAccessServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDataAccessService");
             var dataControllerServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDataAccessController");
             var dateTimeServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDateTimeService");
+            var repositorybase = config.RepositoryBase;
 
             // Apply info from base clasess
             foreach (var r in listOfCandidate)
@@ -76,6 +77,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 repositoryInfo.DataAccessServiceTypeName = dataAccessServiceNamespace;
                 repositoryInfo.DataAccessControllerTypeName = dataControllerServiceNamespace;
                 repositoryInfo.DateTimeServiceTypeName = dateTimeServiceNamespace;
+                repositoryInfo.RepositoryBaseTypeName = repositorybase;
             }
             // Skip attached (it can not generate)
             var resultRepositories = listOfCandidate.Where(r => r.RepositoryInfo.IsJoned == false).ToList();
@@ -237,12 +239,16 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             repositoryInfo.FilterInfos.AddRange(filterKeys);
            
             // Common filter - isDeleted, modified
-            repositoryInfo.SpecialOptionsIsDeleted = new FilterInfo("IsDeleted", new List<ParameterInfo> {new ParameterInfo("IsDeleted", "bool", Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower())}, FilterType.FilterKey);
+            if(dataAccess.IsDeleted.HasValue)
+            {
+                repositoryInfo.SpecialOptionsIsDeleted = new FilterInfo("IsDeleted", new List<ParameterInfo> {new ParameterInfo("IsDeleted", "bool", Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower())}, FilterType.FilterKey);
+            }
             repositoryInfo.SpecialOptionsModified = new FilterInfo("Modified", new List<ParameterInfo> {new ParameterInfo("Modified", "DateTimeOffset")}, FilterType.FilterKey);
             
             repositoryInfo.VersionTableName = dataAccess.TableVersion;
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
+            repositoryInfo.Identity = dataAccess.Identity;
 
             #endregion
 

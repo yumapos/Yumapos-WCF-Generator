@@ -75,7 +75,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         public virtual string GetConstructors()
         {
-            var constructor = string.Format("public {0}(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) {{ }}", RepositoryName);
+            var constructor = string.Format("public {0}("+ RepositoryInfo.DataAccessServiceTypeName + " dataAccessService" + ") : base(dataAccessService) {{ }}", RepositoryName);
             return constructor;
         }
 

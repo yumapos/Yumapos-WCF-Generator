@@ -42,7 +42,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         public override string GetClassDeclaration()
         {
-            return "internal class " + RepositoryName + " : RepositoryBase";
+            return "internal class " + RepositoryName + " : " + RepositoryInfo.RepositoryBaseTypeName;
         }
 
         #region Overrides of BaseCodeClassGeneratorRepository

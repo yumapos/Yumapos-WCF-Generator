@@ -32,7 +32,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         public override string GetClassDeclaration()
         {
-            return "public partial class " + RepositoryName + " : RepositoryBase, " + RepositoryInfo.RepositoryInterfaceName;
+            return "public partial class " + RepositoryName + " : " + RepositoryInfo.RepositoryBaseTypeName + ", " + RepositoryInfo.RepositoryInterfaceName;
         }
 
         #region Overrides of BaseCodeClassGeneratorRepository
@@ -70,7 +70,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             //sb.AppendLine("private const string Values = @" + values.SurroundWithQuotes() + ";");
             sb.AppendLine("private const string " + _selectAllQuery + " = @" + selectAllQuery + ";");
             sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
-            sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
+            sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + " ;");
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
 
