@@ -194,7 +194,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var filter = method.FilterInfo;
             var isVersionKeyFilter = filter.FilterType == FilterType.VersionKey;
             var filterBySliceDate = !isVersionKeyFilter && RepositoryInfo.IsModifiedExist;
-            var filterByIsDeleted = RepositoryInfo.IsModifiedExist;
+            var filterByIsDeleted = RepositoryInfo.IsDeletedExist;
 
             var sqlWhere = (!isVersionKeyFilter ? _whereQueryByWithAlias : _whereQueryBy) + filter.Key;
 

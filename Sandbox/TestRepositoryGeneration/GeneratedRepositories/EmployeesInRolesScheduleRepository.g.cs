@@ -18,51 +18,66 @@ namespace TestRepositoryGeneration
 {
 	public partial class EmployeesInRolesScheduleRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IEmployeesInRolesScheduleRepository
 	{
-		private const string Fields = @"[EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End]";
-		private const string SelectAllQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End] FROM [EmployeesInRolesSchedule]  {whereTenantId:[EmployeesInRolesSchedule]} ";
-		private const string SelectByQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End] FROM [EmployeesInRolesSchedule] ";
-		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@ScheduleId,@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@TenantId)";
-		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId,[EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End FROM [EmployeesInRolesSchedule] ";
+		private const string Fields = @"[EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted]";
+		private const string SelectAllQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule]  {whereTenantId:[EmployeesInRolesSchedule]} ";
+		private const string SelectByQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule] ";
+		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId)";
+		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] ";
 		private const string DeleteQueryBy = @"DELETE FROM [EmployeesInRolesSchedule] ";
 		private const string WhereQueryByScheduleId = "WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]} ";
+		private const string AndWithIsDeletedFilter = "AND [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted ";
 
 
 		public EmployeesInRolesScheduleRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> GetAll()
+		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> GetAll(bool? isDeleted = false)
 		{
 		var sql = SelectAllQuery;
-		object parameters = null;
+		object parameters = new {isDeleted};
+		if (isDeleted.HasValue)
+		{
+		sql = sql + AndWithIsDeletedFilter;
+		}
 		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters).ToList();
 		return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>> GetAllAsync()
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>> GetAllAsync(bool? isDeleted = false)
 		{
 		var sql = SelectAllQuery;
-		object parameters = null;
+		object parameters = new {isDeleted};
+		if (isDeleted.HasValue)
+		{
+		sql = sql + AndWithIsDeletedFilter;
+		}
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters));
 		return result.ToList();
 		}
 
 		*/
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> GetByScheduleId(System.Guid scheduleId)
+		public TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule GetByScheduleId(System.Guid scheduleId, bool? isDeleted = false)
 		{
-		object parameters = new {scheduleId};
-		var sql = SelectByQuery + WhereQueryByScheduleId;
-		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters);
-		return result.ToList();
+			object parameters = new { scheduleId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByScheduleId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithIsDeletedFilter;
+			}
+			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters);
+			return result.FirstOrDefault();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>> GetByScheduleIdAsync(System.Guid scheduleId)
+		public async Task<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> GetByScheduleIdAsync(System.Guid scheduleId, bool? isDeleted = false)
 		{
-		object parameters = new {scheduleId};
-		var sql = SelectByQuery + WhereQueryByScheduleId;
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters));
-		return result.ToList();
+			object parameters = new { scheduleId, isDeleted };
+			var sql = SelectByQuery + WhereQueryByScheduleId;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithIsDeletedFilter;
+			}
+			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters));
+			return result.FirstOrDefault();
 		}
 
 
-		*/
 		public System.Guid Insert(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{
 			var res = DataAccessService.InsertObject(employeesInRolesSchedule, InsertQuery);

@@ -8,6 +8,6 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
     interface IEmployeesInRolesScheduleRepository : IRepository<EmployeesInRolesSchedule>
     {
         Task<Guid> InsertAsync(EmployeesInRolesSchedule item);
-        Task<EmployeesInRolesSchedule> GetByScheduleIdAsync(Guid scheduleId, bool isDeleted);
+        Task<EmployeesInRolesSchedule> GetByScheduleIdAsync(Guid scheduleId, bool? isDeleted);
     }
 }

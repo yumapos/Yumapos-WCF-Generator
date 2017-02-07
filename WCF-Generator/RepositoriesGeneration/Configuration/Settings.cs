@@ -82,7 +82,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         /// <summary>
         ///     Repository base type name
         /// </summary>
-        [ConfigurationProperty("RepositoryBase", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("RepositoryBase", DefaultValue = "", IsRequired = false)]
         public string RepositoryBase
         {
             get { return ((string)(base["RepositoryBase"])); }

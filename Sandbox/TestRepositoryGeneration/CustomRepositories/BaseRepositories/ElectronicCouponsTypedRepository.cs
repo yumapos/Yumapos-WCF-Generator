@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TestRepositoryGeneration.DataObjects.BaseRepositories;
 using TestRepositoryGeneration.Infrastructure;
+using TestRepositoryGeneration.RepositoryInterfaces;
 
 namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 {

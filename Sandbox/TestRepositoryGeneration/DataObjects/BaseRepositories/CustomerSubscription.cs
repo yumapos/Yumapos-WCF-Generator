@@ -9,7 +9,7 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
     ///     Repository interface <see cref="ICustomerSubscriptionRepository"/>
     ///     Repository <see cref="CustomerSubscriptionRepository"/>
     /// </summary>
-    [DataAccess(TableName = "CustomerSubscriptions"/*, IsDeleted = true*/)]
+    [DataAccess(TableName = "CustomerSubscriptions")]
     public class CustomerSubscription
     {
         [Key]

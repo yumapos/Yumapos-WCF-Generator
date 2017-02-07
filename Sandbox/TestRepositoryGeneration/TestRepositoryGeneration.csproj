@@ -51,6 +51,7 @@
     <Compile Include="DataObjects\BaseRepositories\ElectronicCoupon.cs" />
     <Compile Include="GeneratedRepositories\AddressRepository.g.cs" />
     <Compile Include="GeneratedRepositories\CustomerSubscriptionRepository.g.cs" />
+    <Compile Include="GeneratedRepositories\ElectronicCouponsTypedRepository.g.cs" />
     <Compile Include="GeneratedRepositories\EmployeesInRolesScheduleRepository.g.cs" />
     <Compile Include="GeneratedRepositories\MenuItemCacheRepository.g.cs" />
     <Compile Include="GeneratedRepositories\MenuItems2TaxesCacheRepository.g.cs" />

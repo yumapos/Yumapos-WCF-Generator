@@ -178,15 +178,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private string GenerateGetAll(MethodImplementationInfo method)
         {
-            var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
-            var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
-            var specialMethodParameterIsDeletedName = specialParameterIsDeleted.Name.FirstSymbolToLower();
-
             var addIsDeletedFilter = RepositoryInfo.IsDeletedExist;
-            var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
+            var parameters =  "";
+            var parameterNames = "";
 
-            var parameters = addIsDeletedFilter ? specialMethodParameterIsDeleted : "";
-            var parameterNames = addIsDeletedFilter ? specialMethodParameterIsDeletedName : "";
+            if(addIsDeletedFilter)
+            {
+                var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
+                parameters = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+                parameterNames = specialParameterIsDeleted.Name.FirstSymbolToLower();
+            }
+
+            var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
 
             var sb = new StringBuilder();
 

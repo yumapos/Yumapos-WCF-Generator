@@ -5,7 +5,7 @@ using TestRepositoryGeneration.Infrastructure;
 
 namespace TestRepositoryGeneration.DataObjects.VersionsRepositories
 {
-    [DataAccess(TableVersion = "TaxVersions")]
+    [DataAccess(TableVersion = "TaxVersions", IsDeleted = false)]
     public class Tax
     {
         [Key]

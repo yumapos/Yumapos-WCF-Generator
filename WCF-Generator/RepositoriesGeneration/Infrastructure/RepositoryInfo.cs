@@ -227,12 +227,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         {
             get
             {
-                var specialOption = "IsDeleted";
-                if (JoinRepositoryInfo != null)
-                {
-                    return JoinRepositoryInfo.Elements.Exists(s => s == specialOption);
-                }
-                return Elements.Exists(s => s == specialOption);
+               return SpecialOptionsIsDeleted != null;
             }
         }
 

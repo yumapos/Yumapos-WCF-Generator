@@ -55,7 +55,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var dataAccessServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDataAccessService");
             var dataControllerServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDataAccessController");
             var dateTimeServiceNamespace = _solutionSyntaxWalker.GetFullTypeName("IDateTimeService");
-            var repositorybase = config.RepositoryBase;
+            var repositorybase = string.IsNullOrEmpty(config.RepositoryBase) ? "RepositoryBase" : config.RepositoryBase;
 
             // Apply info from base clasess
             foreach (var r in listOfCandidate)
