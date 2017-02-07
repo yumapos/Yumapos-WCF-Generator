@@ -51,6 +51,7 @@
     <Compile Include="DataObjects\BaseRepositories\ElectronicCoupon.cs" />
     <Compile Include="GeneratedRepositories\AddressRepository.g.cs" />
     <Compile Include="GeneratedRepositories\CustomerSubscriptionRepository.g.cs" />
+    <Compile Include="GeneratedRepositories\ElectronicCouponRepository.g.cs" />
     <Compile Include="GeneratedRepositories\ElectronicCouponsTypedRepository.g.cs" />
     <Compile Include="GeneratedRepositories\EmployeesInRolesScheduleRepository.g.cs" />
     <Compile Include="GeneratedRepositories\MenuItemCacheRepository.g.cs" />
@@ -99,7 +100,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="GeneratedRepositories\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>if '$(ConfigurationName)' == 'Debug' $(SolutionDir)\generation.bat</PreBuildEvent>

@@ -26,7 +26,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 TableName = obj.GetParameterByKeyName("TableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = isDeleted !=null ? Convert.ToBoolean(isDeleted) : (bool?) null,
-                Identity = !string.IsNullOrEmpty(isDeleted) && Convert.ToBoolean(identity),
+                Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = obj.GetParameterByKeyName("FilterKey3"),

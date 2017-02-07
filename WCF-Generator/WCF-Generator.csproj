@@ -178,8 +178,10 @@
     <Compile Include="RepositoriesGeneration\Heplers\RepositoryDataModelHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\AnalysisError.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
     <Compile Include="Common\Infrastructure\ICodeClassGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryAnalysisError.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryFieldInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\FilterType.cs" />
@@ -189,6 +191,7 @@
     <Compile Include="RepositoriesGeneration\Infrastructure\MethodImplementationInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryMethods.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryType.cs" />
     <Compile Include="RepositoriesGeneration\Services\AttributeAndPropeperties.cs" />
     <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />

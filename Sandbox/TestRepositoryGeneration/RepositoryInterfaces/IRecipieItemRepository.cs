@@ -5,7 +5,7 @@ using TestRepositoryGeneration.DataObjects.VersionsRepositories;
 
 namespace TestRepositoryGeneration.RepositoryInterfaces
 {
-    interface IRecipieItemRepository : IRepository<RecipieItem>
+    interface IRecipieItemRepository
     {
         Guid Insert(RecipieItem item);
 

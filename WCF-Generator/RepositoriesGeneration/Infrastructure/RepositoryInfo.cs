@@ -30,6 +30,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             MethodImplementationInfo = new List<MethodImplementationInfo>();
             CacheRepositoryMethodImplementationInfo = new List<MethodImplementationInfo>();
             RequiredNamespaces = new Dictionary<RepositoryType, List<string>>();
+            RepositoryAnalysisError = new List<AnalysisError>();
         }
 
         #endregion
@@ -196,9 +197,35 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public bool IsVersioning { get; set; }
 
         /// <summary>
-        ///     Repository joined to another repository and can not generate
+        ///     Repository joined to another repository
         /// </summary>
         public bool IsJoned { get; set; }
+
+        /// <summary>
+        ///    Repository can be generated
+        /// </summary>
+        public bool CanBeGenerated
+        {
+            get
+            {
+                if (!IsJoned && !RepositoryAnalysisError.Any())
+                    return true;
+                if (IsJoned && !RepositoryInterfaceNotFound)
+                    return true;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///    Repository can be extended analysis
+        /// </summary>
+        public bool CanBeExtendedAnalysis
+        {
+            get
+            {
+                return RepositoryAnalysisError.Count == 1 && RepositoryInterfaceNotFound || !RepositoryAnalysisError.Any();
+            }
+        }
 
         /// <summary>
         ///     Repository joined to another repository as many-to-many and can not generate
@@ -388,5 +415,21 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public string RepositoryBaseTypeName { get; set; }
 
         #endregion
-    } 
+
+        #region Analysis Error
+
+        /// <summary>
+        ///    Errors arising in the analysis of repository models
+        /// </summary>
+        public List<AnalysisError> RepositoryAnalysisError { get; set; }
+
+        public bool RepositoryInterfaceNotFound
+        {
+            get { return RepositoryAnalysisError.Any(e => e.Error == Infrastructure.RepositoryAnalysisError.InterfaceNotFound); }
+        }
+
+        #endregion
+
+
+    }
 }

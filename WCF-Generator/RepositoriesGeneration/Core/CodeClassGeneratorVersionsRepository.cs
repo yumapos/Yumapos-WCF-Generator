@@ -286,7 +286,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var sb = new StringBuilder();
 
             // check analysis error
-            if (RepositoryAnalysisError == null)
+            if (RepositoryInfo.CanBeGenerated)
             {
                 try
                 {
@@ -319,7 +319,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
             else
             {
-                sb.AppendLine(("Analysis ERROR: " + RepositoryAnalysisError).SurroundWithComments());
+                sb.AppendLine(("Analysis ERROR: " + string.Join("\n\r", RepositoryInfo.RepositoryAnalysisError)).SurroundWithComments());
             }
 
             return sb.ToString();

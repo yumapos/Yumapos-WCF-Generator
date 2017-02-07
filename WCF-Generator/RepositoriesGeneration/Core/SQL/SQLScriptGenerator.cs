@@ -266,14 +266,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private static string Insert(IEnumerable<string> tableColumns, string ownerTableName)
         {
             var columns = tableColumns.ToList();
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") VALUES(" + Values(columns) + ")";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ")  VALUES(" + Values(columns) + ") ";
         }
 
         private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string returnInserted)
         {
             var columns = tableColumns.ToList();
             var outputKey = "OUTPUT INSERTED." + returnInserted;
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ")";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ") ";
         }
 
         private static string InsertWithJoined(IEnumerable<string> joinedTableColumns, string joinedTableName, string joinedPkColumn, string joinedPkType, IEnumerable<string> tableColumns, string tableName, string pkColumn)
