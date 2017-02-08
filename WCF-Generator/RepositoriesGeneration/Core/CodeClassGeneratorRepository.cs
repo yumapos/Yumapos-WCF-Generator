@@ -208,7 +208,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _whereWithIsDeletedFilter + ";");
+                sb.AppendLine("sql = sql + " + (RepositoryInfo.IsTenantRelated ? _andWithIsDeletedFilter : _whereWithIsDeletedFilter) + ";");
                 sb.AppendLine("}");
             }
             else
@@ -231,7 +231,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _whereWithIsDeletedFilter + ";");
+                sb.AppendLine("sql = sql + " + (RepositoryInfo.IsTenantRelated ? _andWithIsDeletedFilter : _whereWithIsDeletedFilter) + ";");
                 sb.AppendLine("}");
             }
             else

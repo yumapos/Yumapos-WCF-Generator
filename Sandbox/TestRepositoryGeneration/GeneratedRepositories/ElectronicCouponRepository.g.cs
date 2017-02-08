@@ -35,7 +35,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + WhereWithIsDeletedFilter;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>(sql, parameters).ToList();
 			return result.ToList();
@@ -46,7 +46,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + WhereWithIsDeletedFilter;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>(sql, parameters));
 			return result.ToList();

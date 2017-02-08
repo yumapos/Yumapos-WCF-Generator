@@ -41,7 +41,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + WhereWithIsDeletedFilter;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters).ToList();
 			return result.ToList();
@@ -52,7 +52,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + WhereWithIsDeletedFilter;
+				sql = sql + AndWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters));
 			return result.ToList();
