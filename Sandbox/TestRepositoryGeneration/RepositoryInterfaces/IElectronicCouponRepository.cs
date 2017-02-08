@@ -7,5 +7,6 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
     public interface IElectronicCouponRepository : IRepository<ElectronicCoupon>
     {
         IEnumerable<ElectronicCoupon> Get(DateTime now);
+        IEnumerable<ElectronicCoupon> GetAll(bool? isDeletd);
     }
 }

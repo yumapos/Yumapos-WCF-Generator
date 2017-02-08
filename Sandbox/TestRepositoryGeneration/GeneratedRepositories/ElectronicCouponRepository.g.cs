@@ -23,36 +23,35 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string SelectByQuery = @"SELECT [ElectronicCoupons].[Id],[ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive] FROM [ElectronicCoupons] ";
 		private const string InsertQuery = @"INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id VALUES(@Name,@PrintText,@ImageId,@ValidFrom,@ValidTo,@IsDeleted,@LimitPerOrder,@Priority,@MaxTimesPerCustomer,@IsActive,@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [ElectronicCoupons] SET [ElectronicCoupons].[Name] = @Name,[ElectronicCoupons].[PrintText] = @PrintText,[ElectronicCoupons].[ImageId] = @ImageId,[ElectronicCoupons].[ValidFrom] = @ValidFrom,[ElectronicCoupons].[ValidTo] = @ValidTo,[ElectronicCoupons].[IsDeleted] = @IsDeleted,[ElectronicCoupons].[LimitPerOrder] = @LimitPerOrder,[ElectronicCoupons].[Priority] = @Priority,[ElectronicCoupons].[MaxTimesPerCustomer] = @MaxTimesPerCustomer,[ElectronicCoupons].[IsActive] = @IsActive FROM [ElectronicCoupons] ";
-		private const string DeleteQueryBy = @"DELETE FROM [ElectronicCoupons] ";
+		private const string DeleteQueryBy = @"UPDATE [ElectronicCoupons] SET IsDeleted = 1 ";
 		private const string WhereQueryById = "WHERE [ElectronicCoupons].[Id] = @Id{andTenantId:[ElectronicCoupons]} ";
 		private const string AndWithIsDeletedFilter = "AND [ElectronicCoupons].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [ElectronicCoupons].[IsDeleted] = @IsDeleted{andTenantId:[ElectronicCoupons]} ";
 
 
-		/*
 		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon> GetAll(bool? isDeleted = true)
 		{
-		var sql = SelectAllQuery;
-		object parameters = new {isDeleted};
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>(sql, parameters).ToList();
-		return result.ToList();
+			var sql = SelectAllQuery;
+			object parameters = new { isDeleted };
+			if (isDeleted.HasValue)
+			{
+				sql = sql + WhereWithIsDeletedFilter;
+			}
+			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>(sql, parameters).ToList();
+			return result.ToList();
 		}
 		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>> GetAllAsync(bool? isDeleted = true)
 		{
-		var sql = SelectAllQuery;
-		object parameters = new {isDeleted};
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>(sql, parameters));
-		return result.ToList();
+			var sql = SelectAllQuery;
+			object parameters = new { isDeleted };
+			if (isDeleted.HasValue)
+			{
+				sql = sql + WhereWithIsDeletedFilter;
+			}
+			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon>(sql, parameters));
+			return result.ToList();
 		}
 
-		*/
 		/*
 		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon> GetById(int id, bool? isDeleted = true)
 		{

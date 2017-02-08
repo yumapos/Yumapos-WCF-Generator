@@ -23,12 +23,13 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string SelectByQuery = @"SELECT [ElectronicCouponsTyped].[ElectronicCouponsId],[ElectronicCouponsTyped].[ElectronicCouponsPresetId],[ElectronicCouponsTyped].[IsPromotionalCampaign],[ElectronicCoupons].[Id],[ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive] FROM [ElectronicCouponsTyped] INNER JOIN [ElectronicCoupons] ON [ElectronicCouponsTyped].[ElectronicCouponsId] = [ElectronicCoupons].[Id] ";
 		private const string InsertQuery = @"DECLARE @TempIdTable TABLE (Id int);INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id INTO @TempIdTable VALUES(@Name,@PrintText,@ImageId,@ValidFrom,@ValidTo,@IsDeleted,@LimitPerOrder,@Priority,@MaxTimesPerCustomer,@IsActive,@TenantId);DECLARE @TempId int; SELECT TempId = Id FROM @TempIdTable;INSERT INTO @[ElectronicCouponsTyped]([ElectronicCouponsTyped].[ElectronicCouponsId],[ElectronicCouponsTyped].[ElectronicCouponsPresetId],[ElectronicCouponsTyped].[IsPromotionalCampaign],[ElectronicCouponsTyped].[TenantId]) OUTPUT INSERTED.Id INTO @TempIdTable VALUES(@ElectronicCouponsId,@ElectronicCouponsPresetId,@IsPromotionalCampaign,@TenantId);SELECT Id FROM @TempIdTable;";
 		private const string UpdateQueryBy = @"UPDATE [ElectronicCouponsTyped] SET [ElectronicCouponsTyped].[ElectronicCouponsId] = @ElectronicCouponsId,[ElectronicCouponsTyped].[ElectronicCouponsPresetId] = @ElectronicCouponsPresetId,[ElectronicCouponsTyped].[IsPromotionalCampaign] = @IsPromotionalCampaign FROM [ElectronicCouponsTyped] ";
-		private const string DeleteQueryBy = @"DELETE FROM [ElectronicCouponsTyped] WHERE [ElectronicCouponsTyped].[ElectronicCouponsId] IN (SELECT ItemId FROM @Temp);DELETE FROM [ElectronicCoupons] WHERE [ElectronicCoupons].[Id] IN (SELECT ItemId FROM @Temp); ";
+		private const string DeleteQueryBy = @"UPDATE [ElectronicCoupons] SET IsDeleted = 1 ";
 		private const string UpdateQueryJoin = "UPDATE [ElectronicCoupons] SET [ElectronicCoupons].[Name] = @Name,[ElectronicCoupons].[PrintText] = @PrintText,[ElectronicCoupons].[ImageId] = @ImageId,[ElectronicCoupons].[ValidFrom] = @ValidFrom,[ElectronicCoupons].[ValidTo] = @ValidTo,[ElectronicCoupons].[IsDeleted] = @IsDeleted,[ElectronicCoupons].[LimitPerOrder] = @LimitPerOrder,[ElectronicCoupons].[Priority] = @Priority,[ElectronicCoupons].[MaxTimesPerCustomer] = @MaxTimesPerCustomer,[ElectronicCoupons].[IsActive] = @IsActive FROM [ElectronicCoupons] ";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [ElectronicCouponsTyped].[ElectronicCouponsId] FROM [ElectronicCouponsTyped] ";
 		private const string WhereQueryByElectronicCouponsId = "WHERE [ElectronicCouponsTyped].[ElectronicCouponsId] = @ElectronicCouponsId{andTenantId:[ElectronicCouponsTyped]} ";
 		private const string WhereQueryByJoinPk = "WHERE [ElectronicCoupons].[Id] = @Id{andTenantId:[ElectronicCoupons]} ";
 		private const string AndWithIsDeletedFilter = "AND [ElectronicCoupons].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [ElectronicCouponsTyped].[IsDeleted] = @IsDeleted{andTenantId:[ElectronicCouponsTyped]} ";
 
 
 		public ElectronicCouponsTypedRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -38,7 +39,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithIsDeletedFilter;
+				sql = sql + WhereWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped>(sql, parameters).ToList();
 			return result.ToList();
@@ -49,7 +50,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithIsDeletedFilter;
+				sql = sql + WhereWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped>(sql, parameters));
 			return result.ToList();

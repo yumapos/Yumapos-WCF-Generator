@@ -31,6 +31,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string WhereQueryByMenuCategoryId = "WHERE [MenuItems].[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByJoinPk = "WHERE [RecipieItems].[ItemId] = @ItemId{andTenantId:[RecipieItems]} ";
 		private const string AndWithIsDeletedFilter = "AND [RecipieItems].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems].[IsDeleted] = @IsDeleted{andTenantId:[MenuItems]} ";
 
 
 		public MenuItemCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -40,7 +41,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithIsDeletedFilter;
+				sql = sql + WhereWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters).ToList();
 			return result.ToList();
@@ -51,7 +52,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithIsDeletedFilter;
+				sql = sql + WhereWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters));
 			return result.ToList();

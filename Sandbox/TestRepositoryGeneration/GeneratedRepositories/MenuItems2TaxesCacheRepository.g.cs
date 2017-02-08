@@ -27,6 +27,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string WhereQueryByMenuItemId = "WHERE [MenuItems2Taxess].[MenuItemId] = @MenuItemId ";
 		private const string WhereQueryByTaxId = "WHERE [MenuItems2Taxess].[TaxId] = @TaxId ";
 		private const string AndWithIsDeletedFilter = "AND [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
 
 
 		public MenuItems2TaxesCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -36,7 +37,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithIsDeletedFilter;
+				sql = sql + WhereWithIsDeletedFilter;
 			}
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes>(sql, parameters).ToList();
 			return result.ToList();
@@ -47,7 +48,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			object parameters = new { isDeleted };
 			if (isDeleted.HasValue)
 			{
-				sql = sql + AndWithIsDeletedFilter;
+				sql = sql + WhereWithIsDeletedFilter;
 			}
 			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes>(sql, parameters));
 			return result.ToList();

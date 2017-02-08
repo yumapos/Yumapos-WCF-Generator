@@ -23,9 +23,10 @@ namespace TestRepositoryGeneration
 		private const string SelectByQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule] ";
 		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] ";
-		private const string DeleteQueryBy = @"DELETE FROM [EmployeesInRolesSchedule] ";
+		private const string DeleteQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET IsDeleted = 1 ";
 		private const string WhereQueryByScheduleId = "WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]} ";
 		private const string AndWithIsDeletedFilter = "AND [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted{andTenantId:[EmployeesInRolesSchedule]} ";
 
 
 		public EmployeesInRolesScheduleRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -36,7 +37,7 @@ namespace TestRepositoryGeneration
 		object parameters = new {isDeleted};
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithIsDeletedFilter;
+		sql = sql + WhereWithIsDeletedFilter;
 		}
 		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters).ToList();
 		return result.ToList();
@@ -47,7 +48,7 @@ namespace TestRepositoryGeneration
 		object parameters = new {isDeleted};
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithIsDeletedFilter;
+		sql = sql + WhereWithIsDeletedFilter;
 		}
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters));
 		return result.ToList();

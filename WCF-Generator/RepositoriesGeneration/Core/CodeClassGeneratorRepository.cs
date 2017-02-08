@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
@@ -22,6 +23,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private string _deleteQueryBy = "DeleteQueryBy";
         private string _whereQueryBy = "WhereQueryBy";
         private string _andWithIsDeletedFilter = "AndWithIsDeletedFilter";
+        private string _whereWithIsDeletedFilter = "WhereWithIsDeletedFilter";
         private string _andWithSliceDateFilter = "AndWithSliceDateFilter";
         private string _join = "Join";
         private string _pk = "Pk";
@@ -104,6 +106,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
                 var filter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName);
                 sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + filter.SurroundWithQuotes() + ";");
+                var isDeletedOnlyFilter = SqlScriptGenerator.GenerateWhere(new List<string>() { specialOption }, sqlInfo);
+                sb.AppendLine("private const string " + _whereWithIsDeletedFilter + " = " + isDeletedOnlyFilter.SurroundWithQuotes() + ";");
             }
 
             return sb.ToString();
@@ -204,7 +208,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _andWithIsDeletedFilter + ";");
+                sb.AppendLine("sql = sql + " + _whereWithIsDeletedFilter + ";");
                 sb.AppendLine("}");
             }
             else
@@ -227,7 +231,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _andWithIsDeletedFilter + ";");
+                sb.AppendLine("sql = sql + " + _whereWithIsDeletedFilter + ";");
                 sb.AppendLine("}");
             }
             else

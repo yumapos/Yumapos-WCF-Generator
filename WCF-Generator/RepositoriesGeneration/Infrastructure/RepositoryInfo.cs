@@ -376,6 +376,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 var pk = PrimaryKeys.FirstOrDefault();
                 sqlInfo.PrimaryKeyType = pk!=null ? SystemToSqlTypeMapper.GetSqlType(pk.TypeName) : null;
                 sqlInfo.Identity = Identity;
+                sqlInfo.IsDeleted = IsDeletedExist;
 
                 if (PrimaryKeys.Count == 1 && Identity)
                 {

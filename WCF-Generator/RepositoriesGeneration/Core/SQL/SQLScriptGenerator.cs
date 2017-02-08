@@ -135,9 +135,20 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public static string GenerateRemove(SqlInfo info)
         {
+            // base type of repository and "isDeleted" flag - set IsDeleted = true
+            if (info.IsDeleted && info.VersionTableName == null)
+            {
+                if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
+                    return
+                        Update(info.JoinTableName) + " SET IsDeleted = 1 ";
+
+                return Update(info.TableName) + " SET IsDeleted = 1 ";
+            }
+            
+            // base or version repository without "isDeleted" flag
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
                 return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" +//TODO FIX TO MANY KEYS
-                   Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " ";//TODO FIX TO MANY KEYS
+                        Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " ";//TODO FIX TO MANY KEYS
 
             return Delete(info.TableName) + " ";
         }
@@ -413,5 +424,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public string PrimaryKeyType;
         public bool Identity;
         public bool JoinIdentity;
+        public bool IsDeleted { get; set; }
     }
 }

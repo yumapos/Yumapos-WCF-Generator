@@ -27,6 +27,7 @@ namespace TestRepositoryGeneration
 		private const string WhereQueryByTaxId = "WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]} ";
 		private const string WhereQueryByTaxVersionId = "WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
 		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [Taxs].[IsDeleted] = @IsDeleted{andTenantId:[Taxs]} ";
 
 
 		public TaxCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -37,7 +38,7 @@ namespace TestRepositoryGeneration
 		object parameters = new {isDeleted};
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithIsDeletedFilter;
+		sql = sql + WhereWithIsDeletedFilter;
 		}
 		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(sql, parameters).ToList();
 		return result.ToList();
@@ -48,7 +49,7 @@ namespace TestRepositoryGeneration
 		object parameters = new {isDeleted};
 		if (isDeleted.HasValue)
 		{
-		sql = sql + AndWithIsDeletedFilter;
+		sql = sql + WhereWithIsDeletedFilter;
 		}
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(sql, parameters));
 		return result.ToList();
