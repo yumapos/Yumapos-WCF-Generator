@@ -79,7 +79,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var valuesJoined = columnsJoned.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList();
 
 
-            var insertJoinedTable = InsertWithJoined(columnsJoned, valuesJoined, info.JoinTableName, info.JoinPrimaryKeyNames.First(), info.PrimaryKeyType, columns, columns, info.TableName);
+            var insertJoinedTable = InsertWithJoined(columnsJoned, valuesJoined, info.JoinTableName, info.JoinPrimaryKeyNames.First(), info.PrimaryKeyType, columns, columns, info.TableName, info.PrimaryKeyNames.First());
 
             // return inset into table and join table
             return insertJoinedTable;
@@ -293,17 +293,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ") ";
         }
 
-        private static string InsertWithJoined(List<string> joinedTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, IList<string> tableValues, string tableName)
+        private static string InsertWithJoined(List<string> joinedTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, List<string> tableValues, string tableName, string pkColumn)
         {
             var tableForSave = "Temp" + joinedPkColumn + "Table";
             var declareTable = "DECLARE @" + tableForSave + " TABLE (" + joinedPkColumn + " " + joinedPkType + ");";
-            var outputKey = "OUTPUT INSERTED." + joinedPkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave);
-            var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + outputKey + " VALUES(" + Values(joinedTableValues) + ");";
+            var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + "OUTPUT INSERTED." + joinedPkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(joinedTableValues) + ");";
 
             var tempValue = "Temp" + joinedPkColumn;
             var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT " + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
 
-            var insert = "INSERT INTO @" + tableName + "(" + Fields(tableColumns, tableName) + ") " + outputKey + " VALUES(" + Values(tableValues) + ");";
+            var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues) + ");";
             var selectId = "SELECT " + joinedPkColumn + " FROM @" + tableForSave + ";";
             return declareTable + insertToJoined + insertedValue + insert + selectId;
         }
