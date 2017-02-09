@@ -295,14 +295,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private static string InsertWithJoined(List<string> joinedTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, List<string> tableValues, string tableName, string pkColumn)
         {
-            var tableForSave = "Temp" + joinedPkColumn + "Table";
+            var tableForSave = "TempTable";
             var declareTable = "DECLARE @" + tableForSave + " TABLE (" + joinedPkColumn + " " + joinedPkType + ");";
             var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + "OUTPUT INSERTED." + joinedPkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(joinedTableValues) + ");";
 
-            var tempValue = "Temp" + joinedPkColumn;
+            var tempValue = "TempId" ;
             var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT " + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
 
-            var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues) + ");";
+            var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues.Select(v=> v == pkColumn ? tempValue : v)) + ");";
             var selectId = "SELECT " + joinedPkColumn + " FROM @" + tableForSave + ";";
             return declareTable + insertToJoined + insertedValue + insert + selectId;
         }
