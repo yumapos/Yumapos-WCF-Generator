@@ -72,7 +72,7 @@ namespace WCFGenerator
 
             try
             {
-            //    RunSerializeGeneration();
+                RunSerializeGeneration();
             }
             catch (Exception e)
             {
@@ -81,7 +81,7 @@ namespace WCFGenerator
 
             try
             {
-            //    RunWcfGeneration();
+                RunWcfGeneration();
             }
             catch (Exception e)
             {
@@ -90,7 +90,7 @@ namespace WCFGenerator
 
             try
             {
-            //    RunDecoratorGeneration();
+                RunDecoratorGeneration();
             }
             catch (Exception e)
             {
