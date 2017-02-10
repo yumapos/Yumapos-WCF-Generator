@@ -300,7 +300,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + "OUTPUT INSERTED." + joinedPkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(joinedTableValues) + ");";
 
             var tempValue = "TempId" ;
-            var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT " + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
+            var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT @" + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
 
             var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues.Select(v=> v == pkColumn ? tempValue : v)) + ");";
             var selectId = "SELECT " + joinedPkColumn + " FROM @" + tableForSave + ";";
