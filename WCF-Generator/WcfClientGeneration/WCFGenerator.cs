@@ -41,7 +41,7 @@ namespace WCFGenerator.WcfClientGeneration
             foreach (var service in Services)
             {
                 // Clear usings
-                _allUsings.Clear();
+               _allUsings.Clear();
                 _serviceUsings.Clear();
 
                 // add infirmation for generate
@@ -917,16 +917,7 @@ namespace WCFGenerator.WcfClientGeneration
 
 
             var methods = new List<EndPoint>();
-            methods.AddRange(methodDeclarationSyntaxs.Select(sm => new EndPoint()
-            {
-                Service = iService.ClientInterfaceName.IndexOf("I", StringComparison.Ordinal) == 0 ? iService.ClientInterfaceName.Remove(0, 1) : iService.ClientInterfaceName,
-                Name = sm.Identifier.ToString(),
-                ReturnType = GetFullReturnType(sm.ReturnType, proj),
-                ReturnTypeApi = GetFullReturnType(sm.ReturnType, proj),
-                InterfaceReturnType = GetFullReturnType(sm.ReturnType, proj),
-                ParametersList = sm.ParameterList,
-                Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
-            }));
+            methods.AddRange(methodDeclarationSyntaxs.Select(sm => GetEndPoint(iService, proj, sm)));
 
             foreach (var method in methods)
             {
@@ -937,6 +928,24 @@ namespace WCFGenerator.WcfClientGeneration
             methods = methods.OrderBy(o => o.Name).ToList();
 
             return methods;
+        }
+
+        private static EndPoint GetEndPoint(ServiceDetail iService, Project proj, MethodDeclarationSyntax sm)
+        {
+            var ret = new EndPoint()
+            {
+                Service = iService.ClientInterfaceName.IndexOf("I", StringComparison.Ordinal) == 0 ? iService.ClientInterfaceName.Remove(0, 1) : iService.ClientInterfaceName,
+                Name = sm.Identifier.ToString(),
+                ParametersList = sm.ParameterList,
+                Faults = sm.AttributeLists.Where(x => x.Attributes.Any(a1 => a1.Name.ToString().Contains("FaultContract")))
+            };
+
+            var retType = GetFullReturnType(sm.ReturnType, proj);
+            ret.ReturnType = retType;
+            ret.ReturnTypeApi = retType;
+            ret.InterfaceReturnType = retType;
+
+            return ret;
         }
 
         private static string GetFullReturnType(TypeSyntax returnType, Project project)
@@ -953,7 +962,11 @@ namespace WCFGenerator.WcfClientGeneration
 
             if (node != null && systemTypes.All(x => x != node.Identifier.ToString() && x != returnType.ToString()))
             {
-                var nameSpace = SymbolFinder.FindDeclarationsAsync(project, node.Identifier.ValueText, ignoreCase: false).Result.Last().ContainingNamespace.ToString();
+                var all = SymbolFinder.FindDeclarationsAsync(project, node.Identifier.ValueText, ignoreCase: false).Result;
+                var symbol = all.FirstOrDefault(s => s.Kind == SymbolKind.NamedType);
+                if (symbol == null) return fullReturnType;
+
+                var nameSpace = symbol.ContainingNamespace;
 
                 fullReturnType = fullReturnType.Replace(node.Identifier.ToString(), nameSpace + "." + node.Identifier);
             }
@@ -986,6 +999,8 @@ namespace WCFGenerator.WcfClientGeneration
 
                     foreach (var syntax in dyclarationSyntax)
                     {
+                        if(syntax.Kind != SymbolKind.NamedType) continue;
+
                         var newUsing = syntax.ContainingNamespace.ToString();
 
                         if (!usingsCollection.Contains(newUsing) && !newUsing.Contains("Microsoft.") && defaultUsings.Contains(newUsing))
