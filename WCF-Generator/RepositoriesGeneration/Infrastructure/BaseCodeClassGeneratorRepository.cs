@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Heplers;
@@ -75,7 +77,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         public virtual string GetConstructors()
         {
-            var constructor = string.Format("public {0}(YumaPos.FrontEnd.Infrastructure.Configuration.IDataAccessService dataAccessService) : base(dataAccessService) {{ }}", RepositoryName);
+            var constructor = string.Format("public {0}("+ RepositoryInfo.DataAccessServiceTypeName + " dataAccessService" + ") : base(dataAccessService) {{ }}", RepositoryName);
             return constructor;
         }
 
@@ -89,7 +91,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             var sb = new StringBuilder();
 
             // check analysis error
-            if (RepositoryAnalysisError == null)
+            if (RepositoryInfo.CanBeGenerated)
             {
                 try
                 {
@@ -125,26 +127,12 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             }
             else
             {
-                sb.AppendLine(("Analysis ERROR: " + RepositoryAnalysisError).SurroundWithComments());
+                sb.AppendLine(("Analysis ERRORS: " + string.Join("\n\r", RepositoryInfo.RepositoryAnalysisError)).SurroundWithComments());
             }
 
             return sb.ToString();
         }
 
-        public string RepositoryAnalysisError { get; set; }
-
-      
-
         #endregion
     }
-
-    internal enum RepositoryType
-    {
-        General,
-        Cache,
-        Version,
-        VersionService
-    }
-
-
 }

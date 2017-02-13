@@ -15,6 +15,8 @@ namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attri
 
         public string FilterKey3 { get; set; }
 
-        public bool IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; }
+
+        public bool Identity { get; set; }
     }
 }

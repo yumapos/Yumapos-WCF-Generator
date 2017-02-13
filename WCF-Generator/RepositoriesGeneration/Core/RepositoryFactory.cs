@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
@@ -51,7 +50,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
                 try
                 {
-                    candidatesRepository = repositoryService.GetRepositories();
+                    candidatesRepository = repositoryService.GetRepositories(config);
                 }
                 catch (Exception e)
                 {

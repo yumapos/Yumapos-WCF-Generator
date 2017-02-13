@@ -113,10 +113,9 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             return resultList.FirstOrDefault().ToString();
         }
 
-        public IEnumerable<InterfaceDeclarationSyntax> GetInheritedInterfaces(string interfaceName)
+        public InterfaceDeclarationSyntax GetInheritedInterface(string interfaceName)
         {
-            var resultList = _repositoryInterfaces.Where(i => i.BaseList !=null && i.BaseList.Types.Any(t => t.Type.ToString() == interfaceName));
-
+            var resultList = _repositoryInterfaces.FirstOrDefault(i => i.BaseList !=null && i.BaseList.Types.Any(t => t.Type.ToString() == interfaceName));
             return resultList;
         }
 

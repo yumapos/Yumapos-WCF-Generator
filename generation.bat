@@ -1,1 +1,1 @@
-%~dp0\WCF-Generator.exe  %~dp0\WCF-Generator.exe.config
+%~dp0WCF-Generator.exe  %~dp0WCF-Generator.exe.config

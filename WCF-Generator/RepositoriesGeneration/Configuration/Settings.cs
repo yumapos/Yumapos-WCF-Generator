@@ -80,6 +80,15 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         }
 
         /// <summary>
+        ///     Repository base type name
+        /// </summary>
+        [ConfigurationProperty("RepositoryBase", DefaultValue = "", IsRequired = false)]
+        public string RepositoryBase
+        {
+            get { return ((string)(base["RepositoryBase"])); }
+        }
+
+        /// <summary>
         ///     Target Project Name for save file
         /// </summary>
         [ConfigurationProperty("TargetProjectName", DefaultValue = "",  IsRequired = true)]

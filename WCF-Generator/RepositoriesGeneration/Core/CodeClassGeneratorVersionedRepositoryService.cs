@@ -212,15 +212,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private string GenerateGetAll(MethodImplementationInfo method)
         {
-            var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
-            var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
-            var specialMethodParameterIsDeletedName = specialParameterIsDeleted.Name.FirstSymbolToLower();
+            var parameters = "";
+            var parameterNames = "";
 
-            var addIsDeletedFilter = RepositoryInfo.IsVersioning && RepositoryInfo.IsDeletedExist;
+            if (RepositoryInfo.IsDeletedExist)
+            {
+                var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
+                parameters = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+                parameterNames = specialParameterIsDeleted.Name.FirstSymbolToLower();
+            }
+
             var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
-
-            var parameters = addIsDeletedFilter ? specialMethodParameterIsDeleted : "";
-            var parameterNames = addIsDeletedFilter ? specialMethodParameterIsDeletedName : "";
 
             var sb = new StringBuilder();
 
@@ -269,7 +271,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var firstOverloadParameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
 
             var filterBySliceDate = filter.FilterType != FilterType.VersionKey && RepositoryInfo.IsModifiedExist;
-            var filterByIsDeleted = RepositoryInfo.IsModifiedExist;
+            var filterByIsDeleted = RepositoryInfo.IsDeletedExist;
 
             if (filterBySliceDate)
             {

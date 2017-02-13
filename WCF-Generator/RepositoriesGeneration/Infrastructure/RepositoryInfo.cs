@@ -30,6 +30,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             MethodImplementationInfo = new List<MethodImplementationInfo>();
             CacheRepositoryMethodImplementationInfo = new List<MethodImplementationInfo>();
             RequiredNamespaces = new Dictionary<RepositoryType, List<string>>();
+            RepositoryAnalysisError = new List<AnalysisError>();
         }
 
         #endregion
@@ -147,6 +148,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         }
 
         /// <summary>
+        ///     Return true if Identity of PK true
+        /// </summary>
+        public bool Identity { get; set; }
+
+        /// <summary>
         ///     Filters
         /// </summary>
         public List<FilterInfo> FilterInfos { get; set; }
@@ -191,9 +197,35 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public bool IsVersioning { get; set; }
 
         /// <summary>
-        ///     Repository joined to another repository and can not generate
+        ///     Repository joined to another repository
         /// </summary>
         public bool IsJoned { get; set; }
+
+        /// <summary>
+        ///    Repository can be generated
+        /// </summary>
+        public bool CanBeGenerated
+        {
+            get
+            {
+                if (!IsJoned && !RepositoryAnalysisError.Any())
+                    return true;
+                if (IsJoned && !RepositoryInterfaceNotFound)
+                    return true;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///    Repository can be extended analysis
+        /// </summary>
+        public bool CanBeExtendedAnalysis
+        {
+            get
+            {
+                return RepositoryAnalysisError.Count == 1 && RepositoryInterfaceNotFound || !RepositoryAnalysisError.Any();
+            }
+        }
 
         /// <summary>
         ///     Repository joined to another repository as many-to-many and can not generate
@@ -222,12 +254,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         {
             get
             {
-                var specialOption = "IsDeleted";
-                if (JoinRepositoryInfo != null)
-                {
-                    return JoinRepositoryInfo.Elements.Exists(s => s == specialOption);
-                }
-                return Elements.Exists(s => s == specialOption);
+               return SpecialOptionsIsDeleted != null;
             }
         }
 
@@ -319,21 +346,19 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 var sqlInfo = new SqlInfo()
                 {
                     TableColumns = Elements,
+                    HiddenTableColumns = new List<string>(),
                     TableName = SqlScriptGenerator.GenerateTableName(TableName),
                     PrimaryKeyNames = PrimaryKeys.Select(k=>k.Name).ToList(),
                     TenantRelated = IsTenantRelated,
-                    ReturnPrimarayKey = PrimaryKeys.Count == 1,
+                    ReturnPrimaryKey = PrimaryKeys.Count == 1,
                     VersionKeyName = VersionKeyName,
                     VersionKeyType = VersionKey != null ? SystemToSqlTypeMapper.GetSqlType(VersionKey.TypeName) : null,
                     VersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(VersionTableName) : null,
                     IsManyToMany = IsManyToMany,
-                    SkipPrimaryKey = new List<string>()
+                    IdentityColumns = new List<string>(),
+                    IdentityColumnsJoined = new List<string>()
                 };
 
-                if(PrimaryKeys.Count == 1 && PrimaryKeys[0].TypeName.Contains("int"))
-                {
-                    sqlInfo.SkipPrimaryKey.Add(PrimaryKeys[0].Name);
-                }
                 if (JoinRepositoryInfo != null)
                 {
                     sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
@@ -341,9 +366,30 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     sqlInfo.JoinPrimaryKeyNames = JoinRepositoryInfo.PrimaryKeys.Select(k => k.Name).ToList();
                     sqlInfo.JoinVersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.VersionTableName) : null;
                     sqlInfo.JoinVersionKeyName = JoinRepositoryInfo.VersionKeyName;
+                    sqlInfo.JoinIdentity = JoinRepositoryInfo.Identity;
+
+                    if (sqlInfo.JoinPrimaryKeyNames.Count == 1 && sqlInfo.JoinIdentity)
+                    {
+                        sqlInfo.IdentityColumnsJoined.Add(sqlInfo.JoinPrimaryKeyNames[0]);
+                    }
                 }
                 var pk = PrimaryKeys.FirstOrDefault();
                 sqlInfo.PrimaryKeyType = pk!=null ? SystemToSqlTypeMapper.GetSqlType(pk.TypeName) : null;
+                sqlInfo.Identity = Identity;
+                sqlInfo.IsDeleted = IsDeletedExist;
+
+                if (PrimaryKeys.Count == 1 && Identity)
+                {
+                    sqlInfo.IdentityColumns.Add(PrimaryKeys[0].Name);
+                }
+
+                if (IsTenantRelated)
+                {
+                    if(!sqlInfo.HiddenTableColumns.Contains("TenantId"))
+                    {
+                        sqlInfo.HiddenTableColumns.Add("TenantId");
+                    }
+                }
 
                 return sqlInfo;
             }
@@ -364,6 +410,27 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// </summary>
         public string DateTimeServiceTypeName { get; set; }
 
+        /// <summary>
+        ///     Full type of base repository time service
+        /// </summary>
+        public string RepositoryBaseTypeName { get; set; }
+
         #endregion
-    } 
+
+        #region Analysis Error
+
+        /// <summary>
+        ///    Errors arising in the analysis of repository models
+        /// </summary>
+        public List<AnalysisError> RepositoryAnalysisError { get; set; }
+
+        public bool RepositoryInterfaceNotFound
+        {
+            get { return RepositoryAnalysisError.Any(e => e.Error == Infrastructure.RepositoryAnalysisError.InterfaceNotFound); }
+        }
+
+        #endregion
+
+
+    }
 }

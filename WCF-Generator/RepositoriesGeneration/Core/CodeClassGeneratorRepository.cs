@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
@@ -22,6 +23,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private string _deleteQueryBy = "DeleteQueryBy";
         private string _whereQueryBy = "WhereQueryBy";
         private string _andWithIsDeletedFilter = "AndWithIsDeletedFilter";
+        private string _whereWithIsDeletedFilter = "WhereWithIsDeletedFilter";
         private string _andWithSliceDateFilter = "AndWithSliceDateFilter";
         private string _join = "Join";
         private string _pk = "Pk";
@@ -32,7 +34,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         public override string GetClassDeclaration()
         {
-            return "public partial class " + RepositoryName + " : RepositoryBase, " + RepositoryInfo.RepositoryInterfaceName;
+            return "public partial class " + RepositoryName + " : " + RepositoryInfo.RepositoryBaseTypeName + ", " + RepositoryInfo.RepositoryInterfaceName;
         }
 
         #region Overrides of BaseCodeClassGeneratorRepository
@@ -104,6 +106,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
                 var filter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName);
                 sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + filter.SurroundWithQuotes() + ";");
+                var isDeletedOnlyFilter = SqlScriptGenerator.GenerateWhere(new List<string>() { specialOption }, sqlInfo);
+                sb.AppendLine("private const string " + _whereWithIsDeletedFilter + " = " + isDeletedOnlyFilter.SurroundWithQuotes() + ";");
             }
 
             return sb.ToString();
@@ -178,15 +182,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private string GenerateGetAll(MethodImplementationInfo method)
         {
-            var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
-            var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
-            var specialMethodParameterIsDeletedName = specialParameterIsDeleted.Name.FirstSymbolToLower();
-
             var addIsDeletedFilter = RepositoryInfo.IsDeletedExist;
-            var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
+            var parameters =  "";
+            var parameterNames = "";
 
-            var parameters = addIsDeletedFilter ? specialMethodParameterIsDeleted : "";
-            var parameterNames = addIsDeletedFilter ? specialMethodParameterIsDeletedName : "";
+            if(addIsDeletedFilter)
+            {
+                var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
+                parameters = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+                parameterNames = specialParameterIsDeleted.Name.FirstSymbolToLower();
+            }
+
+            var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
 
             var sb = new StringBuilder();
 
@@ -201,7 +208,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _andWithIsDeletedFilter + ";");
+                sb.AppendLine("sql = sql + " + (RepositoryInfo.IsTenantRelated ? _andWithIsDeletedFilter : _whereWithIsDeletedFilter) + ";");
                 sb.AppendLine("}");
             }
             else
@@ -224,7 +231,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
                 sb.AppendLine("if (" + parameter + ".HasValue)");
                 sb.AppendLine("{");
-                sb.AppendLine("sql = sql + " + _andWithIsDeletedFilter + ";");
+                sb.AppendLine("sql = sql + " + (RepositoryInfo.IsTenantRelated ? _andWithIsDeletedFilter : _whereWithIsDeletedFilter) + ";");
                 sb.AppendLine("}");
             }
             else

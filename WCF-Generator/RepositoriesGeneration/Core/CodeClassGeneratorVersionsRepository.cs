@@ -42,7 +42,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         public override string GetClassDeclaration()
         {
-            return "internal class " + RepositoryName + " : RepositoryBase";
+            return "internal class " + RepositoryName + " : " + RepositoryInfo.RepositoryBaseTypeName;
         }
 
         #region Overrides of BaseCodeClassGeneratorRepository
@@ -194,7 +194,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var filter = method.FilterInfo;
             var isVersionKeyFilter = filter.FilterType == FilterType.VersionKey;
             var filterBySliceDate = !isVersionKeyFilter && RepositoryInfo.IsModifiedExist;
-            var filterByIsDeleted = RepositoryInfo.IsModifiedExist;
+            var filterByIsDeleted = RepositoryInfo.IsDeletedExist;
 
             var sqlWhere = (!isVersionKeyFilter ? _whereQueryByWithAlias : _whereQueryBy) + filter.Key;
 
@@ -286,7 +286,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var sb = new StringBuilder();
 
             // check analysis error
-            if (RepositoryAnalysisError == null)
+            if (RepositoryInfo.CanBeGenerated)
             {
                 try
                 {
@@ -319,7 +319,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
             else
             {
-                sb.AppendLine(("Analysis ERROR: " + RepositoryAnalysisError).SurroundWithComments());
+                sb.AppendLine(("Analysis ERROR: " + string.Join("\n\r", RepositoryInfo.RepositoryAnalysisError)).SurroundWithComments());
             }
 
             return sb.ToString();

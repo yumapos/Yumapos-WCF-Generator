@@ -19,12 +19,14 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         public static explicit operator DataAccessAttribute(AttributeAndPropeperties obj)
         {
             var isDeleted = obj.GetParameterByKeyName("IsDeleted");
+            var identity = obj.GetParameterByKeyName("Identity");
 
             var attr = new DataAccessAttribute
             {
                 TableName = obj.GetParameterByKeyName("TableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
-                IsDeleted = !string.IsNullOrEmpty(isDeleted) && Convert.ToBoolean(isDeleted),
+                IsDeleted = isDeleted !=null ? Convert.ToBoolean(isDeleted) : (bool?) null,
+                Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = obj.GetParameterByKeyName("FilterKey3"),
