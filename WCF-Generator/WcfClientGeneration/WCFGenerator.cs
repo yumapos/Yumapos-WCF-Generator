@@ -313,11 +313,11 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t\t\t container.Disposing -= ContainerOnDisposing; \r\n\r\n");
             sb.Append("\t\t\t ChannelContainer<TClient> container2; \r\n");
             sb.Append("\t\t\t UsedChannels.TryRemove(container.GetHashCode(), out container2); \r\n\r\n");
-            sb.Append("\t\t\t if(!container.Client.IsCaughtException) \r\n \t\t\t { \r\n");
-            sb.Append("\t\t\t\t var freeChannels = GetFreeChannels(container.Address); \r\n");
+            sb.Append("\t\t\t var freeChannels = GetFreeChannels(container.Address); \r\n");
+            sb.Append("\t\t\t if(!container.Client.IsCaughtException && freeChannels.Count <= UsedChannels.Count) \r\n \t\t\t { \r\n");
             sb.Append("\t\t\t\t freeChannels.Add(container.Client); \r\n \t\t\t }\r\n \t\t\t else \r\n \t\t\t { \r\n ");
             sb.Append("\t\t\t\t ((IDisposable)container.Client).Dispose(); \r\n ");
-            sb.Append("\t\t\t\t System.Diagnostics.Debug.WriteLine(\"Client has an exception\"); \r\n \t\t\t }\r\n");
+            sb.Append("\t\t\t }\r\n");
             sb.Append("\t\t } \r\n \t } \r\n }");
 
             files.Add(new SrcFile("ClientFactory.g.cs", "", sb.ToString()));
