@@ -343,7 +343,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var queryName = _insertQuery;
 
             // If should not return identifier
-            if (RepositoryInfo.PrimaryKeys.Count != 1)
+            if (RepositoryInfo.PrimaryKeys.Count != 1 || !RepositoryInfo.Identity)
             {
                 // Synchronous method
                 sb.AppendLine("public void Insert(" + methodParameter + ")");
