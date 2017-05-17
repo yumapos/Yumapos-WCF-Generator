@@ -151,5 +151,14 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
             get { return ((string)(base["DefaultNamespace"])); }
         }
 
+        /// <summary>
+        ///     Postgres flag
+        /// </summary>
+        [ConfigurationProperty("IsPostgresDb", DefaultValue = false, IsRequired = false)]
+        public bool IsPostgresDb
+        {
+            get { return ((bool)(base["IsPostgresDb"])); }
+        }
+
     }
 }

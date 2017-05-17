@@ -9,7 +9,7 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
     ///     Repository interface <see cref="ICustomerSubscriptionRepository"/>
     ///     Repository <see cref="CustomerSubscriptionRepository"/>
     /// </summary>
-    [DataAccess(TableName = "CustomerSubscriptions")]
+    [DataAccess(TableName = "CustomerSubscriptions", PostgresTableName = "archive.customer_subscriptions")]
     public class CustomerSubscription
     {
         [Key]

@@ -424,5 +424,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool Identity;
         public bool JoinIdentity;
         public bool IsDeleted { get; set; }
+        public bool IsPostgresDb { get; set; }
     }
 }

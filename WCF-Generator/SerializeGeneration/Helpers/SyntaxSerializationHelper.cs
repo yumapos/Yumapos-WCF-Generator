@@ -102,7 +102,7 @@ namespace WCFGenerator
         }
 
 
-        public static List<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(ClassDeclarationSyntax element)
+        public static List<AttributeAndProperties> GetAttributesAndPropepertiesCollection(ClassDeclarationSyntax element)
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
 
@@ -110,7 +110,7 @@ namespace WCFGenerator
             if (codeClass != null)
                 attributes = codeClass.AttributeLists;
 
-            var attributeCollection = new List<AttributeAndPropeperties>();
+            var attributeCollection = new List<AttributeAndProperties>();
             var listOfStringProperties = new List<string>();
 
             foreach (var ca in attributes)
@@ -164,7 +164,7 @@ namespace WCFGenerator
                         countProperties++;
                     }
 
-                    attributeCollection.Add(new AttributeAndPropeperties
+                    attributeCollection.Add(new AttributeAndProperties
                     {
                         Name = attr.Name.ToString(),
                         Parameters = dictionaryOfAttributes

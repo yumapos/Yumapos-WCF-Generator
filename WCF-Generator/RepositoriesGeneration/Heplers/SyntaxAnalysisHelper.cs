@@ -11,7 +11,7 @@ namespace WCFGenerator.RepositoriesGeneration.Heplers
     internal static class SyntaxAnalysisHelper
     {
         // TODO Перенести в SolutionSyntaxWalker
-        public static IEnumerable<AttributeAndPropeperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element) 
+        public static IEnumerable<AttributeAndProperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element) 
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
 
@@ -32,7 +32,7 @@ namespace WCFGenerator.RepositoriesGeneration.Heplers
                 ownerName = codeProperty.Identifier.Text;
             }
             
-            var attributeCollection = new List<AttributeAndPropeperties>();
+            var attributeCollection = new List<AttributeAndProperties>();
             var listOfStringProperties = new List<string>();
 
             //            Regex attributesRegex = new Regex(@"\[\s*(?<Name>\w*)\s*(\((?<arguments>.*)\))?\s*\]", RegexOptions.IgnoreCase | RegexOptions.Multiline);
@@ -89,7 +89,7 @@ namespace WCFGenerator.RepositoriesGeneration.Heplers
                         countProperties++;
                     }
 
-                    attributeCollection.Add(new AttributeAndPropeperties
+                    attributeCollection.Add(new AttributeAndProperties
                     {
                         Name = attr.Name.ToString(),
                         Parameters = dictionaryOfAttributes,

@@ -83,15 +83,13 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		*/
 		/*
-		public int Insert(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
+		public void Insert(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
 		{
-		var res = DataAccessService.InsertObject(electronicCouponsTyped,InsertQuery);
-		return (int)res;
+		DataAccessService.InsertObject(electronicCouponsTyped,InsertQuery);
 		}
-		public async Task<int> InsertAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
+		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
 		{
-		var res = await DataAccessService.InsertObjectAsync(electronicCouponsTyped,InsertQuery);
-		return (int)res;
+		await DataAccessService.InsertObjectAsync(electronicCouponsTyped,InsertQuery);
 		}
 
 		*/

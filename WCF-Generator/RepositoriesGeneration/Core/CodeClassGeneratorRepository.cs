@@ -19,6 +19,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private string _updateQuery = "UpdateQuery";
         private string _updateQueryBy = "UpdateQueryBy";
+        private string _upsertQuery = "UpsertQuery";
 
         private string _deleteQueryBy = "DeleteQueryBy";
         private string _whereQueryBy = "WhereQueryBy";
@@ -27,6 +28,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private string _andWithSliceDateFilter = "AndWithSliceDateFilter";
         private string _join = "Join";
         private string _pk = "Pk";
+
+        private bool _isPostgresDb = false;
 
         #endregion
 
@@ -60,13 +63,31 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Common info for generate sql scriptes
             var sqlInfo = RepositoryInfo.RepositorySqlInfo;
 
-            var fields = SqlScriptGenerator.GenerateFields(sqlInfo);
-            var values = SqlScriptGenerator.GenerateValues(sqlInfo);
-            var selectAllQuery = SqlScriptGenerator.GenerateSelectAll(sqlInfo).SurroundWithQuotes();
-            var selectByQuery = SqlScriptGenerator.GenerateSelectBy(sqlInfo, null).SurroundWithQuotes();
-            var insertQuery = SqlScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
-            var updateBy = SqlScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
-            var deleteBy = SqlScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
+            string fields, values, selectAllQuery, selectByQuery, insertQuery, updateBy, deleteBy, upsertQuery = string.Empty;
+
+            if (sqlInfo.IsPostgresDb)
+            {
+                _isPostgresDb = true;
+                fields = SQLPostgresScriptGenerator.GenerateFields(sqlInfo);
+                values = SQLPostgresScriptGenerator.GenerateValues(sqlInfo);
+                selectAllQuery = SQLPostgresScriptGenerator.GenerateSelectAll(sqlInfo).SurroundWithQuotes();
+                selectByQuery = SQLPostgresScriptGenerator.GenerateSelectBy(sqlInfo, null).SurroundWithQuotes();
+                insertQuery = SQLPostgresScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
+                updateBy = SQLPostgresScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
+                deleteBy = SQLPostgresScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
+                upsertQuery = SQLPostgresScriptGenerator.GenerateUpsert(sqlInfo).SurroundWithQuotes();
+            }
+            else
+            {
+                fields = SqlScriptGenerator.GenerateFields(sqlInfo);
+                values = SqlScriptGenerator.GenerateValues(sqlInfo);
+                selectAllQuery = SqlScriptGenerator.GenerateSelectAll(sqlInfo).SurroundWithQuotes();
+                selectByQuery = SqlScriptGenerator.GenerateSelectBy(sqlInfo, null).SurroundWithQuotes();
+                insertQuery = SqlScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
+                updateBy = SqlScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
+                deleteBy = SqlScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
+            }
+            
 
             sb.AppendLine("private const string Fields = @" + fields.SurroundWithQuotes() + ";");
             //sb.AppendLine("private const string Values = @" + values.SurroundWithQuotes() + ";");
@@ -75,14 +96,27 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
-
+            if (sqlInfo.IsPostgresDb)
+            {
+                sb.AppendLine("private const string " + _upsertQuery + " = @" + upsertQuery + ";");
+            }
 
             if (RepositoryInfo.JoinRepositoryInfo != null)
             {
-                var updateJoin = SqlScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
-                sb.AppendLine("private const string " + _updateQuery + _join + " = " + updateJoin + ";");
+                string updateJoin, selectIntoTemp;
 
-                var selectIntoTemp = SqlScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
+                if (RepositoryInfo.IsPostgresDb)
+                {
+                    updateJoin = SQLPostgresScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
+                    selectIntoTemp = SQLPostgresScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
+                }
+                else
+                {
+                    updateJoin = SqlScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
+                    selectIntoTemp = SqlScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
+                }  
+
+                sb.AppendLine("private const string " + _updateQuery + _join + " = " + updateJoin + ";");
                 sb.AppendLine("private const string " + _selectIntoTemp + " = @" + selectIntoTemp + ";");
             }
 
@@ -90,23 +124,35 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 var key = method.Key;
                 var parametrs = method.Parameters.Select(p => p.Name).ToList();
-                var sql = SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+
+                var sql = RepositoryInfo.IsPostgresDb ? SQLPostgresScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes() : SqlScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
-                
             }
             // where by join PK
             if (RepositoryInfo.JoinRepositoryInfo!=null)
             {
-                var sqlJoin = SqlScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
+                var sqlJoin = RepositoryInfo.IsPostgresDb ? SQLPostgresScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes() : SqlScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
             }
             // Is deleted filter
             if (RepositoryInfo.IsDeletedExist)
             {
                 var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
-                var filter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName);
+                string filter, isDeletedOnlyFilter;
+
+                if (RepositoryInfo.IsPostgresDb)
+                {
+                    filter = SQLPostgresScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName);
+                    isDeletedOnlyFilter = SQLPostgresScriptGenerator.GenerateWhere(new List<string>() { specialOption }, sqlInfo);
+                }
+                else
+                {
+                    filter = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName);
+                    isDeletedOnlyFilter = SqlScriptGenerator.GenerateWhere(new List<string>() { specialOption }, sqlInfo);
+                }
+                
                 sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + filter.SurroundWithQuotes() + ";");
-                var isDeletedOnlyFilter = SqlScriptGenerator.GenerateWhere(new List<string>() { specialOption }, sqlInfo);
                 sb.AppendLine("private const string " + _whereWithIsDeletedFilter + " = " + isDeletedOnlyFilter.SurroundWithQuotes() + ";");
             }
 
@@ -169,6 +215,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var removeByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateRemove(method));
+
+            // Upsert Method
+            if (_isPostgresDb)
+            {
+                var upsertMethod = GenerateUpsert();
+                sb.AppendLine(upsertMethod);
+            }
 
             if (!string.IsNullOrEmpty(removeByMethods))
                 sb.AppendLine(removeByMethods);
@@ -424,6 +477,33 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
+
+        private string GenerateUpsert()
+        {
+            var sb = new StringBuilder();
+
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+
+            var queryName = _upsertQuery;
+
+            // If should not return identifier
+
+            // Synchronous method
+            sb.AppendLine("public void InsertOrUpdate(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("DataAccessService.ExecuteScalar(" + queryName + "," + parameterName + ");");
+            sb.AppendLine("}");
+
+            // Asynchronous method
+            sb.AppendLine("public async Task InsertOrUpdateAsync(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine("await DataAccessService.ExecuteScalarAsync<" + RepositoryInfo.ClassFullName + " >(" + queryName + "," + parameterName + ");");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
 
         private string GenerateRemove(MethodImplementationInfo method)
         {

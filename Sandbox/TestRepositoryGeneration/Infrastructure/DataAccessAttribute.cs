@@ -9,6 +9,8 @@ namespace TestRepositoryGeneration.Infrastructure
 
         public string TableName { get; set; }
 
+        public string PostgresTableName { get; set; }
+
         public string TableVersion { get; set; }
 
         public string FilterKey1 { get; set; }
@@ -27,6 +29,8 @@ namespace TestRepositoryGeneration.Infrastructure
         public bool Identity { get; set; }
 
         public string TableName { get; set; }
+
+        public string PostgresTableName { get; set; }
 
         public string TableVersion { get; set; }
 

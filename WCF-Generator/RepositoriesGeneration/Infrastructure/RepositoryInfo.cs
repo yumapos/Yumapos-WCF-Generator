@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
@@ -71,6 +72,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         ///     Name of database table for repository model
         /// </summary>
         public string TableName { get; set; }
+
+        /// <summary>
+        ///     Name of database table for repository model
+        /// </summary>
+        public string PostgresTableName { get; set; }
 
         /// <summary>
         ///     Name of database table for version repository model
@@ -306,6 +312,8 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// </summary>
         public List<MethodInfo> CustomCacheRepositoryMethodNames { get; set; }
 
+        public bool IsPostgresDb { get; set; }
+
         /// <summary>
         ///     Return list of filters key for key based methods
         /// </summary>
@@ -343,28 +351,29 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             get
             {
                 // Common info for generate sql scriptes
-                var sqlInfo = new SqlInfo()
+                var sqlInfo = new SqlInfo
                 {
                     TableColumns = Elements,
                     HiddenTableColumns = new List<string>(),
-                    TableName = SqlScriptGenerator.GenerateTableName(TableName),
                     PrimaryKeyNames = PrimaryKeys.Select(k=>k.Name).ToList(),
                     TenantRelated = IsTenantRelated,
                     ReturnPrimaryKey = PrimaryKeys.Count == 1,
                     VersionKeyName = VersionKeyName,
-                    VersionKeyType = VersionKey != null ? SystemToSqlTypeMapper.GetSqlType(VersionKey.TypeName) : null,
-                    VersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(VersionTableName) : null,
+                    VersionTableName = VersionTableName != null ? (IsPostgresDb ? SQLPostgresScriptGenerator.GenerateTableName(VersionTableName): SqlScriptGenerator.GenerateTableName(VersionTableName)) : null,
                     IsManyToMany = IsManyToMany,
                     IdentityColumns = new List<string>(),
-                    IdentityColumnsJoined = new List<string>()
-                };
+                    IdentityColumnsJoined = new List<string>(),
+                    IsPostgresDb = IsPostgresDb,
+                    TableName = IsPostgresDb ? SQLPostgresScriptGenerator.GenerateTableName(PostgresTableName) : SqlScriptGenerator.GenerateTableName(TableName),
+                    VersionKeyType = VersionKey != null ? (IsPostgresDb ? SystemToPostgreSqlTypeMapper.GetPostgreSqlType(VersionKey.TypeName) : SystemToSqlTypeMapper.GetSqlType(VersionKey.TypeName)) : null
+               };
 
                 if (JoinRepositoryInfo != null)
                 {
                     sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
-                    sqlInfo.JoinTableName = SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.TableName);
+                    sqlInfo.JoinTableName = IsPostgresDb ? SQLPostgresScriptGenerator.GenerateTableName(JoinRepositoryInfo.PostgresTableName) : SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.TableName);
                     sqlInfo.JoinPrimaryKeyNames = JoinRepositoryInfo.PrimaryKeys.Select(k => k.Name).ToList();
-                    sqlInfo.JoinVersionTableName = VersionTableName != null ? SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.VersionTableName) : null;
+                    sqlInfo.JoinVersionTableName = VersionTableName != null ? (IsPostgresDb ? SQLPostgresScriptGenerator.GenerateTableName(JoinRepositoryInfo.VersionTableName) : SqlScriptGenerator.GenerateTableName(JoinRepositoryInfo.VersionTableName)) : null;
                     sqlInfo.JoinVersionKeyName = JoinRepositoryInfo.VersionKeyName;
                     sqlInfo.JoinIdentity = JoinRepositoryInfo.Identity;
 
@@ -374,7 +383,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     }
                 }
                 var pk = PrimaryKeys.FirstOrDefault();
-                sqlInfo.PrimaryKeyType = pk!=null ? SystemToSqlTypeMapper.GetSqlType(pk.TypeName) : null;
+                sqlInfo.PrimaryKeyType = pk != null ? (IsPostgresDb ? SystemToPostgreSqlTypeMapper.GetPostgreSqlType(pk.TypeName) : SystemToSqlTypeMapper.GetSqlType(pk.TypeName)) : null;
                 sqlInfo.Identity = Identity;
                 sqlInfo.IsDeleted = IsDeletedExist;
 

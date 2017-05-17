@@ -7,6 +7,8 @@ namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attri
     {
         public string TableName { get; set; }
 
+        public string PostgresTableName { get; set; }
+
         public string TableVersion { get; set; }
 
         public string FilterKey1 { get; set; }

@@ -18,16 +18,17 @@ namespace TestRepositoryGeneration
 {
 	internal partial class TaxCacheRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase
 	{
-		private const string Fields = @"[Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted]";
-		private const string SelectAllQuery = @"SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs]  {whereTenantId:[Taxs]} ";
-		private const string SelectByQuery = @"SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs] ";
-		private const string InsertQuery = @"INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId) ";
-		private const string UpdateQueryBy = @"UPDATE [Taxs] SET [Taxs].[TaxId] = @TaxId,[Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs] ";
-		private const string DeleteQueryBy = @"DELETE FROM [Taxs] ";
-		private const string WhereQueryByTaxId = "WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]} ";
-		private const string WhereQueryByTaxVersionId = "WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
-		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";
-		private const string WhereWithIsDeletedFilter = "WHERE [Taxs].[IsDeleted] = @IsDeleted{andTenantId:[Taxs]} ";
+		private const string Fields = @"Taxs.tax_id,Taxs.tax_version_id,Taxs.name,Taxs.modified,Taxs.modified_by,Taxs.is_deleted";
+		private const string SelectAllQuery = @"SELECT Taxs.tax_id,Taxs.tax_version_id,Taxs.name,Taxs.modified,Taxs.modified_by,Taxs.is_deleted FROM Taxs  {whereTenantId:Taxs} ";
+		private const string SelectByQuery = @"SELECT Taxs.tax_id,Taxs.tax_version_id,Taxs.name,Taxs.modified,Taxs.modified_by,Taxs.is_deleted FROM Taxs ";
+		private const string InsertQuery = @"INSERT INTO Taxs(Taxs.tax_id,Taxs.tax_version_id,Taxs.name,Taxs.modified,Taxs.modified_by,Taxs.is_deleted,Taxs.tenant_id) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId) ";
+		private const string UpdateQueryBy = @"UPDATE Taxs SET Taxs.tax_id = @TaxId,Taxs.tax_version_id = @TaxVersionId,Taxs.name = @Name,Taxs.modified = @Modified,Taxs.modified_by = @ModifiedBy,Taxs.is_deleted = @IsDeleted FROM Taxs ";
+		private const string DeleteQueryBy = @"DELETE FROM Taxs ";
+		private const string UpsertQuery = @"INSERT INTO Taxs(Taxs.tax_id,Taxs.tax_version_id,Taxs.name,Taxs.modified,Taxs.modified_by,Taxs.is_deleted,Taxs.tenant_id) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)  ON CONFLICT (tax_id) DO UPDATE Taxs SET Taxs.tax_id = @TaxId,Taxs.tax_version_id = @TaxVersionId,Taxs.name = @Name,Taxs.modified = @Modified,Taxs.modified_by = @ModifiedBy,Taxs.is_deleted = @IsDeleted ";
+		private const string WhereQueryByTaxId = "WHERE Taxs.tax_id = @TaxId{andTenantId:Taxs} ";
+		private const string WhereQueryByTaxVersionId = "WHERE Taxs.tax_version_id = @TaxVersionId{andTenantId:Taxs} ";
+		private const string AndWithIsDeletedFilter = "AND Taxs.is_deleted = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE Taxs.is_deleted = @IsDeleted{andTenantId:Taxs} ";
 
 
 		public TaxCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -106,15 +107,13 @@ namespace TestRepositoryGeneration
 
 
 		*/
-		public int Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
+		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
-			var res = DataAccessService.InsertObject(tax, InsertQuery);
-			return (int)res;
+			DataAccessService.InsertObject(tax, InsertQuery);
 		}
-		public async Task<int> InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
+		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
-			var res = await DataAccessService.InsertObjectAsync(tax, InsertQuery);
-			return (int)res;
+			await DataAccessService.InsertObjectAsync(tax, InsertQuery);
 		}
 
 		public void UpdateByTaxId(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
@@ -128,6 +127,15 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(tax, sql);
 		}
 
+
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
+		{
+			DataAccessService.ExecuteScalar(UpsertQuery, tax);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
+		{
+			await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(UpsertQuery, tax);
+		}
 
 		public void RemoveByTaxId(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{

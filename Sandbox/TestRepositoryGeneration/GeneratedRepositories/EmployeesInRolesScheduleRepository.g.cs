@@ -18,15 +18,16 @@ namespace TestRepositoryGeneration
 {
 	public partial class EmployeesInRolesScheduleRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IEmployeesInRolesScheduleRepository
 	{
-		private const string Fields = @"[EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted]";
-		private const string SelectAllQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule]  {whereTenantId:[EmployeesInRolesSchedule]} ";
-		private const string SelectByQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule] ";
-		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId) ";
-		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] ";
-		private const string DeleteQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET IsDeleted = 1 ";
-		private const string WhereQueryByScheduleId = "WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]} ";
-		private const string AndWithIsDeletedFilter = "AND [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted ";
-		private const string WhereWithIsDeletedFilter = "WHERE [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted{andTenantId:[EmployeesInRolesSchedule]} ";
+		private const string Fields = @"archive.employees_in_roles_schedule.schedule_id,archive.employees_in_roles_schedule.role_id,archive.employees_in_roles_schedule.user_id,archive.employees_in_roles_schedule.store_id,archive.employees_in_roles_schedule.business_day_number,archive.employees_in_roles_schedule.start,archive.employees_in_roles_schedule.end,archive.employees_in_roles_schedule.is_deleted";
+		private const string SelectAllQuery = @"SELECT archive.employees_in_roles_schedule.schedule_id,archive.employees_in_roles_schedule.role_id,archive.employees_in_roles_schedule.user_id,archive.employees_in_roles_schedule.store_id,archive.employees_in_roles_schedule.business_day_number,archive.employees_in_roles_schedule.start,archive.employees_in_roles_schedule.end,archive.employees_in_roles_schedule.is_deleted FROM archive.employees_in_roles_schedule  {whereTenantId:archive.employees_in_roles_schedule} ";
+		private const string SelectByQuery = @"SELECT archive.employees_in_roles_schedule.schedule_id,archive.employees_in_roles_schedule.role_id,archive.employees_in_roles_schedule.user_id,archive.employees_in_roles_schedule.store_id,archive.employees_in_roles_schedule.business_day_number,archive.employees_in_roles_schedule.start,archive.employees_in_roles_schedule.end,archive.employees_in_roles_schedule.is_deleted FROM archive.employees_in_roles_schedule ";
+		private const string InsertQuery = @"INSERT INTO archive.employees_in_roles_schedule(archive.employees_in_roles_schedule.role_id,archive.employees_in_roles_schedule.user_id,archive.employees_in_roles_schedule.store_id,archive.employees_in_roles_schedule.business_day_number,archive.employees_in_roles_schedule.start,archive.employees_in_roles_schedule.end,archive.employees_in_roles_schedule.is_deleted,archive.employees_in_roles_schedule.tenant_id) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId) ";
+		private const string UpdateQueryBy = @"UPDATE archive.employees_in_roles_schedule SET archive.employees_in_roles_schedule.role_id = @RoleId,archive.employees_in_roles_schedule.user_id = @UserId,archive.employees_in_roles_schedule.store_id = @StoreId,archive.employees_in_roles_schedule.business_day_number = @BusinessDayNumber,archive.employees_in_roles_schedule.start = @Start,archive.employees_in_roles_schedule.end = @End,archive.employees_in_roles_schedule.is_deleted = @IsDeleted FROM archive.employees_in_roles_schedule ";
+		private const string DeleteQueryBy = @"UPDATE archive.employees_in_roles_schedule SET is_deleted = TRUE ";
+		private const string UpsertQuery = @"INSERT INTO archive.employees_in_roles_schedule(archive.employees_in_roles_schedule.role_id,archive.employees_in_roles_schedule.user_id,archive.employees_in_roles_schedule.store_id,archive.employees_in_roles_schedule.business_day_number,archive.employees_in_roles_schedule.start,archive.employees_in_roles_schedule.end,archive.employees_in_roles_schedule.is_deleted,archive.employees_in_roles_schedule.tenant_id) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId)  ON CONFLICT (schedule_id) DO UPDATE archive.employees_in_roles_schedule SET archive.employees_in_roles_schedule.role_id = @RoleId,archive.employees_in_roles_schedule.user_id = @UserId,archive.employees_in_roles_schedule.store_id = @StoreId,archive.employees_in_roles_schedule.business_day_number = @BusinessDayNumber,archive.employees_in_roles_schedule.start = @Start,archive.employees_in_roles_schedule.end = @End,archive.employees_in_roles_schedule.is_deleted = @IsDeleted ";
+		private const string WhereQueryByScheduleId = "WHERE archive.employees_in_roles_schedule.schedule_id = @ScheduleId{andTenantId:archive.employees_in_roles_schedule} ";
+		private const string AndWithIsDeletedFilter = "AND archive.employees_in_roles_schedule.is_deleted = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE archive.employees_in_roles_schedule.is_deleted = @IsDeleted{andTenantId:archive.employees_in_roles_schedule} ";
 
 
 		public EmployeesInRolesScheduleRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -104,6 +105,15 @@ namespace TestRepositoryGeneration
 
 
 		*/
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
+		{
+			DataAccessService.ExecuteScalar(UpsertQuery, employeesInRolesSchedule);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
+		{
+			await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(UpsertQuery, employeesInRolesSchedule);
+		}
+
 		/*
 		public void RemoveByScheduleId(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{

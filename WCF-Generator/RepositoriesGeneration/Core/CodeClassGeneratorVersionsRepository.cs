@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text;
-using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
 using WCFGenerator.RepositoriesGeneration.Heplers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
@@ -52,7 +51,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Common info for generate sql scriptes
             var sqlInfo = RepositoryInfo.RepositorySqlInfo;
             
-            var insertQuery = SqlScriptGenerator.GenerateInsertToVersionTable(sqlInfo).SurroundWithQuotes();
+            var insertQuery = sqlInfo.IsPostgresDb ? SQLPostgresScriptGenerator.GenerateInsertToVersionTable(sqlInfo).SurroundWithQuotes() : SqlScriptGenerator.GenerateInsertToVersionTable(sqlInfo).SurroundWithQuotes();
             
             var sb = new StringBuilder();
 
@@ -61,8 +60,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             if(!RepositoryInfo.IsManyToMany)
             {
                 // Version filter
-                var selectBy = (SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo) + " {filter} ").SurroundWithQuotes();
-                var selectByKeyAndSliceDateQuery = SqlScriptGenerator.GenerateSelectByKeyAndSliceDateToVersionTable(sqlInfo).SurroundWithQuotes();
+                string selectBy, selectByKeyAndSliceDateQuery;
+
+                if (RepositoryInfo.IsPostgresDb)
+                {
+                    selectBy = (SQLPostgresScriptGenerator.GenerateSelectByToVersionTable(sqlInfo) + " {filter} ").SurroundWithQuotes();
+                    selectByKeyAndSliceDateQuery = SQLPostgresScriptGenerator.GenerateSelectByKeyAndSliceDateToVersionTable(sqlInfo).SurroundWithQuotes();
+                }
+                else
+                {
+                    selectBy = (SqlScriptGenerator.GenerateSelectByToVersionTable(sqlInfo) + " {filter} ").SurroundWithQuotes();
+                    selectByKeyAndSliceDateQuery = SqlScriptGenerator.GenerateSelectByKeyAndSliceDateToVersionTable(sqlInfo).SurroundWithQuotes();
+                }
                 
                 sb.AppendLine("private const string " + _selectByQuery + " = @" + selectBy + ";");
                 sb.AppendLine("private const string " + _selectByKeyAndSliceDateQuery + " = @" + selectByKeyAndSliceDateQuery + ";");
@@ -71,17 +80,26 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 {
                     var key = method.Key;
                     var parametrs = method.Parameters.Select(p => p.Name).ToList();
-                    var sqlV = SqlScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
-                    var sqlA = SqlScriptGenerator.GenerateWhereVersionsWithAlias(parametrs, sqlInfo).SurroundWithQuotes();
+                    string sqlV, sqlA;
+
+                    if (RepositoryInfo.IsPostgresDb)
+                    {
+                        sqlV = SQLPostgresScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
+                        sqlA = SQLPostgresScriptGenerator.GenerateWhereVersionsWithAlias(parametrs, sqlInfo).SurroundWithQuotes();
+                    }
+                    else
+                    {
+                        sqlV = SqlScriptGenerator.GenerateWhereVersions(parametrs, sqlInfo).SurroundWithQuotes();
+                        sqlA = SqlScriptGenerator.GenerateWhereVersionsWithAlias(parametrs, sqlInfo).SurroundWithQuotes();
+                    }
 
                     sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sqlV + ";");
                     sb.AppendLine("private const string " + _whereQueryByWithAlias + key + " = " + sqlA + ";");
-
                 }
                 // where by join PK
                 if (RepositoryInfo.JoinRepositoryInfo != null)
                 {
-                    var sqlJoin = SqlScriptGenerator.GenerateWhereJoinPkVersion(sqlInfo).SurroundWithQuotes();
+                    var sqlJoin = RepositoryInfo.IsPostgresDb ? SQLPostgresScriptGenerator.GenerateWhereJoinPkVersion(sqlInfo).SurroundWithQuotes() : SqlScriptGenerator.GenerateWhereJoinPkVersion(sqlInfo).SurroundWithQuotes();
                     sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
                 }
 
@@ -89,8 +107,19 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 if (RepositoryInfo.IsDeletedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
-                    var andFilterV = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinVersionTableName?? sqlInfo.VersionTableName ).SurroundWithQuotes();
-                    var andFilterA = SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo).SurroundWithQuotes();
+                    string andFilterV, andFilterA;
+
+                    if (RepositoryInfo.IsPostgresDb)
+                    {
+                        andFilterV = SQLPostgresScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinVersionTableName ?? sqlInfo.VersionTableName).SurroundWithQuotes();
+                        andFilterA = SQLPostgresScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo).SurroundWithQuotes();
+                    }
+                    else
+                    {
+                        andFilterV = SqlScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinVersionTableName ?? sqlInfo.VersionTableName).SurroundWithQuotes();
+                        andFilterA = SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo).SurroundWithQuotes();
+                    }
+                    
                     sb.AppendLine("private const string " + _andWithIsDeletedFilter + " = " + andFilterV + ";");
                     sb.AppendLine("private const string " + _andWithIsDeletedFilterWithAlias + " = " + andFilterA + ";");
                 }
@@ -99,7 +128,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 if (RepositoryInfo.IsModifiedExist)
                 {
                     var specialOption = RepositoryInfo.SpecialOptionsModified.Parameters.First().Name;
-                    var filter = SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo, "<=");
+                    var filter = RepositoryInfo.IsPostgresDb ? SQLPostgresScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo, "<=") : SqlScriptGenerator.GenerateAndVersionsWithAlias(specialOption, sqlInfo, "<=");
                     sb.AppendLine("private const string " + _andWithSliceDateFilter + " = " + filter.SurroundWithQuotes() + ";");
                 }
             }

@@ -204,7 +204,9 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var dataAccess = (DataAccessAttribute)dataAccessAttr;
 
             var tableName = dataAccess.TableName ?? doClass.Identifier.ToString() + 's';
+            var postgresTableName = dataAccess.PostgresTableName ?? doClass.Identifier.ToString() + 's';
             repositoryInfo.TableName = tableName;
+            repositoryInfo.PostgresTableName = postgresTableName;
 
             // Get filters
             var filterKeys = (new[] { dataAccess.FilterKey1, dataAccess.FilterKey2, dataAccess.FilterKey3 })
@@ -390,6 +392,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 var repositoryInterfaceNamespace = _solutionSyntaxWalker.GetTypeNamespace(repoInterface);
                 repositoryInfo.RequiredNamespaces.Add(RepositoryType.Cache, new List<string> { repositoryInterfaceNamespace });
             }
+
+            repositoryInfo.IsPostgresDb = _config.IsPostgresDb;
 
             #endregion
 

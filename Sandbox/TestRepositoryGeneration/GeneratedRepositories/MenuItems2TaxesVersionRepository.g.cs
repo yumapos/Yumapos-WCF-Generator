@@ -17,7 +17,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 {
 	internal class MenuItems2TaxesVersionRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO [MenuItemToTaxVersions]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
+		private const string InsertQuery = @"INSERT INTO MenuItemToTaxVersions(MenuItems2Taxess.menu_item_id,MenuItems2Taxess.menu_item_version_id,MenuItems2Taxess.modified,MenuItems2Taxess.modified_by,MenuItems2Taxess.tax_id,MenuItems2Taxess.tax_version_id,MenuItems2Taxess.is_deleted)
 VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
 
 		public MenuItems2TaxesVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
