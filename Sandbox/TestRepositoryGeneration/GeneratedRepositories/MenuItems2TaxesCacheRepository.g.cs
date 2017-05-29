@@ -18,17 +18,16 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 {
 	internal partial class MenuItems2TaxesCacheRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase
 	{
-		private const string Fields = @"MenuItems2Taxess.menu_item_id,MenuItems2Taxess.menu_item_version_id,MenuItems2Taxess.modified,MenuItems2Taxess.modified_by,MenuItems2Taxess.tax_id,MenuItems2Taxess.tax_version_id,MenuItems2Taxess.is_deleted";
-		private const string SelectAllQuery = @"SELECT MenuItems2Taxess.menu_item_id,MenuItems2Taxess.menu_item_version_id,MenuItems2Taxess.modified,MenuItems2Taxess.modified_by,MenuItems2Taxess.tax_id,MenuItems2Taxess.tax_version_id,MenuItems2Taxess.is_deleted FROM MenuItems2Taxess   ";
-		private const string SelectByQuery = @"SELECT MenuItems2Taxess.menu_item_id,MenuItems2Taxess.menu_item_version_id,MenuItems2Taxess.modified,MenuItems2Taxess.modified_by,MenuItems2Taxess.tax_id,MenuItems2Taxess.tax_version_id,MenuItems2Taxess.is_deleted FROM MenuItems2Taxess ";
-		private const string InsertQuery = @"INSERT INTO MenuItems2Taxess(MenuItems2Taxess.menu_item_id,MenuItems2Taxess.menu_item_version_id,MenuItems2Taxess.modified,MenuItems2Taxess.modified_by,MenuItems2Taxess.tax_id,MenuItems2Taxess.tax_version_id,MenuItems2Taxess.is_deleted)  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted) ";
-		private const string UpdateQueryBy = @"UPDATE MenuItems2Taxess SET MenuItems2Taxess.menu_item_id = @MenuItemId,MenuItems2Taxess.menu_item_version_id = @MenuItemVersionId,MenuItems2Taxess.modified = @Modified,MenuItems2Taxess.modified_by = @ModifiedBy,MenuItems2Taxess.tax_id = @TaxId,MenuItems2Taxess.tax_version_id = @TaxVersionId,MenuItems2Taxess.is_deleted = @IsDeleted FROM MenuItems2Taxess ";
-		private const string DeleteQueryBy = @"DELETE FROM MenuItems2Taxess ";
-		private const string UpsertQuery = @"INSERT INTO MenuItems2Taxess(MenuItems2Taxess.menu_item_id,MenuItems2Taxess.menu_item_version_id,MenuItems2Taxess.modified,MenuItems2Taxess.modified_by,MenuItems2Taxess.tax_id,MenuItems2Taxess.tax_version_id,MenuItems2Taxess.is_deleted)  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)  ON CONFLICT () DO UPDATE MenuItems2Taxess SET MenuItems2Taxess.menu_item_id = @MenuItemId,MenuItems2Taxess.menu_item_version_id = @MenuItemVersionId,MenuItems2Taxess.modified = @Modified,MenuItems2Taxess.modified_by = @ModifiedBy,MenuItems2Taxess.tax_id = @TaxId,MenuItems2Taxess.tax_version_id = @TaxVersionId,MenuItems2Taxess.is_deleted = @IsDeleted ";
-		private const string WhereQueryByMenuItemId = "WHERE MenuItems2Taxess.menu_item_id = @MenuItemId ";
-		private const string WhereQueryByTaxId = "WHERE MenuItems2Taxess.tax_id = @TaxId ";
-		private const string AndWithIsDeletedFilter = "AND MenuItems2Taxess.is_deleted = @IsDeleted ";
-		private const string WhereWithIsDeletedFilter = "WHERE MenuItems2Taxess.is_deleted = @IsDeleted ";
+		private const string Fields = @"[MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted]";
+		private const string SelectAllQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess]   ";
+		private const string SelectByQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess] ";
+		private const string InsertQuery = @"INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted) ";
+		private const string UpdateQueryBy = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess] ";
+		private const string DeleteQueryBy = @"DELETE FROM [MenuItems2Taxess] ";
+		private const string WhereQueryByMenuItemId = "WHERE [MenuItems2Taxess].[MenuItemId] = @MenuItemId ";
+		private const string WhereQueryByTaxId = "WHERE [MenuItems2Taxess].[TaxId] = @TaxId ";
+		private const string AndWithIsDeletedFilter = "AND [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
 
 
 		public MenuItems2TaxesCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -133,15 +132,6 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			await DataAccessService.PersistObjectAsync(menuItems2Taxes, sql);
 		}
 
-
-		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
-		{
-			DataAccessService.ExecuteScalar(UpsertQuery, menuItems2Taxes);
-		}
-		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
-		{
-			await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes>(UpsertQuery, menuItems2Taxes);
-		}
 
 		public void RemoveByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{

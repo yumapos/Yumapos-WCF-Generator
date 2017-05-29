@@ -17,22 +17,22 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 {
 	internal class MenuItemVersionRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO RecipieItemVersions(RecipieItems.item_id,RecipieItems.item_version_id,RecipieItems.is_deleted,RecipieItems.modified,RecipieItems.modified_by,RecipieItems.category_id,RecipieItems.tenant_id)
+		private const string InsertQuery = @"INSERT INTO [RecipieItemVersions]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId])
 VALUES (@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId)
-INSERT INTO MenuItemVersions(MenuItems.menu_item_id,MenuItems.menu_item_version_id,MenuItems.menu_category_id,MenuItems.tenant_id)
+INSERT INTO [MenuItemVersions]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[TenantId])
 VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@TenantId)";
-		private const string SelectBy = @"SELECT MenuItemVersions.menu_item_id,MenuItemVersions.menu_item_version_id,MenuItemVersions.menu_category_id,RecipieItemVersions.item_id,RecipieItemVersions.item_version_id,RecipieItemVersions.is_deleted,RecipieItemVersions.modified,RecipieItemVersions.modified_by,RecipieItemVersions.category_id FROM MenuItemVersions INNER JOIN RecipieItemVersions ON MenuItemVersions.menu_item_id = RecipieItemVersions.item_id  {filter} ";
-		private const string SelectByKeyAndSliceDateQuery = @"SELECT MenuItemVersions.menu_item_id,MenuItemVersions.menu_item_version_id,MenuItemVersions.menu_category_id FROM (SELECT version_table1.MenuItemId, MAX(join_version_table1.modified) as modified FROM MenuItemVersions version_table1 INNER JOIN RecipieItems join_version_table1 ON version_table1.MenuItemVersionId = join_version_table1.ItemVersionId {filter}  GROUP BY version_table1.MenuItemId) version_table INNER JOIN RecipieItemVersions ON version_table.MenuItemId = RecipieItemVersions.ItemId AND version_table.modified = RecipieItemVersions.modified INNER JOIN MenuItemVersions ON RecipieItemVersions.ItemVersionId = MenuItemVersions.MenuItemVersionId";
-		private const string WhereQueryByMenuItemId = "WHERE MenuItemVersions.menu_item_id = @MenuItemId{andTenantId:MenuItemVersions} ";
-		private const string WhereQueryByWithAliasMenuItemId = "WHERE version_table1.menu_item_id = @MenuItemId{andTenantId:version_table1} ";
-		private const string WhereQueryByMenuItemVersionId = "WHERE MenuItemVersions.menu_item_version_id = @MenuItemVersionId{andTenantId:MenuItemVersions} ";
-		private const string WhereQueryByWithAliasMenuItemVersionId = "WHERE version_table1.menu_item_version_id = @MenuItemVersionId{andTenantId:version_table1} ";
-		private const string WhereQueryByMenuCategoryId = "WHERE MenuItemVersions.menu_category_id = @MenuCategoryId{andTenantId:MenuItemVersions} ";
-		private const string WhereQueryByWithAliasMenuCategoryId = "WHERE version_table1.menu_category_id = @MenuCategoryId{andTenantId:version_table1} ";
-		private const string WhereQueryByJoinPk = "WHERE RecipieItemVersions.item_id = @ItemId{andTenantId:RecipieItemVersions} ";
-		private const string AndWithIsDeletedFilter = "AND RecipieItemVersions.is_deleted = @IsDeleted ";
-		private const string AndWithIsDeletedFilterWithAlias = "AND join_version_table1.is_deleted = @IsDeleted ";
-		private const string AndWithSliceDateFilter = "AND join_version_table1.modified <= @Modified ";
+		private const string SelectBy = @"SELECT [MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[RecipieItemVersions].[ItemId],[RecipieItemVersions].[ItemVersionId],[RecipieItemVersions].[IsDeleted],[RecipieItemVersions].[Modified],[RecipieItemVersions].[ModifiedBy],[RecipieItemVersions].[CategoryId] FROM [MenuItemVersions] INNER JOIN [RecipieItemVersions] ON [MenuItemVersions].[MenuItemId] = [RecipieItemVersions].[ItemId]  {filter} ";
+		private const string SelectByKeyAndSliceDateQuery = @"SELECT [MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId] FROM (SELECT versionTable1.[MenuItemId], MAX(joinVersionTable1.[Modified]) as Modified FROM [MenuItemVersions] versionTable1 INNER JOIN [RecipieItems] joinVersionTable1 ON versionTable1.[MenuItemVersionId] = joinVersionTable1.[ItemVersionId] {filter}  GROUP BY versionTable1.[MenuItemId]) versionTable INNER JOIN [RecipieItemVersions] ON versionTable.[MenuItemId] = [RecipieItemVersions].[ItemId] AND versionTable.[Modified] = [RecipieItemVersions].[Modified] INNER JOIN [MenuItemVersions] ON [RecipieItemVersions].[ItemVersionId] = [MenuItemVersions].[MenuItemVersionId]";
+		private const string WhereQueryByMenuItemId = "WHERE [MenuItemVersions].[MenuItemId] = @MenuItemId{andTenantId:[MenuItemVersions]} ";
+		private const string WhereQueryByWithAliasMenuItemId = "WHERE versionTable1.[MenuItemId] = @MenuItemId{andTenantId:versionTable1} ";
+		private const string WhereQueryByMenuItemVersionId = "WHERE [MenuItemVersions].[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItemVersions]} ";
+		private const string WhereQueryByWithAliasMenuItemVersionId = "WHERE versionTable1.[MenuItemVersionId] = @MenuItemVersionId{andTenantId:versionTable1} ";
+		private const string WhereQueryByMenuCategoryId = "WHERE [MenuItemVersions].[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItemVersions]} ";
+		private const string WhereQueryByWithAliasMenuCategoryId = "WHERE versionTable1.[MenuCategoryId] = @MenuCategoryId{andTenantId:versionTable1} ";
+		private const string WhereQueryByJoinPk = "WHERE [RecipieItemVersions].[ItemId] = @ItemId{andTenantId:[RecipieItemVersions]} ";
+		private const string AndWithIsDeletedFilter = "AND [RecipieItemVersions].[IsDeleted] = @IsDeleted ";
+		private const string AndWithIsDeletedFilterWithAlias = "AND joinVersionTable1.[IsDeleted] = @IsDeleted ";
+		private const string AndWithSliceDateFilter = "AND joinVersionTable1.[Modified] <= @Modified ";
 
 		public MenuItemVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)

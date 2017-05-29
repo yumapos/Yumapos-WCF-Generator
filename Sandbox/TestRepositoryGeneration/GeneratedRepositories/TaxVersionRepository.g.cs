@@ -17,17 +17,17 @@ namespace TestRepositoryGeneration
 {
 	internal class TaxVersionRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase
 	{
-		private const string InsertQuery = @"INSERT INTO TaxVersions(Taxs.tax_id,Taxs.tax_version_id,Taxs.name,Taxs.modified,Taxs.modified_by,Taxs.is_deleted,Taxs.tenant_id)
+		private const string InsertQuery = @"INSERT INTO [TaxVersions]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId])
 VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
-		private const string SelectBy = @"SELECT TaxVersions.tax_id,TaxVersions.tax_version_id,TaxVersions.name,TaxVersions.modified,TaxVersions.modified_by,TaxVersions.is_deleted FROM TaxVersions  {filter} ";
-		private const string SelectByKeyAndSliceDateQuery = @"SELECT TaxVersions.tax_id,TaxVersions.tax_version_id,TaxVersions.name,TaxVersions.modified,TaxVersions.modified_by,TaxVersions.is_deleted FROM (SELECT version_table1.TaxId, MAX(version_table1.modified) as modified FROM TaxVersions version_table1  {filter}  GROUP BY version_table1.TaxId) version_table INNER JOIN TaxVersions ON version_table.TaxId = TaxVersions.TaxId AND version_table.modified = TaxVersions.modified";
-		private const string WhereQueryByTaxId = "WHERE TaxVersions.tax_id = @TaxId{andTenantId:TaxVersions} ";
-		private const string WhereQueryByWithAliasTaxId = "WHERE version_table1.tax_id = @TaxId{andTenantId:version_table1} ";
-		private const string WhereQueryByTaxVersionId = "WHERE TaxVersions.tax_version_id = @TaxVersionId{andTenantId:TaxVersions} ";
-		private const string WhereQueryByWithAliasTaxVersionId = "WHERE version_table1.tax_version_id = @TaxVersionId{andTenantId:version_table1} ";
-		private const string AndWithIsDeletedFilter = "AND TaxVersions.is_deleted = @IsDeleted ";
-		private const string AndWithIsDeletedFilterWithAlias = "AND version_table1.is_deleted = @IsDeleted ";
-		private const string AndWithSliceDateFilter = "AND version_table1.modified <= @Modified ";
+		private const string SelectBy = @"SELECT [TaxVersions].[TaxId],[TaxVersions].[TaxVersionId],[TaxVersions].[Name],[TaxVersions].[Modified],[TaxVersions].[ModifiedBy],[TaxVersions].[IsDeleted] FROM [TaxVersions]  {filter} ";
+		private const string SelectByKeyAndSliceDateQuery = @"SELECT [TaxVersions].[TaxId],[TaxVersions].[TaxVersionId],[TaxVersions].[Name],[TaxVersions].[Modified],[TaxVersions].[ModifiedBy],[TaxVersions].[IsDeleted] FROM (SELECT versionTable1.[TaxId], MAX(versionTable1.[Modified]) as Modified FROM [TaxVersions] versionTable1  {filter}  GROUP BY versionTable1.[TaxId]) versionTable INNER JOIN [TaxVersions] ON versionTable.[TaxId] = [TaxVersions].[TaxId] AND versionTable.[Modified] = [TaxVersions].[Modified]";
+		private const string WhereQueryByTaxId = "WHERE [TaxVersions].[TaxId] = @TaxId{andTenantId:[TaxVersions]} ";
+		private const string WhereQueryByWithAliasTaxId = "WHERE versionTable1.[TaxId] = @TaxId{andTenantId:versionTable1} ";
+		private const string WhereQueryByTaxVersionId = "WHERE [TaxVersions].[TaxVersionId] = @TaxVersionId{andTenantId:[TaxVersions]} ";
+		private const string WhereQueryByWithAliasTaxVersionId = "WHERE versionTable1.[TaxVersionId] = @TaxVersionId{andTenantId:versionTable1} ";
+		private const string AndWithIsDeletedFilter = "AND [TaxVersions].[IsDeleted] = @IsDeleted ";
+		private const string AndWithIsDeletedFilterWithAlias = "AND versionTable1.[IsDeleted] = @IsDeleted ";
+		private const string AndWithSliceDateFilter = "AND versionTable1.[Modified] <= @Modified ";
 
 		public TaxVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)

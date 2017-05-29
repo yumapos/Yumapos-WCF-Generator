@@ -18,19 +18,18 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 {
 	public partial class AddressRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IAddressRepository
 	{
-		private const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude";
-		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude FROM archive.addresses   ";
-		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude FROM archive.addresses ";
-		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
-		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude FROM archive.addresses ";
-		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
-		private const string UpsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude ";
-		private const string WhereQueryById = "WHERE archive.addresses.id = @Id ";
-		private const string WhereQueryByCountry = "WHERE archive.addresses.country = @Country ";
-		private const string WhereQueryByCountryAndCity = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City ";
-		private const string WhereQueryByCountryAndCityAndZipCode = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City AND archive.addresses.zip_code = @ZipCode ";
-		private const string AndWithIsDeletedFilter = "AND archive.addresses.is_deleted = @IsDeleted ";
-		private const string WhereWithIsDeletedFilter = "WHERE archive.addresses.is_deleted = @IsDeleted ";
+		private const string Fields = @"[dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude]";
+		private const string SelectAllQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude] FROM [dbo].[Addresses]   ";
+		private const string SelectByQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude] FROM [dbo].[Addresses] ";
+		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
+		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude FROM [dbo].[Addresses] ";
+		private const string DeleteQueryBy = @"UPDATE [dbo].[Addresses] SET IsDeleted = 1 ";
+		private const string WhereQueryById = "WHERE [dbo].[Addresses].[Id] = @Id ";
+		private const string WhereQueryByCountry = "WHERE [dbo].[Addresses].[Country] = @Country ";
+		private const string WhereQueryByCountryAndCity = "WHERE [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City ";
+		private const string WhereQueryByCountryAndCityAndZipCode = "WHERE [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City AND [dbo].[Addresses].[ZipCode] = @ZipCode ";
+		private const string AndWithIsDeletedFilter = "AND [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
+		private const string WhereWithIsDeletedFilter = "WHERE [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
 
 
 		public AddressRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
@@ -211,15 +210,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 
 		*/
-		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
-		{
-			DataAccessService.ExecuteScalar(UpsertQuery, address);
-		}
-		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
-		{
-			await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(UpsertQuery, address);
-		}
-
 		public void RemoveById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
 			var sql = DeleteQueryBy + WhereQueryById;

@@ -20,8 +20,19 @@ namespace TestDecoratorGeneration
 		{
 			try
 			{
-				await OnEntryAsync("Open", new object[] { });
-				await DecoratedComponent.Open();
+				var res = await OnEntryAsync("Open", new object[] { });
+				if (!res.Success)
+				{
+					ret = new ()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					await DecoratedComponent.Open();
+				}
 				await OnExitAsync();
 			}
 			catch (System.Exception e)
@@ -39,8 +50,19 @@ namespace TestDecoratorGeneration
 			var ret = default(bool);
 			try
 			{
-				await OnEntryAsync("AddItem2", new object[] { id, name });
-				ret = await DecoratedComponent.AddItem2(id, name);
+				var res = await OnEntryAsync("AddItem2", new object[] { id, name });
+				if (!res.Success)
+				{
+					ret = new bool()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.AddItem2(id, name);
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
@@ -65,7 +87,7 @@ namespace TestDecoratorGeneration
 					ret = new TestDecoratorGeneration.ResponseDto()
 					{
 						PostprocessingType = res.PostprocessingType,
-						Context = res.Context.ToString()
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
 					};
 				}
 				else
@@ -90,8 +112,19 @@ namespace TestDecoratorGeneration
 			var ret = default(System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>);
 			try
 			{
-				await OnEntryAsync("GetItems", new object[] { });
-				ret = await DecoratedComponent.GetItems();
+				var res = await OnEntryAsync("GetItems", new object[] { });
+				if (!res.Success)
+				{
+					ret = new System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.GetItems();
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
@@ -109,8 +142,19 @@ namespace TestDecoratorGeneration
 		{
 			try
 			{
-				OnEntry("Stop", new object[] { });
-				DecoratedComponent.Stop();
+				var res = OnEntry("Stop", new object[] { });
+				if (!res.Success)
+				{
+					ret = new void()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					DecoratedComponent.Stop();
+				}
 				OnExit();
 			}
 			catch (System.Exception e)
@@ -128,8 +172,19 @@ namespace TestDecoratorGeneration
 			var ret = default(string);
 			try
 			{
-				await OnEntryAsync("GetSystemSettings", new object[] { listOfSystemSettings });
-				ret = await DecoratedComponent.GetSystemSettings(listOfSystemSettings);
+				var res = await OnEntryAsync("GetSystemSettings", new object[] { listOfSystemSettings });
+				if (!res.Success)
+				{
+					ret = new string()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.GetSystemSettings(listOfSystemSettings);
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
@@ -148,8 +203,19 @@ namespace TestDecoratorGeneration
 			var ret = default(System.Guid);
 			try
 			{
-				OnEntry("GetGuid", new object[] { });
-				ret = DecoratedComponent.GetGuid();
+				var res = OnEntry("GetGuid", new object[] { });
+				if (!res.Success)
+				{
+					ret = new System.Guid()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = DecoratedComponent.GetGuid();
+				}
 				OnExit(ret);
 			}
 			catch (System.Exception e)
@@ -168,8 +234,19 @@ namespace TestDecoratorGeneration
 			var ret = default(int);
 			try
 			{
-				OnEntry("GetInt", new object[] { });
-				ret = DecoratedComponent.GetInt();
+				var res = OnEntry("GetInt", new object[] { });
+				if (!res.Success)
+				{
+					ret = new int()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = DecoratedComponent.GetInt();
+				}
 				OnExit(ret);
 			}
 			catch (System.Exception e)

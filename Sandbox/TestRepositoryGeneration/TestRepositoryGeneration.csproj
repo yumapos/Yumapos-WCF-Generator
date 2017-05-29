@@ -65,6 +65,9 @@
     <Compile Include="Infrastructure\IDateTimeService.cs" />
     <Compile Include="CustomRepositories\BaseRepositories\AddressRepository.cs" />
     <Compile Include="Infrastructure\RepositoryBase.cs" />
+    <Compile Include="PostgresRepositories\AddressArchiveRepository.g.cs" />
+    <Compile Include="RepositoryInterfaces\IAddressArchiveRepository.cs" />
+    <Compile Include="RepositoryInterfaces\IArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\IElectronicCouponRepository.cs" />
     <Compile Include="RepositoryInterfaces\IElectronicCouponsTypedRepository.cs" />
     <Compile Include="Infrastructure\IDataAccessService.cs" />
@@ -100,7 +103,10 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="GeneratedRepositories\" />
+    <Folder Include="PostgresRepositories\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>if '$(ConfigurationName)' == 'Debug' $(SolutionDir)\generation.bat</PreBuildEvent>
