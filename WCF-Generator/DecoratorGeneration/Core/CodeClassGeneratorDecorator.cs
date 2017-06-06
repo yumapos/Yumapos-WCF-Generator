@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using WCFGenerator.Common;
 using WCFGenerator.DecoratorGeneration.Infrastructure;
-using WCFGenerator.RepositoriesGeneration.Heplers;
+using WCFGenerator.RepositoriesGeneration.Helpers;
 
 namespace WCFGenerator.DecoratorGeneration.Core
 {

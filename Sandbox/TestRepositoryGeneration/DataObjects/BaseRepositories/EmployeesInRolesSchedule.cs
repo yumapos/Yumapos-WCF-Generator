@@ -4,7 +4,8 @@ using TestRepositoryGeneration.Infrastructure;
 
 namespace TestRepositoryGeneration.DataObjects.BaseRepositories
 {
-    [DataAccess(TableName = "EmployeesInRolesSchedule", PostgresTableName = "archive.employees_in_roles_schedule", Identity = true, IsDeleted = false)]
+    [DataAccess(TableName = "EmployeesInRolesSchedule", Identity = true, IsDeleted = false)]
+    [DataArchive(TableName = "archive.employees_in_roles_schedule", Identity = true, IsDeleted = false)]
     public class EmployeesInRolesSchedule
     {
         [Key]

@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string InsertQuery = @"INSERT INTO [CustomerSubscriptions]([CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted],[CustomerSubscriptions].[TenantId])  VALUES(@CustomerId,@CustomerNotificationsType,@Email,@SMS,@Push,@IsCustomizable,@ResendPeriod,@IsDeleted,@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [CustomerSubscriptions] SET [CustomerSubscriptions].[CustomerId] = @CustomerId,[CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType,[CustomerSubscriptions].[Email] = @Email,[CustomerSubscriptions].[SMS] = @SMS,[CustomerSubscriptions].[Push] = @Push,[CustomerSubscriptions].[IsCustomizable] = @IsCustomizable,[CustomerSubscriptions].[ResendPeriod] = @ResendPeriod,[CustomerSubscriptions].[IsDeleted] = @IsDeleted FROM [CustomerSubscriptions] ";
 		private const string DeleteQueryBy = @"DELETE FROM [CustomerSubscriptions] ";
+		private const string InsertOrUpdateQuery = @"UPDATE [CustomerSubscriptions] SET [CustomerSubscriptions].[CustomerId] = @CustomerId,[CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType,[CustomerSubscriptions].[Email] = @Email,[CustomerSubscriptions].[SMS] = @SMS,[CustomerSubscriptions].[Push] = @Push,[CustomerSubscriptions].[IsCustomizable] = @IsCustomizable,[CustomerSubscriptions].[ResendPeriod] = @ResendPeriod,[CustomerSubscriptions].[IsDeleted] = @IsDeleted FROM [CustomerSubscriptions] WHERE [CustomerSubscriptions].[CustomerId] = @CustomerId AND [CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType{andTenantId:[CustomerSubscriptions]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [CustomerSubscriptions]([CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted],[CustomerSubscriptions].[TenantId])  VALUES(@CustomerId,@CustomerNotificationsType,@Email,@SMS,@Push,@IsCustomizable,@ResendPeriod,@IsDeleted,@TenantId)  END";
 		private const string WhereQueryByCustomerIdAndCustomerNotificationsType = "WHERE [CustomerSubscriptions].[CustomerId] = @CustomerId AND [CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType{andTenantId:[CustomerSubscriptions]} ";
 
 
@@ -111,6 +112,17 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription>(sql, parameters);
 		}
 
+
+		*/
+		/*
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription customerSubscription)
+		{
+		DataAccessService.ExecuteScalar(InsertOrUpdateQuery,customerSubscription);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription customerSubscription)
+		{
+		await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription >(InsertOrUpdateQuery,customerSubscription);
+		}
 
 		*/
 

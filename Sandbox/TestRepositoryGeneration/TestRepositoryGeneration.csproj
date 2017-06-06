@@ -66,8 +66,10 @@
     <Compile Include="CustomRepositories\BaseRepositories\AddressRepository.cs" />
     <Compile Include="Infrastructure\RepositoryBase.cs" />
     <Compile Include="PostgresRepositories\AddressArchiveRepository.g.cs" />
+    <Compile Include="PostgresRepositories\CustomerSubscriptionArchiveRepository.g.cs" />
     <Compile Include="RepositoryInterfaces\IAddressArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\IArchiveRepository.cs" />
+    <Compile Include="RepositoryInterfaces\ICustomerSubscriptionArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\IElectronicCouponRepository.cs" />
     <Compile Include="RepositoryInterfaces\IElectronicCouponsTypedRepository.cs" />
     <Compile Include="Infrastructure\IDataAccessService.cs" />
@@ -103,9 +105,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="GeneratedRepositories\" />
-    <Folder Include="PostgresRepositories\" />
+    <ProjectReference Include="..\..\WCF-Generator\WCF-Generator.csproj">
+      <Project>{AEB81C25-77E8-44B0-B820-DC88B86F74B3}</Project>
+      <Name>WCF-Generator</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

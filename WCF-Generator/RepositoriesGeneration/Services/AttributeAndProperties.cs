@@ -24,7 +24,6 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var attr = new DataAccessAttribute
             {
                 TableName = obj.GetParameterByKeyName("TableName"),
-                PostgresTableName = obj.GetParameterByKeyName("PostgresTableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = isDeleted !=null ? Convert.ToBoolean(isDeleted) : (bool?) null,
                 Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),

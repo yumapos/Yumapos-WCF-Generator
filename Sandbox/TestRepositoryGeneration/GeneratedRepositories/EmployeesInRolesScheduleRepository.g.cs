@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration
 		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] ";
 		private const string DeleteQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET IsDeleted = 1 ";
+		private const string InsertOrUpdateQuery = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId)  END";
 		private const string WhereQueryByScheduleId = "WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]} ";
 		private const string AndWithIsDeletedFilter = "AND [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted{andTenantId:[EmployeesInRolesSchedule]} ";
@@ -129,6 +130,17 @@ namespace TestRepositoryGeneration
 		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule>(sql, parameters);
 		}
 
+
+		*/
+		/*
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
+		{
+		DataAccessService.ExecuteScalar(InsertOrUpdateQuery,employeesInRolesSchedule);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
+		{
+		await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule >(InsertOrUpdateQuery,employeesInRolesSchedule);
+		}
 
 		*/
 

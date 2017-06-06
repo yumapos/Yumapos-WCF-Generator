@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using WCFGenerator.RepositoriesGeneration.Enums;
 
 namespace WCFGenerator.RepositoriesGeneration.Configuration
 {
@@ -152,13 +153,12 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         }
 
         /// <summary>
-        ///     Postgres flag
+        ///     Database type
         /// </summary>
-        [ConfigurationProperty("IsPostgresDb", DefaultValue = false, IsRequired = false)]
-        public bool IsPostgresDb
+        [ConfigurationProperty("DatabaseType", DefaultValue = 1, IsRequired = true)]
+        public int DatabaseType
         {
-            get { return ((bool)(base["IsPostgresDb"])); }
+            get { return ((int)(base["DatabaseType"])); }
         }
-
     }
 }

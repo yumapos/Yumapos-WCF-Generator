@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude) ";
 		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude FROM [dbo].[Addresses] ";
 		private const string DeleteQueryBy = @"UPDATE [dbo].[Addresses] SET IsDeleted = 1 ";
+		private const string InsertOrUpdateQuery = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude FROM [dbo].[Addresses] WHERE [dbo].[Addresses].[Id] = @Id  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude)  END";
 		private const string WhereQueryById = "WHERE [dbo].[Addresses].[Id] = @Id ";
 		private const string WhereQueryByCountry = "WHERE [dbo].[Addresses].[Country] = @Country ";
 		private const string WhereQueryByCountryAndCity = "WHERE [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City ";
@@ -313,6 +314,15 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 
 		*/
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+			DataAccessService.ExecuteScalar(InsertOrUpdateQuery, address);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+			await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(InsertOrUpdateQuery, address);
+		}
+
 
 	}
 }

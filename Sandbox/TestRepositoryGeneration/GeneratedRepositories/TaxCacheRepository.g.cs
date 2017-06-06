@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration
 		private const string InsertQuery = @"INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [Taxs] SET [Taxs].[TaxId] = @TaxId,[Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs] ";
 		private const string DeleteQueryBy = @"DELETE FROM [Taxs] ";
+		private const string InsertOrUpdateQuery = @"UPDATE [Taxs] SET [Taxs].[TaxId] = @TaxId,[Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs] WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)  END";
 		private const string WhereQueryByTaxId = "WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]} ";
 		private const string WhereQueryByTaxVersionId = "WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
 		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";
@@ -152,6 +153,17 @@ namespace TestRepositoryGeneration
 		}
 
 
+		/*
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
+		{
+		DataAccessService.ExecuteScalar(InsertOrUpdateQuery,tax);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
+		{
+		await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax >(InsertOrUpdateQuery,tax);
+		}
+
+		*/
 
 	}
 }
