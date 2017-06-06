@@ -207,7 +207,6 @@
     <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataMany2ManyAttribute.cs" />
-    <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataPostgresAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

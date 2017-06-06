@@ -269,7 +269,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var where = GenerateWhere(info.PrimaryKeyNames, info);
             var conflict = " IF @@ROWCOUNT = 0 BEGIN ";
             var update = GenerateUpdate(info);
-            return update + where + conflict + insert + " END";
+            return update + " "+ where + conflict + insert + " END";
         }
 
         #endregion
@@ -413,7 +413,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             repositoryInfo.TableName = GenerateTableName(repositoryInfo.TableName);
             repositoryInfo.VersionTableName = repositoryInfo.VersionTableName != null ? GenerateTableName(repositoryInfo.VersionTableName) : null;
-            repositoryInfo.JoinTableName = repositoryInfo.JoinVersionTableName != null ? GenerateTableName(repositoryInfo.JoinVersionTableName) : null;
+            repositoryInfo.JoinTableName = repositoryInfo.JoinTableName != null ? GenerateTableName(repositoryInfo.JoinTableName) : null;
             repositoryInfo.JoinVersionTableName = repositoryInfo.JoinVersionTableName != null ? GenerateTableName(repositoryInfo.JoinVersionTableName) : null;
             repositoryInfo.VersionKeyType = repositoryInfo.VersionKeyType != null ? SystemToSqlTypeMapper.GetSqlType(repositoryInfo.VersionKeyType) : null;
             repositoryInfo.PrimaryKeyType = repositoryInfo.PrimaryKeyType != null ? SystemToSqlTypeMapper.GetSqlType(repositoryInfo.PrimaryKeyType) : null;

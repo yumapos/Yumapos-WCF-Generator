@@ -415,7 +415,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             repositoryInfo.TableName = GenerateTableName(repositoryInfo.TableName);
             repositoryInfo.VersionTableName = repositoryInfo.VersionTableName != null ? GenerateTableName(repositoryInfo.VersionTableName) : null;
-            repositoryInfo.JoinTableName = repositoryInfo.JoinVersionTableName != null ? GenerateTableName(repositoryInfo.JoinVersionTableName) : null;
+            repositoryInfo.JoinTableName = repositoryInfo.JoinTableName != null ? GenerateTableName(repositoryInfo.JoinTableName) : null;
             repositoryInfo.JoinVersionTableName = repositoryInfo.JoinVersionTableName != null ? GenerateTableName(repositoryInfo.JoinVersionTableName) : null;
             repositoryInfo.VersionKeyType = repositoryInfo.VersionKeyType != null ? SystemToPostgreSqlTypeMapper.GetPostgreSqlType(repositoryInfo.VersionKeyType) : null;
             repositoryInfo.PrimaryKeyType = repositoryInfo.PrimaryKeyType != null ? SystemToPostgreSqlTypeMapper.GetPostgreSqlType(repositoryInfo.PrimaryKeyType) : null;
