@@ -8,13 +8,13 @@ namespace TestDecoratorGeneration
     [ServiceContract]
     public interface IService
     {
-        [OperationContract]
-        Task Open();
+        //[OperationContract]
+        //Task Open();
 
-        [OperationContract]
-        Task<ResponseDto> AddItem(Guid id, string name);
+        //[OperationContract]
+        //Task<ResponseDto> AddItem(Guid id, string name);
 
-        [OperationContract]
-        Task<IEnumerable<ItemDto>> GetItems();
+        //[OperationContract]
+        //Task<IEnumerable<ItemDto>> GetItems();
     }
 }
