@@ -138,38 +138,17 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
                 #endregion
 
-                var list = new List<RepositoryCodeGeneratorAbstract>();
-
-                // select generators by database type
-                if (r.RepositoryInfo.DatabaseType == DatabaseType.MSSql)
-                {
-                    list = new List<RepositoryCodeGeneratorAbstract>
+                var list = new List<RepositoryCodeGeneratorAbstract>
                 {
                     // version repository
                     new VersionsRepositoryCodeGenerator {RepositoryInfo = r.RepositoryInfo},
                     // cache repository
                     new CacheRepositoryCodeGenerator {RepositoryInfo = r.RepositoryInfo}
                 };
-                    // Skip service-repository for many2many model
-                    if (!r.RepositoryInfo.IsManyToMany)
-                    {
-                        list.Add(new CodeClassGeneratorVersionedRepositoryService { RepositoryInfo = r.RepositoryInfo });
-                    }
-                }
-                else if (r.RepositoryInfo.DatabaseType == DatabaseType.PostgreSql)
+                // Skip service-repository for many2many model
+                if(!r.RepositoryInfo.IsManyToMany)
                 {
-                    list = new List<RepositoryCodeGeneratorAbstract>
-                {
-                    // version repository
-                    new VersionsRepositoryCodeGenerator {RepositoryInfo = r.RepositoryInfo},
-                    // cache repository
-                    new CacheRepositoryCodeGenerator {RepositoryInfo = r.RepositoryInfo}
-                };
-                    // Skip service-repository for many2many model
-                    if (!r.RepositoryInfo.IsManyToMany)
-                    {
-                        list.Add(new CodeClassGeneratorVersionedRepositoryService { RepositoryInfo = r.RepositoryInfo });
-                    }
+                    list.Add(new CodeClassGeneratorVersionedRepositoryService {RepositoryInfo = r.RepositoryInfo});
                 }
 
                 return list;

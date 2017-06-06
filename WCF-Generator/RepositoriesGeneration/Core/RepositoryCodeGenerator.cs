@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
@@ -43,7 +42,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var sb = new StringBuilder(base.GetUsings());
 
             foreach (var nameSpace in RepositoryInfo.RequiredNamespaces[RepositoryType.Cache])
+            {
                 sb.AppendLine("using " + nameSpace + ";");
+            }
 
             return sb.ToString();
         }
@@ -74,7 +75,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
 
 
-            if (RepositoryInfo.JoinRepositoryInfo != null)
+            if(RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var updateJoin = ScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _updateQuery + _join + " = " + updateJoin + ";");
@@ -91,13 +92,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
             }
             // where by join PK
-            if (RepositoryInfo.JoinRepositoryInfo != null)
+            if(RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var sqlJoin = ScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
             }
             // Is deleted filter
-            if (RepositoryInfo.IsDeletedExist)
+            if(RepositoryInfo.IsDeletedExist)
             {
                 var specialOption = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name;
                 var filter = ScriptGenerator.GenerateAnd(specialOption, sqlInfo.JoinTableName ?? sqlInfo.TableName);
@@ -118,64 +119,80 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 .Where(m => m.Method == RepositoryMethod.GetAll)
                 .Aggregate("", (s, method) => s + GenerateGetAll(method));
 
-            if (!string.IsNullOrEmpty(getAllMethods))
+            if(!string.IsNullOrEmpty(getAllMethods))
+            {
                 sb.AppendLine(getAllMethods);
+            }
 
             // RepositoryMethod.GetBy - for primary key
             var getByPrimaryKeyMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.PrimaryKey)
                 .Aggregate("", (s, method) => s + GenerateGetByPrimaryKey(method));
 
-            if (!string.IsNullOrEmpty(getByPrimaryKeyMethods))
+            if(!string.IsNullOrEmpty(getByPrimaryKeyMethods))
+            {
                 sb.AppendLine(getByPrimaryKeyMethods);
+            }
 
             // RepositoryMethod.GetBy - for filter key
             var getByFilterKeyMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.FilterKey)
                 .Aggregate("", (s, method) => s + GenerateGetByFilterKey(method));
 
-            if (!string.IsNullOrEmpty(getByFilterKeyMethods))
+            if(!string.IsNullOrEmpty(getByFilterKeyMethods))
+            {
                 sb.AppendLine(getByFilterKeyMethods);
+            }
 
             // RepositoryMethod.GetBy - for version key
             var getByVersionKeyMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateGetByVersionKey(method));
 
-            if (!string.IsNullOrEmpty(getByVersionKeyMethods))
+            if(!string.IsNullOrEmpty(getByVersionKeyMethods))
+            {
                 sb.AppendLine(getByVersionKeyMethods);
+            }
 
             // RepositoryMethod.Insert
             var insertMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.Insert)
                 .Aggregate("", (s, method) => s + GenerateInsert(method));
 
-            if (!string.IsNullOrEmpty(insertMethods))
+            if(!string.IsNullOrEmpty(insertMethods))
+            {
                 sb.AppendLine(insertMethods);
+            }
 
             // RepositoryMethod.UpdateBy
             var updateByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateUpdate(method));
 
-            if (!string.IsNullOrEmpty(updateByMethods))
+            if(!string.IsNullOrEmpty(updateByMethods))
+            {
                 sb.AppendLine(updateByMethods);
+            }
 
             // RepositoryMethod.RemoveBy
             var removeByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateRemove(method));
 
-            if (!string.IsNullOrEmpty(removeByMethods))
+            if(!string.IsNullOrEmpty(removeByMethods))
+            {
                 sb.AppendLine(removeByMethods);
+            }
 
             // RepositoryMethod.InsertOrUpdate
             var upsertMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.InsertOrUpdate)
                 .Aggregate("", (s, method) => s + GenerateInsertOrUpdate(method));
 
-            if (!string.IsNullOrEmpty(upsertMethods))
+            if(!string.IsNullOrEmpty(upsertMethods))
+            {
                 sb.AppendLine(upsertMethods);
+            }
 
             return sb.ToString();
         }
@@ -190,7 +207,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var parameters = "";
             var parameterNames = "";
 
-            if (addIsDeletedFilter)
+            if(addIsDeletedFilter)
             {
                 var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
                 parameters = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
@@ -206,7 +223,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("{");
             sb.AppendLine("var sql = " + _selectAllQuery + ";");
 
-            if (addIsDeletedFilter)
+            if(addIsDeletedFilter)
             {
                 var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
@@ -229,7 +246,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("{");
             sb.AppendLine("var sql = " + _selectAllQuery + ";");
 
-            if (addIsDeletedFilter)
+            if(addIsDeletedFilter)
             {
                 var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
                 sb.AppendLine("object parameters = new {" + parameterNames + "};");
@@ -281,7 +298,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var parameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
 
             // last parameter - because have default value
-            if (filterByIsDeleted)
+            if(filterByIsDeleted)
             {
                 var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
                 var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
@@ -303,7 +320,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             sb.AppendLine("object parameters = new {" + methodParameterNames + "};");
             sb.AppendLine("var sql = " + selectQuery + " + " + sqlWhere + ";");
-            if (filterByIsDeleted)
+            if(filterByIsDeleted)
             {
                 var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
                 sb.AppendLine("if (" + parameter + ".HasValue)");
@@ -321,7 +338,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             sb.AppendLine("object parameters = new {" + methodParameterNames + "};");
             sb.AppendLine("var sql = " + selectQuery + " + " + sqlWhere + ";");
-            if (filterByIsDeleted)
+            if(filterByIsDeleted)
             {
                 var parameter = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First().Name.FirstSymbolToLower();
                 sb.AppendLine("if (" + parameter + ".HasValue)");
@@ -347,7 +364,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var queryName = _insertQuery;
 
             // If should not return identifier
-            if (RepositoryInfo.PrimaryKeys.Count != 1 || !RepositoryInfo.Identity)
+            if(RepositoryInfo.PrimaryKeys.Count != 1 || !RepositoryInfo.Identity)
             {
                 // Synchronous method
                 sb.AppendLine("public void Insert(" + methodParameter + ")");
@@ -399,20 +416,28 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Synchronous method
             sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
-            if (RepositoryInfo.JoinRepositoryInfo == null)
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
                 sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            }
             else
+            {
                 sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryByJoinPk + "; ");
+            }
             sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
             sb.AppendLine("}");
 
             // Asynchronous method
             sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
-            if (RepositoryInfo.JoinRepositoryInfo == null)
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
                 sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            }
             else
+            {
                 sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryByJoinPk + "; ");
+            }
             sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
             sb.AppendLine("");
@@ -436,20 +461,28 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // Synchronous method
             sb.AppendLine("public void RemoveBy" + filter.Key + "(" + methodParameter + ")");
             sb.AppendLine("{");
-            if (RepositoryInfo.JoinRepositoryInfo == null)
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
                 sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
             else
+            {
                 sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
             sb.AppendLine("}");
 
             // Asynchronous method
             sb.AppendLine("public async Task RemoveBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
-            if (RepositoryInfo.JoinRepositoryInfo == null)
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
                 sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
             else
+            {
                 sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
             sb.AppendLine("");
@@ -462,10 +495,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("public void RemoveBy" + filter.Key + "(" + methodParameters + ")");
             sb.AppendLine("{");
             sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-            if (RepositoryInfo.JoinRepositoryInfo == null)
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
                 sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
             else
+            {
                 sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
             sb.AppendLine("}");
 
@@ -473,10 +510,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("public async Task RemoveBy" + filter.Key + "Async(" + methodParameters + ")");
             sb.AppendLine("{");
             sb.AppendLine("object parameters = new {" + sqlParameters + "};");
-            if (RepositoryInfo.JoinRepositoryInfo == null)
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
                 sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+            }
             else
+            {
                 sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+            }
             sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
             sb.AppendLine("}");
             sb.AppendLine("");
