@@ -6,6 +6,7 @@ using TestRepositoryGeneration.Infrastructure;
 namespace TestRepositoryGeneration.DataObjects.VersionsRepositories
 {
     [DataAccess(TableVersion = "MenuItemVersions", FilterKey1 = "MenuCategoryId", IsDeleted = false)]
+    [DataArchive(TableVersion = "menu_item_versions", FilterKey1 = "MenuCategoryId", IsDeleted = false)]
     public class MenuItem : RecipieItem
     {
         [Key]

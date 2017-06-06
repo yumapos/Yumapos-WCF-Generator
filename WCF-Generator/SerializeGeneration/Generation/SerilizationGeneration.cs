@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using WCFGenerator.Common;
-using WCFGenerator.RepositoriesGeneration.Heplers;
+using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.SerializeGeneration.Configuration;
 using WCFGenerator.SerializeGeneration.Helpers;
 using WCFGenerator.SerializeGeneration.Models;

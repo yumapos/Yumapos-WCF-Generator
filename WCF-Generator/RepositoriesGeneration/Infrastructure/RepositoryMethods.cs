@@ -6,6 +6,7 @@
         Insert,
         GetBy,
         UpdateBy,
-        RemoveBy
+        RemoveBy,
+        InsertOrUpdate
     }
 }

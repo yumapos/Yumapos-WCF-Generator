@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string InsertQuery = @"DECLARE @TempTable TABLE (Id int);INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id INTO @TempTable VALUES(@Name,@PrintText,@ImageId,@ValidFrom,@ValidTo,@IsDeleted,@LimitPerOrder,@Priority,@MaxTimesPerCustomer,@IsActive,@TenantId);DECLARE @TempId int; SELECT @TempId = Id FROM @TempTable;INSERT INTO [ElectronicCouponsTyped]([ElectronicCouponsTyped].[ElectronicCouponsId],[ElectronicCouponsTyped].[ElectronicCouponsPresetId],[ElectronicCouponsTyped].[IsPromotionalCampaign],[ElectronicCouponsTyped].[TenantId]) OUTPUT INSERTED.ElectronicCouponsId INTO @TempTable VALUES(@TempId,@ElectronicCouponsPresetId,@IsPromotionalCampaign,@TenantId);SELECT Id FROM @TempTable;";
 		private const string UpdateQueryBy = @"UPDATE [ElectronicCouponsTyped] SET [ElectronicCouponsTyped].[ElectronicCouponsId] = @ElectronicCouponsId,[ElectronicCouponsTyped].[ElectronicCouponsPresetId] = @ElectronicCouponsPresetId,[ElectronicCouponsTyped].[IsPromotionalCampaign] = @IsPromotionalCampaign FROM [ElectronicCouponsTyped] ";
 		private const string DeleteQueryBy = @"UPDATE [ElectronicCoupons] SET IsDeleted = 1 ";
+		private const string InsertOrUpdateQuery = @"UPDATE [ElectronicCouponsTyped] SET [ElectronicCouponsTyped].[ElectronicCouponsId] = @ElectronicCouponsId,[ElectronicCouponsTyped].[ElectronicCouponsPresetId] = @ElectronicCouponsPresetId,[ElectronicCouponsTyped].[IsPromotionalCampaign] = @IsPromotionalCampaign FROM [ElectronicCouponsTyped]  WHERE [ElectronicCouponsTyped].[ElectronicCouponsId] = @ElectronicCouponsId{andTenantId:[ElectronicCouponsTyped]}  IF @@ROWCOUNT = 0 BEGIN DECLARE @TempTable TABLE (Id int);INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id INTO @TempTable VALUES(@Name,@PrintText,@ImageId,@ValidFrom,@ValidTo,@IsDeleted,@LimitPerOrder,@Priority,@MaxTimesPerCustomer,@IsActive,@TenantId);DECLARE @TempId int; SELECT @TempId = Id FROM @TempTable;INSERT INTO [ElectronicCouponsTyped]([ElectronicCouponsTyped].[ElectronicCouponsId],[ElectronicCouponsTyped].[ElectronicCouponsPresetId],[ElectronicCouponsTyped].[IsPromotionalCampaign],[ElectronicCouponsTyped].[TenantId]) OUTPUT INSERTED.ElectronicCouponsId INTO @TempTable VALUES(@TempId,@ElectronicCouponsPresetId,@IsPromotionalCampaign,@TenantId);SELECT Id FROM @TempTable; END";
 		private const string UpdateQueryJoin = "UPDATE [ElectronicCoupons] SET [ElectronicCoupons].[Name] = @Name,[ElectronicCoupons].[PrintText] = @PrintText,[ElectronicCoupons].[ImageId] = @ImageId,[ElectronicCoupons].[ValidFrom] = @ValidFrom,[ElectronicCoupons].[ValidTo] = @ValidTo,[ElectronicCoupons].[IsDeleted] = @IsDeleted,[ElectronicCoupons].[LimitPerOrder] = @LimitPerOrder,[ElectronicCoupons].[Priority] = @Priority,[ElectronicCoupons].[MaxTimesPerCustomer] = @MaxTimesPerCustomer,[ElectronicCoupons].[IsActive] = @IsActive FROM [ElectronicCoupons] ";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [ElectronicCouponsTyped].[ElectronicCouponsId] FROM [ElectronicCouponsTyped] ";
 		private const string WhereQueryByElectronicCouponsId = "WHERE [ElectronicCouponsTyped].[ElectronicCouponsId] = @ElectronicCouponsId{andTenantId:[ElectronicCouponsTyped]} ";
@@ -83,15 +84,13 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		*/
 		/*
-		public int Insert(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
+		public void Insert(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
 		{
-		var res = DataAccessService.InsertObject(electronicCouponsTyped,InsertQuery);
-		return (int)res;
+		DataAccessService.InsertObject(electronicCouponsTyped,InsertQuery);
 		}
-		public async Task<int> InsertAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
+		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
 		{
-		var res = await DataAccessService.InsertObjectAsync(electronicCouponsTyped,InsertQuery);
-		return (int)res;
+		await DataAccessService.InsertObjectAsync(electronicCouponsTyped,InsertQuery);
 		}
 
 		*/
@@ -134,6 +133,17 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped>(sql, parameters);
 		}
 
+
+		*/
+		/*
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
+		{
+		DataAccessService.ExecuteScalar(InsertOrUpdateQuery,electronicCouponsTyped);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
+		{
+		await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped >(InsertOrUpdateQuery,electronicCouponsTyped);
+		}
 
 		*/
 

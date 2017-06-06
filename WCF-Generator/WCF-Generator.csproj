@@ -29,6 +29,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -50,6 +51,10 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -134,6 +139,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq">
       <Private>True</Private>
     </Reference>
@@ -166,20 +172,25 @@
     <Compile Include="DecoratorGeneration\Infrastructure\DecoratorInfo.cs" />
     <Compile Include="RepositoriesGeneration\Analysis\SolutionSyntaxWalker.cs" />
     <Compile Include="RepositoriesGeneration\Configuration\Settings.cs" />
-    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorСacheRepository.cs" />
-    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Core\CacheRepositoryCodeGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Core\RepositoryCodeGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionedRepositoryService.cs" />
-    <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionsRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Core\SQL\ISqlScriptGenerator.cs" />
+    <Compile Include="RepositoriesGeneration\Core\VersionsRepositoryCodeGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryFactory.cs" />
     <Compile Include="DecoratorGeneration\Core\DecoratorCodeFactory.cs" />
+    <Compile Include="RepositoriesGeneration\Core\SQL\SQLPostgresScriptGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\SQL\SQLScriptGenerator.cs" />
-    <Compile Include="RepositoriesGeneration\Heplers\ExtensionMethods.cs" />
+    <Compile Include="RepositoriesGeneration\Enums\DatabaseType.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\ExtensionMethods.cs" />
     <Compile Include="Common\CodeHelper.cs" />
-    <Compile Include="RepositoriesGeneration\Heplers\RepositoryDataModelHelper.cs" />
-    <Compile Include="RepositoriesGeneration\Heplers\SyntaxAnalysisHelper.cs" />
-    <Compile Include="RepositoriesGeneration\Heplers\SystemToSqlTypeMapper.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\PostgresColumnsHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\SystemToPostgreSqlTypeMapper.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\RepositoryDataModelHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\SyntaxAnalysisHelper.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\AnalysisError.cs" />
-    <Compile Include="RepositoriesGeneration\Infrastructure\BaseCodeClassGeneratorRepository.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryCodeGeneratorAbstract.cs" />
     <Compile Include="Common\Infrastructure\ICodeClassGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryAnalysisError.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryFieldInfo.cs" />
@@ -192,7 +203,7 @@
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryMethods.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryType.cs" />
-    <Compile Include="RepositoriesGeneration\Services\AttributeAndPropeperties.cs" />
+    <Compile Include="RepositoriesGeneration\Services\AttributeAndProperties.cs" />
     <Compile Include="RepositoriesGeneration\Services\RepositoryService.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataAccessAttribute.cs" />
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DataMany2ManyAttribute.cs" />

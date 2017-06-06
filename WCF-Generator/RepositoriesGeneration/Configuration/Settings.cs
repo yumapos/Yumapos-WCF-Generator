@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using WCFGenerator.RepositoriesGeneration.Enums;
 
 namespace WCFGenerator.RepositoriesGeneration.Configuration
 {
@@ -151,5 +152,13 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
             get { return ((string)(base["DefaultNamespace"])); }
         }
 
+        /// <summary>
+        ///     Database type
+        /// </summary>
+        [ConfigurationProperty("DatabaseType", DefaultValue = 1, IsRequired = true)]
+        public int DatabaseType
+        {
+            get { return ((int)(base["DatabaseType"])); }
+        }
     }
 }

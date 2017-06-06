@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Analysis;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
-using WCFGenerator.RepositoriesGeneration.Heplers;
+using WCFGenerator.RepositoriesGeneration.Enums;
+using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 using MethodInfo = WCFGenerator.RepositoriesGeneration.Infrastructure.MethodInfo;
@@ -138,21 +138,22 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
                 #endregion
 
-                var list = new List<BaseCodeClassGeneratorRepository>
+                var list = new List<RepositoryCodeGeneratorAbstract>
                 {
                     // version repository
-                    new CodeClassGeneratorVersionsRepository {RepositoryInfo = r.RepositoryInfo},
+                    new VersionsRepositoryCodeGenerator {RepositoryInfo = r.RepositoryInfo},
                     // cache repository
-                    new CodeClassGeneratorCacheRepository {RepositoryInfo = r.RepositoryInfo}
+                    new CacheRepositoryCodeGenerator {RepositoryInfo = r.RepositoryInfo}
                 };
                 // Skip service-repository for many2many model
-                if (!r.RepositoryInfo.IsManyToMany)
+                if(!r.RepositoryInfo.IsManyToMany)
                 {
-                    list.Add(new CodeClassGeneratorVersionedRepositoryService { RepositoryInfo = r.RepositoryInfo });
+                    list.Add(new CodeClassGeneratorVersionedRepositoryService {RepositoryInfo = r.RepositoryInfo});
                 }
+
                 return list;
             });
-            
+
             canBeGeneratedRepositories = canBeGeneratedRepositories.Where(r => !r.RepositoryInfo.IsVersioning).Concat(versioned).ToList();
 
             // Skiped with error
@@ -169,7 +170,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         ///     Get general info about candidate for repository
         /// </summary>
         /// <param name="doClass">Class syntax</param>
-        private BaseCodeClassGeneratorRepository GetRepository(ClassDeclarationSyntax doClass)
+        private RepositoryCodeGeneratorAbstract GetRepository(ClassDeclarationSyntax doClass)
         {
             var className = doClass.Identifier.Text;
 
@@ -391,12 +392,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 repositoryInfo.RequiredNamespaces.Add(RepositoryType.Cache, new List<string> { repositoryInterfaceNamespace });
             }
 
+            repositoryInfo.DatabaseType = (DatabaseType)_config.DatabaseType;
+
             #endregion
 
-            var repositoryAndDo = new CodeClassGeneratorRepository
+            var repositoryAndDo = new RepositoryCodeGenerator
             {
-                RepositoryInfo = repositoryInfo,
+                RepositoryInfo = repositoryInfo
             };
+            
             // return general repository
             return repositoryAndDo;
         }
@@ -415,8 +419,9 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Add common methods
             var methods = new List<MethodImplementationInfo>
             {
-                new MethodImplementationInfo() { Method = RepositoryMethod.GetAll},
-                new MethodImplementationInfo() { Method = RepositoryMethod.Insert}
+                new MethodImplementationInfo { Method = RepositoryMethod.GetAll },
+                new MethodImplementationInfo { Method = RepositoryMethod.Insert },
+                new MethodImplementationInfo { Method = RepositoryMethod.InsertOrUpdate}
             };
 
             // Methods by keys from model (without methods from base model)

@@ -1,11 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WCFGenerator.RepositoriesGeneration.Enums;
+using WCFGenerator.RepositoriesGeneration.Helpers;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
-    internal class SqlScriptGenerator
+    internal class SqlScriptGenerator : ISqlScriptGenerator
     {
         private const string _tempTable = "@Temp";
         private const string _sliceDateColumnName = "Modified";
@@ -23,22 +24,22 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         #region Cache table
 
-        public static string GenerateFields(SqlInfo info)
+        public string GenerateFields(SqlInfo info)
         {
             return Fields(info.TableColumns, info.TableName);
         }
 
-        public static string GenerateValues(SqlInfo info)
+        public string GenerateValues(SqlInfo info)
         {
             return Values(info.TableColumns);
         }
 
-        public static string GenerateSelectAll(SqlInfo info)
+        public string GenerateSelectAll(SqlInfo info)
         {
             return GenerateSelectBy(info, null) + " " + WhereTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateSelectBy(SqlInfo info, int? topNumber = null)
+        public string GenerateSelectBy(SqlInfo info, int? topNumber = null)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
@@ -52,7 +53,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Select(info.TableColumns, info.TableName, topNumber) + " " + From(info.TableName) + " ";
         }
 
-        public static string GenerateInsert(SqlInfo info)
+        public string GenerateInsert(SqlInfo info)
         {
             // Skip PK if identity = true
             var columns = info.TableColumns
@@ -85,35 +86,35 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return insertJoinedTable;
         }
 
-        public static string GenerateInsertToTemp(SqlInfo info)
+        public string GenerateInsertToTemp(SqlInfo info)
         {
             return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier);" +
                                                         "INSERT INTO "+ _tempTable + " " +
                                                         "SELECT " + Field(info.TableName, info.PrimaryKeyNames.First()) + " FROM " + info.TableName + " ";//TODO FIX TO MANY KEYS
         }
 
-        public static string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
+        public string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
         {
             return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateWhereJoinPk( SqlInfo info)
+        public string GenerateWhereJoinPk( SqlInfo info)
         {
             return Where(new [] { info.JoinPrimaryKeyNames.First() }, info.JoinTableName) + AndTenantRelated(info.JoinTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
         }
 
 
-        public static string GenerateAnd(string selectedFilter, string ownerTable, string condition = "=")
+        public string GenerateAnd(string selectedFilter, string ownerTable, string condition = "=")
         {
             return And(new []{selectedFilter}, ownerTable, condition);
         }
 
-        public static string GenerateOrderBySliceDate(SqlInfo info)
+        public string GenerateOrderBySliceDate(SqlInfo info)
         {
             return OrderBy("Modified", info.JoinTableName, true);
         }
 
-        public static string GenerateUpdate(SqlInfo info)
+        public string GenerateUpdate(SqlInfo info)
         {
             var columns = info.TableColumns.Where(c => info.IdentityColumns.All(pk => pk != c)).ToList();
             return Update(info.TableName) + " " 
@@ -121,7 +122,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                     + From(info.TableName) + " ";
         }
 
-        public static string GenerateUpdateJoin(SqlInfo info)
+        public string GenerateUpdateJoin(SqlInfo info)
         {
             // use pk from inherite model
             var values = info.JoinTableColumns
@@ -133,7 +134,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                    + From(info.JoinTableName) + " ";
         }
 
-        public static string GenerateRemove(SqlInfo info)
+        public string GenerateRemove(SqlInfo info)
         {
             // base type of repository and "isDeleted" flag - set IsDeleted = true
             if (info.IsDeleted && info.VersionTableName == null)
@@ -157,7 +158,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         #region VERSION TABLE
 
-        public static string GenerateInsertToVersionTable(SqlInfo info)
+        public string GenerateInsertToVersionTable(SqlInfo info)
         {
             var columns = info.TableColumns.Concat(info.HiddenTableColumns).ToList();
             var classProperties = Fields(columns, info.TableName);
@@ -187,7 +188,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                        "VALUES (" + classValues + ")";
         }
 
-        public static string GenerateSelectByToVersionTable(SqlInfo info)
+        public string GenerateSelectByToVersionTable(SqlInfo info)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
@@ -201,7 +202,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Select(info.TableColumns, info.VersionTableName) + " " + From(info.VersionTableName) + " ";
         }
 
-        public static string GenerateSelectByKeyAndSliceDateToVersionTable(SqlInfo info)
+        public string GenerateSelectByKeyAndSliceDateToVersionTable(SqlInfo info)
         {
             var versionTableAlias = "versionTable";
             
@@ -241,25 +242,34 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             }
         }
 
-        public static string GenerateWhereVersions(IEnumerable<string> selectedFilters, SqlInfo info)
+        public string GenerateWhereVersions(IEnumerable<string> selectedFilters, SqlInfo info)
         {
             return Where(selectedFilters, info.VersionTableName) + AndTenantRelated(info.VersionTableName, info.TenantRelated) + " ";
         }
 
-        public static string GenerateWhereVersionsWithAlias(IEnumerable<string> selectedFilters, SqlInfo info)
+        public string GenerateWhereVersionsWithAlias(IEnumerable<string> selectedFilters, SqlInfo info)
         {
             return Where(selectedFilters, _versionTableAlias1) + AndTenantRelated(_versionTableAlias1, info.TenantRelated) + " ";
         }
 
-        public static string GenerateAndVersionsWithAlias(string selectedFilter, SqlInfo info, string condition = "=")
+        public string GenerateAndVersionsWithAlias(string selectedFilter, SqlInfo info, string condition = "=")
         {
             var tableAlias = info.JoinVersionTableName != null ? _joinVersionTableAlias1 : _versionTableAlias1;
             return And(new[] { selectedFilter }, tableAlias, condition);
         }
 
-        public static string GenerateWhereJoinPkVersion(SqlInfo info)
+        public string GenerateWhereJoinPkVersion(SqlInfo info)
         {
             return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinVersionTableName) + AndTenantRelated(info.JoinVersionTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
+        }
+
+        public string GenerateInsertOrUpdate(SqlInfo info)
+        {
+            var insert = GenerateInsert(info);
+            var where = GenerateWhere(info.PrimaryKeyNames, info);
+            var conflict = " IF @@ROWCOUNT = 0 BEGIN ";
+            var update = GenerateUpdate(info);
+            return update + " "+ where + conflict + insert + " END";
         }
 
         #endregion
@@ -398,7 +408,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         }
 
         #endregion
-        
+
+        public SqlInfo GetTableInfo(SqlInfo repositoryInfo)
+        {
+            repositoryInfo.TableName = GenerateTableName(repositoryInfo.TableName);
+            repositoryInfo.VersionTableName = repositoryInfo.VersionTableName != null ? GenerateTableName(repositoryInfo.VersionTableName) : null;
+            repositoryInfo.JoinTableName = repositoryInfo.JoinTableName != null ? GenerateTableName(repositoryInfo.JoinTableName) : null;
+            repositoryInfo.JoinVersionTableName = repositoryInfo.JoinVersionTableName != null ? GenerateTableName(repositoryInfo.JoinVersionTableName) : null;
+            repositoryInfo.VersionKeyType = repositoryInfo.VersionKeyType != null ? SystemToSqlTypeMapper.GetSqlType(repositoryInfo.VersionKeyType) : null;
+            repositoryInfo.PrimaryKeyType = repositoryInfo.PrimaryKeyType != null ? SystemToSqlTypeMapper.GetSqlType(repositoryInfo.PrimaryKeyType) : null;
+
+            return repositoryInfo;
+        }
     }
 
     internal struct SqlInfo
@@ -424,5 +445,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool Identity;
         public bool JoinIdentity;
         public bool IsDeleted { get; set; }
+        public DatabaseType DatabaseType { get; set; }
     }
 }

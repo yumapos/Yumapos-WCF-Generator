@@ -1,20 +1,19 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WCFGenerator.RepositoriesGeneration.Heplers;
+using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core
 {
-    internal class CodeClassGeneratorVersionedRepositoryService : BaseCodeClassGeneratorRepository
+    internal class CodeClassGeneratorVersionedRepositoryService : RepositoryCodeGeneratorAbstract
     {
         #region Fields
 
         private readonly List<RepositoryFieldInfo> _fieldInfoList = new List<RepositoryFieldInfo>();
 
-        private readonly string _cacheRepository = CodeClassGeneratorCacheRepository.RepositoryKind + "Repository";
-        private readonly string _versionRepository = CodeClassGeneratorVersionsRepository.RepositoryKind + "Repository";
+        private readonly string _cacheRepository = CacheRepositoryCodeGenerator.RepositoryKind + "Repository";
+        private readonly string _versionRepository = VersionsRepositoryCodeGenerator.RepositoryKind + "Repository";
         private const string DataAccessControllerField = "_dataAccessController";
         private const string DateTimeServiceField = "_dateTimeService";
 

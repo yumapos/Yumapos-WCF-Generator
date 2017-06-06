@@ -7,7 +7,7 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 {
     public interface IAddressRepository : IRepository<Address>
     {
-        Task<Guid> InsertAsync(Address address);
+        Task InsertAsync(Address address);
         Task<IEnumerable<Address>> GetAllAsync(bool? isDeleted);
         Task<Address> GetByIdAsync(Guid id, bool? isDeleted);
         Task<Address> GetByCountryAsync(string country, bool? isDeleted);
@@ -15,6 +15,7 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Task<Address> GetByCountryAndCityAndZipCodeAsync(string country, string city, string zipCode, bool? isDeleted);
         Task UpdateByIdAsync(Address address);
         Task RemoveByIdAsync(Address address);
+        Task InsertOrUpdateAsync(Address address);
     }
 
 }
