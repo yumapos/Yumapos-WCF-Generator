@@ -18,6 +18,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info);
 
+        string GenerateWhereBetweenDates(IEnumerable<string> commonFilters, IEnumerable<string> datesFilters, SqlInfo info);
+
         string GenerateWhereJoinPk(SqlInfo info);
 
         string GenerateAnd(string selectedFilter, string ownerTable, string condition = "=");

@@ -1,85 +1,27 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TestDecoratorGeneration
 {
-    public partial class ServiceDecorator : TestDecoratorGeneration.IService, IDisposable
+    public class ServiceDecorator : IService, IDisposable
     {
-        private string _methodName;
-        private object[] _args;
-        private bool _isInitialized;
-
-        public ServiceDecorator()
+       public void Dispose()
         {
-            try
-            {
-                DecoratedComponent = new Service();
-            }
-            catch (Exception e)
-            {
-                OnException(e);
-                Dispose();
-            }
-            finally
-            {
-                OnExit(null);
-            }
         }
 
-        public void Dispose()
+        public async Task Open()
         {
-            try
-            {
-                if(DecoratedComponent != null)
-                {
-                    DecoratedComponent.Dispose();
-                }
-            }
-            catch (Exception e)
-            {
-                OnException(e);
-            }
-            finally
-            {
-                OnExit(null);
-            }
-        }
-        private async Task<ICommandExecutionResult> OnEntryAsync(string methodName, object[] args)
-        {
-            OnEntry(methodName, args);
-
-            return new CommandExecutionResult();
         }
 
-        private void OnEntry(string methodName, object[] args)
+        public async Task<ResponseDto> AddItem(Guid id, string name)
         {
-            if (!_isInitialized)
-            {
-                _methodName = methodName;
-                _args = args;
-                _isInitialized = true;
-            }
+            return new ResponseDto();
         }
 
-        private  void OnExit(object res = null)
+        public async Task<IEnumerable<ItemDto>> GetItems()
         {
-            
-        }
-
-        
-        private async Task OnExitAsync(object res = null)
-        {
-
-        }
-
-        private void OnException(Exception exception)
-        {
-            
-        }
-
-        private void OnFinally()
-        {
-            
+            return new List<ItemDto>();
         }
     }
 }

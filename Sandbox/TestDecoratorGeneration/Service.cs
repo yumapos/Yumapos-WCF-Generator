@@ -4,55 +4,50 @@ using System.Threading.Tasks;
 
 namespace TestDecoratorGeneration
 {
-    public class Service : IService, IDisposable
+    public partial class Service : IService, IDisposable
     {
-        public Service(){}
+        private string _methodName;
+        private object[] _args;
+        private bool _isInitialized;
 
-        public int Id { get; set; }
-
-        [IgnoreDecoration]
-        public async Task Open()
+        public Service()
         {
-            
+            DecoratedComponent = new ServiceDecorator();
         }
-        [IgnoreDecoration]
-        public async Task<bool> AddItem2(Guid id, string name)
-        {
-            return true;
-        }
-        [IgnoreDecoration]
-        public async Task<ResponseDto> AddItem(Guid id, string name)
-        {
-            return new ResponseDto();
-        }
-        [IgnoreDecoration]
-        public async Task<IEnumerable<ItemDto>> GetItems()
-        {
-            return new List<ItemDto>();
-        }
-        [IgnoreDecoration]
-        public void Stop()
-        {
-            
-        }
-
-        [IgnoreDecoration]
-        public async Task<string> GetSystemSettings(string[] listOfSystemSettings)
-        {
-            return "";
-        }
-        [IgnoreDecoration]
-        public Guid GetGuid()
-        {
-            return Guid.Empty;
-        }
-        [IgnoreDecoration]
-        public int GetInt()
-        {
-            return 0;
-        }
-
 
         public void Dispose(){}
+
+        private async Task<ICommandExecutionResult> OnEntryAsync(string methodName, object[] args)
+        {
+            OnEntry(methodName, args);
+
+            return new CommandExecutionResult();
+        }
+
+        private void OnEntry(string methodName, object[] args)
+        {
+            if (!_isInitialized)
+            {
+                _methodName = methodName;
+                _args = args;
+                _isInitialized = true;
+            }
+        }
+
+        private async Task OnExitAsync(object res = null)
+        {
+        }
+
+        private void OnExit(object res = null)
+        {
+        }
+
+        private void OnException(Exception exception)
+        {
+        }
+
+        private void OnFinally()
+        {
+        }
     }
 }

@@ -70,23 +70,23 @@ namespace WCFGenerator
                 throw new ApplicationException("Error occured on repository generation", e);
             }
 
-            try
-            {
-                RunSerializeGeneration();
-            }
-            catch (Exception e)
-            {
-                throw new ApplicationException("Error occured on serialize generation", e);
-            }
+            //try
+            //{
+            //    RunSerializeGeneration();
+            //}
+            //catch (Exception e)
+            //{
+            //    throw new ApplicationException("Error occured on serialize generation", e);
+            //}
 
-            try
-            {
-                RunWcfGeneration();
-            }
-            catch (Exception e)
-            {
-                throw new ApplicationException("Error occured on wcf generation.", e);
-            }
+            //try
+            //{
+            //    RunWcfGeneration();
+            //}
+            //catch (Exception e)
+            //{
+            //    throw new ApplicationException("Error occured on wcf generation.", e);
+            //}
 
             try
             {
@@ -164,18 +164,27 @@ namespace WCFGenerator
         {
             Console.WriteLine("Start decoration generation...");
 
-            // Configure generator 
-            var config = DecoratorGeneratorSettings.GetConfigs();
-
-            if (config == null)
+            try
             {
-                return;
+                // Configure generator 
+                var config = DecoratorGeneratorSettings.GetConfigs();
+
+                if (config == null)
+                {
+                    return;
+                }
+
+                var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
+
+                // run generation
+                AsyncContext.Run(() => generator.Generate());
             }
-
-            var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
-
-            // run generation
-            AsyncContext.Run(() => generator.Generate());
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw e;
+            }
+            
 
             Console.WriteLine("Decoration generation completed.");
         }
