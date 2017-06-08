@@ -98,9 +98,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
-        public string GenerateWhereBetweenDates(IEnumerable<string> commonFilters, IEnumerable<string> datesFilters, SqlInfo info)
+        public string GenerateWhere(IEnumerable<string> commonFilters, IEnumerable<string> datesFilters, SqlInfo info)
         {
-            return Where(commonFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " " + WhereDates(datesFilters, info.TableName);
+            if(commonFilters.Any())
+            {
+                return Where(commonFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " AND " + WhereDates(datesFilters, info.TableName);
+            }
+            return " WHERE " + WhereDates(datesFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated);
         }
 
         public string GenerateWhereJoinPk( SqlInfo info)

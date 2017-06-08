@@ -208,7 +208,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             repositoryInfo.TableName = tableName;
 
             // Get filters
-            var filterKeys = (new[] { dataAccess.FilterKey1, dataAccess.FilterKey2, dataAccess.FilterKey3 })
+            var filterKeys = new[] {dataAccess.FilterKey1, dataAccess.FilterKey2, dataAccess.FilterKey3}
                 .Where(fk => fk != null)
                 .Select(fk =>
                 {
@@ -218,19 +218,27 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                         var name = f.Trim();
                         var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == name);
                         var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(parameter);
-                        return new ParameterInfo(name, parameter != null ? fullTypeName : null);
+                        var needGeneratePeriod = fullTypeName == "System.DateTime" || fullTypeName == "System.DateTimeOffset";
+                        return new ParameterInfo(name, parameter != null ? fullTypeName : null, needGeneratePeriod);
                     }).ToList();
                     return new FilterInfo(string.Join("And", fk.Split(',').Select(f => f.Trim())), filters, FilterType.FilterKey);
                 });
 
             repositoryInfo.FilterInfos.AddRange(filterKeys);
-           
+
             // Common filter - isDeleted, modified
             if(dataAccess.IsDeleted.HasValue)
             {
-                repositoryInfo.SpecialOptionsIsDeleted = new FilterInfo("IsDeleted", new List<ParameterInfo> {new ParameterInfo("IsDeleted", "bool", Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower())}, FilterType.FilterKey);
+                repositoryInfo.SpecialOptionsIsDeleted = new FilterInfo("IsDeleted",
+                    new List<ParameterInfo>
+                    {
+                        new ParameterInfo("IsDeleted", "bool", false, Convert.ToString(dataAccess.IsDeleted).FirstSymbolToLower())
+                    }, FilterType.FilterKey);
             }
-            repositoryInfo.SpecialOptionsModified = new FilterInfo("Modified", new List<ParameterInfo> {new ParameterInfo("Modified", "DateTimeOffset")}, FilterType.FilterKey);
+            repositoryInfo.SpecialOptionsModified = new FilterInfo("Modified", new List<ParameterInfo>
+            {
+                new ParameterInfo("Modified", "DateTimeOffset", false)
+            }, FilterType.FilterKey);
             
             repositoryInfo.VersionTableName = dataAccess.TableVersion;
             var isVersioning = dataAccess.TableVersion != null;
@@ -257,7 +265,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 .Select(p =>
                 {
                     var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(p);
-                    return new ParameterInfo(p.Identifier.Text, fullTypeName);
+                    return new ParameterInfo(p.Identifier.Text, fullTypeName, false);
                 });
 
             repositoryInfo.PrimaryKeys.AddRange(primaryKeys);
@@ -272,7 +280,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(versionKey);
 
                 // add filter parameter
-                repositoryInfo.VersionKey = new ParameterInfo(keyName, fullTypeName);
+                repositoryInfo.VersionKey = new ParameterInfo(keyName, fullTypeName, false);
             }
 
             // Many to many
