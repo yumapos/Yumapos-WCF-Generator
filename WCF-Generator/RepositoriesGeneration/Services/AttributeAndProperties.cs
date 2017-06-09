@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
 namespace WCFGenerator.RepositoriesGeneration.Services
@@ -41,6 +42,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             {
                 ManyToManyEntytyType = obj.GetParameterByKeyName("ManyToManyEntytyType"),
                 EntityType = obj.GetParameterByKeyName("EntityType"),
+            };
+            return attr;
+        }
+
+        public static explicit operator DbIgnoreAttribute(AttributeAndProperties obj)
+        {
+            var attr = new DbIgnoreAttribute
+            {
+                DbType = obj.GetParameterByKeyName("DbType")
             };
             return attr;
         }

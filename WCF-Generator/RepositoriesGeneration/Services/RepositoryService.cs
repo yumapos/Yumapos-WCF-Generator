@@ -253,11 +253,32 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
             var properties = doClass.Members.OfType<PropertyDeclarationSyntax>().Where(cp => cp.GetterExist() && cp.SetterExist()).ToList();
 
-            // Add sql column name - skip members marked [DbIgnoreAttribute]
-            var elements = properties
-                .Where(p => !p.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
-                .Select(p => p.Identifier.Text);
-            repositoryInfo.Elements.AddRange(elements);
+            // aggregate columns description
+            foreach (var property in properties)
+            {
+                if(property.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
+                {
+                    var convertedType = 0; // default DatabaseType.All
+                    var typeInAttribute = ((DbIgnoreAttribute)SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(property).FirstOrDefault(p => p.Name == RepositoryDataModelHelper.DbIgnoreAttributeName)).DbType;
+                    if(typeInAttribute != null) int.TryParse(typeInAttribute, out convertedType);
+
+                    repositoryInfo.Elements.Add(new RepositoryInfo.ExtendedElements
+                    {
+                        ElementName = property.Identifier.Text,
+                        IsIgnored = true,
+                        IgnoredDbType = (DatabaseType)convertedType
+                    });
+                }
+                else
+                {
+                    repositoryInfo.Elements.Add(new RepositoryInfo.ExtendedElements
+                    {
+                        ElementName = property.Identifier.Text,
+                        IsIgnored = false,
+                        IgnoredDbType = null
+                    });
+                }
+            }
 
             // Primary keys info
             var primaryKeys = properties
