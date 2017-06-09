@@ -98,6 +98,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
         }
 
+        public string GenerateWhere(IEnumerable<string> commonFilters, IEnumerable<string> datesFilters, SqlInfo info)
+        {
+            if(commonFilters.Any())
+            {
+                return Where(commonFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " AND " + WhereDates(datesFilters, info.TableName);
+            }
+            return " WHERE " + WhereDates(datesFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated);
+        }
+
         public string GenerateWhereJoinPk( SqlInfo info)
         {
             return Where(new [] { info.JoinPrimaryKeyNames.First() }, info.JoinTableName) + AndTenantRelated(info.JoinTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
@@ -367,6 +376,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
             sb.Append("WHERE ");
             sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
+
+            return sb.ToString();
+        }
+
+        private static string WhereDates(IEnumerable<string> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] >= @start" + i)));
+            sb.Append(" AND ");
+            sb.Append(string.Join(" AND ", parameters.Select(i => ownerTableName + ".[" + i + "] < @end" + i)));
 
             return sb.ToString();
         }

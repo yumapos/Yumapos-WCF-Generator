@@ -56,7 +56,7 @@
     <Compile Include="ItemDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseDto.cs" />
-    <Compile Include="ServiceDecorator.g.cs" />
+    <Compile Include="Service.g.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

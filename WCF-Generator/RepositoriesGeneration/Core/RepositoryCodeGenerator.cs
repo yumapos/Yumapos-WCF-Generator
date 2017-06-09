@@ -74,7 +74,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
             sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
 
-
             if(RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var updateJoin = ScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
@@ -87,12 +86,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             foreach (var method in RepositoryInfo.PossibleKeysForMethods)
             {
                 var key = method.Key;
-                var parametrs = method.Parameters.Select(p => p.Name).ToList();
-                var sql = ScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+                var parametrs = method.Parameters.Where(x => x.NeedGeneratePeriod == false).Select(p => p.Name).ToList();
+                var datesParams = method.Parameters.Where(x => x.NeedGeneratePeriod).Select(p => p.Name);
+                var sql = datesParams.Any() ? ScriptGenerator.GenerateWhere(parametrs, datesParams, sqlInfo).SurroundWithQuotes() : ScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
             }
+
             // where by join PK
-            if(RepositoryInfo.JoinRepositoryInfo != null)
+            if (RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var sqlJoin = ScriptGenerator.GenerateWhereJoinPk(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _whereQueryBy + _join + _pk + " = " + sqlJoin + ";");
@@ -164,8 +165,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine(insertMethods);
             }
 
+            var filtersWithoutDateTimes = new List<MethodImplementationInfo>();
+            foreach (var impl in RepositoryInfo.MethodImplementationInfo)
+            {
+                if(impl.FilterInfo != null && impl.FilterInfo.Parameters.Count(t => t.NeedGeneratePeriod) == 0)
+                {
+                    filtersWithoutDateTimes.Add(impl);
+                }
+            }
             // RepositoryMethod.UpdateBy
-            var updateByMethods = RepositoryInfo.MethodImplementationInfo
+            var updateByMethods = filtersWithoutDateTimes
                 .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateUpdate(method));
 
@@ -175,7 +184,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             // RepositoryMethod.RemoveBy
-            var removeByMethods = RepositoryInfo.MethodImplementationInfo
+            var removeByMethods = filtersWithoutDateTimes
                 .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
                 .Aggregate("", (s, method) => s + GenerateRemove(method));
 
@@ -294,11 +303,36 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var sqlWhere = _whereQueryBy + filter.Key;
             var selectQuery = _selectByQuery;
 
-            var parameters = filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
-            var parameterNames = filter.Parameters.Select(k => k.Name.FirstSymbolToLower()).ToList();
+            var parameters = filter.Parameters
+                .Where(x => x.NeedGeneratePeriod == false)
+                .Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
+            var parameterNames = filter.Parameters
+                .Where(x => x.NeedGeneratePeriod == false)
+                .Select(k => k.Name.FirstSymbolToLower()).ToList();
+
+            var dateTimeParams = filter.Parameters.Where(x => x.NeedGeneratePeriod);
+
+            if(dateTimeParams.Any())
+            {
+                var updatedDateTimesParams = new List<string>();
+                var updatedDateTimesParamsNames = new List<string>();
+
+                var periodParams = dateTimeParams.ToList();
+
+                for (var i = 0; i < periodParams.Count; i++)
+                {
+                    updatedDateTimesParams.Add(periodParams[i].TypeName + " start" + periodParams[i].Name);
+                    updatedDateTimesParamsNames.Add("start" + periodParams[i].Name);
+                    updatedDateTimesParams.Add(periodParams[i].TypeName + " end" + periodParams[i].Name);
+                    updatedDateTimesParamsNames.Add("end" + periodParams[i].Name);
+                }
+
+                parameters = parameters.Union(updatedDateTimesParams).ToList();
+                parameterNames = parameterNames.Union(updatedDateTimesParamsNames).ToList();
+            }
 
             // last parameter - because have default value
-            if(filterByIsDeleted)
+            if (filterByIsDeleted)
             {
                 var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
                 var specialMethodParameterIsDeleted = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;

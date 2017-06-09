@@ -167,7 +167,7 @@ namespace WCFGenerator
             // Configure generator 
             var config = DecoratorGeneratorSettings.GetConfigs();
 
-            if (config == null)
+            if(config == null)
             {
                 return;
             }

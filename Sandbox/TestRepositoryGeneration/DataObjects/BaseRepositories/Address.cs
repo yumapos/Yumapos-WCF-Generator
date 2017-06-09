@@ -10,8 +10,8 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
     ///     Repository interface <see cref="IAddressRepository"/>
     ///     Repository <see cref="AddressRepository"/>
     /// </summary>
-    [DataAccess(TableName = "dbo.Addresses", FilterKey1 = "Country", FilterKey2 = "Country,City", FilterKey3 = "Country,City,ZipCode", IsDeleted = false)]
-    [DataArchive(TableName = "archive.addresses", FilterKey1 = "Country", FilterKey2 = "Country,City", FilterKey3 = "Country,City,ZipCode", IsDeleted = false)]
+    [DataAccess(TableName = "dbo.Addresses", FilterKey1 = "Modified", FilterKey2 = "Modified,Country,City", FilterKey3 = "Country,City,ZipCode", IsDeleted = false)]
+    [DataArchive(TableName = "archive.addresses", FilterKey1 = "Modified", FilterKey2 = "Country,City", FilterKey3 = "Country,City,ZipCode", IsDeleted = false)]
     public class Address : ITenantUnrelated
     {
         [Key]
@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
         public string ZipCode { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
+        public DateTime Modified { get; set; }
         [DbIgnore]
         public string AditionalInfo { get; set; }
     }

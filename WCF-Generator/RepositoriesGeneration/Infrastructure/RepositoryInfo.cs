@@ -356,8 +356,8 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     TenantRelated = IsTenantRelated,
                     ReturnPrimaryKey = PrimaryKeys.Count == 1,
                     VersionKeyName = VersionKeyName,
-                    VersionKeyType = VersionKey != null ? VersionKey.TypeName : null,
-                    VersionTableName = VersionTableName != null ? VersionTableName : null,
+                    VersionKeyType = VersionKey?.TypeName,
+                    VersionTableName = VersionTableName,
                     IsManyToMany = IsManyToMany,
                     IdentityColumns = new List<string>(),
                     IdentityColumnsJoined = new List<string>()
