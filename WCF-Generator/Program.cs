@@ -70,23 +70,23 @@ namespace WCFGenerator
                 throw new ApplicationException("Error occured on repository generation", e);
             }
 
-            //try
-            //{
-            //    RunSerializeGeneration();
-            //}
-            //catch (Exception e)
-            //{
-            //    throw new ApplicationException("Error occured on serialize generation", e);
-            //}
+            try
+            {
+                RunSerializeGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Error occured on serialize generation", e);
+            }
 
-            //try
-            //{
-            //    RunWcfGeneration();
-            //}
-            //catch (Exception e)
-            //{
-            //    throw new ApplicationException("Error occured on wcf generation.", e);
-            //}
+            try
+            {
+                RunWcfGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Error occured on wcf generation.", e);
+            }
 
             try
             {
