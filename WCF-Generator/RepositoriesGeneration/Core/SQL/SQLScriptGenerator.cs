@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Helpers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {

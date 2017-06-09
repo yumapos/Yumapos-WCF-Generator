@@ -24,7 +24,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         {
             FilterInfos = new List<FilterInfo>();
             PrimaryKeys = new List<ParameterInfo>();
-            Elements = new List<string>();
+            Elements = new List<ExtendedElements>();
             Many2ManyInfo = new List<Many2ManyInfo>();
             InterfaceMethods = new List<MethodInfo>();
             CustomRepositoryMethodNames = new List<MethodInfo>();
@@ -82,7 +82,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// <summary>
         ///     Property names - table columns
         /// </summary>
-        public List<string> Elements { get; set; }
+        public List<ExtendedElements> Elements { get; set; }
 
         /// <summary>
         ///     Standart name of repository class
@@ -271,10 +271,12 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
                 if (JoinRepositoryInfo != null)
                 {
-                    return JoinRepositoryInfo.Elements.Exists(s => s == specialOption);
+                    var notIgnoredJoinElements = JoinRepositoryInfo.Elements.Where(x => x.IgnoredDbType != DatabaseType.All && x.IgnoredDbType != JoinRepositoryInfo.DatabaseType);
+                    return notIgnoredJoinElements.Any(x => x.ElementName == specialOption);
                 }
 
-                return Elements.Exists(s => s == specialOption);
+                var notIgnoredElements = Elements.Where(x => x.IgnoredDbType != DatabaseType.All && x.IgnoredDbType != DatabaseType);
+                return notIgnoredElements.Any(s => s.ElementName == specialOption);
             }
         }
 
@@ -349,7 +351,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 // Common info for generate sql scriptes
                 var sqlInfo = new SqlInfo
                 {
-                    TableColumns = Elements,
+                    TableColumns = Elements.Where(x => x.IgnoredDbType != DatabaseType.All && x.IgnoredDbType != DatabaseType).Select(x => x.ElementName).ToList(),
                     HiddenTableColumns = new List<string>(),
                     TableName = TableName,
                     PrimaryKeyNames = PrimaryKeys.Select(k => k.Name).ToList(),
@@ -364,9 +366,10 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 };
 
                 if (JoinRepositoryInfo != null)
+                if (JoinRepositoryInfo != null)
                 {
-                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
-                    sqlInfo.JoinTableName = JoinRepositoryInfo.TableName;
+                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements.Where(x => x.IgnoredDbType != DatabaseType.All && x.IgnoredDbType != DatabaseType).Select(x => x.ElementName).ToList();
+                        sqlInfo.JoinTableName = JoinRepositoryInfo.TableName;
                     sqlInfo.JoinPrimaryKeyNames = JoinRepositoryInfo.PrimaryKeys.Select(k => k.Name).ToList();
                     sqlInfo.JoinVersionTableName = VersionTableName != null ? JoinRepositoryInfo.VersionTableName : null;
                     sqlInfo.JoinVersionKeyName = JoinRepositoryInfo.VersionKeyName;
@@ -435,6 +438,13 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         #endregion
 
+        public class ExtendedElements
+        {
+            public string ElementName { get; set; }
 
+            public bool IsIgnored { get; set; }
+
+            public DatabaseType? IgnoredDbType { get; set; }
+        }
     }
 }
