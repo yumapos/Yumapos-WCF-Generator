@@ -164,27 +164,18 @@ namespace WCFGenerator
         {
             Console.WriteLine("Start decoration generation...");
 
-            try
+            // Configure generator 
+            var config = DecoratorGeneratorSettings.GetConfigs();
+
+            if(config == null)
             {
-                // Configure generator 
-                var config = DecoratorGeneratorSettings.GetConfigs();
-
-                if (config == null)
-                {
-                    return;
-                }
-
-                var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
-
-                // run generation
-                AsyncContext.Run(() => generator.Generate());
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw e;
-            }
-            
+
+            var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
+
+            // run generation
+            AsyncContext.Run(() => generator.Generate());
 
             Console.WriteLine("Decoration generation completed.");
         }
