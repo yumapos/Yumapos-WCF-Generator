@@ -18,15 +18,15 @@ namespace TestRepositoryGeneration
 {
 	public partial class AddressArchiveRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IAddressArchiveRepository
 	{
-		private const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified";
-		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified FROM archive.addresses   ";
-		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified FROM archive.addresses ";
-		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified) ";
-		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified FROM archive.addresses ";
+		private const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified_utc,archive.addresses.modified_offset";
+		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified_utc,archive.addresses.modified_offset FROM archive.addresses   ";
+		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified_utc,archive.addresses.modified_offset FROM archive.addresses ";
+		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified_utc,archive.addresses.modified_offset) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@ModifiedUtc,@ModifiedOffset) ";
+		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified_utc = @ModifiedUtc,archive.addresses.modified_offset = @ModifiedOffset FROM archive.addresses ";
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
-		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified ";
+		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified_utc,archive.addresses.modified_offset) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@ModifiedUtc,@ModifiedOffset)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified_utc = @ModifiedUtc,archive.addresses.modified_offset = @ModifiedOffset ";
 		private const string WhereQueryById = "WHERE archive.addresses.id = @Id ";
-		private const string WhereQueryByModified = "WHERE  archive.addresses.modified >= @startModified AND archive.addresses.modified < @endModified";
+		private const string WhereQueryByModifiedUtc = "WHERE  archive.addresses.modified_utc >= @startModifiedUtc AND archive.addresses.modified_utc < @endModifiedUtc";
 		private const string WhereQueryByCountryAndCity = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City ";
 		private const string WhereQueryByCountryAndCityAndZipCode = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City AND archive.addresses.zip_code = @ZipCode ";
 		private const string AndWithIsDeletedFilter = "AND archive.addresses.is_deleted = @IsDeleted ";
@@ -81,32 +81,29 @@ namespace TestRepositoryGeneration
 		}
 
 
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModified(System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModifiedUtc(System.DateTime startModifiedUtc, System.DateTime endModifiedUtc, bool? isDeleted = false)
 		{
-		object parameters = new {startModified, endModified, isDeleted};
-		var sql = SelectByQuery + WhereQueryByModified;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
+			object parameters = new { startModifiedUtc, endModifiedUtc, isDeleted };
+			var sql = SelectByQuery + WhereQueryByModifiedUtc;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithIsDeletedFilter;
+			}
+			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
+			return result.ToList();
 		}
-		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
-		return result.ToList();
-		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedAsync(System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedUtcAsync(System.DateTime startModifiedUtc, System.DateTime endModifiedUtc, bool? isDeleted = false)
 		{
-		object parameters = new {startModified, endModified, isDeleted};
-		var sql = SelectByQuery + WhereQueryByModified;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters));
-		return result.ToList();
+			object parameters = new { startModifiedUtc, endModifiedUtc, isDeleted };
+			var sql = SelectByQuery + WhereQueryByModifiedUtc;
+			if (isDeleted.HasValue)
+			{
+				sql = sql + AndWithIsDeletedFilter;
+			}
+			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters));
+			return result.ToList();
 		}
 
-
-		*/
 		public TestRepositoryGeneration.DataObjects.BaseRepositories.Address GetByCountryAndCity(string country, string city, bool? isDeleted = false)
 		{
 			object parameters = new { country, city, isDeleted };

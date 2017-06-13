@@ -81,7 +81,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModified(System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModified(System.DateTimeOffset startModified, System.DateTimeOffset endModified, bool? isDeleted = false)
 		{
 			object parameters = new { startModified, endModified, isDeleted };
 			var sql = SelectByQuery + WhereQueryByModified;
@@ -92,7 +92,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedAsync(System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedAsync(System.DateTimeOffset startModified, System.DateTimeOffset endModified, bool? isDeleted = false)
 		{
 			object parameters = new { startModified, endModified, isDeleted };
 			var sql = SelectByQuery + WhereQueryByModified;
@@ -104,7 +104,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			return result.ToList();
 		}
 
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModifiedAndCountryAndCity(string country, string city, System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModifiedAndCountryAndCity(string country, string city, System.DateTimeOffset startModified, System.DateTimeOffset endModified, bool? isDeleted = false)
 		{
 			object parameters = new { country, city, startModified, endModified, isDeleted };
 			var sql = SelectByQuery + WhereQueryByModifiedAndCountryAndCity;
@@ -115,7 +115,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedAndCountryAndCityAsync(string country, string city, System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedAndCountryAndCityAsync(string country, string city, System.DateTimeOffset startModified, System.DateTimeOffset endModified, bool? isDeleted = false)
 		{
 			object parameters = new { country, city, startModified, endModified, isDeleted };
 			var sql = SelectByQuery + WhereQueryByModifiedAndCountryAndCity;

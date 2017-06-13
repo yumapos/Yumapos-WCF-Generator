@@ -62,6 +62,7 @@
     <Compile Include="GeneratedRepositories\TaxCacheRepository.g.cs" />
     <Compile Include="GeneratedRepositories\TaxServiceRepository.g.cs" />
     <Compile Include="GeneratedRepositories\TaxVersionRepository.g.cs" />
+    <Compile Include="Infrastructure\DbPostgresIgnore.cs" />
     <Compile Include="Infrastructure\IDateTimeService.cs" />
     <Compile Include="CustomRepositories\BaseRepositories\AddressRepository.cs" />
     <Compile Include="Infrastructure\RepositoryBase.cs" />
