@@ -26,7 +26,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private string _andWithSliceDateFilter = "AndWithSliceDateFilter";
         private readonly string _join = "Join";
         private readonly string _pk = "Pk";
-        public string _insertOrUpdateQuery = "InsertOrUpdateQuery";
+        private string _insertOrUpdateQuery = "InsertOrUpdateQuery";
+
+        private const string DataAccessControllerField = "_dataAccessController";
+        private const string DateTimeServiceField = "_dateTimeService";
 
         #endregion
 
@@ -159,9 +162,19 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             // RepositoryMethod.Insert
-            var insertMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.Insert)
-                .Aggregate("", (s, method) => s + GenerateInsert(method));
+            string insertMethods;
+            if(RepositoryInfo.IsInsertModified)
+            {
+                insertMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.Insert)
+                    .Aggregate("", (s, method) => s + GenerateInsert(method));
+            }
+            else
+            {
+                insertMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.Insert)
+                    .Aggregate("", (s, method) => s + GenerateInsert(method));
+            }
 
             if(!string.IsNullOrEmpty(insertMethods))
             {
@@ -415,6 +428,65 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 // Asynchronous method
                 sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
+                sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("}");
+            }
+            else
+            {
+                var returnType = RepositoryInfo.PrimaryKeys.First().TypeName;
+
+                // Synchronous method
+                sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("var res = DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("return (" + returnType + ")res;");
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task<" + returnType + "> InsertAsync(" + methodParameter + ")");
+                sb.AppendLine("{");
+                sb.AppendLine("var res = await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("return (" + returnType + ")res;");
+                sb.AppendLine("}");
+            }
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
+
+        public string GenerateInsertWithModified(MethodImplementationInfo method)
+        {
+            var sb = new StringBuilder();
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+
+            var constructorParamers = new List<string>
+            {
+                RepositoryInfo.DataAccessControllerTypeName + " dataAccessController",
+                RepositoryInfo.DataAccessServiceTypeName + " dataAccessService",
+                RepositoryInfo.DateTimeServiceTypeName + " dateTimeService",
+                methodParameter
+            };
+
+            var parameters = string.Join(",\r\n", constructorParamers);
+
+            var queryName = _insertQuery;
+
+            // If should not return identifier
+            if (RepositoryInfo.PrimaryKeys.Count != 1 || !RepositoryInfo.Identity)
+            {
+                // Synchronous method
+                sb.AppendLine("public void Insert(" + parameters + ")");
+                sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
+                sb.AppendLine("DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
+                sb.AppendLine("}");
+
+                // Asynchronous method
+                sb.AppendLine("public async Task InsertAsync(" + parameters + ")");
+                sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
                 sb.AppendLine("}");
             }

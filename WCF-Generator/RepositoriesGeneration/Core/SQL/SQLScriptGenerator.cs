@@ -465,6 +465,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool Identity;
         public bool JoinIdentity;
         public bool IsDeleted { get; set; }
+        public bool IsInsertModified { get; set; }
         public DatabaseType DatabaseType { get; set; }
     }
 }

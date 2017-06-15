@@ -201,7 +201,12 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// <summary>
         ///     Repository joined to another repository
         /// </summary>
-        public bool IsJoned { get; set; }
+        public bool IsJoined { get; set; }
+
+        /// <summary>
+        ///     IF IsVersioning = false, IsJoned = false, and Modified[DateTimeOffset] and ModifiedBy[Guid] properties exists
+        /// </summary>
+        public bool IsInsertModified { get; set; }
 
         /// <summary>
         ///    Repository can be generated
@@ -210,9 +215,9 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         {
             get
             {
-                if (!IsJoned && !RepositoryAnalysisError.Any())
+                if (!IsJoined && !RepositoryAnalysisError.Any())
                     return true;
-                if (IsJoned && !RepositoryInterfaceNotFound)
+                if (IsJoined && !RepositoryInterfaceNotFound)
                     return true;
                 return false;
             }
@@ -360,7 +365,8 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     VersionTableName = VersionTableName,
                     IsManyToMany = IsManyToMany,
                     IdentityColumns = new List<string>(),
-                    IdentityColumnsJoined = new List<string>()
+                    IdentityColumnsJoined = new List<string>(),
+                    IsInsertModified = IsInsertModified
                 };
 
                 if (JoinRepositoryInfo != null)
