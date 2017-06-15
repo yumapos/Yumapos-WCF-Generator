@@ -147,7 +147,6 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 
         public string GetFullPropertyTypeName(PropertyDeclarationSyntax prop)
         {
-            Console.WriteLine(prop.ToString());
             var semanticModel = _fullCompilation.GetSemanticModel(prop.SyntaxTree);
 
             var symbol = semanticModel.GetDeclaredSymbol(prop);

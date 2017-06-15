@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Dynamic;
 using TestRepositoryGeneration.CustomRepositories.BaseRepositories;
 using TestRepositoryGeneration.Infrastructure;
 using TestRepositoryGeneration.RepositoryInterfaces;
@@ -26,10 +27,19 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
         public decimal? Longitude { get; set; }
         [DbPostgresIgnore]
         public DateTimeOffset Modified { get; set; }
+        // Important to initialize get and set because properties used as PropertyDeclarationSyntax
         [DbIgnore]
-        public DateTime ModifiedUtc { get; set; }
+        public DateTime ModifiedUtc
+        {
+            get { return Modified.UtcDateTime; }
+            set { value = DateTime.MinValue; }
+        }
         [DbIgnore]
-        public int ModifiedOffset { get; set; }
+        public int ModifiedOffset
+        {
+            get { return (int) Modified.Offset.TotalMinutes; }
+            set { value = 0; }
+        }
         [DbIgnore]
         [DbPostgresIgnore]
         public string AditionalInfo { get; set; }
