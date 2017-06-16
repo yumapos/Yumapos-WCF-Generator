@@ -14,5 +14,6 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Task<Address> GetByCountryAndCityAndZipCodeAsync(string country, string city, string zipCode, bool? isDeleted);
         Task UpdateByIdAsync(Address address);
         Task RemoveByIdAsync(Address address);
+        IEnumerable<Address> GetByModifiedUtc(DateTime startModifiedUtc, DateTime endModifiedUtc, bool? isDeleted = false);
     }
 }

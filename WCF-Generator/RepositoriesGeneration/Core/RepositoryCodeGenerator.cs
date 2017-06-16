@@ -72,7 +72,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
-            sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
+            if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
+            }
 
             if(RepositoryInfo.JoinRepositoryInfo != null)
             {
@@ -193,14 +196,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine(removeByMethods);
             }
 
-            // RepositoryMethod.InsertOrUpdate
-            var upsertMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.InsertOrUpdate)
-                .Aggregate("", (s, method) => s + GenerateInsertOrUpdate(method));
-
-            if(!string.IsNullOrEmpty(upsertMethods))
+            if (RepositoryInfo.JoinRepositoryInfo == null)
             {
-                sb.AppendLine(upsertMethods);
+                // RepositoryMethod.InsertOrUpdate
+                var upsertMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.InsertOrUpdate)
+                    .Aggregate("", (s, method) => s + GenerateInsertOrUpdate(method));
+
+                if (!string.IsNullOrEmpty(upsertMethods))
+                {
+                    sb.AppendLine(upsertMethods);
+                }
             }
 
             return sb.ToString();

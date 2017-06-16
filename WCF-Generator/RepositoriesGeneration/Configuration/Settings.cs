@@ -160,5 +160,14 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         {
             get { return ((int)(base["DatabaseType"])); }
         }
+
+        /// <summary>
+        ///     Ignore attribute
+        /// </summary>
+        [ConfigurationProperty("IgnoreAttributeName", DefaultValue = "DbIgnore", IsRequired = true)]
+        public string IgnoreAttributeName
+        {
+            get { return ((string)(base["IgnoreAttributeName"])); }
+        }
     }
 }

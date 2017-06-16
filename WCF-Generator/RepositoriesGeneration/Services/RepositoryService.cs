@@ -255,7 +255,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
             // Add sql column name - skip members marked [DbIgnoreAttribute]
             var elements = properties
-                .Where(p => !p.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
+                .Where(p => !p.AttributeExist(_config.IgnoreAttributeName))
                 .Select(p => p.Identifier.Text);
             repositoryInfo.Elements.AddRange(elements);
 

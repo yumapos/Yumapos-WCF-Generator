@@ -16,11 +16,6 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
             get { return typeof(VersionKeyAttribute).Name.Replace("Attribute", ""); }
         }
 
-        public static string DbIgnoreAttributeName
-        {
-            get { return typeof(DbIgnoreAttribute).Name.Replace("Attribute", ""); }
-        }
-
         public static string DataAccessAttributeName
         {
             get { return typeof(DataAccessAttribute).Name.Replace("Attribute", ""); }
