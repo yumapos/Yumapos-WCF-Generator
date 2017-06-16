@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using TestRepositoryGeneration.CustomRepositories.BaseRepositories;
 using TestRepositoryGeneration.Infrastructure;
 using TestRepositoryGeneration.RepositoryInterfaces;
@@ -23,5 +24,7 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
         public bool? IsCustomizable { get; set; }
         public int? ResendPeriod { get; set; }
         public bool IsDeleted { get; set; }
+        public Guid ModifiedBy { get; set; }
+        public DateTime Modified { get; set; }
     }
 }

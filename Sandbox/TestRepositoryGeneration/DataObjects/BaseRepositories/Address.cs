@@ -25,21 +25,27 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
         public string ZipCode { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
-        [DbPostgresIgnore]
-        public DateTimeOffset Modified { get; set; }
+        public Guid ModifiedBy { get; set; }
         // Important to initialize get and set because properties used as PropertyDeclarationSyntax
-        [DbIgnore]
-        public DateTime ModifiedUtc
+        [DbPostgresIgnore]
+        public DateTimeOffset Modified
         {
-            get { return Modified.UtcDateTime; }
-            set { value = DateTime.MinValue; }
+            get
+            {
+                return new DateTimeOffset(ModifiedUtc, TimeSpan.FromMinutes(ModifiedOffset));
+            }
+            set
+            {
+                ModifiedUtc = value.UtcDateTime;
+                ModifiedOffset = (int)value.Offset.TotalMinutes;
+            }
         }
+
         [DbIgnore]
-        public int ModifiedOffset
-        {
-            get { return (int) Modified.Offset.TotalMinutes; }
-            set { value = 0; }
-        }
+        public DateTime ModifiedUtc { get; set; }
+
+        [DbIgnore]
+        public int ModifiedOffset { get; set; }
         [DbIgnore]
         [DbPostgresIgnore]
         public string AditionalInfo { get; set; }

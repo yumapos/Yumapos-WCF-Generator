@@ -35,6 +35,33 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         #region Overrides of RepositoryCodeGeneratorAbstract
 
+        public override string GetConstructors()
+        {
+            if(RepositoryInfo.IsInsertModified)
+            {
+                var constructorParamers = new List<string>
+                {
+                    RepositoryInfo.DataAccessServiceTypeName + " dataAccessService",
+                    RepositoryInfo.DataAccessControllerTypeName + " dataAccessController",
+                    RepositoryInfo.DateTimeServiceTypeName + " dateTimeService"
+                };
+                var parameters = string.Join(",\r\n", constructorParamers);
+
+                var sb = new StringBuilder();
+
+                sb.Append("public " + RepositoryName + "(");
+                sb.Append(parameters);
+                sb.AppendLine(") : base(dataAccessService)");
+                sb.AppendLine("{");
+                sb.AppendLine(DataAccessControllerField + " = " + "dataAccessController;");
+                sb.AppendLine(DateTimeServiceField + " = " + "dateTimeService;");
+                sb.AppendLine("}");
+
+                return sb.ToString();
+            }
+            return base.GetConstructors();
+        }
+
         public override string GetClassDeclaration()
         {
             return "public partial class " + RepositoryName + " : " + RepositoryInfo.RepositoryBaseTypeName + ", " + RepositoryInfo.RepositoryInterfaceName;
@@ -114,6 +141,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("private const string " + _whereWithIsDeletedFilter + " = " + isDeletedOnlyFilter.SurroundWithQuotes() + ";");
             }
 
+            if (RepositoryInfo.IsInsertModified)
+            {
+                sb.AppendLine();
+                sb.AppendLine("private " + RepositoryInfo.DataAccessControllerTypeName + " " + DataAccessControllerField + ";");
+                sb.AppendLine("private " + RepositoryInfo.DateTimeServiceTypeName + " " + DateTimeServiceField + ";");
+            }
+
             return sb.ToString();
         }
 
@@ -167,7 +201,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 insertMethods = RepositoryInfo.MethodImplementationInfo
                     .Where(m => m.Method == RepositoryMethod.Insert)
-                    .Aggregate("", (s, method) => s + GenerateInsert(method));
+                    .Aggregate("", (s, method) => s + GenerateInsertWithModified(method));
             }
             else
             {
@@ -459,23 +493,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
 
-            var constructorParamers = new List<string>
-            {
-                RepositoryInfo.DataAccessControllerTypeName + " dataAccessController",
-                RepositoryInfo.DataAccessServiceTypeName + " dataAccessService",
-                RepositoryInfo.DateTimeServiceTypeName + " dateTimeService",
-                methodParameter
-            };
-
-            var parameters = string.Join(",\r\n", constructorParamers);
-
             var queryName = _insertQuery;
 
             // If should not return identifier
             if (RepositoryInfo.PrimaryKeys.Count != 1 || !RepositoryInfo.Identity)
             {
                 // Synchronous method
-                sb.AppendLine("public void Insert(" + parameters + ")");
+                sb.AppendLine("public void Insert(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
                 sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
@@ -483,7 +507,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("}");
 
                 // Asynchronous method
-                sb.AppendLine("public async Task InsertAsync(" + parameters + ")");
+                sb.AppendLine("public async Task InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
                 sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
                 sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
@@ -497,6 +521,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 // Synchronous method
                 sb.AppendLine("public " + returnType + " Insert(" + methodParameter + ")");
                 sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine("var res = DataAccessService.InsertObject(" + parameterName + "," + queryName + ");");
                 sb.AppendLine("return (" + returnType + ")res;");
                 sb.AppendLine("}");
@@ -504,6 +530,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 // Asynchronous method
                 sb.AppendLine("public async Task<" + returnType + "> InsertAsync(" + methodParameter + ")");
                 sb.AppendLine("{");
+                sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+                sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
                 sb.AppendLine("var res = await DataAccessService.InsertObjectAsync(" + parameterName + "," + queryName + ");");
                 sb.AppendLine("return (" + returnType + ")res;");
                 sb.AppendLine("}");

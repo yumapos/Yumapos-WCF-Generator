@@ -208,7 +208,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             repositoryInfo.TableName = tableName;
 
             // Get filters
-            IEnumerable<FilterInfo> filterKeys = new[] {dataAccess.FilterKey1, dataAccess.FilterKey2, dataAccess.FilterKey3}
+            var filterKeys = new[] {dataAccess.FilterKey1, dataAccess.FilterKey2, dataAccess.FilterKey3}
                 .Where(fk => fk != null)
                 .Select(fk =>
                 {
@@ -253,18 +253,11 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
             var properties = doClass.Members.OfType<PropertyDeclarationSyntax>().Where(cp => cp.GetterExist() && cp.SetterExist()).ToList();
 
-            var notIgnoredProperties = properties.Where(p => !p.AttributeExist(_config.IgnoreAttributeName));
-
-            // Check IsInsertModified
-            if(!isVersioning && !repositoryInfo.IsJoined && filterKeys.Any())
-            {
-                var modifiedExists = filterKeys.Select(x => x.Parameters.Where(t => t.Name == "Modified" && t.TypeName == "System.DateTimeOffset")).Any();
-                var modifiedByExists = filterKeys.Select(x => x.Parameters.Where(t => t.Name == "ModifiedBy" && t.TypeName == "System.Guid")).Any();
-                repositoryInfo.IsInsertModified = modifiedExists && modifiedByExists;
-            }
-
             // Add sql column name - skip members marked [DbIgnoreAttribute]
-            var elements = notIgnoredProperties.Select(p => p.Identifier.Text);
+            var elements = properties
+                .Where(p => !p.AttributeExist(_config.IgnoreAttributeName))
+                .Select(p => p.Identifier.Text)
+                .ToList();
             repositoryInfo.Elements.AddRange(elements);
 
             // Primary keys info
@@ -277,6 +270,31 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 });
 
             repositoryInfo.PrimaryKeys.AddRange(primaryKeys);
+
+            // Check IsInsertModified
+            if (!repositoryInfo.IsVersioning && !repositoryInfo.IsJoined && elements.Any())
+            {
+                var isInsertModified = false;
+                var modifiedExists = elements.Any(x => x == "Modified");
+                if(modifiedExists)
+                {
+                    isInsertModified = elements.Any(x => x == "ModifiedBy");
+                }
+
+                // Compare types: Modified - DateTimeOffset, ModifiedBy - Guid
+                if (isInsertModified)
+                {
+                    var modifiedProperty = properties.First(x => x.Identifier.Text == "Modified");
+                    isInsertModified = _solutionSyntaxWalker.GetFullPropertyTypeName(modifiedProperty) == "System.DateTimeOffset";
+                    if(isInsertModified)
+                    {
+                        var modifiedByProperty = properties.First(x => x.Identifier.Text == "ModifiedBy");
+                        isInsertModified = _solutionSyntaxWalker.GetFullPropertyTypeName(modifiedByProperty) == "System.Guid";
+                    }
+                }
+
+                repositoryInfo.IsInsertModified = isInsertModified;
+            }
 
             // Version key
             var versionKey = properties.FirstOrDefault(p => p.AttributeExist(RepositoryDataModelHelper.VesionKeyAttributeName));
