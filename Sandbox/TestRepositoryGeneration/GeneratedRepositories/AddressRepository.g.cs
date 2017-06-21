@@ -176,11 +176,15 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		public void UpdateById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
+			address.Modified = _dateTimeService.CurrentDateTimeOffset;
+			address.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			var sql = UpdateQueryBy + WhereQueryById;
 			DataAccessService.PersistObject(address, sql);
 		}
 		public async Task UpdateByIdAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
+			address.Modified = _dateTimeService.CurrentDateTimeOffset;
+			address.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			var sql = UpdateQueryBy + WhereQueryById;
 			await DataAccessService.PersistObjectAsync(address, sql);
 		}
@@ -188,11 +192,15 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		/*
 		public void UpdateByCountryAndCityAndZipCode(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
+		address.Modified = _dateTimeService.CurrentDateTimeOffset;
+		address.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		var sql = UpdateQueryBy + WhereQueryByCountryAndCityAndZipCode; 
 		DataAccessService.PersistObject(address, sql);
 		}
 		public async Task UpdateByCountryAndCityAndZipCodeAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
+		address.Modified = _dateTimeService.CurrentDateTimeOffset;
+		address.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		var sql = UpdateQueryBy + WhereQueryByCountryAndCityAndZipCode; 
 		await DataAccessService.PersistObjectAsync(address, sql);
 		}

@@ -223,10 +223,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                     filtersWithoutDateTimes.Add(impl);
                 }
             }
+
             // RepositoryMethod.UpdateBy
-            var updateByMethods = filtersWithoutDateTimes
-                .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
-                .Aggregate("", (s, method) => s + GenerateUpdate(method));
+            string updateByMethods;
+            if (RepositoryInfo.IsInsertModified)
+            {
+                updateByMethods = filtersWithoutDateTimes
+                    .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
+                    .Aggregate("", (s, method) => s + GenerateUpdateWithModified(method));
+            }
+            else
+            {
+                updateByMethods = filtersWithoutDateTimes
+                    .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
+                    .Aggregate("", (s, method) => s + GenerateUpdate(method));
+            }
 
             if(!string.IsNullOrEmpty(updateByMethods))
             {
@@ -571,6 +582,55 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
             sb.AppendLine("{");
             if(RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryByJoinPk + "; ");
+            }
+            sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
+            sb.AppendLine("}");
+            sb.AppendLine("");
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
+
+        public string GenerateUpdateWithModified(MethodImplementationInfo method)
+        {
+            var filter = method.FilterInfo;
+
+            var sb = new StringBuilder();
+
+            // Update by entity (use filter key)
+            var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+
+            var whereQueryName = _whereQueryBy + filter.Key;
+            var whereQueryByJoinPk = _whereQueryBy + _join + _pk;
+
+            // Synchronous method
+            sb.AppendLine("public void UpdateBy" + filter.Key + "(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+            sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
+            }
+            else
+            {
+                sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + " + " + _updateQuery + _join + " + " + whereQueryByJoinPk + "; ");
+            }
+            sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
+            sb.AppendLine("}");
+
+            // Asynchronous method
+            sb.AppendLine("public async Task UpdateBy" + filter.Key + "Async(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+            sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
+            if (RepositoryInfo.JoinRepositoryInfo == null)
             {
                 sb.AppendLine("var sql = " + _updateQueryBy + " + " + whereQueryName + "; ");
             }
