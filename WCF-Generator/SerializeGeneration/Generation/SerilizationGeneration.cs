@@ -264,7 +264,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             var migrationElements = new List<MigrationElements>();
             if (_projectNames != null)
             {
-                SyntaxSerilizationHelper.InitVisitor(_helpProjects.Union(_projectNames).Union(new [] { _migrationProject, _migrationVersionProject}));
+                SyntaxSerilizationHelper.InitVisitor(_helpProjects.Union(_projectNames));
                 foreach (var projectName in _projectNames)
                 {
                     _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == projectName);
@@ -370,6 +370,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             {
                 throw new Exception("Project for migration not found");
             }
+            SyntaxSerilizationHelper.InitVisitor(new[] { _migrationVersionProject });
             SyntaxSerilizationHelper.Project = migrationProject;
             var targetClass = SyntaxSerilizationHelper.FindClass(_migrationVersionClass);
             if (targetClass == null)
