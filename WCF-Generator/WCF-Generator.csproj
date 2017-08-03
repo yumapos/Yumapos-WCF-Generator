@@ -160,6 +160,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\ComparerHelper.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\GeneratorWorkspace.cs" />
     <Compile Include="Common\SrcFile.cs" />
@@ -212,6 +213,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MappingsGenerator\MappingsGenerator.cs" />
     <Compile Include="SerializeGeneration\Configuration\SerializeConfiguration.cs" />
+    <Compile Include="SerializeGeneration\Generation\TextMigrationPatterns.cs" />
     <Compile Include="SerializeGeneration\Generation\TextSerializationPatterns.cs" />
     <Compile Include="SerializeGeneration\Helpers\EditingSerializationHelper.cs" />
     <Compile Include="SerializeGeneration\Models\GenerationElements.cs" />
@@ -220,6 +222,7 @@
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\VersionKey.cs" />
     <Compile Include="SerializeGeneration\Helpers\TextSerializationHelper.cs" />
     <Compile Include="SerializeGeneration\Models\GenerationProperty.cs" />
+    <Compile Include="SerializeGeneration\Models\MigrationElements.cs" />
     <Compile Include="SerializeGeneration\Models\SourceElements.cs" />
     <Compile Include="WcfClientGeneration\EndPoint.cs" />
     <Compile Include="WcfClientGeneration\Fault.cs" />

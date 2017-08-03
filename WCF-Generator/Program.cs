@@ -155,7 +155,7 @@ namespace WCFGenerator
             var repositoryGenerator = new SerilizationGeneration(_generatorWorkspace);
 
             // run generation
-            AsyncContext.Run(() => repositoryGenerator.GenerateAll());
+            repositoryGenerator.GenerateAll();
 
             Console.WriteLine("Serialize generation completed.");
         }

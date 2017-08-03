@@ -21,14 +21,17 @@ namespace WCFGenerator
         public static List<ClassVirtualizationVisitor> Visitors { get; set; } 
 
 
-        public static IEnumerable<ClassDeclarationSyntax> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
+        public static IEnumerable<ClassDeclarationSyntax> GetAllClasses(string projectName, bool isSkipAttribute, string attribute = "", bool skipGeneratedClasses= true)
         {
             var project = Solution.Projects.First(x => x.Name == projectName);
             var classes = new List<ClassDeclarationSyntax>();
             
             if (project != null)
             {
-                var mDocuments = project.Documents.Where(d => !d.Name.Contains(".g.cs"));
+                
+                var mDocuments = skipGeneratedClasses 
+                    ? project.Documents.Where(d => !d.Name.Contains(".g.cs"))
+                    : project.Documents;
                 var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
                 var classVisitor = new ClassVirtualizationVisitor();
 
