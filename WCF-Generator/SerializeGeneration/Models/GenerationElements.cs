@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using WCFGenerator.Common;
 
 namespace WCFGenerator.SerializeGeneration.Models
 {
@@ -23,6 +24,8 @@ namespace WCFGenerator.SerializeGeneration.Models
         public bool IsPropertyEquals { get; set; }
 
         public string SerializableBaseClassName { get; set; }
+
+        public CollectionComparisonResult<GenerationProperty> ChangeWithPreviousProperties { get; set; }
 
     }
 }

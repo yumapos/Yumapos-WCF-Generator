@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Helpers;
@@ -18,6 +17,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
     public class SerilizationGeneration
     {
         private readonly GeneratorWorkspace _generatorWorkspace;
+        private readonly TextMigrationPatterns _textMigrationPatterns;
 
         public SerilizationGeneration(GeneratorWorkspace generatorWorkspace)
         {
@@ -34,12 +34,18 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 _helpProjects = configuration.AllHelpProjectNames;
                 _mappingAttribute = configuration.MappingAttribute;
                 _mappingIgnoreAttribute = configuration.MappingIgnoreAttribute;
+                _migrationProject = configuration.MigrationProject;
+                _migrationVersionClass = configuration.MigrationVersionClass;
+                _migrationInterface = configuration.MigrationInterface;
+                _migrationClassPrefix = configuration.MigrationClassPrefix;
+                _migrationIgnoreAttribute = configuration.MigrationIgnoreAttribute;
+                _migrationVersionProject = configuration.MigrationVersionProject;
             }
+            _textMigrationPatterns = new TextMigrationPatterns();
         }
 
         private readonly IEnumerable<string> _projectNames;
 
-        private static readonly MSBuildWorkspace Workspace = MSBuildWorkspace.Create();
         private static readonly List<Tuple<string, SourceText, string[], string>> Tasks = new List<Tuple<string, SourceText, string[], string>>();
 
         private Project _project;
@@ -57,11 +63,17 @@ namespace WCFGenerator.SerializeGeneration.Generation
         private readonly string _baseInterface;
         private readonly string _mappingAttribute;
 
+        private readonly string _migrationProject;
+        private readonly string _migrationVersionClass;
+        private readonly string _migrationInterface;
+        private readonly string _migrationClassPrefix;
+        private readonly string _migrationIgnoreAttribute;
+        private readonly string _migrationVersionProject;
+
         private IEnumerable<SourceElements> GetSourceElements(string projectName)
         {
-            var findClasses = SyntaxSerilizationHelper.GetAllClasses(projectName, true, "");
+            var findClasses = SyntaxSerilizationHelper.GetAllClasses(projectName, true, skipGeneratedClasses:false).ToArray();
             var neededClasses = findClasses.Where(i => i.BaseList != null && i.BaseList.Types.Any(t => t.Type.ToString() == _baseInterface));
-            SyntaxSerilizationHelper.InitVisitor(_helpProjects.Union(_projectNames));
             var listElements = new List<SourceElements>();
             foreach (var currentClass in neededClasses)
             {
@@ -132,6 +144,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
                         exitClass.MappingProperties = listMappingProperties;
                     }
                 }
+                exitClass.LastGenerationProperties = GetPropertyPreviousGeneratedClass(currentClass.Identifier.Value.ToString(), findClasses);
                 exitClass.AllPublicProperties = allPublicProperties;
                 exitClass.CurrentClass = currentClass;
                 exitClass.Properties = generationProperty;
@@ -174,34 +187,35 @@ namespace WCFGenerator.SerializeGeneration.Generation
         private IEnumerable<GenerationElements> GetGenerationElements(IEnumerable<SourceElements> sourceElements)
         {
             var listGenEl = new List<GenerationElements>();
-            SyntaxSerilizationHelper.InitVisitor(_projectNames);
             var namespaces = new List<string>();
             foreach (var sourceElem in sourceElements)
             {
                 var textElements = new GenerationElements();
                 var nameSpaceAndBaseClass = GetNamespace(sourceElem.CurrentClass);
-                var propList = new List<GenerationProperty>();
-                foreach (var property in sourceElem.Properties)
-                {
-                    propList.Add(new GenerationProperty
-                    {
-                        Name = EditingSerializationHelper.GetPropertyName(property.Identifier.Text),
-                        Type = property.Type.ToFullString(),
-                        VariableClassName = property.Identifier.Text,
-                        IsSetterExist = property.SetterExist(),
-                    });
-                }
 
-                foreach (var field in sourceElem.Fields)
+                var propList = sourceElem.Properties.Select(property => new GenerationProperty
                 {
-                    propList.Add(new GenerationProperty
-                    {
-                        Name = EditingSerializationHelper.GetPropertyName(field.Declaration.Variables.First().Identifier.ValueText),
-                        Type = field.Declaration.Type.ToFullString(),
-                        VariableClassName = field.Declaration.Variables.First().Identifier.ValueText,
-                        IsSetterExist = true
-                    });
-                }
+                    Name = EditingSerializationHelper.GetPropertyName(property.Identifier.Text),
+                    Type = property.Type.ToFullString().Replace(" ",""),
+                    VariableClassName = property.Identifier.Text,
+                    IsSetterExist = property.SetterExist(),
+                }).ToList();
+
+                propList.AddRange(sourceElem.Fields.Select(field => new GenerationProperty
+                {
+                    Name = EditingSerializationHelper.GetPropertyName(field.Declaration.Variables.First().Identifier.ValueText),
+                    Type = field.Declaration.Type.ToFullString().Replace(" ", ""),
+                    VariableClassName = field.Declaration.Variables.First().Identifier.ValueText,
+                    IsSetterExist = true
+                }));
+
+                var previousGenerationProperties = sourceElem.LastGenerationProperties.Select(property => new GenerationProperty
+                {
+                    Name = EditingSerializationHelper.GetPropertyName(property.Identifier.Text),
+                    Type = property.Type.ToFullString().Replace(" ", ""),
+                    VariableClassName = property.Identifier.Text,
+                    IsSetterExist = property.SetterExist()
+                }).ToList();
 
                 textElements.IsPropertyEquals = false;
 
@@ -237,33 +251,50 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 textElements.UsingNamespaces = namespaces.Union(TextSerializationHelper.GetUsingNamespaces(sourceElem.CurrentClass));
                 textElements.ClassAccessModificator = sourceElem.CurrentClass.Modifiers.FirstOrDefault().ValueText;
                 textElements.SerializableBaseClassName = nameSpaceAndBaseClass.Item2;
+                textElements.ChangeWithPreviousProperties = CollectionComparator.Compare(propList, previousGenerationProperties,(s, x) => s.Name == x.Name,
+                    (s, x) => string.Equals(s.Type,"PosMoney", StringComparison.InvariantCulture) || string.Equals(x.Type,s.Type, StringComparison.InvariantCulture));
                 listGenEl.Add(textElements);
             }
             return listGenEl;
         }
 
-        public async void GenerateAll()
+        public void GenerateAll()
         {
             SyntaxSerilizationHelper.Solution = _generatorWorkspace.Solution;
+            var migrationElements = new List<MigrationElements>();
             if (_projectNames != null)
             {
-                foreach (var st in _projectNames)
+                SyntaxSerilizationHelper.InitVisitor(_helpProjects.Union(_projectNames));
+                foreach (var projectName in _projectNames)
                 {
-                    _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == st);
+                    _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == projectName);
 
                     SyntaxSerilizationHelper.Project = _project;
 
-                    var allElements = GetSourceElements(st);
+                    var allElements = GetSourceElements(projectName);
                     var structElements = GetGenerationElements(allElements);
-
+                    
                     foreach (var generatedClass in structElements)
                     {
+                        if (generatedClass.ChangeWithPreviousProperties.WasChanged)
+                        {
+                            migrationElements.Add(new MigrationElements
+                            {
+                                ClassNameWithNameSpace = generatedClass.Namespace+"."+generatedClass.ClassName,
+                                ChangeWithPreviousProperties = generatedClass.ChangeWithPreviousProperties
+                            });
+                        }
                         var patternText = new TextSerializationPatterns(generatedClass);
                         var fullGenClass = patternText.GeneratePartialClass();
-                        CreateDocument(fullGenClass.ToString(), st, "Extensions/" + generatedClass.ClassName + ".g.cs");
+                        CreateDocument(fullGenClass.ToString(), projectName, "Extensions/" + generatedClass.ClassName + ".g.cs");
                     }
                     ApplyChanges();
                 }
+            }
+            if (migrationElements.Any())
+            {
+                var newVersion = GenerateNewVersion();
+                GenerateMigration(newVersion, migrationElements);
             }
 
             _generatorWorkspace.ApplyChanges();
@@ -315,6 +346,59 @@ namespace WCFGenerator.SerializeGeneration.Generation
                     _generatorWorkspace.Solution = _project?.Solution;
                 }
             }
+        }
+
+        private List<PropertyDeclarationSyntax> GetPropertyPreviousGeneratedClass(string currentClassName, IEnumerable<ClassDeclarationSyntax> allProjectClasses)
+        {
+            var previousGenerationClass = allProjectClasses.Where(x => x.Identifier.Value.ToString() == currentClassName + _generationPrefix).ToList();
+            if (previousGenerationClass.Any())
+            {
+                var properties = Enumerable.Empty<PropertyDeclarationSyntax>();
+                foreach (var classDeclarationSyntax in previousGenerationClass)
+                {
+                    properties = properties.Union(classDeclarationSyntax.Members.OfType<PropertyDeclarationSyntax>().Where(x => !SyntaxSerilizationHelper.PropertyAttributeExist(x, _migrationIgnoreAttribute)));
+                }
+                return properties.ToList();
+            }
+            return new List<PropertyDeclarationSyntax>();
+        }
+
+        private int GetCurrentVersion()
+        {
+            var migrationProject = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == _migrationVersionProject);
+            if (migrationProject == null)
+            {
+                throw new Exception("Project for migration not found");
+            }
+            SyntaxSerilizationHelper.InitVisitor(new[] { _migrationVersionProject });
+            SyntaxSerilizationHelper.Project = migrationProject;
+            var targetClass = SyntaxSerilizationHelper.FindClass(_migrationVersionClass);
+            if (targetClass == null)
+            {
+                return 0;
+            }
+            var versionField = targetClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(property => property.Identifier.ValueText == "CurrentVersion");
+            return int.Parse(versionField.ExpressionBody.Expression.GetFirstToken().ValueText);
+        }
+
+        private int GenerateNewVersion()
+        {
+            var version = GetCurrentVersion() + 1;
+            var versionClass = _textMigrationPatterns.GenerateVersionNumberClass(version, _migrationVersionClass, _migrationVersionProject);
+            CreateDocument(versionClass, _migrationVersionProject, "Helpers/Generation/" +_migrationVersionClass + ".cs");
+            ApplyChanges();
+
+            return version;
+        }
+
+        private void GenerateMigration(int version, List<MigrationElements> migrationElements)
+        {
+            var migrationProject = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == _migrationProject);
+            SyntaxSerilizationHelper.Project = migrationProject;
+            var migration = _textMigrationPatterns.GenerateNewMigrationClass(_migrationProject, _migrationClassPrefix, _migrationInterface,
+                version, migrationElements);
+            CreateDocument(migration, _migrationProject, "GeneratedMigrations/" + $"{_migrationClassPrefix}V{version}" + ".g.cs");
+            ApplyChanges();
         }
     }
 }

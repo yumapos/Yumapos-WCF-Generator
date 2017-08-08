@@ -11,5 +11,6 @@ namespace WCFGenerator.SerializeGeneration.Models
         public List<FieldDeclarationSyntax> Fields { get; set; }
         public ClassDeclarationSyntax MappingClass { get; set; }
         public List<PropertyDeclarationSyntax> MappingProperties { get; set; }
+        public List<PropertyDeclarationSyntax> LastGenerationProperties { get; set; }
     }
 }

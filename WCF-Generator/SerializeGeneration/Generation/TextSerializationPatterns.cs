@@ -135,7 +135,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 {
                     continue;
                 }
-                if (prop.Type.Trim() == "PosMoney")
+                if (prop.Type == "PosMoney")
                 {
                     stringBuilder.AppendFormat("\t\t\t {0} = dataObject.{1}.HasValue ? new PosMoney(context.MonetarySettings)", prop.VariableClassName, prop.Name);
                     stringBuilder.Append("\r\n");
@@ -179,7 +179,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             stringBuilder.Append("\r\n");
             foreach (var prop in mainProp)
             {
-                if (prop.Type.Trim() == "PosMoney")
+                if (prop.Type == "PosMoney")
                 {
                     stringBuilder.AppendFormat("\t\t\t {2}.{0} = {1} != null ? {1}.Value : (decimal?) null;", prop.Name, prop.VariableClassName,
                         isSerialization ? "bodo" : "dataObject");

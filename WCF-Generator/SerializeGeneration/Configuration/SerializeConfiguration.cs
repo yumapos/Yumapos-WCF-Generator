@@ -7,49 +7,24 @@ namespace WCFGenerator.SerializeGeneration.Configuration
     public class SerializeConfiguration : ConfigurationSection
     {
         [ConfigurationProperty("baseInterface", IsRequired = true)]
-        public string BaseInterface
-        {
-            get
-            {
-                return this["baseInterface"].ToString();
-            }
-        }
+        public string BaseInterface => this["baseInterface"].ToString();
+
 
         [ConfigurationProperty("ignoreAttribute", IsRequired = true)]
-        public string IgnoreAttribute
-        {
-            get
-            {
-                return this["ignoreAttribute"].ToString();
-            }
-        }
+        public string IgnoreAttribute => this["ignoreAttribute"].ToString();
+
 
         [ConfigurationProperty("includeAttribute", IsRequired = true)]
-        public string IncludeAtribute
-        {
-            get
-            {
-                return this["includeAttribute"].ToString();
-            }
-        }
+        public string IncludeAtribute => this["includeAttribute"].ToString();
+
 
         [ConfigurationProperty("projectNames", IsRequired = true)]
-        public GenerationProjectCollection ProjectNames
-        {
-            get
-            {
-                return (GenerationProjectCollection)base["projectNames"];
-            }
-        }
+        public GenerationProjectCollection ProjectNames => (GenerationProjectCollection)base["projectNames"];
+
 
         [ConfigurationProperty("helpProjectNames", IsRequired = false)]
-        public MappingProjectCollection HelpProjectNames
-        {
-            get
-            {
-                return (MappingProjectCollection)base["helpProjectNames"];
-            }
-        }
+        public MappingProjectCollection HelpProjectNames => (MappingProjectCollection)base["helpProjectNames"];
+
 
         public IEnumerable<string> AllProjectNames
         {
@@ -68,31 +43,33 @@ namespace WCFGenerator.SerializeGeneration.Configuration
         }
 
         [ConfigurationProperty("mappingAttribute", IsRequired = false)]
-        public string MappingAttribute
-        {
-            get
-            {
-                return this["mappingAttribute"].ToString();
-            }
-        }
+        public string MappingAttribute => this["mappingAttribute"].ToString();
+
 
         [ConfigurationProperty("generationPrefix", IsRequired = true)]
-        public string GenerationPrefix
-        {
-            get
-            {
-                return this["generationPrefix"].ToString();
-            }
-        }
+        public string GenerationPrefix => this["generationPrefix"].ToString();
+
 
         [ConfigurationProperty("mappingIgnoreAttribute", IsRequired = true)]
-        public string MappingIgnoreAttribute
-        {
-            get
-            {
-                return this["mappingIgnoreAttribute"].ToString();
-            }
-        }
+        public string MappingIgnoreAttribute => this["mappingIgnoreAttribute"].ToString();
+
+        [ConfigurationProperty("migrationProject", IsRequired = true)] 
+        public string MigrationProject => this["migrationProject"].ToString();
+
+        [ConfigurationProperty("migrationVersionClass", IsRequired = true)]
+        public string MigrationVersionClass => this["migrationVersionClass"].ToString();
+
+        [ConfigurationProperty("migrationInterface", IsRequired = true)]
+        public string MigrationInterface => this["migrationInterface"].ToString();
+
+        [ConfigurationProperty("migrationClassPrefix", IsRequired = true)]
+        public string MigrationClassPrefix => this["migrationClassPrefix"].ToString();
+
+        [ConfigurationProperty("migrationIgnoreAttribute", IsRequired = true)]
+        public string MigrationIgnoreAttribute => this["migrationIgnoreAttribute"].ToString();
+
+        [ConfigurationProperty("migrationVersionProject", IsRequired = true)]
+        public string MigrationVersionProject => this["migrationVersionProject"].ToString();
     }
 
     public class GenerationProjectElement : ConfigurationElement
