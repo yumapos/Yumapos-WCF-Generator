@@ -35,7 +35,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateSelectAll(SqlInfo info)
         {
-            return GenerateSelectBy(info, null) + " " + WhereTenantRelated(info.TableName, info.TenantRelated) + " ";
+            return GenerateSelectBy(info, null) + " " + WhereTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " ";
         }
 
         public string GenerateSelectBy(SqlInfo info, int? topNumber = null)
@@ -94,17 +94,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
         {
-            return Where(selectedFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " ";
+            return Where(selectedFilters, info.TableName) + AndTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " ";
         }
 
         public string GenerateWhere(IEnumerable<string> commonFilters, IEnumerable<string> datesFilters, SqlInfo info)
         {
-            return Where(commonFilters, info.TableName) + AndTenantRelated(info.TableName, info.TenantRelated) + " " + WhereDates(datesFilters, info.TableName);
+            return Where(commonFilters, info.TableName) + AndTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " " + WhereDates(datesFilters, info.TableName);
         }
 
         public string GenerateWhereJoinPk(SqlInfo info)
         {
-            return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinTableName) + AndTenantRelated(info.JoinTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
+            return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinTableName) + AndTenantAndStoreRelated(info.JoinTableName, info.TenantRelated, info.IsStoreDependent) + " "; //TODO FIX TO MANY KEYS
         }
 
 
@@ -263,12 +263,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateWhereVersions(IEnumerable<string> selectedFilters, SqlInfo info)
         {
-            return Where(selectedFilters, info.VersionTableName) + AndTenantRelated(info.VersionTableName, info.TenantRelated) + " ";
+            return Where(selectedFilters, info.VersionTableName) + AndTenantAndStoreRelated(info.VersionTableName, info.TenantRelated, info.IsStoreDependent) + " ";
         }
 
         public string GenerateWhereVersionsWithAlias(IEnumerable<string> selectedFilters, SqlInfo info)
         {
-            return Where(selectedFilters, _versionTableAlias1) + AndTenantRelated(_versionTableAlias1, info.TenantRelated) + " ";
+            return Where(selectedFilters, _versionTableAlias1) + AndTenantAndStoreRelated(_versionTableAlias1, info.TenantRelated, info.IsStoreDependent) + " ";
         }
 
         public string GenerateAndVersionsWithAlias(string selectedFilter, SqlInfo info, string condition = "=")
@@ -279,7 +279,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateWhereJoinPkVersion(SqlInfo info)
         {
-            return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinVersionTableName) + AndTenantRelated(info.JoinVersionTableName, info.TenantRelated) + " "; //TODO FIX TO MANY KEYS
+            return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinVersionTableName) + AndTenantAndStoreRelated(info.JoinVersionTableName, info.TenantRelated, info.IsStoreDependent) + " "; //TODO FIX TO MANY KEYS
         }
 
         #endregion
@@ -402,9 +402,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return sb.ToString();
         }
 
-        private static string AndTenantRelated(string tableName, bool isTenantRelated)
+        private static string AndTenantAndStoreRelated(string tableName, bool isTenantRelated, bool isStoreRelated)
         {
-            return isTenantRelated ? "{andTenantId:" + tableName + "}" : "";
+            var tenantRelatedString = isTenantRelated ? "{andTenantId:" + tableName + "}" : "";
+            var storeRelatedString = isStoreRelated ? "{andStoreIds:" + tableName + "}" : "";
+            return tenantRelatedString + storeRelatedString;
         }
 
         private static string OrderBy(string columnName, string ownerTableName, bool desc)
@@ -413,9 +415,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         }
 
 
-        private static string WhereTenantRelated(string tableName, bool isTenantRelated)
+        private static string WhereTenantAndStoreRelated(string tableName, bool isTenantRelated, bool isStoreRelated)
         {
-            return isTenantRelated ? "{whereTenantId:" + tableName + "}" : "";
+            var tenantRelatedString = isTenantRelated
+                ? "{whereTenantId:" + tableName + "}"
+                : "";
+            var storeRelatedString = isStoreRelated ? "{andStoreIds:" + tableName + "}" : "";
+            return tenantRelatedString + storeRelatedString;
         }
 
         #endregion

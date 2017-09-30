@@ -240,6 +240,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public bool IsTenantRelated { get; set; }
 
         /// <summary>
+        /// Repository is store dependent
+        /// </summary>
+        public bool IsStoreDependent { get; set; }
+
+        /// <summary>
         ///     Return true if constructor implemented in custom repository 
         /// </summary>
         public bool IsConstructorImplemented { get; set; }
@@ -360,7 +365,8 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     VersionTableName = VersionTableName,
                     IsManyToMany = IsManyToMany,
                     IdentityColumns = new List<string>(),
-                    IdentityColumnsJoined = new List<string>()
+                    IdentityColumnsJoined = new List<string>(),
+                    IsStoreDependent = IsStoreDependent
                 };
 
                 if (JoinRepositoryInfo != null)
