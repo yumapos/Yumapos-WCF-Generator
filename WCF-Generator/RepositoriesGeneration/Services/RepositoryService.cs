@@ -178,14 +178,15 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var dataAccessAttr = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(doClass).FirstOrDefault(x => x.Name.ToString().Contains(_config.RepositoryAttributeName));
 
             // common repository info
-            var repositoryInfo = new RepositoryInfo()
+            var repositoryInfo = new RepositoryInfo
             {
                 RepositorySuffix = _config.RepositorySuffix,
                 ClassName = className,
                 ClassFullName = _solutionSyntaxWalker.GetFullRepositoryModelName(doClass),
+                IsTenantRelated = !doClass.BaseTypeExist("ITenantUnrelated"),
+                IsStoreDependent = doClass.BaseTypeExist("IStoreRelated")
             };
 
-            repositoryInfo.IsTenantRelated = !doClass.BaseTypeExist("ITenantUnrelated");
 
             // Base class name
             if (doClass.BaseList != null && doClass.BaseList.Types.Any())

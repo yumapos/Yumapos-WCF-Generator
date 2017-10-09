@@ -29,7 +29,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
-                FilterKey3 = obj.GetParameterByKeyName("FilterKey3"),
+                FilterKey3 = obj.GetParameterByKeyName("FilterKey3")
             };
 
             return attr;
