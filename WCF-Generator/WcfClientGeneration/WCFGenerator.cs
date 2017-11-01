@@ -406,8 +406,15 @@ namespace WCFGenerator.WcfClientGeneration
 
             sb.Append("\r\n\t\t public void GetResult()");
             sb.Append("\r\n\t\t {");
-            sb.Append("\r\n\t\t\t // FUCK YEAH! DO NOT REMOVE!");
-            sb.Append("\r\n\t\t\t task.GetAwaiter().GetResult();");
+            sb.Append("\r\n\t\t\t try");
+            sb.Append("\r\n\t\t\t {");
+            sb.Append("\r\n\t\t\t\t // FUCK YEAH! DO NOT REMOVE!");
+            sb.Append("\r\n\t\t\t\t task.GetAwaiter().GetResult();");
+            sb.Append("\r\n\t\t\t }");
+            sb.Append("\r\n\t\t\t catch (AggregateException ex)");
+            sb.Append("\r\n\t\t\t {");
+            sb.Append("\r\n\t\t\t\t throw ex.InnerException;");
+            sb.Append("\r\n\t\t\t }");
             sb.Append("\r\n\t\t }\r\n");
 
             sb.Append("\r\n\t\t public bool IsCompleted");
@@ -453,7 +460,14 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\r\n\t\t }\r\n");
             sb.Append("\r\n\t\t public new TResult GetResult()");
             sb.Append("\r\n\t\t {");
-            sb.Append("\r\n\t\t\t return _task.Result;");
+            sb.Append("\r\n\t\t\t try");
+            sb.Append("\r\n\t\t\t {");
+            sb.Append("\r\n\t\t\t\t return _task.Result;");
+            sb.Append("\r\n\t\t\t }");
+            sb.Append("\r\n\t\t\t catch (AggregateException ex)");
+            sb.Append("\r\n\t\t\t {");
+            sb.Append("\r\n\t\t\t\t throw ex.InnerException;");
+            sb.Append("\r\n\t\t\t }");
 
             sb.Append("\r\n\t\t }\r\n\t }\r\n}\r\n");
 
