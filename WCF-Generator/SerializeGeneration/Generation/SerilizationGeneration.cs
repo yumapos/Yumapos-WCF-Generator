@@ -23,7 +23,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
         {
             _generatorWorkspace = generatorWorkspace;
 
-            var configuration = ConfigurationSettings.GetConfig("serialize") as SerializeConfiguration;
+            var configuration = SerializeGeneratorSettings.Current.GetConfig();
             if (configuration != null)
             {
                 _projectNames = configuration.AllProjectNames;

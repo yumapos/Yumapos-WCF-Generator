@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using WCFGenerator.Common;
 
 namespace WCFGenerator.DecoratorGeneration.Configuration
 {
-    public static class DecoratorGeneratorSettings
+    public class DecoratorGeneratorSettings : CommonSettings<DecoratorGeneratorSettings>
     {
-        public static IReadOnlyCollection<DecoratorConfiguration> GetConfigs()
+        protected override string ConfigSectionName { get; } = "repositoryGenerator";
+
+        public IReadOnlyCollection<DecoratorConfiguration> GetConfigs()
         {
-            var section = ConfigurationManager.GetSection("decoratorGenerator") as DecoratorGenerator;
+            var section = ConfigurationManager.GetSection(ConfigSectionName) as DecoratorGenerator;
             return section?.RepositoryProjects.Cast<DecoratorProject>().Select(s=> new DecoratorConfiguration()
             {
                 SolutionProjectName = s.Name,
@@ -43,7 +46,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
     /// <summary>
     ///     Configuration section "DecoratorGenerator"
     /// </summary>
-    public class DecoratorGenerator : ConfigurationSection
+    public class DecoratorGenerator : BasicConfigurationSection
     {
         private string _ignoreMethodAttributeName;
 

@@ -1,10 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using WCFGenerator.Common;
 
 namespace WCFGenerator.SerializeGeneration.Configuration
 {
-    public class SerializeConfiguration : ConfigurationSection
+    public class SerializeGeneratorSettings : CommonSettings<SerializeGeneratorSettings>
+    {
+        protected override string ConfigSectionName { get; } = "serialize";
+
+        public SerializeConfiguration GetConfig()
+        {
+            var section = ConfigurationManager.GetSection(ConfigSectionName) as SerializeConfiguration;
+            return section;
+        }
+    }
+
+    public class SerializeConfiguration : BasicConfigurationSection
     {
         [ConfigurationProperty("baseInterface", IsRequired = true)]
         public string BaseInterface => this["baseInterface"].ToString();

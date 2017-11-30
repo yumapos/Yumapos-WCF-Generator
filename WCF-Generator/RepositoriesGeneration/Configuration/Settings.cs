@@ -1,29 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using WCFGenerator.RepositoriesGeneration.Enums;
+using WCFGenerator.Common;
 
 namespace WCFGenerator.RepositoriesGeneration.Configuration
 {
-    public static class RepositoryGeneratorSettings
+    public class RepositoryGeneratorSettings : CommonSettings<RepositoryGeneratorSettings>
     {
-        public static IEnumerable<RepositoryProject> GetConfigs()
-        {
-            var section = ConfigurationManager.GetSection("repositoryGenerator") as RepositoryGenerator;
-            return section.RepositoryProjects.Cast<RepositoryProject>();
-        }
+        protected override string ConfigSectionName { get; } = "repositoryGenerator";
 
-        public static string GetSolutionPath()
+        public IEnumerable<RepositoryProject> GetConfigs()
         {
-            var ret = ConfigurationManager.AppSettings["SolutionPath"];
-            return ret;
+            var section = ConfigurationManager.GetSection(ConfigSectionName) as RepositoryGenerator;
+            return section?.RepositoryProjects.Cast<RepositoryProject>() ?? Enumerable.Empty<RepositoryProject>();
         }
     }
 
     /// <summary>
     ///     Configuration section "RepositoryGenerator"
     /// </summary>
-    public class RepositoryGenerator : ConfigurationSection
+    public class RepositoryGenerator : BasicConfigurationSection
     {
         /// <summary>
         ///     All configured repository RepositoryProjects
