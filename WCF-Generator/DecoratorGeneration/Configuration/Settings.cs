@@ -7,7 +7,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
 {
     public class DecoratorGeneratorSettings : CommonSettings<DecoratorGeneratorSettings>
     {
-        protected override string ConfigSectionName { get; } = "repositoryGenerator";
+        protected override string ConfigSectionName { get; } = "decoratorGenerator";
 
         public IReadOnlyCollection<DecoratorConfiguration> GetConfigs()
         {

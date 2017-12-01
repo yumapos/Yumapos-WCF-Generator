@@ -14,7 +14,7 @@ using WCFGenerator.SerializeGeneration.Models;
 
 namespace WCFGenerator.SerializeGeneration.Generation
 {
-    public class SerilizationGeneration
+    public class SerilizationGeneration : IGeneration
     {
         private readonly GeneratorWorkspace _generatorWorkspace;
         private readonly TextMigrationPatterns _textMigrationPatterns;
@@ -42,6 +42,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 _migrationVersionProject = configuration.MigrationVersionProject;
             }
             _textMigrationPatterns = new TextMigrationPatterns();
+            
         }
 
         private readonly IEnumerable<string> _projectNames;
@@ -73,7 +74,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
         private IEnumerable<SourceElements> GetSourceElements(string projectName)
         {
             var findClasses = SyntaxSerilizationHelper.GetAllClasses(projectName, true, skipGeneratedClasses:false).ToArray();
-            var neededClasses = findClasses.Where(i => i.BaseList != null && i.BaseList.Types.Any(t => t.Type.ToString() == _baseInterface));
+            var neededClasses = findClasses.Where(i => i.BaseList != null && i.Identifier.Text != _baseInterface.TrimStart('I') && i.BaseList.Types.Any(t => t.Type.ToString() == _baseInterface));
             var listElements = new List<SourceElements>();
             foreach (var currentClass in neededClasses)
             {
@@ -82,6 +83,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
                     continue;
                 }
                 var members = currentClass.Members;
+
                 var generationProperty = new List<PropertyDeclarationSyntax>();
                 var generationFields = new List<FieldDeclarationSyntax>();
                 var allPublicProperties = new List<PropertyDeclarationSyntax>();
@@ -98,6 +100,14 @@ namespace WCFGenerator.SerializeGeneration.Generation
                     var property = member as PropertyDeclarationSyntax;
                     if (property != null)
                     {
+                        var propertyType = property.Type.ToFullString().Replace(" ", "");
+
+                        // TODO Temp solution. Need use compilation for find and compare types
+                        if (SerializeGeneratorSettings.Current.InvalidPropertyTypes.Any(t => propertyType.Contains(t)))
+                        {
+                            this.ThrowAnalyzingException($"Property {currentClass.Identifier.Text}.{property.Identifier.Text} have not allowed type \"{propertyType}\".");
+                        }
+
                         if (property.Modifiers.Any(x => x.Text == "public"))
                         {
                             allPublicProperties.Add(property);
@@ -267,7 +277,9 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 SyntaxSerilizationHelper.InitVisitor(_helpProjects.Union(_projectNames));
                 foreach (var projectName in _projectNames)
                 {
-                    _project = _generatorWorkspace.Solution.Projects.First(x => x.Name == projectName);
+                    _project = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == projectName);
+
+                    if(_project == null) this.ThrowAnalyzingException($"Project {projectName} not found");
 
                     SyntaxSerilizationHelper.Project = _project;
 

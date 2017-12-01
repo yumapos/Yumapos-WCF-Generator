@@ -27,7 +27,7 @@ namespace WCFGenerator.WcfClientGeneration.Configuration
     /// <summary>
     ///     Configuration section "WcfClientGenerator"
     /// </summary>
-    public class WcfClientGenerator : ConfigurationSection
+    public class WcfClientGenerator : BasicConfigurationSection
     {
         /// <summary>
         ///     All configured wcf services for generate client

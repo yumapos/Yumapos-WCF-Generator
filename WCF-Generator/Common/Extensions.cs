@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace WCFGenerator.Common
 {
-    public static class Extensions
+    public static partial class Extensions
     {
         #region Solution
 
