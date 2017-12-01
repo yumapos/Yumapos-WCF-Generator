@@ -1,10 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using WCFGenerator.Common;
+using WCFGenerator.Common.Configuration;
 
 namespace WCFGenerator.SerializeGeneration.Configuration
 {
-    public class SerializeConfiguration : ConfigurationSection
+    public class SerializeGeneratorSettings : CommonSettings<SerializeGeneratorSettings>
+    {
+        protected override string ConfigSectionName { get; } = "serialize";
+
+        public SerializeConfiguration GetConfig()
+        {
+            var section = ConfigurationManager.GetSection(ConfigSectionName) as SerializeConfiguration;
+            return section;
+        }
+
+        public IEnumerable<string> InvalidPropertyTypes
+        {
+            get { return GetConfig().InvalidPropertyTypes.Cast<TypeElement>().Select(t => t.Type); }
+        }
+    }
+
+    public class SerializeConfiguration : BasicConfigurationSection
     {
         [ConfigurationProperty("baseInterface", IsRequired = true)]
         public string BaseInterface => this["baseInterface"].ToString();
@@ -18,13 +36,14 @@ namespace WCFGenerator.SerializeGeneration.Configuration
         public string IncludeAtribute => this["includeAttribute"].ToString();
 
 
+        [ConfigurationProperty("invalidPropertyTypes", IsRequired = true)]
+        public TypeElementCollection InvalidPropertyTypes => (TypeElementCollection)base["invalidPropertyTypes"];
+
         [ConfigurationProperty("projectNames", IsRequired = true)]
         public GenerationProjectCollection ProjectNames => (GenerationProjectCollection)base["projectNames"];
 
-
         [ConfigurationProperty("helpProjectNames", IsRequired = false)]
         public MappingProjectCollection HelpProjectNames => (MappingProjectCollection)base["helpProjectNames"];
-
 
         public IEnumerable<string> AllProjectNames
         {

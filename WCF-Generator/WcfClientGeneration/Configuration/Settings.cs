@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using WCFGenerator.Common;
 
 namespace WCFGenerator.WcfClientGeneration.Configuration
 {
-    public static class WcfServiceClientGeneratorSettings
+    public class WcfServiceClientGeneratorSettings : CommonSettings<WcfServiceClientGeneratorSettings>
     {
-        public static IReadOnlyCollection<WcfService> GetConfigs()
+        protected override string ConfigSectionName { get; } = "wcfClientGenerator";
+
+        public IReadOnlyCollection<WcfService> GetConfigs()
         {
             try
             {
-                var section = ConfigurationManager.GetSection("wcfClientGenerator") as WcfClientGenerator;
+                var section = ConfigurationManager.GetSection(ConfigSectionName) as WcfClientGenerator;
                 return section?.RepositoryProjects.Cast<WcfService>().ToList();
             }
             catch (ConfigurationErrorsException e)
@@ -19,18 +22,12 @@ namespace WCFGenerator.WcfClientGeneration.Configuration
                 throw new InvalidOperationException("Error occurred on trying get Wcf Client Generator settings.", e);
             }
         }
-
-        public static string GetSolutionPath()
-        {
-            var ret = ConfigurationManager.AppSettings["SolutionPath"];
-            return ret;
-        }
     }
 
     /// <summary>
     ///     Configuration section "WcfClientGenerator"
     /// </summary>
-    public class WcfClientGenerator : ConfigurationSection
+    public class WcfClientGenerator : BasicConfigurationSection
     {
         /// <summary>
         ///     All configured wcf services for generate client

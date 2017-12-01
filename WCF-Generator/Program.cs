@@ -9,6 +9,7 @@ using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Core;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
+using WCFGenerator.SerializeGeneration.Configuration;
 using WCFGenerator.SerializeGeneration.Generation;
 using WCFGenerator.WcfClientGeneration;
 using WCFGenerator.WcfClientGeneration.Configuration;
@@ -67,7 +68,7 @@ namespace WCFGenerator
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error occured on repository generation", e);
+                throw new ApplicationException($"Error occured on repository generation: {e.Message}", e);
             }
 
             try
@@ -76,25 +77,25 @@ namespace WCFGenerator
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error occured on serialize generation", e);
+                throw new ApplicationException($"Error occured on serialize generation: {e.Message}", e);
             }
 
             try
             {
-                RunWcfGeneration();
+               RunWcfGeneration();
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error occured on wcf generation.", e);
+                throw new ApplicationException($"Error occured on wcf generation: {e.Message}", e);
             }
 
             try
             {
-                RunDecoratorGeneration();
+               RunDecoratorGeneration();
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error occured on decorator generation.", e);
+                throw new ApplicationException($"Error occured on decorator generation: {e.Message}", e);
             }
 
             // Apply Changes, close solution
@@ -103,10 +104,16 @@ namespace WCFGenerator
 
         private static void RunWcfGeneration()
         {
+            if (!WcfServiceClientGeneratorSettings.Current.Enabled)
+            {
+                Console.WriteLine("Wcf client generation disabled.");
+                return;
+            }
+
             Console.WriteLine("Start Wcf client generation...");
 
             // Configure generator 
-            var configs = WcfServiceClientGeneratorSettings.GetConfigs();
+            var configs = WcfServiceClientGeneratorSettings.Current.GetConfigs();
 
             if (configs == null)
             {
@@ -135,10 +142,16 @@ namespace WCFGenerator
 
         private static void RunRepositoryGeneration()
         {
-            Console.WriteLine("Start repository generation...");
+            if (!RepositoryGeneratorSettings.Current.Enabled)
+            {
+                Console.WriteLine("Repository generation disabled.");
+                return;
+            }
 
+            Console.WriteLine("Start repository generation...");
+            
             // Configure generator 
-            var config = RepositoryGeneratorSettings.GetConfigs();
+            var config = RepositoryGeneratorSettings.Current.GetConfigs();
 
             var repositoryGenerator = new RepositoryCodeFactory(config, _generatorWorkspace);
 
@@ -150,6 +163,12 @@ namespace WCFGenerator
 
         private static void RunSerializeGeneration()
         {
+            if (!SerializeGeneratorSettings.Current.Enabled)
+            {
+                Console.WriteLine("Serialize generation disabled.");
+                return;
+            }
+
             Console.WriteLine("Start serialize generation...");
 
             var repositoryGenerator = new SerilizationGeneration(_generatorWorkspace);
@@ -162,15 +181,16 @@ namespace WCFGenerator
 
         private static void RunDecoratorGeneration()
         {
-            Console.WriteLine("Start decoration generation...");
-
-            // Configure generator 
-            var config = DecoratorGeneratorSettings.GetConfigs();
-
-            if(config == null)
+            if (!DecoratorGeneratorSettings.Current.Enabled)
             {
+                Console.WriteLine("Decoration generation disabled.");
                 return;
             }
+
+            Console.WriteLine("Start decoration generation...");
+            
+            // Configure generator 
+            var config = DecoratorGeneratorSettings.Current.GetConfigs();
 
             var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
 
