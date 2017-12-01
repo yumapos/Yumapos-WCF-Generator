@@ -31,7 +31,6 @@ namespace TestSerializationGeneration
 			 base.SetDataObject(value, context);
 			 var dataObject = value as TestClassDo;
 			 Property = dataObject.Property;
-			 PropertyWithInvalidType = dataObject.PropertyWithInvalidType;
 			 SerializeIncludeProperty = dataObject.SerializeIncludeProperty;
 			 DoCustomizationOnSet(dataObject,context);
 		 }
@@ -41,7 +40,6 @@ namespace TestSerializationGeneration
 			 TestClassDo bodo = (TestClassDo)(childBoDo ?? BoDoInstance);
 			 bodo = (TestClassDo) base.GetDataObject(bodo);
 			 bodo.Property = Property;
-			 bodo.PropertyWithInvalidType = PropertyWithInvalidType;
 			 bodo.SerializeIncludeProperty = SerializeIncludeProperty;
 			 DoCustomizationOnGet(ref bodo);
 			 return bodo;
