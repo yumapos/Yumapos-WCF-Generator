@@ -17,7 +17,6 @@ namespace TestSerializationGeneration
 	 public partial class TestClassDo : IBoDo
 	 {
 		 public string Property { get; set;}
-		 public Dictionary<string,string> PropertyWithInvalidType { get; set;}
 		 public string SerializeIncludeProperty { get; set;}
 	 }
 	 public partial class TestClass : StatefulObject
