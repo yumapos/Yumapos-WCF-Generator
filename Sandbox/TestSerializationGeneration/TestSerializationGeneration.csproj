@@ -47,6 +47,7 @@
     <Compile Include="Extensions\TestClass.g.cs" />
     <Compile Include="GeneratedMigrations\MigrationV1.g.cs" />
     <Compile Include="GeneratedMigrations\MigrationV2.g.cs" />
+    <Compile Include="GeneratedMigrations\MigrationV3.g.cs" />
     <Compile Include="Helpers\Generation\VersionHelper.cs" />
     <Compile Include="ServerInfrastructureStubs\IBoDo.cs" />
     <Compile Include="ServerInfrastructureStubs\IDeserializationContext.cs" />

@@ -10,14 +10,25 @@ namespace TestSerializationGeneration
 
     public abstract partial class TestClass : IStatefulObject
     {
+        // All public properties should be included on generation
         public string Property { get; set; }
 
-        //public Dictionary<string, string> PropertyWithInvalidType { get; set; }
+        // Private non public properties should not be included on generation
+        private IDictionary<string, string> PrivatePropertyWithInvalidType { get; set; }
 
+        // All non public properties should be included on generation if have attribute SerializeInclude
+        [SerializeInclude] 
+        private string SerializeIncludeProperty { get; set; }
+
+        // All properties should not be included on generation if have attribute SerializeIgnore
         [SerializeIgnore]
         public string SerializeIgnoreProperty { get; set; }
 
-        [SerializeInclude]
-        public string SerializeIncludeProperty { get; set; }
+        // Uncomment this property for get error on generation with invalide type of property
+        // public Dictionary<string, string> PublicPropertyWithInvalidType { get; set; }
+
+        // Invalide type error will skipped for properties with attribute SerializeIgnore
+        [SerializeIgnore]
+        public Dictionary<string, string> IgnoredPropertyWithInvalidType { get; set; }
     }
 }

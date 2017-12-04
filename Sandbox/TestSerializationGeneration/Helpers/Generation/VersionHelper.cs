@@ -14,6 +14,6 @@ namespace TestSerializationGeneration.Helpers
 {
 	public class VersionHelper : IVersionHelper
 	{
-		public int CurrentVersion => 2;
+		public int CurrentVersion => 3;
 	}
 }

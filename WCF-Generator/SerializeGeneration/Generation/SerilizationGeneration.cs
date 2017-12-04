@@ -102,28 +102,29 @@ namespace WCFGenerator.SerializeGeneration.Generation
                     {
                         var propertyType = property.Type.ToFullString().Replace(" ", "");
 
-                        // TODO Temp solution. Need use compilation for find and compare types
-                        if (SerializeGeneratorSettings.Current.InvalidPropertyTypes.Any(t => propertyType.Contains(t)))
-                        {
-                            this.ThrowAnalyzingException($"Property {currentClass.Identifier.Text}.{property.Identifier.Text} have not allowed type \"{propertyType}\".");
-                        }
-
                         if (property.Modifiers.Any(x => x.Text == "public"))
                         {
                             allPublicProperties.Add(property);
                         }
 
-                        if (property.AttributeLists.Count == 0 || !SyntaxSerilizationHelper.PropertyAttributeExist(property, _ignoreAttribute))
+                        // Properties with ignore attribute should not be serialised
+                        if (property.AttributeLists.Count != 0 && SyntaxSerilizationHelper.PropertyAttributeExist(property, _ignoreAttribute))
                         {
-                            if (property.Modifiers.Any(x => x.Text == "public"))
-                            {
-                                generationProperty.Add(property);
-                                continue;
-                            }
-                            if (SyntaxSerilizationHelper.PropertyAttributeExist(property, _includeAttribute))
-                            {
-                                generationProperty.Add(property);
-                            }
+                            continue;
+                        }
+
+                        // All public properties should be serialised 
+                        if (property.Modifiers.Any(x => x.Text == "public"))
+                        {
+                            // Check invalid type for serialisation
+                            ThrowIfIvalidPropertyType(propertyType, currentClass, property);
+                            generationProperty.Add(property);
+                        }
+                        else if(SyntaxSerilizationHelper.PropertyAttributeExist(property, _includeAttribute))
+                        {
+                            // Check invalid type for serialisation
+                            ThrowIfIvalidPropertyType(propertyType, currentClass, property);
+                            generationProperty.Add(property);
                         }
                     }
                 }
@@ -162,6 +163,19 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 listElements.Add(exitClass);
             }
             return listElements;
+        }
+
+        private void ThrowIfIvalidPropertyType(string propertyType, ClassDeclarationSyntax currentClass,
+            PropertyDeclarationSyntax property)
+        {
+// TODO Temp solution. Need use compilation for find and compare types
+            if (SerializeGeneratorSettings.Current.InvalidPropertyTypes.Any(t => propertyType.Contains(t)))
+            {
+                var error =
+                    $"Property {currentClass.Identifier.Text}.{property.Identifier.Text} have not allowed type \"{propertyType}\". " +
+                    $"Attributes: {string.Join("", property.AttributeLists.SelectMany(a => a.Attributes).Select(a => a.Name))}";
+                this.ThrowAnalyzingException(error);
+            }
         }
 
         private Tuple<string, string> GetNamespace(ClassDeclarationSyntax currentClass)
