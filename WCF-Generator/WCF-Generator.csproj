@@ -186,6 +186,7 @@
     <Compile Include="RepositoriesGeneration\Core\SQL\SQLPostgresScriptGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\SQL\SQLScriptGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Enums\DatabaseType.cs" />
+    <Compile Include="RepositoriesGeneration\Helpers\CustomSqlModelHelper.cs" />
     <Compile Include="RepositoriesGeneration\Helpers\ExtensionMethods.cs" />
     <Compile Include="Common\CodeHelper.cs" />
     <Compile Include="RepositoriesGeneration\Helpers\PostgresColumnsHelper.cs" />
