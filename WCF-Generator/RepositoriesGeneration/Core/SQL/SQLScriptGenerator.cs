@@ -205,7 +205,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 return Select(info.TableColumns, info.VersionTableName) + ","
                        + Fields(info.JoinTableColumns, info.JoinVersionTableName) + " "
                        + From(info.VersionTableName) + " "
-                       + InnerJoin(info.VersionTableName, info.PrimaryKeyNames.First(), info.JoinVersionTableName, info.JoinPrimaryKeyNames.First()) + " ";//TODO FIX TO MANY KEYS
+                       + (info.IsVersionTableJoined()
+                       ? InnerJoin(info.VersionTableName, info.VersionKeyName, info.JoinVersionTableName, info.JoinVersionKeyName)
+                       : InnerJoin(info.VersionTableName, info.PrimaryKeyNames.First(), info.JoinVersionTableName, info.JoinPrimaryKeyNames.First())) + " ";//TODO FIX TO MANY KEYS
             }
             // return select from table
             return Select(info.TableColumns, info.VersionTableName) + " " + From(info.VersionTableName) + " ";
