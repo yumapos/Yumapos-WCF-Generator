@@ -22,6 +22,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string SelectAllQuery = @"SELECT [ElectronicCoupons].[Id],[ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive] FROM [ElectronicCoupons]  {whereTenantId:[ElectronicCoupons]} ";
 		private const string SelectByQuery = @"SELECT [ElectronicCoupons].[Id],[ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive] FROM [ElectronicCoupons] ";
 		private const string InsertQuery = @"INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id VALUES(@Name,@PrintText,@ImageId,@ValidFrom,@ValidTo,@IsDeleted,@LimitPerOrder,@Priority,@MaxTimesPerCustomer,@IsActive,@TenantId) ";
+		private const string InsertManyQuery = @"INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id VALUES(@Name{0},@PrintText{0},@ImageId{0},@ValidFrom{0},@ValidTo{0},@IsDeleted{0},@LimitPerOrder{0},@Priority{0},@MaxTimesPerCustomer{0},@IsActive{0},@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [ElectronicCoupons] SET [ElectronicCoupons].[Name] = @Name,[ElectronicCoupons].[PrintText] = @PrintText,[ElectronicCoupons].[ImageId] = @ImageId,[ElectronicCoupons].[ValidFrom] = @ValidFrom,[ElectronicCoupons].[ValidTo] = @ValidTo,[ElectronicCoupons].[IsDeleted] = @IsDeleted,[ElectronicCoupons].[LimitPerOrder] = @LimitPerOrder,[ElectronicCoupons].[Priority] = @Priority,[ElectronicCoupons].[MaxTimesPerCustomer] = @MaxTimesPerCustomer,[ElectronicCoupons].[IsActive] = @IsActive FROM [ElectronicCoupons] ";
 		private const string DeleteQueryBy = @"UPDATE [ElectronicCoupons] SET IsDeleted = 1 ";
 		private const string InsertOrUpdateQuery = @"UPDATE [ElectronicCoupons] SET [ElectronicCoupons].[Name] = @Name,[ElectronicCoupons].[PrintText] = @PrintText,[ElectronicCoupons].[ImageId] = @ImageId,[ElectronicCoupons].[ValidFrom] = @ValidFrom,[ElectronicCoupons].[ValidTo] = @ValidTo,[ElectronicCoupons].[IsDeleted] = @IsDeleted,[ElectronicCoupons].[LimitPerOrder] = @LimitPerOrder,[ElectronicCoupons].[Priority] = @Priority,[ElectronicCoupons].[MaxTimesPerCustomer] = @MaxTimesPerCustomer,[ElectronicCoupons].[IsActive] = @IsActive FROM [ElectronicCoupons]  WHERE [ElectronicCoupons].[Id] = @Id{andTenantId:[ElectronicCoupons]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id VALUES(@Name,@PrintText,@ImageId,@ValidFrom,@ValidTo,@IsDeleted,@LimitPerOrder,@Priority,@MaxTimesPerCustomer,@IsActive,@TenantId)  END";
@@ -92,6 +93,79 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		*/
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon> electronicCouponList)
+		{
+			if (electronicCouponList == null) throw new ArgumentException(nameof(electronicCouponList));
+
+			if (!electronicCouponList.Any()) return;
+
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			foreach (var electronicCoupon in electronicCouponList)
+			{
+				if (parameters.Count + 12 > MaxRepositoryParams)
+				{
+					DataAccessService.Execute(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+				}
+				parameters.Add($"Id{counter}", electronicCoupon.Id);
+				parameters.Add($"Name{counter}", electronicCoupon.Name);
+				parameters.Add($"PrintText{counter}", electronicCoupon.PrintText);
+				parameters.Add($"ImageId{counter}", electronicCoupon.ImageId);
+				parameters.Add($"ValidFrom{counter}", electronicCoupon.ValidFrom);
+				parameters.Add($"ValidTo{counter}", electronicCoupon.ValidTo);
+				parameters.Add($"IsDeleted{counter}", electronicCoupon.IsDeleted);
+				parameters.Add($"LimitPerOrder{counter}", electronicCoupon.LimitPerOrder);
+				parameters.Add($"Priority{counter}", electronicCoupon.Priority);
+				parameters.Add($"MaxTimesPerCustomer{counter}", electronicCoupon.MaxTimesPerCustomer);
+				parameters.Add($"IsActive{counter}", electronicCoupon.IsActive);
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon> electronicCouponList)
+		{
+			if (electronicCouponList == null) throw new ArgumentException(nameof(electronicCouponList));
+
+			if (!electronicCouponList.Any()) return;
+
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var electronicCoupon in electronicCouponList)
+			{
+				if (parameters.Count + 12 > MaxRepositoryParams)
+				{
+					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+				}
+				parameters.Add($"Id{counter}", electronicCoupon.Id);
+				parameters.Add($"Name{counter}", electronicCoupon.Name);
+				parameters.Add($"PrintText{counter}", electronicCoupon.PrintText);
+				parameters.Add($"ImageId{counter}", electronicCoupon.ImageId);
+				parameters.Add($"ValidFrom{counter}", electronicCoupon.ValidFrom);
+				parameters.Add($"ValidTo{counter}", electronicCoupon.ValidTo);
+				parameters.Add($"IsDeleted{counter}", electronicCoupon.IsDeleted);
+				parameters.Add($"LimitPerOrder{counter}", electronicCoupon.LimitPerOrder);
+				parameters.Add($"Priority{counter}", electronicCoupon.Priority);
+				parameters.Add($"MaxTimesPerCustomer{counter}", electronicCoupon.MaxTimesPerCustomer);
+				parameters.Add($"IsActive{counter}", electronicCoupon.IsActive);
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		}
+
 		/*
 		public void UpdateById(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCoupon electronicCoupon)
 		{

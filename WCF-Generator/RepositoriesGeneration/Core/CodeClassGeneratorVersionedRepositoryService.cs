@@ -107,7 +107,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             foreach (var f in AllRepositoryFieldInfos)
             {
-                var init = f.InitNew ? f.Name + " = new " + f.TypeName + "(dataAccessService)" : f.Name + " = (" + f.TypeName + ")" + f.TypeName.FirstSymbolToLower();
+                var init = f.InitNew ? f.Name + " = new " + f.TypeName + "(dataAccessService, dataAccessController)" : f.Name + " = (" + f.TypeName + ")" + f.TypeName.FirstSymbolToLower();
                 sb.AppendLine(init + ";");
             }
 
@@ -172,6 +172,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             if (!string.IsNullOrEmpty(insertMethods))
                 sb.AppendLine(insertMethods);
 
+            // RepositoryMethod.Insert
+            var insertManyMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.InsertMany)
+                .Aggregate("", (s, method) => s + GenerateInsertMany(method));
+
+            if (!string.IsNullOrEmpty(insertMethods))
+                sb.AppendLine(insertManyMethods);
             // RepositoryMethod.UpdateBy
             var updateByMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.UpdateBy && m.FilterInfo.FilterType != FilterType.VersionKey)
@@ -426,6 +433,102 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
+        private string GenerateInsertMany(MethodImplementationInfo method)
+        {
+            var elementName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var parameterName = $"{elementName}List";
+            var parameterType = $"IEnumerable<{RepositoryInfo.ClassFullName}>";
+            var methodParameter = $"{parameterType} {parameterName}";
+
+            var updateMethodNames = GetUpdateManyMethodNames();
+            var updateMethods = updateMethodNames.Select(name => name + "(" + parameterName + ");").ToList();
+
+            var returnType = parameterType;
+            var returnTypeAsync = "Task<" + returnType + ">";
+            var returnFunc = "return " + parameterName + ";";
+
+            var sb = new StringBuilder();
+
+            // synchronous method
+            sb.AppendLine("public " + returnType + " InsertMany(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
+            sb.AppendLine("{");
+            sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+            sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
+            sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+            foreach (var key in RepositoryInfo.PrimaryKeys)
+            {
+                var primaryKeyProperty = elementName + "." + key.Name;
+
+                if (key.TypeName.IsInt()) // int skipped on insert
+                {
+                    sb.AppendLine(primaryKeyProperty + " = 0;");
+                }
+                else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
+                {
+                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                    sb.AppendLine("{");
+                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                    sb.AppendLine("}");
+                }
+            }
+            sb.AppendLine("}");
+
+            sb.AppendLine(VersionRepositoryField + ".InsertMany(" + parameterName + ");");
+            sb.AppendLine(CacheRepositoryField + ".InsertMany(" + parameterName + ");");
+
+            foreach (var m in updateMethods)
+            {
+                sb.AppendLine(m);
+            }
+
+            sb.AppendLine(returnFunc);
+
+            sb.AppendLine("}");
+
+            // Asynchronous method
+            sb.AppendLine("public async " + returnTypeAsync + " InsertManyAsync(" + methodParameter + ")");
+            sb.AppendLine("{");
+            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
+            sb.AppendLine("{");
+            sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+            sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
+            sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+            foreach (var key in RepositoryInfo.PrimaryKeys)
+            {
+                var primaryKeyProperty = elementName + "." + key.Name;
+
+                if (key.TypeName.IsInt()) // int skipped on insert
+                {
+                    sb.AppendLine(primaryKeyProperty + " = 0;");
+                }
+                else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
+                {
+                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                    sb.AppendLine("{");
+                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                    sb.AppendLine("}");
+                }
+            }
+            sb.AppendLine("}");
+
+            sb.AppendLine("await " + VersionRepositoryField + ".InsertManyAsync(" + parameterName + ");");
+            sb.AppendLine("await " + CacheRepositoryField + ".InsertManyAsync(" + parameterName + ");");
+
+            foreach (var m in updateMethods)
+            {
+                sb.AppendLine(m);
+            }
+
+            sb.AppendLine(returnFunc);
+
+            sb.AppendLine("}");
+
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
+
         private string GenerateUpdate(MethodImplementationInfo method)
         {
             var filter = method.FilterInfo;
@@ -479,6 +582,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         {
             var parameterName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
+            var parameterNameMany = $"{RepositoryInfo.ClassName.FirstSymbolToLower()}List";
+            var methodParameterMany = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterNameMany}";
 
             var sb = new StringBuilder();
 
@@ -521,6 +626,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("mt.ModifiedBy = " + parameterName + ".ModifiedBy;");
                 sb.AppendLine(manyToManyCacheRepositoryFieldName + ".Insert(mt);");
                 sb.AppendLine(manyToManyVersionRepositoryFieldName + ".Insert(mt);");
+                sb.AppendLine("}");
+                sb.AppendLine("}");
+
+                // sync method many
+                sb.AppendLine($"private void UpdateMany{manyToManyEntityName}({methodParameterMany})");
+                sb.AppendLine("{");
+                sb.AppendLine($"foreach (var {parameterName} in {parameterNameMany})");
+                sb.AppendLine("{");
+                sb.AppendLine($"Update{manyToManyEntityName}({parameterName});");
                 sb.AppendLine("}");
                 sb.AppendLine("}");
 
@@ -665,6 +779,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private IEnumerable<string> GetUpdateMethodNames()
         {
             var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info => "Update" + info.ManyToManyRepositoryInfo.ClassName);
+
+            return updateMethods;
+        }
+
+        private IEnumerable<string> GetUpdateManyMethodNames()
+        {
+            var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info => "UpdateMany" + info.ManyToManyRepositoryInfo.ClassName);
 
             return updateMethods;
         }

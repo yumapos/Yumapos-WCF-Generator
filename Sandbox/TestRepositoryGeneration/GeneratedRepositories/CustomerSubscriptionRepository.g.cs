@@ -22,13 +22,14 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string SelectAllQuery = @"SELECT [CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted] FROM [CustomerSubscriptions]  {whereTenantId:[CustomerSubscriptions]} ";
 		private const string SelectByQuery = @"SELECT [CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted] FROM [CustomerSubscriptions] ";
 		private const string InsertQuery = @"INSERT INTO [CustomerSubscriptions]([CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted],[CustomerSubscriptions].[TenantId])  VALUES(@CustomerId,@CustomerNotificationsType,@Email,@SMS,@Push,@IsCustomizable,@ResendPeriod,@IsDeleted,@TenantId) ";
+		private const string InsertManyQuery = @"INSERT INTO [CustomerSubscriptions]([CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted],[CustomerSubscriptions].[TenantId])  VALUES(@CustomerId{0},@CustomerNotificationsType{0},@Email{0},@SMS{0},@Push{0},@IsCustomizable{0},@ResendPeriod{0},@IsDeleted{0},@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [CustomerSubscriptions] SET [CustomerSubscriptions].[CustomerId] = @CustomerId,[CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType,[CustomerSubscriptions].[Email] = @Email,[CustomerSubscriptions].[SMS] = @SMS,[CustomerSubscriptions].[Push] = @Push,[CustomerSubscriptions].[IsCustomizable] = @IsCustomizable,[CustomerSubscriptions].[ResendPeriod] = @ResendPeriod,[CustomerSubscriptions].[IsDeleted] = @IsDeleted FROM [CustomerSubscriptions] ";
 		private const string DeleteQueryBy = @"DELETE FROM [CustomerSubscriptions] ";
 		private const string InsertOrUpdateQuery = @"UPDATE [CustomerSubscriptions] SET [CustomerSubscriptions].[CustomerId] = @CustomerId,[CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType,[CustomerSubscriptions].[Email] = @Email,[CustomerSubscriptions].[SMS] = @SMS,[CustomerSubscriptions].[Push] = @Push,[CustomerSubscriptions].[IsCustomizable] = @IsCustomizable,[CustomerSubscriptions].[ResendPeriod] = @ResendPeriod,[CustomerSubscriptions].[IsDeleted] = @IsDeleted FROM [CustomerSubscriptions]  WHERE [CustomerSubscriptions].[CustomerId] = @CustomerId AND [CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType{andTenantId:[CustomerSubscriptions]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [CustomerSubscriptions]([CustomerSubscriptions].[CustomerId],[CustomerSubscriptions].[CustomerNotificationsType],[CustomerSubscriptions].[Email],[CustomerSubscriptions].[SMS],[CustomerSubscriptions].[Push],[CustomerSubscriptions].[IsCustomizable],[CustomerSubscriptions].[ResendPeriod],[CustomerSubscriptions].[IsDeleted],[CustomerSubscriptions].[TenantId])  VALUES(@CustomerId,@CustomerNotificationsType,@Email,@SMS,@Push,@IsCustomizable,@ResendPeriod,@IsDeleted,@TenantId)  END";
 		private const string WhereQueryByCustomerIdAndCustomerNotificationsType = "WHERE [CustomerSubscriptions].[CustomerId] = @CustomerId AND [CustomerSubscriptions].[CustomerNotificationsType] = @CustomerNotificationsType{andTenantId:[CustomerSubscriptions]} ";
 
 
-		public CustomerSubscriptionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
+		public CustomerSubscriptionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		/*
 		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> GetAll()
 		{
@@ -70,6 +71,75 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription customerSubscription)
 		{
 		await DataAccessService.InsertObjectAsync(customerSubscription,InsertQuery);
+		}
+
+		*/
+		/*
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
+
+		if(!customerSubscriptionList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object> ();
+		foreach (var customerSubscription in customerSubscriptionList)
+		{
+		if (parameters.Count + 9 > MaxRepositoryParams)
+		{
+		DataAccessService.Execute(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		}
+		parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
+		parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
+		parameters.Add($"Email{counter}", customerSubscription.Email);
+		parameters.Add($"SMS{counter}", customerSubscription.SMS);
+		parameters.Add($"Push{counter}", customerSubscription.Push);
+		parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
+		parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
+		parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
+
+		if(!customerSubscriptionList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object>();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var customerSubscription in customerSubscriptionList)
+		{
+		if (parameters.Count + 9 > MaxRepositoryParams)
+		{
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		}
+		parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
+		parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
+		parameters.Add($"Email{counter}", customerSubscription.Email);
+		parameters.Add($"SMS{counter}", customerSubscription.SMS);
+		parameters.Add($"Push{counter}", customerSubscription.Push);
+		parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
+		parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
+		parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
 
 		*/
