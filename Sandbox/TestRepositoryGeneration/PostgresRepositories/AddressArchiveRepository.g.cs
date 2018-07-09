@@ -22,6 +22,7 @@ namespace TestRepositoryGeneration
 		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified FROM archive.addresses   ";
 		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified FROM archive.addresses ";
 		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified) ";
+		private const string InsertManyQuery = @"InsertMany script was not generated";
 		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified FROM archive.addresses ";
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
 		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified ";
@@ -33,7 +34,7 @@ namespace TestRepositoryGeneration
 		private const string WhereWithIsDeletedFilter = "WHERE archive.addresses.is_deleted = @IsDeleted ";
 
 
-		public AddressArchiveRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
+		public AddressArchiveRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetAll(bool? isDeleted = false)
 		{
 			var sql = SelectAllQuery;
@@ -163,6 +164,76 @@ namespace TestRepositoryGeneration
 			await DataAccessService.InsertObjectAsync(address, InsertQuery);
 		}
 
+		/*
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object> ();
+		foreach (var address in addressList)
+		{
+		if (parameters.Count + 10 > MaxRepositoryParams)
+		{
+		DataAccessService.Execute(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		}
+		parameters.Add($"Id{counter}", address.Id);
+		parameters.Add($"Country{counter}", address.Country);
+		parameters.Add($"City{counter}", address.City);
+		parameters.Add($"State{counter}", address.State);
+		parameters.Add($"Street{counter}", address.Street);
+		parameters.Add($"Building{counter}", address.Building);
+		parameters.Add($"ZipCode{counter}", address.ZipCode);
+		parameters.Add($"Latitude{counter}", address.Latitude);
+		parameters.Add($"Longitude{counter}", address.Longitude);
+		parameters.Add($"Modified{counter}", address.Modified);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object>();
+		foreach (var address in addressList)
+		{
+		if (parameters.Count + 10 > MaxRepositoryParams)
+		{
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		}
+		parameters.Add($"Id{counter}", address.Id);
+		parameters.Add($"Country{counter}", address.Country);
+		parameters.Add($"City{counter}", address.City);
+		parameters.Add($"State{counter}", address.State);
+		parameters.Add($"Street{counter}", address.Street);
+		parameters.Add($"Building{counter}", address.Building);
+		parameters.Add($"ZipCode{counter}", address.ZipCode);
+		parameters.Add($"Latitude{counter}", address.Latitude);
+		parameters.Add($"Longitude{counter}", address.Longitude);
+		parameters.Add($"Modified{counter}", address.Modified);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		}
+
+		*/
 		public void UpdateById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
 			var sql = UpdateQueryBy + WhereQueryById;

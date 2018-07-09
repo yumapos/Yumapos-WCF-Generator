@@ -9,6 +9,7 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
     {
         Guid Insert(MenuItem menuItem);
 
+        IEnumerable<MenuItem> InsertMany(IEnumerable<MenuItem> menuItem);
         void UpdateByMenuItemId(MenuItem itemId);
 
         void RemoveByMenuItemId(MenuItem itemId);

@@ -8,8 +8,12 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
     internal abstract class RepositoryCodeGeneratorAbstract : ICodeClassGeneratorRepository
     {
+        protected const string DataAccessControllerBaseRepositoryField = "DataAccessController";
+        protected const string DataAccessServiceBaseRepositoryField = "DataAccessService";
+        protected const string MaxRepositoryParamsBaseRepositoryField = "MaxRepositoryParams";
+
         #region Properties
-        
+
         /// <summary>
         ///     Repository model information
         /// </summary>
@@ -81,7 +85,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         public virtual string GetConstructors()
         {
-            var constructor = string.Format("public {0}("+ RepositoryInfo.DataAccessServiceTypeName + " dataAccessService" + ") : base(dataAccessService) {{ }}", RepositoryName);
+            var constructor = $"public {RepositoryName}({RepositoryInfo.DataAccessServiceTypeName} dataAccessService, {RepositoryInfo.DataAccessControllerTypeName} dataAccessController) : base(dataAccessService, dataAccessController) {{ }}";
             return constructor;
         }
 

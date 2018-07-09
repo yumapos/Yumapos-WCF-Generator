@@ -19,8 +19,10 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 	{
 		private const string InsertQuery = @"INSERT INTO [MenuItemToTaxVersions]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
 VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
+		private const string InsertManyQuery = @"INSERT INTO [MenuItemToTaxVersions]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
+VALUES (@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{0},@TaxVersionId{0},@IsDeleted{0})";
 
-		public MenuItems2TaxesVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
+		public MenuItems2TaxesVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			DataAccessService.InsertObject(menuItems2Taxes, InsertQuery);
@@ -28,6 +30,68 @@ VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionI
 		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			await DataAccessService.InsertObjectAsync(menuItems2Taxes, InsertQuery);
+		}
+
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			if (menuItems2TaxesList == null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+			if (!menuItems2TaxesList.Any()) return;
+
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			foreach (var menuItems2Taxes in menuItems2TaxesList)
+			{
+				if (parameters.Count + 7 > MaxRepositoryParams)
+				{
+					DataAccessService.Execute(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					query.AppendFormat(InsertManyQuery, counter);
+					counter++;
+				}
+				parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
+				parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
+				parameters.Add($"Modified{counter}", menuItems2Taxes.Modified);
+				parameters.Add($"ModifiedBy{counter}", menuItems2Taxes.ModifiedBy);
+				parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
+				parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
+				parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
+			}
+			DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			if (menuItems2TaxesList == null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+			if (!menuItems2TaxesList.Any()) return;
+
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			foreach (var menuItems2Taxes in menuItems2TaxesList)
+			{
+				if (parameters.Count + 7 > MaxRepositoryParams)
+				{
+					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+				}
+				parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
+				parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
+				parameters.Add($"Modified{counter}", menuItems2Taxes.Modified);
+				parameters.Add($"ModifiedBy{counter}", menuItems2Taxes.ModifiedBy);
+				parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
+				parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
+				parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
 
 

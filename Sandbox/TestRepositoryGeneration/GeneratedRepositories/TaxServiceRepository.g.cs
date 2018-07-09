@@ -32,11 +32,11 @@ namespace TestRepositoryGeneration
 		{
 			_dataAccessController = dataAccessController;
 			_dateTimeService = dateTimeService;
-			_taxCacheRepository = new TestRepositoryGeneration.TaxCacheRepository(dataAccessService);
-			_taxVersionRepository = new TestRepositoryGeneration.TaxVersionRepository(dataAccessService);
-			_menuItems2TaxesCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesCacheRepository(dataAccessService);
-			_menuItems2TaxesVersionRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesVersionRepository(dataAccessService);
-			_menuItemCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemCacheRepository(dataAccessService);
+			_taxCacheRepository = new TestRepositoryGeneration.TaxCacheRepository(dataAccessService, dataAccessController);
+			_taxVersionRepository = new TestRepositoryGeneration.TaxVersionRepository(dataAccessService, dataAccessController);
+			_menuItems2TaxesCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesCacheRepository(dataAccessService, dataAccessController);
+			_menuItems2TaxesVersionRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesVersionRepository(dataAccessService, dataAccessController);
+			_menuItemCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemCacheRepository(dataAccessService, dataAccessController);
 		}
 
 		/*
@@ -113,6 +113,37 @@ namespace TestRepositoryGeneration
 			return tax.TaxVersionId;
 		}
 
+		/*
+		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+		{
+		foreach (var tax in taxList)
+		{
+		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
+		tax.TaxVersionId = Guid.NewGuid();
+		tax.TaxId = 0;
+		}
+		_taxVersionRepository.InsertMany(taxList);
+		_taxCacheRepository.InsertMany(taxList);
+		UpdateManyMenuItems2Taxes(taxList);
+		return taxList;
+		}
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>> InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+		{
+		foreach (var tax in taxList)
+		{
+		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
+		tax.TaxVersionId = Guid.NewGuid();
+		tax.TaxId = 0;
+		}
+		await _taxVersionRepository.InsertManyAsync(taxList);
+		await _taxCacheRepository.InsertManyAsync(taxList);
+		UpdateManyMenuItems2Taxes(taxList);
+		return taxList;
+		}
+
+		*/
 		public void UpdateByTaxId(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
@@ -152,6 +183,13 @@ namespace TestRepositoryGeneration
 				mt.ModifiedBy = tax.ModifiedBy;
 				_menuItems2TaxesCacheRepository.Insert(mt);
 				_menuItems2TaxesVersionRepository.Insert(mt);
+			}
+		}
+		private void UpdateManyMenuItems2Taxes(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+		{
+			foreach (var tax in taxList)
+			{
+				UpdateMenuItems2Taxes(tax);
 			}
 		}
 
