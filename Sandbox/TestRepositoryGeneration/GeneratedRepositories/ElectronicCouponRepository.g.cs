@@ -102,6 +102,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var query = new System.Text.StringBuilder();
 			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 			foreach (var electronicCoupon in electronicCouponList)
 			{
 				if (parameters.Count + 12 > MaxRepositoryParams)
@@ -110,6 +111,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				}
 				parameters.Add($"Id{counter}", electronicCoupon.Id);
 				parameters.Add($"Name{counter}", electronicCoupon.Name);
@@ -122,7 +124,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 				parameters.Add($"Priority{counter}", electronicCoupon.Priority);
 				parameters.Add($"MaxTimesPerCustomer{counter}", electronicCoupon.MaxTimesPerCustomer);
 				parameters.Add($"IsActive{counter}", electronicCoupon.IsActive);
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				query.AppendFormat(InsertManyQuery, counter);
 				counter++;
 			}
@@ -147,6 +148,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				}
 				parameters.Add($"Id{counter}", electronicCoupon.Id);
 				parameters.Add($"Name{counter}", electronicCoupon.Name);
@@ -159,7 +161,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 				parameters.Add($"Priority{counter}", electronicCoupon.Priority);
 				parameters.Add($"MaxTimesPerCustomer{counter}", electronicCoupon.MaxTimesPerCustomer);
 				parameters.Add($"IsActive{counter}", electronicCoupon.IsActive);
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				query.AppendFormat(InsertManyQuery, counter);
 				counter++;
 			}

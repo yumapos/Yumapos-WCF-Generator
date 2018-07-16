@@ -127,6 +127,7 @@ namespace TestRepositoryGeneration
 		var query = new System.Text.StringBuilder();
 		var counter = 0;
 		var parameters = new Dictionary<string, object> ();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var tax in taxList)
 		{
 		if (parameters.Count + 7 > MaxRepositoryParams)
@@ -135,6 +136,7 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		counter = 0;
 		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		}
 		parameters.Add($"TaxId{counter}", tax.TaxId);
 		parameters.Add($"TaxVersionId{counter}", tax.TaxVersionId);
@@ -142,7 +144,6 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Modified{counter}", tax.Modified);
 		parameters.Add($"ModifiedBy{counter}", tax.ModifiedBy);
 		parameters.Add($"IsDeleted{counter}", tax.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}
@@ -167,6 +168,7 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		counter = 0;
 		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		}
 		parameters.Add($"TaxId{counter}", tax.TaxId);
 		parameters.Add($"TaxVersionId{counter}", tax.TaxVersionId);
@@ -174,7 +176,6 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Modified{counter}", tax.Modified);
 		parameters.Add($"ModifiedBy{counter}", tax.ModifiedBy);
 		parameters.Add($"IsDeleted{counter}", tax.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}

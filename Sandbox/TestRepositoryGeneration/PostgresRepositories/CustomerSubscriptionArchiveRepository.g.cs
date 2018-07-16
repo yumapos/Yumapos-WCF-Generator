@@ -84,6 +84,7 @@ namespace TestRepositoryGeneration
 		var query = new System.Text.StringBuilder();
 		var counter = 0;
 		var parameters = new Dictionary<string, object> ();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var customerSubscription in customerSubscriptionList)
 		{
 		if (parameters.Count + 9 > MaxRepositoryParams)
@@ -92,6 +93,7 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		counter = 0;
 		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		}
 		parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
 		parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
@@ -101,7 +103,6 @@ namespace TestRepositoryGeneration
 		parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
 		parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
 		parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}
@@ -126,6 +127,7 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		counter = 0;
 		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		}
 		parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
 		parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
@@ -135,7 +137,6 @@ namespace TestRepositoryGeneration
 		parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
 		parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
 		parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}

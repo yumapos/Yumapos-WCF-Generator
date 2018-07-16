@@ -112,6 +112,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			await DataAccessService.InsertObjectAsync(menuItems2Taxes, InsertQuery);
 		}
 
+		/*
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
 		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
@@ -174,6 +175,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
 
+		*/
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			var sql = UpdateQueryBy + WhereQueryByMenuItemId;

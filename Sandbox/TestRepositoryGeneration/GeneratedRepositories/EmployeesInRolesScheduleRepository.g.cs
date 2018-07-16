@@ -102,6 +102,7 @@ namespace TestRepositoryGeneration
 		var query = new System.Text.StringBuilder();
 		var counter = 0;
 		var parameters = new Dictionary<string, object> ();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var employeesInRolesSchedule in employeesInRolesScheduleList)
 		{
 		if (parameters.Count + 9 > MaxRepositoryParams)
@@ -110,6 +111,7 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		counter = 0;
 		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		}
 		parameters.Add($"ScheduleId{counter}", employeesInRolesSchedule.ScheduleId);
 		parameters.Add($"RoleId{counter}", employeesInRolesSchedule.RoleId);
@@ -119,7 +121,6 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Start{counter}", employeesInRolesSchedule.Start);
 		parameters.Add($"End{counter}", employeesInRolesSchedule.End);
 		parameters.Add($"IsDeleted{counter}", employeesInRolesSchedule.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}
@@ -144,6 +145,7 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		counter = 0;
 		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		}
 		parameters.Add($"ScheduleId{counter}", employeesInRolesSchedule.ScheduleId);
 		parameters.Add($"RoleId{counter}", employeesInRolesSchedule.RoleId);
@@ -153,7 +155,6 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Start{counter}", employeesInRolesSchedule.Start);
 		parameters.Add($"End{counter}", employeesInRolesSchedule.End);
 		parameters.Add($"IsDeleted{counter}", employeesInRolesSchedule.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}
