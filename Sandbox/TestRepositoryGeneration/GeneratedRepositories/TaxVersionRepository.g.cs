@@ -50,6 +50,7 @@ VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDelet
 			var query = new System.Text.StringBuilder();
 			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 			foreach (var tax in taxList)
 			{
 				if (parameters.Count + 7 > MaxRepositoryParams)
@@ -58,8 +59,7 @@ VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDelet
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
-					query.AppendFormat(InsertManyQuery, counter);
-					counter++;
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				}
 				parameters.Add($"TaxId{counter}", tax.TaxId);
 				parameters.Add($"TaxVersionId{counter}", tax.TaxVersionId);
@@ -67,7 +67,8 @@ VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDelet
 				parameters.Add($"Modified{counter}", tax.Modified);
 				parameters.Add($"ModifiedBy{counter}", tax.ModifiedBy);
 				parameters.Add($"IsDeleted{counter}", tax.IsDeleted);
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
 			}
 			DataAccessService.Execute(query.ToString(), parameters);
 		}
@@ -81,6 +82,7 @@ VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDelet
 			var query = new System.Text.StringBuilder();
 			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 			foreach (var tax in taxList)
 			{
 				if (parameters.Count + 7 > MaxRepositoryParams)
@@ -89,6 +91,7 @@ VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDelet
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				}
 				parameters.Add($"TaxId{counter}", tax.TaxId);
 				parameters.Add($"TaxVersionId{counter}", tax.TaxVersionId);
@@ -96,7 +99,6 @@ VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDelet
 				parameters.Add($"Modified{counter}", tax.Modified);
 				parameters.Add($"ModifiedBy{counter}", tax.ModifiedBy);
 				parameters.Add($"IsDeleted{counter}", tax.IsDeleted);
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				query.AppendFormat(InsertManyQuery, counter);
 				counter++;
 			}

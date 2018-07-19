@@ -57,6 +57,7 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId{0})";
 			var query = new System.Text.StringBuilder();
 			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 			foreach (var menuItem in menuItemList)
 			{
 				if (parameters.Count + 4 > MaxRepositoryParams)
@@ -65,8 +66,7 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId{0})";
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
-					query.AppendFormat(InsertManyQuery, counter);
-					counter++;
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				}
 				parameters.Add($"MenuItemId{counter}", menuItem.MenuItemId);
 				parameters.Add($"MenuItemVersionId{counter}", menuItem.MenuItemVersionId);
@@ -77,7 +77,8 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId{0})";
 				parameters.Add($"Modified{counter}", menuItem.Modified);
 				parameters.Add($"ModifiedBy{counter}", menuItem.ModifiedBy);
 				parameters.Add($"CategoryId{counter}", menuItem.CategoryId);
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
 			}
 			DataAccessService.Execute(query.ToString(), parameters);
 		}
@@ -91,6 +92,7 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId{0})";
 			var query = new System.Text.StringBuilder();
 			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 			foreach (var menuItem in menuItemList)
 			{
 				if (parameters.Count + 4 > MaxRepositoryParams)
@@ -99,6 +101,7 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId{0})";
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				}
 				parameters.Add($"MenuItemId{counter}", menuItem.MenuItemId);
 				parameters.Add($"MenuItemVersionId{counter}", menuItem.MenuItemVersionId);
@@ -109,7 +112,6 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId{0})";
 				parameters.Add($"Modified{counter}", menuItem.Modified);
 				parameters.Add($"ModifiedBy{counter}", menuItem.ModifiedBy);
 				parameters.Add($"CategoryId{counter}", menuItem.CategoryId);
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				query.AppendFormat(InsertManyQuery, counter);
 				counter++;
 			}

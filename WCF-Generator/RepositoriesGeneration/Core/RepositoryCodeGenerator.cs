@@ -466,7 +466,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("var query = new System.Text.StringBuilder();");
             sb.AppendLine("var counter = 0;");
             sb.AppendLine($"var parameters = new Dictionary<string, object> ();");
-            
+
+            if (RepositoryInfo.IsTenantRelated)
+            {
+                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
+            }
+
             sb.AppendLine($"foreach (var {elementName} in {parameterName})");
             sb.AppendLine("{");
 
@@ -476,18 +481,19 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("query.Clear();");
             sb.AppendLine("counter = 0;");
             sb.AppendLine("parameters.Clear();");
-            sb.AppendLine("}");
-
-            foreach (var column in columns)
-            {
-                sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
-            }
 
             if (RepositoryInfo.IsTenantRelated)
             {
                 sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
             }
 
+            sb.AppendLine("}");
+
+            foreach (var column in columns)
+            {
+                sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
+            }
+            
             sb.AppendLine($"query.AppendFormat({queryName}, counter);");
             sb.AppendLine("counter++;");
             
@@ -521,18 +527,19 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("query.Clear();");
             sb.AppendLine("counter = 0;");
             sb.AppendLine("parameters.Clear();");
-            sb.AppendLine("}");
-
-            foreach (var column in columns)
-            {
-                 sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
-            }
 
             if (RepositoryInfo.IsTenantRelated)
             {
                 sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
             }
 
+            sb.AppendLine("}");
+
+            foreach (var column in columns)
+            {
+                 sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
+            }
+            
             sb.AppendLine($"query.AppendFormat({queryName}, counter);");
             sb.AppendLine("counter++;");
           

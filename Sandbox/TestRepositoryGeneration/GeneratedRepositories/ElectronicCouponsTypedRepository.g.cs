@@ -95,87 +95,86 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		*/
-		/*
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
 		{
-		if(electronicCouponsTypedList==null) throw new ArgumentException(nameof(electronicCouponsTypedList));
+			if (electronicCouponsTypedList == null) throw new ArgumentException(nameof(electronicCouponsTypedList));
 
-		if(!electronicCouponsTypedList.Any()) return;
+			if (!electronicCouponsTypedList.Any()) return;
 
-		var query = new System.Text.StringBuilder();
-		var counter = 0;
-		var parameters = new Dictionary<string, object> ();
-		foreach (var electronicCouponsTyped in electronicCouponsTypedList)
-		{
-		if (parameters.Count + 4 > MaxRepositoryParams)
-		{
-		DataAccessService.Execute(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
-		parameters.Clear();
-		}
-		parameters.Add($"ElectronicCouponsId{counter}", electronicCouponsTyped.ElectronicCouponsId);
-		parameters.Add($"ElectronicCouponsPresetId{counter}", electronicCouponsTyped.ElectronicCouponsPresetId);
-		parameters.Add($"IsPromotionalCampaign{counter}", electronicCouponsTyped.IsPromotionalCampaign);
-		parameters.Add($"Id{counter}", electronicCouponsTyped.Id);
-		parameters.Add($"Name{counter}", electronicCouponsTyped.Name);
-		parameters.Add($"PrintText{counter}", electronicCouponsTyped.PrintText);
-		parameters.Add($"ImageId{counter}", electronicCouponsTyped.ImageId);
-		parameters.Add($"ValidFrom{counter}", electronicCouponsTyped.ValidFrom);
-		parameters.Add($"ValidTo{counter}", electronicCouponsTyped.ValidTo);
-		parameters.Add($"IsDeleted{counter}", electronicCouponsTyped.IsDeleted);
-		parameters.Add($"LimitPerOrder{counter}", electronicCouponsTyped.LimitPerOrder);
-		parameters.Add($"Priority{counter}", electronicCouponsTyped.Priority);
-		parameters.Add($"MaxTimesPerCustomer{counter}", electronicCouponsTyped.MaxTimesPerCustomer);
-		parameters.Add($"IsActive{counter}", electronicCouponsTyped.IsActive);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
-		DataAccessService.Execute(query.ToString(), parameters);
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var electronicCouponsTyped in electronicCouponsTypedList)
+			{
+				if (parameters.Count + 4 > MaxRepositoryParams)
+				{
+					DataAccessService.Execute(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				}
+				parameters.Add($"ElectronicCouponsId{counter}", electronicCouponsTyped.ElectronicCouponsId);
+				parameters.Add($"ElectronicCouponsPresetId{counter}", electronicCouponsTyped.ElectronicCouponsPresetId);
+				parameters.Add($"IsPromotionalCampaign{counter}", electronicCouponsTyped.IsPromotionalCampaign);
+				parameters.Add($"Id{counter}", electronicCouponsTyped.Id);
+				parameters.Add($"Name{counter}", electronicCouponsTyped.Name);
+				parameters.Add($"PrintText{counter}", electronicCouponsTyped.PrintText);
+				parameters.Add($"ImageId{counter}", electronicCouponsTyped.ImageId);
+				parameters.Add($"ValidFrom{counter}", electronicCouponsTyped.ValidFrom);
+				parameters.Add($"ValidTo{counter}", electronicCouponsTyped.ValidTo);
+				parameters.Add($"IsDeleted{counter}", electronicCouponsTyped.IsDeleted);
+				parameters.Add($"LimitPerOrder{counter}", electronicCouponsTyped.LimitPerOrder);
+				parameters.Add($"Priority{counter}", electronicCouponsTyped.Priority);
+				parameters.Add($"MaxTimesPerCustomer{counter}", electronicCouponsTyped.MaxTimesPerCustomer);
+				parameters.Add($"IsActive{counter}", electronicCouponsTyped.IsActive);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			DataAccessService.Execute(query.ToString(), parameters);
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
 		{
-		if(electronicCouponsTypedList==null) throw new ArgumentException(nameof(electronicCouponsTypedList));
+			if (electronicCouponsTypedList == null) throw new ArgumentException(nameof(electronicCouponsTypedList));
 
-		if(!electronicCouponsTypedList.Any()) return;
+			if (!electronicCouponsTypedList.Any()) return;
 
-		var query = new System.Text.StringBuilder();
-		var counter = 0;
-		var parameters = new Dictionary<string, object>();
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		foreach (var electronicCouponsTyped in electronicCouponsTypedList)
-		{
-		if (parameters.Count + 4 > MaxRepositoryParams)
-		{
-		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
-		parameters.Clear();
-		}
-		parameters.Add($"ElectronicCouponsId{counter}", electronicCouponsTyped.ElectronicCouponsId);
-		parameters.Add($"ElectronicCouponsPresetId{counter}", electronicCouponsTyped.ElectronicCouponsPresetId);
-		parameters.Add($"IsPromotionalCampaign{counter}", electronicCouponsTyped.IsPromotionalCampaign);
-		parameters.Add($"Id{counter}", electronicCouponsTyped.Id);
-		parameters.Add($"Name{counter}", electronicCouponsTyped.Name);
-		parameters.Add($"PrintText{counter}", electronicCouponsTyped.PrintText);
-		parameters.Add($"ImageId{counter}", electronicCouponsTyped.ImageId);
-		parameters.Add($"ValidFrom{counter}", electronicCouponsTyped.ValidFrom);
-		parameters.Add($"ValidTo{counter}", electronicCouponsTyped.ValidTo);
-		parameters.Add($"IsDeleted{counter}", electronicCouponsTyped.IsDeleted);
-		parameters.Add($"LimitPerOrder{counter}", electronicCouponsTyped.LimitPerOrder);
-		parameters.Add($"Priority{counter}", electronicCouponsTyped.Priority);
-		parameters.Add($"MaxTimesPerCustomer{counter}", electronicCouponsTyped.MaxTimesPerCustomer);
-		parameters.Add($"IsActive{counter}", electronicCouponsTyped.IsActive);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
-		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var electronicCouponsTyped in electronicCouponsTypedList)
+			{
+				if (parameters.Count + 4 > MaxRepositoryParams)
+				{
+					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				}
+				parameters.Add($"ElectronicCouponsId{counter}", electronicCouponsTyped.ElectronicCouponsId);
+				parameters.Add($"ElectronicCouponsPresetId{counter}", electronicCouponsTyped.ElectronicCouponsPresetId);
+				parameters.Add($"IsPromotionalCampaign{counter}", electronicCouponsTyped.IsPromotionalCampaign);
+				parameters.Add($"Id{counter}", electronicCouponsTyped.Id);
+				parameters.Add($"Name{counter}", electronicCouponsTyped.Name);
+				parameters.Add($"PrintText{counter}", electronicCouponsTyped.PrintText);
+				parameters.Add($"ImageId{counter}", electronicCouponsTyped.ImageId);
+				parameters.Add($"ValidFrom{counter}", electronicCouponsTyped.ValidFrom);
+				parameters.Add($"ValidTo{counter}", electronicCouponsTyped.ValidTo);
+				parameters.Add($"IsDeleted{counter}", electronicCouponsTyped.IsDeleted);
+				parameters.Add($"LimitPerOrder{counter}", electronicCouponsTyped.LimitPerOrder);
+				parameters.Add($"Priority{counter}", electronicCouponsTyped.Priority);
+				parameters.Add($"MaxTimesPerCustomer{counter}", electronicCouponsTyped.MaxTimesPerCustomer);
+				parameters.Add($"IsActive{counter}", electronicCouponsTyped.IsActive);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
 
-		*/
 		/*
 		public void UpdateByElectronicCouponsId(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)
 		{

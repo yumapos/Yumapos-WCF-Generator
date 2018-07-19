@@ -74,75 +74,74 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		*/
-		/*
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
-		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
+			if (customerSubscriptionList == null) throw new ArgumentException(nameof(customerSubscriptionList));
 
-		if(!customerSubscriptionList.Any()) return;
+			if (!customerSubscriptionList.Any()) return;
 
-		var query = new System.Text.StringBuilder();
-		var counter = 0;
-		var parameters = new Dictionary<string, object> ();
-		foreach (var customerSubscription in customerSubscriptionList)
-		{
-		if (parameters.Count + 9 > MaxRepositoryParams)
-		{
-		DataAccessService.Execute(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
-		parameters.Clear();
-		}
-		parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
-		parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
-		parameters.Add($"Email{counter}", customerSubscription.Email);
-		parameters.Add($"SMS{counter}", customerSubscription.SMS);
-		parameters.Add($"Push{counter}", customerSubscription.Push);
-		parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
-		parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
-		parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
-		DataAccessService.Execute(query.ToString(), parameters);
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var customerSubscription in customerSubscriptionList)
+			{
+				if (parameters.Count + 9 > MaxRepositoryParams)
+				{
+					DataAccessService.Execute(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				}
+				parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
+				parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
+				parameters.Add($"Email{counter}", customerSubscription.Email);
+				parameters.Add($"SMS{counter}", customerSubscription.SMS);
+				parameters.Add($"Push{counter}", customerSubscription.Push);
+				parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
+				parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
+				parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			DataAccessService.Execute(query.ToString(), parameters);
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
-		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
+			if (customerSubscriptionList == null) throw new ArgumentException(nameof(customerSubscriptionList));
 
-		if(!customerSubscriptionList.Any()) return;
+			if (!customerSubscriptionList.Any()) return;
 
-		var query = new System.Text.StringBuilder();
-		var counter = 0;
-		var parameters = new Dictionary<string, object>();
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		foreach (var customerSubscription in customerSubscriptionList)
-		{
-		if (parameters.Count + 9 > MaxRepositoryParams)
-		{
-		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
-		parameters.Clear();
-		}
-		parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
-		parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
-		parameters.Add($"Email{counter}", customerSubscription.Email);
-		parameters.Add($"SMS{counter}", customerSubscription.SMS);
-		parameters.Add($"Push{counter}", customerSubscription.Push);
-		parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
-		parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
-		parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
-		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var customerSubscription in customerSubscriptionList)
+			{
+				if (parameters.Count + 9 > MaxRepositoryParams)
+				{
+					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				}
+				parameters.Add($"CustomerId{counter}", customerSubscription.CustomerId);
+				parameters.Add($"CustomerNotificationsType{counter}", customerSubscription.CustomerNotificationsType);
+				parameters.Add($"Email{counter}", customerSubscription.Email);
+				parameters.Add($"SMS{counter}", customerSubscription.SMS);
+				parameters.Add($"Push{counter}", customerSubscription.Push);
+				parameters.Add($"IsCustomizable{counter}", customerSubscription.IsCustomizable);
+				parameters.Add($"ResendPeriod{counter}", customerSubscription.ResendPeriod);
+				parameters.Add($"IsDeleted{counter}", customerSubscription.IsDeleted);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
 
-		*/
 		/*
 		public void UpdateByCustomerIdAndCustomerNotificationsType(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription customerSubscription)
 		{

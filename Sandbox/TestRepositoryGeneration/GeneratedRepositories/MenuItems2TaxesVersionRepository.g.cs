@@ -49,8 +49,6 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{
 					query.Clear();
 					counter = 0;
 					parameters.Clear();
-					query.AppendFormat(InsertManyQuery, counter);
-					counter++;
 				}
 				parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
 				parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
@@ -59,6 +57,8 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{
 				parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
 				parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
 				parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
 			}
 			DataAccessService.Execute(query.ToString(), parameters);
 		}
