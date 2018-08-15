@@ -362,7 +362,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
             sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
-            sb.AppendLine(versionKeyProperty + " = Guid.NewGuid();");
+            sb.AppendLine($"{versionKeyProperty} = {versionKeyProperty} == Guid.Empty ? Guid.NewGuid() : {versionKeyProperty};");
 
             foreach (var key in RepositoryInfo.PrimaryKeys)
             {
@@ -398,7 +398,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("{");
             sb.AppendLine(parameterName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
             sb.AppendLine(parameterName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
-            sb.AppendLine(versionKeyProperty + " = Guid.NewGuid();");
+            sb.AppendLine($"{versionKeyProperty} = {versionKeyProperty} == Guid.Empty ? Guid.NewGuid() : {versionKeyProperty};");
 
             foreach (var key in RepositoryInfo.PrimaryKeys)
             {
