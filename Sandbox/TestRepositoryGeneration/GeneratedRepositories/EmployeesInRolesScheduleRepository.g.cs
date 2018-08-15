@@ -22,6 +22,7 @@ namespace TestRepositoryGeneration
 		private const string SelectAllQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule]  {whereTenantId:[EmployeesInRolesSchedule]} ";
 		private const string SelectByQuery = @"SELECT [EmployeesInRolesSchedule].[ScheduleId],[EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted] FROM [EmployeesInRolesSchedule] ";
 		private const string InsertQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId) ";
+		private const string InsertManyQuery = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId{0},@UserId{0},@StoreId{0},@BusinessDayNumber{0},@Start{0},@End{0},@IsDeleted{0},@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] ";
 		private const string DeleteQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET IsDeleted = 1 ";
 		private const string InsertOrUpdateQuery = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule]  WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId)  END";
@@ -30,7 +31,7 @@ namespace TestRepositoryGeneration
 		private const string WhereWithIsDeletedFilter = "WHERE [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted{andTenantId:[EmployeesInRolesSchedule]} ";
 
 
-		public EmployeesInRolesScheduleRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
+		public EmployeesInRolesScheduleRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		/*
 		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> GetAll(bool? isDeleted = false)
 		{
@@ -91,6 +92,76 @@ namespace TestRepositoryGeneration
 			return (System.Guid)res;
 		}
 
+		/*
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
+
+		if(!employeesInRolesScheduleList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object> ();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var employeesInRolesSchedule in employeesInRolesScheduleList)
+		{
+		if (parameters.Count + 9 > MaxRepositoryParams)
+		{
+		DataAccessService.Execute(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		}
+		parameters.Add($"ScheduleId{counter}", employeesInRolesSchedule.ScheduleId);
+		parameters.Add($"RoleId{counter}", employeesInRolesSchedule.RoleId);
+		parameters.Add($"UserId{counter}", employeesInRolesSchedule.UserId);
+		parameters.Add($"StoreId{counter}", employeesInRolesSchedule.StoreId);
+		parameters.Add($"BusinessDayNumber{counter}", employeesInRolesSchedule.BusinessDayNumber);
+		parameters.Add($"Start{counter}", employeesInRolesSchedule.Start);
+		parameters.Add($"End{counter}", employeesInRolesSchedule.End);
+		parameters.Add($"IsDeleted{counter}", employeesInRolesSchedule.IsDeleted);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
+
+		if(!employeesInRolesScheduleList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object>();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var employeesInRolesSchedule in employeesInRolesScheduleList)
+		{
+		if (parameters.Count + 9 > MaxRepositoryParams)
+		{
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		}
+		parameters.Add($"ScheduleId{counter}", employeesInRolesSchedule.ScheduleId);
+		parameters.Add($"RoleId{counter}", employeesInRolesSchedule.RoleId);
+		parameters.Add($"UserId{counter}", employeesInRolesSchedule.UserId);
+		parameters.Add($"StoreId{counter}", employeesInRolesSchedule.StoreId);
+		parameters.Add($"BusinessDayNumber{counter}", employeesInRolesSchedule.BusinessDayNumber);
+		parameters.Add($"Start{counter}", employeesInRolesSchedule.Start);
+		parameters.Add($"End{counter}", employeesInRolesSchedule.End);
+		parameters.Add($"IsDeleted{counter}", employeesInRolesSchedule.IsDeleted);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		}
+
+		*/
 		/*
 		public void UpdateByScheduleId(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{

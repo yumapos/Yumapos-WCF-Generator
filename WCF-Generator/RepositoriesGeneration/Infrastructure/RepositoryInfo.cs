@@ -85,6 +85,19 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public List<string> Elements { get; set; }
 
         /// <summary>
+        ///    Dependent properties names - hidden table columns
+        /// </summary>
+        public List<string> HiddenElements
+        {
+            get
+            {
+                return IsTenantRelated
+                    ? new List<string>() {"TenantId"}
+                    : new List<string>();
+            }
+        }
+
+        /// <summary>
         ///     Standart name of repository class
         /// </summary>
         public string RepositoryName
@@ -393,13 +406,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     sqlInfo.IdentityColumns.Add(PrimaryKeys[0].Name);
                 }
 
-                if (IsTenantRelated)
-                {
-                    if(!sqlInfo.HiddenTableColumns.Contains("TenantId"))
-                    {
-                        sqlInfo.HiddenTableColumns.Add("TenantId");
-                    }
-                }
+                sqlInfo.HiddenTableColumns = HiddenElements;
 
                 return sqlInfo;
             }

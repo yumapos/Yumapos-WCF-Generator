@@ -14,6 +14,8 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 
         Task<int> InsertAsync(ElectronicCouponsTyped electronicCouponsTyped);
 
+        Task InsertManyAsync(IEnumerable<ElectronicCouponsTyped> electronicCouponsTypedList);
+        
         Task UpdateByElectronicCouponsIdAsync(ElectronicCouponsTyped electronicCouponsTyped);
 
         Task RemoveByElectronicCouponsIdAsync(int id);

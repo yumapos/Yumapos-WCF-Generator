@@ -14,6 +14,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsert(SqlInfo info);
 
+        string GenerateInsertMany(SqlInfo info);
+
         string GenerateInsertToTemp(SqlInfo info);
 
         string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info);
@@ -33,6 +35,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         string GenerateRemove(SqlInfo info);
 
         string GenerateInsertToVersionTable(SqlInfo info);
+
+        string GenerateInsertManyToVersionTable(SqlInfo info);
 
         string GenerateSelectByToVersionTable(SqlInfo info);
 

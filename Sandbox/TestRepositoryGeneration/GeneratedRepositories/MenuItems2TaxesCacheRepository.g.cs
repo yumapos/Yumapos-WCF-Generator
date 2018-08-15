@@ -22,6 +22,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string SelectAllQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess]   ";
 		private const string SelectByQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess] ";
 		private const string InsertQuery = @"INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted) ";
+		private const string InsertManyQuery = @"INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{0},@TaxVersionId{0},@IsDeleted{0}) ";
 		private const string UpdateQueryBy = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems2Taxess] ";
 		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess]  WHERE   IF @@ROWCOUNT = 0 BEGIN INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)  END";
@@ -31,7 +32,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
 
 
-		public MenuItems2TaxesCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
+		public MenuItems2TaxesCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> GetAll(bool? isDeleted = false)
 		{
 			var sql = SelectAllQuery;
@@ -111,6 +112,70 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			await DataAccessService.InsertObjectAsync(menuItems2Taxes, InsertQuery);
 		}
 
+		/*
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object> ();
+		foreach (var menuItems2Taxes in menuItems2TaxesList)
+		{
+		if (parameters.Count + 7 > MaxRepositoryParams)
+		{
+		DataAccessService.Execute(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		}
+		parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
+		parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
+		parameters.Add($"Modified{counter}", menuItems2Taxes.Modified);
+		parameters.Add($"ModifiedBy{counter}", menuItems2Taxes.ModifiedBy);
+		parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
+		parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
+		parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var query = new System.Text.StringBuilder();
+		var counter = 0;
+		var parameters = new Dictionary<string, object>();
+		foreach (var menuItems2Taxes in menuItems2TaxesList)
+		{
+		if (parameters.Count + 7 > MaxRepositoryParams)
+		{
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		query.Clear();
+		counter = 0;
+		parameters.Clear();
+		}
+		parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
+		parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
+		parameters.Add($"Modified{counter}", menuItems2Taxes.Modified);
+		parameters.Add($"ModifiedBy{counter}", menuItems2Taxes.ModifiedBy);
+		parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
+		parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
+		parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
+		query.AppendFormat(InsertManyQuery, counter);
+		counter++;
+		}
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		}
+
+		*/
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			var sql = UpdateQueryBy + WhereQueryByMenuItemId;

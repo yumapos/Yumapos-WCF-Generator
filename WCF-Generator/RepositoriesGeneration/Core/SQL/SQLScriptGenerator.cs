@@ -78,9 +78,37 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 .ToList();
 
             var valuesJoined = columnsJoned.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList();
-
-
+            
             var insertJoinedTable = InsertWithJoined(columnsJoned, valuesJoined, info.JoinTableName, info.JoinPrimaryKeyNames.First(), info.PrimaryKeyType, columns, columns, info.TableName, info.PrimaryKeyNames.First());
+
+            // return inset into table and join table
+            return insertJoinedTable;
+        }
+
+        public string GenerateInsertMany(SqlInfo info)
+        {
+            var columns = info.TableColumns
+                .Except(info.IdentityColumns)
+                .ToList();
+
+            var insertSql = !info.ReturnPrimaryKey
+                ? InsertMany(columns, info.HiddenTableColumns, info.TableName)
+                : InsertMany(columns, info.HiddenTableColumns, info.TableName, info.PrimaryKeyNames.First());
+
+            // Return if have not joined table 
+            if (info.JoinTableColumns == null)
+            {
+                return insertSql;
+            }
+
+            // Skip PK if identity of joined table = true
+            var columnsJoned = info.JoinTableColumns
+                .Except(info.IdentityColumnsJoined)
+                .ToList();
+
+            var valuesJoined = columnsJoned.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList();
+
+            var insertJoinedTable = InsertManyWithJoined(columnsJoned, info.HiddenTableColumns.ToList(), valuesJoined, info.JoinTableName, info.JoinPrimaryKeyNames.First(), info.PrimaryKeyType, columns, columns, info.TableName, info.PrimaryKeyNames.First());
 
             // return inset into table and join table
             return insertJoinedTable;
@@ -197,6 +225,36 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                        "VALUES (" + classValues + ")";
         }
 
+        public string GenerateInsertManyToVersionTable(SqlInfo info)
+        {
+            var columns = info.TableColumns.Concat(info.HiddenTableColumns).ToList();
+            var classProperties = Fields(columns, info.TableName);
+            var classValues = Values(columns.Select(v => $"{v}{{0}}"));
+
+            if (info.JoinTableName != null)
+            {
+                var joinFields = info.JoinTableColumns.ToList();
+                var joinClassProperties = Fields(joinFields.Concat(info.HiddenTableColumns), info.JoinTableName);
+                // use versionId & primary key from inherite model
+                var values = joinFields.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList(); //TODO FIX TO MANY KEYS
+                var joinClassValues = Values(values.Select(v => $"{v}{{0}}").Concat(info.HiddenTableColumns));
+
+                return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + ")\r\n" +
+                       "VALUES (" + joinClassValues + ")\r\n" +
+                       "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
+                       "VALUES (" + classValues + ")";
+            }
+
+            if (!info.IsManyToMany)
+            {
+                return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
+                       "VALUES (" + classValues + ")";
+            }
+
+            return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
+                   "VALUES (" + classValues + ")";
+        }
+
         public string GenerateSelectByToVersionTable(SqlInfo info)
         {
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
@@ -307,11 +365,26 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ")  VALUES(" + Values(columns) + ") ";
         }
 
+        private static string InsertMany(IEnumerable<string> tableColumns, IEnumerable<string> hiddenTableColumns, string ownerTableName)
+        {
+            var hiddenColumns = hiddenTableColumns.ToList();
+            var columns = tableColumns.ToList();
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns.Concat(hiddenColumns), ownerTableName) + ")  VALUES(" + Values(columns.Select(c => $"{c}{{0}}").Concat(hiddenColumns)) + ") ";
+        }
+
         private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string returnInserted)
         {
             var columns = tableColumns.ToList();
             var outputKey = "OUTPUT INSERTED." + returnInserted;
             return "INSERT INTO " + ownerTableName + "(" + Fields(columns, ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns) + ") ";
+        }
+
+        private static string InsertMany(IEnumerable<string> tableColumns, IEnumerable<string> hiddenTableColumns, string ownerTableName, string returnInserted)
+        {
+            var hiddenColumns = hiddenTableColumns.ToList();
+            var columns = tableColumns.ToList();
+            var outputKey = "OUTPUT INSERTED." + returnInserted;
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns.Concat(hiddenColumns), ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns.Select(c => $"{c}{{0}}").Concat(hiddenColumns)) + ") ";
         }
 
         private static string InsertWithJoined(List<string> joinedTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, List<string> tableValues, string tableName, string pkColumn)
@@ -324,6 +397,20 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT @" + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
 
             var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues.Select(v=> v == pkColumn ? tempValue : v)) + ");";
+            var selectId = "SELECT " + joinedPkColumn + " FROM @" + tableForSave + ";";
+            return declareTable + insertToJoined + insertedValue + insert + selectId;
+        }
+
+        private static string InsertManyWithJoined(List<string> joinedTableColumns, List<string> hiddenTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, List<string> tableValues, string tableName, string pkColumn)
+        {
+            var tableForSave = "TempTable";
+            var declareTable = "DECLARE @" + tableForSave + " TABLE (" + joinedPkColumn + " " + joinedPkType + ");";
+            var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + "OUTPUT INSERTED." + joinedPkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(joinedTableValues.Select(c => $"{c}{{0}}").Concat(hiddenTableColumns)) + ");";
+
+            var tempValue = "TempId" ;
+            var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT @" + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
+
+            var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues.Select(c => $"{c}{{0}}").Concat(hiddenTableColumns).Select(v=> v == pkColumn ? tempValue : v)) + ");";
             var selectId = "SELECT " + joinedPkColumn + " FROM @" + tableForSave + ";";
             return declareTable + insertToJoined + insertedValue + insert + selectId;
         }

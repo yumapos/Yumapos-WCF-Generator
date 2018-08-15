@@ -32,11 +32,11 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			_dataAccessController = dataAccessController;
 			_dateTimeService = dateTimeService;
-			_menuItemCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemCacheRepository(dataAccessService);
-			_menuItemVersionRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemVersionRepository(dataAccessService);
-			_menuItems2TaxesCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesCacheRepository(dataAccessService);
-			_menuItems2TaxesVersionRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesVersionRepository(dataAccessService);
-			_taxCacheRepository = new TestRepositoryGeneration.TaxCacheRepository(dataAccessService);
+			_menuItemCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemCacheRepository(dataAccessService, dataAccessController);
+			_menuItemVersionRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemVersionRepository(dataAccessService, dataAccessController);
+			_menuItems2TaxesCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesCacheRepository(dataAccessService, dataAccessController);
+			_menuItems2TaxesVersionRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesVersionRepository(dataAccessService, dataAccessController);
+			_taxCacheRepository = new TestRepositoryGeneration.TaxCacheRepository(dataAccessService, dataAccessController);
 		}
 
 		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> GetAll(bool? isDeleted = false)
@@ -140,6 +140,41 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			return menuItem.MenuItemVersionId;
 		}
 
+		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+				menuItem.MenuItemVersionId = Guid.NewGuid();
+				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
+				{
+					throw new ArgumentException("MenuItemId");
+				}
+			}
+			_menuItemVersionRepository.InsertMany(menuItemList);
+			_menuItemCacheRepository.InsertMany(menuItemList);
+			UpdateManyMenuItems2Taxes(menuItemList);
+			return menuItemList;
+		}
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>> InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+				menuItem.MenuItemVersionId = Guid.NewGuid();
+				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
+				{
+					throw new ArgumentException("MenuItemId");
+				}
+			}
+			await _menuItemVersionRepository.InsertManyAsync(menuItemList);
+			await _menuItemCacheRepository.InsertManyAsync(menuItemList);
+			UpdateManyMenuItems2Taxes(menuItemList);
+			return menuItemList;
+		}
+
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
 			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
@@ -199,6 +234,13 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 				mt.ModifiedBy = menuItem.ModifiedBy;
 				_menuItems2TaxesCacheRepository.Insert(mt);
 				_menuItems2TaxesVersionRepository.Insert(mt);
+			}
+		}
+		private void UpdateManyMenuItems2Taxes(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				UpdateMenuItems2Taxes(menuItem);
 			}
 		}
 

@@ -22,6 +22,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string SelectAllQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId]  {whereTenantId:[MenuItems]} ";
 		private const string SelectByQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
 		private const string InsertQuery = @"DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@TenantId);SELECT ItemId FROM @TempTable;";
+		private const string InsertManyQuery = @"DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId{0},@MenuItemVersionId{0},@IsDeleted{0},@Modified{0},@ModifiedBy{0},@CategoryId{0},@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId);SELECT ItemId FROM @TempTable;";
 		private const string UpdateQueryBy = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemId] = @MenuItemId,[MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId FROM [MenuItems] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
 		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemId] = @MenuItemId,[MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId FROM [MenuItems]  WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]}  IF @@ROWCOUNT = 0 BEGIN DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@TenantId);SELECT ItemId FROM @TempTable; END";
@@ -35,7 +36,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems].[IsDeleted] = @IsDeleted{andTenantId:[MenuItems]} ";
 
 
-		public MenuItemCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService) : base(dataAccessService) { }
+		public MenuItemCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> GetAll(bool? isDeleted = false)
 		{
 			var sql = SelectAllQuery;
@@ -138,6 +139,76 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
 			await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
+		}
+
+		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+
+			if (!menuItemList.Any()) return;
+
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var menuItem in menuItemList)
+			{
+				if (parameters.Count + 4 > MaxRepositoryParams)
+				{
+					DataAccessService.Execute(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				}
+				parameters.Add($"MenuItemId{counter}", menuItem.MenuItemId);
+				parameters.Add($"MenuItemVersionId{counter}", menuItem.MenuItemVersionId);
+				parameters.Add($"MenuCategoryId{counter}", menuItem.MenuCategoryId);
+				parameters.Add($"ItemId{counter}", menuItem.ItemId);
+				parameters.Add($"ItemVersionId{counter}", menuItem.ItemVersionId);
+				parameters.Add($"IsDeleted{counter}", menuItem.IsDeleted);
+				parameters.Add($"Modified{counter}", menuItem.Modified);
+				parameters.Add($"ModifiedBy{counter}", menuItem.ModifiedBy);
+				parameters.Add($"CategoryId{counter}", menuItem.CategoryId);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+
+			if (!menuItemList.Any()) return;
+
+			var query = new System.Text.StringBuilder();
+			var counter = 0;
+			var parameters = new Dictionary<string, object>();
+			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+			foreach (var menuItem in menuItemList)
+			{
+				if (parameters.Count + 4 > MaxRepositoryParams)
+				{
+					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+					query.Clear();
+					counter = 0;
+					parameters.Clear();
+					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				}
+				parameters.Add($"MenuItemId{counter}", menuItem.MenuItemId);
+				parameters.Add($"MenuItemVersionId{counter}", menuItem.MenuItemVersionId);
+				parameters.Add($"MenuCategoryId{counter}", menuItem.MenuCategoryId);
+				parameters.Add($"ItemId{counter}", menuItem.ItemId);
+				parameters.Add($"ItemVersionId{counter}", menuItem.ItemVersionId);
+				parameters.Add($"IsDeleted{counter}", menuItem.IsDeleted);
+				parameters.Add($"Modified{counter}", menuItem.Modified);
+				parameters.Add($"ModifiedBy{counter}", menuItem.ModifiedBy);
+				parameters.Add($"CategoryId{counter}", menuItem.CategoryId);
+				query.AppendFormat(InsertManyQuery, counter);
+				counter++;
+			}
+			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
 
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
