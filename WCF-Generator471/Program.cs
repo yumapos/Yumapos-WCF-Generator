@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using WCFGenerator.RepositoriesGeneration.Configuration;
+using WCFGenerator.RepositoriesGeneration.Core;
 using WCF_Generator471.Common;
 
 namespace WCF_Generator471
@@ -64,27 +67,28 @@ namespace WCF_Generator471
             {
                 throw new ApplicationException($"Error occured on repository generation: {e.Message}", e);
             }
-
-            private static void RunRepositoryGeneration()
-            {
-                if (!RepositoryGeneratorSettings.Current.Enabled)
-                {
-                    Console.WriteLine("Repository generation disabled.");
-                    return;
-                }
-
-                Console.WriteLine("Start repository generation...");
-
-                // Configure generator 
-                var config = RepositoryGeneratorSettings.Current.GetConfigs();
-
-                var repositoryGenerator = new RepositoryCodeFactory(config, _generatorWorkspace);
-
-                // run generation
-                AsyncContext.Run(repositoryGenerator.GenerateRepository);
-
-                Console.WriteLine("Repository generation completed.");
-            }
         }
+
+        private static void RunRepositoryGeneration()
+        {
+            if (!RepositoryGeneratorSettings.Current.Enabled)
+            {
+                Console.WriteLine("Repository generation disabled.");
+                return;
+            }
+
+            Console.WriteLine("Start repository generation...");
+
+            // Configure generator 
+            var config = RepositoryGeneratorSettings.Current.GetConfigs();
+
+            var repositoryGenerator = new RepositoryCodeFactory(config, _generatorWorkspace);
+
+            // run generation
+            AsyncContext.Run(repositoryGenerator.GenerateRepository);
+
+            Console.WriteLine("Repository generation completed.");
+        }
+
     }
 }
