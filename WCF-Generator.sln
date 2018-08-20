@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCF-Generator", "WCF-Generator\WCF-Generator.csproj", "{AEB81C25-77E8-44B0-B820-DC88B86F74B3}"
 EndProject
@@ -21,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDecoratorGeneration", "Sandbox\TestDecoratorGeneration\TestDecoratorGeneration.csproj", "{FB48311B-6ACA-4E29-8108-5B69051DC904}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSerializationGeneration", "Sandbox\TestSerializationGeneration\TestSerializationGeneration.csproj", "{C72F1B27-79FF-4B0B-AD55-B53591736E36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCF-Generator471", "WCF-Generator471\WCF-Generator471.csproj", "{500680BD-DDE3-4233-81FF-0D9BB9A04CAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,8 +45,15 @@ Global
 		{C72F1B27-79FF-4B0B-AD55-B53591736E36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C72F1B27-79FF-4B0B-AD55-B53591736E36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C72F1B27-79FF-4B0B-AD55-B53591736E36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{500680BD-DDE3-4233-81FF-0D9BB9A04CAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{500680BD-DDE3-4233-81FF-0D9BB9A04CAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{500680BD-DDE3-4233-81FF-0D9BB9A04CAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{500680BD-DDE3-4233-81FF-0D9BB9A04CAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2CD94D92-E04C-4141-994B-50C9899F2480}
 	EndGlobalSection
 EndGlobal
