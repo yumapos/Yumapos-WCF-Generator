@@ -28,6 +28,7 @@ namespace WCF_Generator471.Common
         {
             MsBuildWorkspace = MSBuildWorkspace.Create();
             Solution = MsBuildWorkspace.OpenSolutionAsync(absoluteSlnPath).Result;
+            var workspaceDiagnostics = MsBuildWorkspace.Diagnostics;
         }
 
         public Solution Solution { get; set; }
@@ -65,6 +66,7 @@ namespace WCF_Generator471.Common
         public void SetTargetProject(string projectName)
         {
             if (Solution == null) throw new InvalidOperationException("At first open solution");
+            var inttt = Solution.Projects.Count();
             Project = Solution.Projects.First(x => x.Name == projectName);
             _filesToCreation.Clear();
         }
