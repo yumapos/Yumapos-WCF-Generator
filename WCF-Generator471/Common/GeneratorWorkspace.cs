@@ -29,6 +29,13 @@ namespace WCF_Generator471.Common
             MsBuildWorkspace = MSBuildWorkspace.Create();
             Solution = MsBuildWorkspace.OpenSolutionAsync(absoluteSlnPath).Result;
             var workspaceDiagnostics = MsBuildWorkspace.Diagnostics;
+            foreach (var workspaceDiagnostic in workspaceDiagnostics)
+            {
+                if (!workspaceDiagnostic.Message.Contains(".Test"))
+                {
+                    throw new InvalidOperationException("Build error " + workspaceDiagnostic);
+                }
+            }
         }
 
         public Solution Solution { get; set; }
