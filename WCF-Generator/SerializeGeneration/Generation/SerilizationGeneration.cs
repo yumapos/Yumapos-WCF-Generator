@@ -360,16 +360,18 @@ namespace WCFGenerator.SerializeGeneration.Generation
                             _project = _project.RemoveDocument(oldDocument.Id);
                         }
 
-                        var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
-                        _project = newDocument?.Project;
-                        _generatorWorkspace.Solution = _project?.Solution;
+                        if (_project != null)
+                        {
+                            CodeHelper.AddDocument(true, _project, doc.Item1, doc.Item2.ToString(), doc.Item3);
+                        }
                     }
                 }
                 else
                 {
-                    var newDocument = _project?.AddDocument(doc.Item1, doc.Item2, doc.Item3);
-                    _project = newDocument?.Project;
-                    _generatorWorkspace.Solution = _project?.Solution;
+                    if (_project != null)
+                    {
+                        CodeHelper.AddDocument(true, _project, doc.Item1, doc.Item2.ToString(), doc.Item3);
+                    }
                 }
             }
         }

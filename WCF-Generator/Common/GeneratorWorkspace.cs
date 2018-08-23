@@ -133,7 +133,7 @@ namespace WCFGenerator.Common
                     var newDoc = old.WithText(st);
                     if(standartFormatting)
                     {
-                        newDoc = Formatting(newDoc);
+                        newDoc = CodeHelper.Formatting(newDoc);
                     }
                     var c = await newDoc.GetTextChangesAsync(old);
                     document = c.Any() ? newDoc : old;
@@ -142,33 +142,12 @@ namespace WCFGenerator.Common
                 // create new document
                 else
                 {
-                    document = project.AddDocument(doc.FileName, code, doc.ProjectFolder.Split('\\'));
-                    if (standartFormatting)
-                    {
-                        document = Formatting(document);
-                    }
-
-                    // this is workaround to Roslyn adding strings <Compile Include="Repositories\Generated\CashDrawerCheckRepository.g.cs" />
-                    // to a project file if add file directly to Roslyn
-                    var documentText = document.GetTextAsync().Result.ToString();
-                    var lastOccur = project.FilePath.Split(new[] { '\\' }).Last().Length;
-                    var path = project.FilePath.Substring(0, project.FilePath.Length - lastOccur) + doc.ProjectFolder + @"\" + doc.FileName;
-                    System.IO.File.WriteAllText(path, documentText, Encoding.UTF8);
+                    CodeHelper.AddDocument(standartFormatting, project, doc.FileName, code, doc.ProjectFolder.Split('\\'));
                 }
-
             }
             // Apply project changes
             Solution = project.Solution;
             ApplyChanges();
-        }
-
-        private Document Formatting(Document doc)
-        {
-            // general format
-            var formattedDoc = Formatter.FormatAsync(doc).Result;
-            var text = formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t");
-            formattedDoc = formattedDoc.WithText(SourceText.From(text));
-            return formattedDoc;
         }
 
         #endregion

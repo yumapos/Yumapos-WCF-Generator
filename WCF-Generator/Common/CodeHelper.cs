@@ -1,4 +1,11 @@
-﻿namespace WCFGenerator.Common
+﻿using System;
+using System.Linq;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.Text;
+
+namespace WCFGenerator.Common
 {
     internal static class CodeHelper
     {
@@ -11,5 +18,30 @@
                 + "//     Manual changes to this file will be overwritten if the code is regenerated.\r\n"
                 + "// </auto-generated>\r\n"
                 + "//------------------------------------------------------------------------------\r\n";
+
+        public static void AddDocument(bool standartFormatting, Project project, string fileName, string code, string[] folders)
+        {
+            var document = project.AddDocument(fileName, code, folders);
+            if (standartFormatting)
+            {
+                document = Formatting(document);
+            }
+
+            // this is workaround to Roslyn adding strings <Compile Include="Repositories\Generated\CashDrawerCheckRepository.g.cs" />
+            // to a project file if add file directly to Roslyn
+            var documentText = document.GetTextAsync().Result.ToString();
+            var lastOccur = project.FilePath.Split(new[] { '\\' }).Last().Length;
+            var path = project.FilePath.Substring(0, project.FilePath.Length - lastOccur) + String.Join(@"\", folders) + @"\" + fileName;
+            System.IO.File.WriteAllText(path, documentText, Encoding.UTF8);
+        }
+
+        public static Document Formatting(Document doc)
+        {
+            // general format
+            var formattedDoc = Formatter.FormatAsync(doc).Result;
+            var text = formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t");
+            formattedDoc = formattedDoc.WithText(SourceText.From(text));
+            return formattedDoc;
+        }
     }
 }
