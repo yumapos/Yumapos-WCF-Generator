@@ -139,6 +139,7 @@ namespace WCF_Generator471.Common
                     }
                     var c = await newDoc.GetTextChangesAsync(old);
                     document = c.Any() ? newDoc : old;
+                    project = document.Project;
                 }
                 // create new document
                 else
@@ -148,9 +149,14 @@ namespace WCF_Generator471.Common
                     {
                         document = Formatting(document);
                     }
-                }
 
-                project = document.Project;
+                    // this is workaround to Roslyn adding strings <Compile Include="Repositories\Generated\CashDrawerCheckRepository.g.cs" />
+                    // to a project file if add file directly to Roslyn
+                    var documentText = document.GetTextAsync().Result.ToString();
+                    var lastOccur = project.FilePath.Split(new []{'\\'}).Last().Length;
+                    var path = project.FilePath.Substring(0, project.FilePath.Length - lastOccur) + doc.ProjectFolder + @"\" + doc.FileName;
+                    System.IO.File.WriteAllText(path, documentText, Encoding.UTF8);
+                }
             }
             // Apply project changes
             Solution = project.Solution;
