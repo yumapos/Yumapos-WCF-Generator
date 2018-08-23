@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
@@ -26,6 +27,14 @@ namespace WCFGenerator.Common
         {
             MsBuildWorkspace = MSBuildWorkspace.Create();
             Solution = MsBuildWorkspace.OpenSolutionAsync(absoluteSlnPath).Result;
+            var workspaceDiagnostics = MsBuildWorkspace.Diagnostics;
+            foreach (var workspaceDiagnostic in workspaceDiagnostics)
+            {
+                if (!workspaceDiagnostic.Message.Contains(".Test"))
+                {
+                    throw new InvalidOperationException("Build error " + workspaceDiagnostic);
+                }
+            }
         }
 
         public Solution Solution { get; set; }
@@ -128,6 +137,7 @@ namespace WCFGenerator.Common
                     }
                     var c = await newDoc.GetTextChangesAsync(old);
                     document = c.Any() ? newDoc : old;
+                    project = document.Project;
                 }
                 // create new document
                 else
@@ -137,9 +147,15 @@ namespace WCFGenerator.Common
                     {
                         document = Formatting(document);
                     }
+
+                    // this is workaround to Roslyn adding strings <Compile Include="Repositories\Generated\CashDrawerCheckRepository.g.cs" />
+                    // to a project file if add file directly to Roslyn
+                    var documentText = document.GetTextAsync().Result.ToString();
+                    var lastOccur = project.FilePath.Split(new[] { '\\' }).Last().Length;
+                    var path = project.FilePath.Substring(0, project.FilePath.Length - lastOccur) + doc.ProjectFolder + @"\" + doc.FileName;
+                    System.IO.File.WriteAllText(path, documentText, Encoding.UTF8);
                 }
 
-                project = document.Project;
             }
             // Apply project changes
             Solution = project.Solution;
