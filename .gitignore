@@ -10,3 +10,4 @@ packages
 /Server/YumaPos.WCF/images/
 .vs/
 *.userprefs
+!/_WCF-Generator-binaries/**
