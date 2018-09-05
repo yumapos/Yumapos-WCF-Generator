@@ -111,15 +111,10 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\WCF-Generator\WCF-Generator.csproj">
-      <Project>{AEB81C25-77E8-44B0-B820-DC88B86F74B3}</Project>
-      <Name>WCF-Generator</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>if '$(ConfigurationName)' == 'Debug' $(SolutionDir)\generation.bat</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
