@@ -19,8 +19,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDecoratorGeneration", "Sandbox\TestDecoratorGeneration\TestDecoratorGeneration.csproj", "{FB48311B-6ACA-4E29-8108-5B69051DC904}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEB81C25-77E8-44B0-B820-DC88B86F74B3} = {AEB81C25-77E8-44B0-B820-DC88B86F74B3}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSerializationGeneration", "Sandbox\TestSerializationGeneration\TestSerializationGeneration.csproj", "{C72F1B27-79FF-4B0B-AD55-B53591736E36}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEB81C25-77E8-44B0-B820-DC88B86F74B3} = {AEB81C25-77E8-44B0-B820-DC88B86F74B3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
