@@ -8,38 +8,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using WCFGenerator.Common;
+using WCFGenerator.MappingsGenerator.Infrastructure;
 
 namespace WCFGenerator.MappingsGenerator
 {
-    public class MapDtoAndDo
-    {
-        public ClassDeclarationSyntax DOClass { get; set; }
-        public ClassDeclarationSyntax DtoClass { get; set; }
-        public InterfaceDeclarationSyntax DOInterface { get; set; }
-        public InterfaceDeclarationSyntax DtoInterface { get; set; }
-        public IEnumerable<MapPropertiesDtoAndDo> MapPropertiesDtoAndDo { get; set; }
-    }
-
-    public class MapPropertiesDtoAndDo
-    {
-        public PropertyDeclarationSyntax DOPropertyName { get; set; }
-        public PropertyDeclarationSyntax DTOPropertyName { get; set; }
-        public TypeOfExpressionSyntax DOPropertyType { get; set; }
-        public TypeOfExpressionSyntax DtoropertyType { get; set; }
-        public string ToDtoFunction { get; set; }
-        public string FromDtoFunction { get; set; }
-        public KindOfProperty KindOMapfProperty { get; set; }
-    }
-
-    public enum KindOfProperty
-    {
-        AttributeClass = 1,
-        CollectionAttributeClasses = 2,
-        FunctionAttribute = 3,
-        None = 9
-    }
-
-    public class MappingsGenerator
+    public class Old__MappingsGenerator
     {
         private static readonly MSBuildWorkspace _workspace = MSBuildWorkspace.Create();
 
@@ -54,7 +27,7 @@ namespace WCFGenerator.MappingsGenerator
 
         public string SolutionPath { get; set; }
 
-        public MappingsGenerator()
+        public Old__MappingsGenerator()
         {
             DoProjects = new List<string>();
             DtoProjects = new List<string>();
@@ -491,7 +464,7 @@ namespace WCFGenerator.MappingsGenerator
         }
 
 
-        public async void GenerateMap(MappingsGenerator MapHelper)
+        public async void GenerateMap(Old__MappingsGenerator MapHelper)
         {
             StringBuilder sb = new StringBuilder();
             _solution = await _workspace.OpenSolutionAsync(SolutionPath);

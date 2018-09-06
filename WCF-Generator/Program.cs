@@ -7,6 +7,8 @@ using Nito.AsyncEx;
 using WCFGenerator.Common;
 using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Core;
+using WCFGenerator.MappingsGenerator;
+using WCFGenerator.MappingsGenerator.Configuration;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.SerializeGeneration.Configuration;
@@ -96,6 +98,15 @@ namespace WCFGenerator
             catch (Exception e)
             {
                 throw new ApplicationException($"Error occured on decorator generation: {e.Message}", e);
+            }
+
+            try
+            {
+                RunMappingGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException($"Error occured on mapping generation: {e.Message}", e);
             }
 
             // Apply Changes, close solution
@@ -198,6 +209,24 @@ namespace WCFGenerator
             AsyncContext.Run(() => generator.Generate());
 
             Console.WriteLine("Decoration generation completed.");
+        }
+
+        private static void RunMappingGeneration()
+        {
+            var curSettings = MappingGeneratorSettings.Current;
+            if (!curSettings.Enabled)
+            {
+                Console.WriteLine("Mapping generation disabled.");
+                return;
+            }
+
+            Console.WriteLine("Starting mapping generation...");
+            var configs = curSettings.GetConfigs();
+
+            var generationFactory = new MappingGenerationFactory(_generatorWorkspace, configs.ToArray());
+            generationFactory.GenerateAll();
+
+            Console.WriteLine("Mapping generation completed.");
         }
     }
 }
