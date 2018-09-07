@@ -529,8 +529,8 @@ namespace WCFGenerator.MappingsGenerator
             while (classesWithMapAttribute.Any())
             {
                 isPairFounded = false;
-                ClassDeclarationSyntax doClass = classesWithMapAttribute.First();
-                foreach (ClassDeclarationSyntax dtoClass in classesWithMapAttributeDto)
+                var doClass = classesWithMapAttribute.First();
+                foreach (var dtoClass in classesWithMapAttributeDto)
                 {
                     InterfaceDeclarationSyntax doInterface = null;
                     InterfaceDeclarationSyntax dtoInterface = null;
@@ -579,13 +579,13 @@ namespace WCFGenerator.MappingsGenerator
                             }
                         }
 
-                        listOfSimilarClasses.Add(new MapDtoAndDo
+                        /*listOfSimilarClasses.Add(new MapDtoAndDo
                         {
                             DOClass = doClass,
                             DtoClass = dtoClass,
                             DOInterface = doInterface,
                             DtoInterface = dtoInterface
-                        });
+                        });*/
 
                         classesWithMapAttributeDto.Remove(dtoClass);
                         isPairFounded = true;

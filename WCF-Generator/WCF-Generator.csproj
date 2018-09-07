@@ -306,6 +306,7 @@
     <Compile Include="DecoratorGeneration\Infrastructure\DecoratorInfo.cs" />
     <Compile Include="MappingsGeneration\Analysis\MappingAnalyser.cs" />
     <Compile Include="MappingsGeneration\Configuration\MappingConfiguration.cs" />
+    <Compile Include="MappingsGeneration\Infrastructure\ClassCompilerInfo.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\KindOfProperty.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\MapDtoAndDo.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\MapPropertiesDtoAndDo.cs" />

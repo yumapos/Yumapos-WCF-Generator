@@ -42,6 +42,15 @@ namespace WCFGenerator.Common
             return compilation.GetTypeByMetadataName(fullTypeName);
         }
 
+        public static INamedTypeSymbol GetClass(this CSharpCompilation compilation, BaseTypeDeclarationSyntax codeclass)
+        {
+            var semanticModel = compilation.GetSemanticModel(codeclass.SyntaxTree);
+
+            var symbol = semanticModel.GetDeclaredSymbol(codeclass);
+
+            return compilation.GetClass(symbol.ContainingNamespace + "." + codeclass.Identifier.Text);
+        }
+
         #endregion
 
     }

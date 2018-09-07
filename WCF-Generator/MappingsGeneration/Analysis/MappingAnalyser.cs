@@ -8,7 +8,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
+using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Configuration;
+using WCFGenerator.MappingsGeneration.Infrastructure;
 
 namespace WCFGenerator.MappingsGenerator.Analysis
 {
@@ -19,6 +21,8 @@ namespace WCFGenerator.MappingsGenerator.Analysis
         private Solution _solution = null;
 
         IDictionary<string, CSharpCompilation> _doProjectsCompilations = new Dictionary<string, CSharpCompilation>();
+
+        public IList<ClassCompilerInfo> ClassesWithoutPair = new List<ClassCompilerInfo>();
 
         public MappingAnalyser(MappingConfiguration configuration, GeneratorWorkspace generatorWorkspace)
         {
@@ -56,8 +60,8 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 throw new Exception("Attribute for Mapping doesn't exist");
             }
 
-            var classesWithMapAttribute = new List<ClassDeclarationSyntax>();
-            var classesWithMapAttributeDto = new List<ClassDeclarationSyntax>();
+            var classesWithMapAttribute = new List<ClassCompilerInfo>();
+            var classesWithMapAttributeDto = new List<ClassCompilerInfo>();
 
             foreach (MappingSourceProject project in _configuration.DoProjects)
             {
@@ -70,12 +74,66 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 classesWithMapAttributeDto.AddRange(
                     await GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
             }
+
+            var listOfSimilarClasses = new List<MapDtoAndDo>();
+            var isPairFounded = false;
+            while (classesWithMapAttribute.Any())
+            {
+                isPairFounded = false;
+                var doClass = classesWithMapAttribute.First();
+                foreach (var dtoClass in classesWithMapAttributeDto)
+                {
+                    INamedTypeSymbol doInterface = null;
+                    INamedTypeSymbol dtoInterface = null;
+
+                    if (GetMapName(doClass.NamedTypeSymbol, true) == GetMapName(dtoClass.NamedTypeSymbol, true) ||
+                        (_configuration.DOSkipAttribute && GetMapName(dtoClass.NamedTypeSymbol, true) == doClass.NamedTypeSymbol.Name) ||
+                        (_configuration.DTOSkipAttribute && GetMapName(doClass.NamedTypeSymbol, true) == dtoClass.NamedTypeSymbol.Name))
+                    {
+                        // TODO: recursion for getting base interfaces
+                        foreach (var ce in doClass.NamedTypeSymbol.Interfaces)
+                        {
+                            if (ce.Name.IndexOf("I") == 0 && doClass.NamedTypeSymbol.Name == ce.Name.Remove(0, 1))
+                            {
+                                doInterface = ce;
+                            }
+                        }
+
+                        // TODO: recursion
+                        foreach (var ce in dtoClass.NamedTypeSymbol.Interfaces)
+                        {
+                            if (ce.Name.IndexOf("I") == 0 && dtoClass.NamedTypeSymbol.Name == ce.Name.Remove(0, 1))
+                            {
+                                dtoInterface = ce;
+                            }
+                        }
+
+                        listOfSimilarClasses.Add(new MapDtoAndDo
+                        {
+                            DOClass = doClass,
+                            DtoClass = dtoClass,
+                            DOInterface = doInterface,
+                            DtoInterface = dtoInterface
+                        });
+
+                        classesWithMapAttributeDto.Remove(dtoClass);
+                        isPairFounded = true;
+                        break;
+                    }
+                }
+
+                if (!isPairFounded)
+                {
+                    ClassesWithoutPair.Add(doClass);
+                }
+                classesWithMapAttribute.Remove(doClass);
+            }
         }
 
-        public async Task<IEnumerable<ClassDeclarationSyntax>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
+        public async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
         {
             var project = _solution.Projects.First(x => x.Name == projectName);
-            var compilation = await project.GetCompilationAsync();
+            var compilation = (CSharpCompilation)(await project.GetCompilationAsync());
             var classVisitor = new ClassVirtualizationVisitor();
             var classes = new List<ClassDeclarationSyntax>();
 
@@ -95,89 +153,69 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 classes = classVisitor.Classes;
             }
 
-            return classes;
+            var ret = new List<ClassCompilerInfo>();
+
+            foreach (var classDeclarationSyntax in classes)
+            {
+                var typeInfo = compilation.GetClass(classDeclarationSyntax);
+                ret.Add(new ClassCompilerInfo()
+                {
+                    ClassDeclarationSyntax = classDeclarationSyntax,
+                    NamedTypeSymbol = typeInfo
+                });
+            }
+
+            return ret;
         }
 
-        /*       public string GetMapName(CSharpSyntaxNode element)
-               {
-                   string value;
-                   //var value = element.Name;
-                   const string nameProperty = "Name";
+        public string GetMapName(INamedTypeSymbol element, bool isClass)
+        {
+            string value = element.Name;
+            const string nameProperty = "Name";
 
-                   List<AttributeSyntax> attributes = new List<AttributeSyntax>();
+            var attributes = element.GetAttributes();
 
-                   if (element is ClassDeclarationSyntax codeClass)
-                   {
-                       foreach (var codeClassAttributeList in codeClass.AttributeLists)
-                       {
-                           attributes.AddRange(codeClassAttributeList.Attributes);
-                       }
+            foreach (var ca in attributes)
+            {
+                if (ca.AttributeClass.Name.Contains(_configuration.MapAttribute) && ca.NamedArguments.Any(a => a.Key.Contains(nameProperty)))
+                {
+                    if (_configuration.DoSuffix != null && isClass)
+                    {
+                        if (value.EndsWith(_configuration.DoSuffix.ToLower()))
+                        {
+                            value = value.Replace(_configuration.DoSuffix.ToLower(), "");
+                        }
+                    }
 
-                       value = codeClass.Identifier.Text;
-                   }
+                    if (_configuration.DtoSuffix != null && isClass)
+                    {
+                        if (value.EndsWith(_configuration.DtoSuffix.ToLower()))
+                        {
+                            value = value.Replace(_configuration.DtoSuffix.ToLower(), "");
+                        }
+                    }
+                }
+            }
 
-                   if (element is PropertyDeclarationSyntax codeProperty)
-                   {
-                       foreach (var codeClassAttributeList in codeProperty.AttributeLists)
-                       {
-                           attributes.AddRange(codeClassAttributeList.Attributes);
-                       }
+            value = value.ToLower();
 
-                       value = codeProperty.Identifier.Text;
-                   }
+            if (_configuration.DoSuffix != null && isClass)
+            {
+                if (value.EndsWith(_configuration.DoSuffix.ToLower()))
+                {
+                    value = value.Replace(_configuration.DoSuffix.ToLower(), "");
+                }
+            }
 
-                   foreach (var ca in attributes)
-                   {
-                       if (ca.Name.ToString().Contains(_configuration.MapAttribute) && ca.ArgumentList.Arguments.FirstOrDefault(a => a.Value.Contains(nameProperty)) )
-                       {
-                           value = ca.Value.Remove(0, ca.Value.IndexOf(nameProperty));
-                           value = value.Replace(" ", "");
+            if (_configuration.DtoSuffix != null && isClass)
+            {
+                if (value.EndsWith(_configuration.DtoSuffix.ToLower()))
+                {
+                    value = value.Replace(_configuration.DtoSuffix.ToLower(), "");
+                }
+            }
 
-                           if (value.Contains(","))
-                           {
-                               value = value.Remove(value.IndexOf(","));
-                           }
-
-                           value = value.Remove(0, nameProperty.Length + 1);
-                           value = value.Replace("\"", "").ToLower();
-
-                           if (DoSuffix != null && codeClass != null)
-                           {
-                               if (value.EndsWith(DoSuffix.ToLower()))
-                               {
-                                   value = value.Replace(DoSuffix.ToLower(), "");
-                               }
-                           }
-
-                           if (DtoSuffix != null && codeClass != null)
-                           {
-                               if (value.EndsWith(DtoSuffix.ToLower()))
-                               {
-                                   value = value.Replace(DtoSuffix.ToLower(), "");
-                               }
-                           }
-                       }
-                   }
-
-                   value = value.ToLower();
-
-                   if (DoSuffix != null && codeClass != null)
-                   {
-                       if (value.EndsWith(DoSuffix.ToLower()))
-                       {
-                           value = value.Replace(DoSuffix.ToLower(), "");
-                       }
-                   }
-
-                   if (DtoSuffix != null && codeClass != null)
-                   {
-                       if (value.EndsWith(DtoSuffix.ToLower()))
-                       {
-                           value = value.Replace(DtoSuffix.ToLower(), "");
-                       }
-                   }
-
-                   return value;
-               }*/
+            return value;
+        }
     }
 }

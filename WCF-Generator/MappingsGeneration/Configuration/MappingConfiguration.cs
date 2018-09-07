@@ -79,6 +79,13 @@ namespace WCFGenerator.MappingsGeneration.Configuration
         {
             get { return ((string)(base["MapIgnoreAttribute"])); }
         }
+
+        [ConfigurationProperty("DoSuffix", DefaultValue = "", IsRequired = false)]
+        public string DoSuffix
+        {
+            get { return ((string)(base["DoSuffix"])); }
+        }
+
         [ConfigurationProperty("DtoSuffix", DefaultValue = "Dto", IsRequired = false)]
         public string DtoSuffix
         {
