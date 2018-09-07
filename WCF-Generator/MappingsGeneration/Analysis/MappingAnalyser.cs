@@ -128,6 +128,29 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 }
                 classesWithMapAttribute.Remove(doClass);
             }
+
+            foreach (var similarClass in listOfSimilarClasses)
+            {
+                var allProperties = similarClass.DOClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).ToList();
+                var baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
+                while (baseClass != null)
+                {
+                    allProperties.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property));
+                    baseClass = baseClass.BaseType;
+                }
+
+                var allPropertiesDto = similarClass.DtoClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).ToList();
+                baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
+                while (baseClass != null)
+                {
+                    allPropertiesDto.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property));
+                    baseClass = baseClass.BaseType;
+                }
+                var listOfSimilarProperties = new List<MapPropertiesDtoAndDo>();
+
+                var isIgnoreDOProperties = new List<ISymbol>(allProperties.ToList()); // to remove items from it later
+                var isIgnoreDTOProperties = new List<ISymbol>(allPropertiesDto.ToList());
+            }
         }
 
         public async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
