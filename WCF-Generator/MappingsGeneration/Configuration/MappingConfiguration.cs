@@ -84,5 +84,45 @@ namespace WCFGenerator.MappingsGeneration.Configuration
         {
             get { return ((string)(base["DtoSuffix"])); }
         }
+
+        [ConfigurationProperty("doProjects")]
+        public MappingSourceProjects DoProjects
+        {
+            get { return ((MappingSourceProjects)(base["doProjects"])); }
+        }
+
+        [ConfigurationProperty("dtoProjects")]
+        public MappingSourceProjects DtoProjects
+        {
+            get { return ((MappingSourceProjects)(base["dtoProjects"])); }
+        }
+    }
+
+    [ConfigurationCollection(typeof(MappingSourceProject), AddItemName = "project")]
+    public class MappingSourceProjects : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new MappingSourceProject();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((MappingSourceProject)(element)).ProjectName;
+        }
+
+        public MappingSourceProject this[int idx]
+        {
+            get { return (MappingSourceProject)BaseGet(idx); }
+        }
+    }
+
+    public class MappingSourceProject : ConfigurationElement
+    {
+        [ConfigurationProperty("projectName", DefaultValue = "", IsKey = true, IsRequired = true)]
+        public string ProjectName
+        {
+            get { return ((string)(base["projectName"])); }
+        }
     }
 }
