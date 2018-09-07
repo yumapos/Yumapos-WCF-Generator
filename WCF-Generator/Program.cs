@@ -225,7 +225,7 @@ namespace WCFGenerator
             var configs = curSettings.GetConfigs();
 
             var generationFactory = new MappingGenerationFactory(_generatorWorkspace, configs.ToArray());
-            generationFactory.GenerateAll();
+            AsyncContext.Run(() => generationFactory.GenerateAll());
 
             Console.WriteLine("Mapping generation completed.");
         }

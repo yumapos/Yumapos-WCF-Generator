@@ -96,6 +96,18 @@ namespace WCFGenerator.MappingsGeneration.Configuration
         {
             get { return ((MappingSourceProjects)(base["dtoProjects"])); }
         }
+
+        [ConfigurationProperty("doSkipAttribute", DefaultValue = "false", IsRequired = false)]
+        public bool DOSkipAttribute
+        {
+            get { return ((bool)(base["doSkipAttribute"])); }
+        }
+
+        [ConfigurationProperty("dtoSkipAttribute", DefaultValue = "false", IsRequired = false)]
+        public bool DTOSkipAttribute
+        {
+            get { return ((bool)(base["dtoSkipAttribute"])); }
+        }
     }
 
     [ConfigurationCollection(typeof(MappingSourceProject), AddItemName = "project")]

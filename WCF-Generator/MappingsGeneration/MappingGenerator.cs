@@ -1,4 +1,5 @@
-﻿using WCFGenerator.Common;
+﻿using System.Threading.Tasks;
+using WCFGenerator.Common;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGenerator.Analysis;
 
@@ -15,9 +16,10 @@ namespace WCFGenerator.MappingsGeneration
             _generatorWorkspace = generatorWorkspace;
         }
 
-        public void Generate()
+        public async Task Generate()
         {
             var analyser = new MappingAnalyser(_configuration, _generatorWorkspace);
+            await analyser.Run();
         }
     }
 }

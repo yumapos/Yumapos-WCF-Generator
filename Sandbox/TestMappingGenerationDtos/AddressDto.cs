@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using TestMappingGeneration.Enums;
 using TestMappingGeneration.Infrastructure;
 
-namespace TestMappingGeneration.DataTransferObjects
+namespace TestMappingGenerationDtos
 {
     [Map]
     public class AddressDto

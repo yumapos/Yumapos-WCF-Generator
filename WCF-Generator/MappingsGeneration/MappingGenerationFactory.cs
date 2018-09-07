@@ -1,4 +1,5 @@
-﻿using WCFGenerator.Common;
+﻿using System.Threading.Tasks;
+using WCFGenerator.Common;
 using WCFGenerator.MappingsGeneration.Configuration;
 
 namespace WCFGenerator.MappingsGeneration
@@ -14,11 +15,11 @@ namespace WCFGenerator.MappingsGeneration
             _configs = configs;
         }
 
-        public void GenerateAll()
+        public async Task GenerateAll()
         {
             foreach (var mappingConfiguration in _configs)
             {
-                new MappingGenerator(mappingConfiguration, _generatorWorkspace).Generate();
+                await new MappingGenerator(mappingConfiguration, _generatorWorkspace).Generate();
             }
         }
     }
