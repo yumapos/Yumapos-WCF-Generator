@@ -179,7 +179,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             {
                 if (ca.AttributeClass.Name.Contains(_configuration.MapAttribute) && ca.NamedArguments.Any(a => a.Key.Contains(nameProperty)))
                 {
-                    if (_configuration.DoSuffix != null && isClass)
+                    if (!String.IsNullOrEmpty(_configuration.DoSuffix) && isClass)
                     {
                         if (value.EndsWith(_configuration.DoSuffix.ToLower()))
                         {
@@ -187,7 +187,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                         }
                     }
 
-                    if (_configuration.DtoSuffix != null && isClass)
+                    if (!String.IsNullOrEmpty(_configuration.DtoSuffix) && isClass)
                     {
                         if (value.EndsWith(_configuration.DtoSuffix.ToLower()))
                         {
@@ -199,7 +199,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
             value = value.ToLower();
 
-            if (_configuration.DoSuffix != null && isClass)
+            if (!String.IsNullOrEmpty(_configuration.DoSuffix) && isClass)
             {
                 if (value.EndsWith(_configuration.DoSuffix.ToLower()))
                 {
@@ -207,7 +207,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 }
             }
 
-            if (_configuration.DtoSuffix != null && isClass)
+            if (!String.IsNullOrEmpty(_configuration.DtoSuffix) && isClass)
             {
                 if (value.EndsWith(_configuration.DtoSuffix.ToLower()))
                 {

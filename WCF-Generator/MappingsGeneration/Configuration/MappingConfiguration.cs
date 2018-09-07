@@ -80,7 +80,7 @@ namespace WCFGenerator.MappingsGeneration.Configuration
             get { return ((string)(base["MapIgnoreAttribute"])); }
         }
 
-        [ConfigurationProperty("DoSuffix", DefaultValue = "", IsRequired = false)]
+        [ConfigurationProperty("DoSuffix", DefaultValue = null, IsRequired = false)]
         public string DoSuffix
         {
             get { return ((string)(base["DoSuffix"])); }
