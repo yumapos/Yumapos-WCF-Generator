@@ -131,25 +131,25 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
             foreach (var similarClass in listOfSimilarClasses)
             {
-                var allProperties = similarClass.DOClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).ToList();
+                var allProperties = similarClass.DOClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
                 var baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
                 while (baseClass != null)
                 {
-                    allProperties.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property));
+                    allProperties.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
                     baseClass = baseClass.BaseType;
                 }
 
-                var allPropertiesDto = similarClass.DtoClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).ToList();
+                var allPropertiesDto = similarClass.DtoClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
                 baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
                 while (baseClass != null)
                 {
-                    allPropertiesDto.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property));
+                    allPropertiesDto.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
                     baseClass = baseClass.BaseType;
                 }
                 var listOfSimilarProperties = new List<MapPropertiesDtoAndDo>();
 
-                var isIgnoreDOProperties = new List<ISymbol>(allProperties.ToList()); // to remove items from it later
-                var isIgnoreDTOProperties = new List<ISymbol>(allPropertiesDto.ToList());
+                var isIgnoreDOProperties = new List<IPropertySymbol>(allProperties.ToList()); // to remove items from it later
+                var isIgnoreDTOProperties = new List<IPropertySymbol>(allPropertiesDto.ToList());
             }
         }
 
