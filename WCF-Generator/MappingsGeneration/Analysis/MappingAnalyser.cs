@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
-using WCFGenerator.MappingsGenerator.Configuration;
+using WCFGenerator.MappingsGeneration.Configuration;
 
 namespace WCFGenerator.MappingsGenerator.Analysis
 {

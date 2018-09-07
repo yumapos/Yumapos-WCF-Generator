@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WCFGenerator.Common;
-using WCFGenerator.MappingsGenerator.Configuration;
+﻿using WCFGenerator.Common;
+using WCFGenerator.MappingsGeneration.Configuration;
 
-namespace WCFGenerator.MappingsGenerator
+namespace WCFGenerator.MappingsGeneration
 {
     public class MappingGenerationFactory
     {

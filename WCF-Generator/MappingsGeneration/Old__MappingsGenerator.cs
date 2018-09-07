@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using WCFGenerator.Common;
-using WCFGenerator.MappingsGenerator.Infrastructure;
+using WCFGenerator.MappingsGeneration.Infrastructure;
 
 namespace WCFGenerator.MappingsGenerator
 {
