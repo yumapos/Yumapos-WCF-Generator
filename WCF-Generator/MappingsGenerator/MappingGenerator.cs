@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WCFGenerator.Common;
+using WCFGenerator.MappingsGenerator.Analysis;
 using WCFGenerator.MappingsGenerator.Configuration;
 
 namespace WCFGenerator.MappingsGenerator
@@ -21,7 +22,7 @@ namespace WCFGenerator.MappingsGenerator
 
         public void Generate()
         {
-
+            var analyser = new MappingAnalyser(_configuration, _generatorWorkspace);
         }
     }
 }

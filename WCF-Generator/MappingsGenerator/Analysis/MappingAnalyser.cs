@@ -5,12 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator.Common;
+using WCFGenerator.MappingsGenerator.Configuration;
 
 namespace WCFGenerator.MappingsGenerator.Analysis
 {
     public class MappingAnalyser
     {
-        public string GetMapName(CSharpSyntaxNode element)
+        private readonly MappingConfiguration _configuration;
+        private readonly GeneratorWorkspace _generatorWorkspace;
+
+        public MappingAnalyser(MappingConfiguration configuration, GeneratorWorkspace generatorWorkspace)
+        {
+            _configuration = configuration;
+            _generatorWorkspace = generatorWorkspace;
+        }
+
+ /*       public string GetMapName(CSharpSyntaxNode element)
         {
             string value;
             //var value = element.Name;
@@ -38,9 +49,9 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 value = codeProperty.Identifier.Text;
             }
 
-/*            foreach (var ca in attributes)
+            foreach (var ca in attributes)
             {
-                if (ca.Name.Contains(MapAttribute) && ca.Value.Contains(nameProperty))
+                if (ca.Name.ToString().Contains(_configuration.MapAttribute) && ca.ArgumentList.Arguments.FirstOrDefault(a => a.Value.Contains(nameProperty)) )
                 {
                     value = ca.Value.Remove(0, ca.Value.IndexOf(nameProperty));
                     value = value.Replace(" ", "");
@@ -89,8 +100,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 }
             }
 
-            return value;*/
-            return null;
-        }
+            return value;
+        }*/
     }
 }
