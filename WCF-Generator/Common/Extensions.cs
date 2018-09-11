@@ -53,5 +53,26 @@ namespace WCFGenerator.Common
 
         #endregion
 
+        #region INamedTypeSymbol
+
+        public static string GetFullName(this INamedTypeSymbol symbol)
+        {
+            return symbol.ContainingNamespace
+                   + "." + symbol.Name
+                   + ", " + symbol.ContainingAssembly;
+        }
+
+        #endregion
+
+
+        #region ITypeSymbol
+        public static string GetFullName(this ITypeSymbol symbol)
+        {
+            return symbol.ContainingNamespace
+                   + "." + symbol.Name
+                   + ", " + symbol.ContainingAssembly;
+        }
+        #endregion
+
     }
 }

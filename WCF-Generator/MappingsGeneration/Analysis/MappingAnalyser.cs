@@ -240,5 +240,157 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
             return value;
         }
+
+        public bool CompareTwoPropertyType(IPropertySymbol DOCodeProperty, IPropertySymbol DtoCodeProperty, List<MapDtoAndDo> similarClasses)
+        {
+            var DOType = DOCodeProperty.Type.GetFullName();
+            var DtoType = DtoCodeProperty.Type.GetFullName();
+
+            if (DOType.Contains("IEnumerable") && DtoType.Contains("IEnumerable"))
+            {
+                DOType = DOType.Remove(0, DOType.IndexOf("<") + 1);
+                DOType = DOType.Replace(">", "");
+
+                DtoType = DtoType.Remove(0, DtoType.IndexOf("<") + 1);
+                DtoType = DtoType.Replace(">", "");
+
+                if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
+                    return true;
+            }
+
+            if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
+                return true;
+
+            if (DOType == DtoType)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool CompareTwoPropertyType(string DOType, string DtoType, List<MapDtoAndDo> similarClasses)
+        {
+            if (DOType.Contains("IEnumerable") && DtoType.Contains("IEnumerable"))
+            {
+                DOType = DOType.Remove(0, DOType.IndexOf("<") + 1);
+                DOType = DOType.Replace(">", "");
+
+                DtoType = DtoType.Remove(0, DtoType.IndexOf("<") + 1);
+                DtoType = DtoType.Replace(">", "");
+
+                if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
+                    return true;
+            }
+
+            if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
+                return true;
+
+            if (DOType == DtoType)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool CompareInMapDtoAndDoCollection(string DOType, string DtoType, List<MapDtoAndDo> similarClasses)
+        {
+            var similarInterfacesDO = similarClasses.Where(x => x.DOInterface != null).FirstOrDefault(x => x.DOInterface.GetFullName() == DOType);
+            var similarInterfacesDto = similarClasses.Where(x => x.DtoInterface != null).FirstOrDefault(x => x.DtoInterface.GetFullName() == DtoType);
+            var checkingMapClass = new MapDtoAndDo();
+
+            checkingMapClass = similarClasses.FirstOrDefault(x => x.DOClass.NamedTypeSymbol.GetFullName() == DOType);
+            if (checkingMapClass != null && checkingMapClass == similarClasses.FirstOrDefault(x => x.DtoClass.NamedTypeSymbol.GetFullName() == DtoType))
+            {
+                return true;
+            }
+
+            similarInterfacesDO = similarClasses.Where(x => x.DOInterface != null).FirstOrDefault(x => x.DOInterface.GetFullName() == DOType);
+            similarInterfacesDto = similarClasses.Where(x => x.DtoInterface != null).FirstOrDefault(x => x.DtoInterface.GetFullName() == DtoType);
+
+            if (similarInterfacesDO != null && similarInterfacesDO == similarClasses.FirstOrDefault(x => x.DtoClass.NamedTypeSymbol.GetFullName() == DtoType))
+            {
+                return true;
+            }
+
+            if (similarInterfacesDto != null && similarClasses.FirstOrDefault(x => x.DOClass.NamedTypeSymbol.GetFullName() == DOType) == similarInterfacesDto)
+            {
+                return true;
+            }
+
+            if (similarInterfacesDO != null && similarInterfacesDO == similarInterfacesDto)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // TODO: use fully qualified name here to distinguish similar-named classes https://stackoverflow.com/a/23308759
+        public KindOfProperty GetKindOfMapProperty(IPropertySymbol codeProperty, List<MapDtoAndDo> listOfSimilarClasses)
+        {
+            var type = codeProperty.Type.GetFullName();
+
+            if (type.Contains("IEnumerable"))
+            {
+                type = type.Remove(0, type.IndexOf("<") + 1);
+                type = type.Replace(">", "");
+
+                if (listOfSimilarClasses.Any(x => x.DOClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DOInterface != null).Any(x => x.DOInterface.GetFullName() == type))
+                {
+                    return KindOfProperty.CollectionAttributeClasses;
+                }
+
+                if (listOfSimilarClasses.Any(x => x.DtoClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DtoInterface != null).Any(x => x.DtoInterface.GetFullName() == type))
+                {
+                    return KindOfProperty.CollectionAttributeClasses;
+                }
+            }
+
+            if (listOfSimilarClasses.Any(x => x.DOClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DOInterface != null).Any(x => x.DOInterface.GetFullName() == type))
+            {
+                return KindOfProperty.AttributeClass;
+            }
+
+            if (listOfSimilarClasses.Any(x => x.DtoClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DtoInterface != null).Any(x => x.DtoInterface.GetFullName() == type))
+            {
+                return KindOfProperty.AttributeClass;
+            }
+
+            return KindOfProperty.None;
+        }
+
+        public KindOfProperty GetKindOfMapProperty(string type, List<MapDtoAndDo> listOfSimilarClasses)
+        {
+            if (type.Contains("IEnumerable"))
+            {
+                type = type.Remove(0, type.IndexOf("<") + 1);
+                type = type.Replace(">", "");
+
+                if (listOfSimilarClasses.Any(x => x.DOClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DOInterface != null).Any(x => x.DOInterface.GetFullName() == type))
+                {
+                    return KindOfProperty.CollectionAttributeClasses;
+                }
+
+                if (listOfSimilarClasses.Any(x => x.DtoClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DtoInterface != null).Any(x => x.DtoInterface.GetFullName() == type))
+                {
+                    return KindOfProperty.CollectionAttributeClasses;
+                }
+            }
+
+            if (listOfSimilarClasses.Any(x => x.DOClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DOInterface != null).Any(x => x.DOInterface.GetFullName() == type))
+            {
+                return KindOfProperty.AttributeClass;
+            }
+
+            if (listOfSimilarClasses.Any(x => x.DtoClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DtoInterface != null).Any(x => x.DtoInterface.GetFullName() == type))
+            {
+                return KindOfProperty.AttributeClass;
+            }
+
+            return KindOfProperty.None;
+        }
+
     }
 }
