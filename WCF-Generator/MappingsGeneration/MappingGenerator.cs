@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using WCFGenerator.Common;
 using WCFGenerator.MappingsGeneration.Configuration;
@@ -30,7 +31,12 @@ namespace WCFGenerator.MappingsGeneration
 
         private string GetFullCode(MapDtoAndDo[] similarClasses, ClassCompilerInfo[] classesWithoutPair)
         {
-            return "class C1 {}";
+            var sb = new StringBuilder();
+            foreach (PrefixString prefixString in _configuration.PrefixStrings)
+            {
+                sb.AppendLine(prefixString.Text);
+            }
+            return sb.ToString();
         }
     }
 }
