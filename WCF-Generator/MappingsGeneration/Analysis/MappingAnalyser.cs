@@ -314,6 +314,8 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                     }
                     allProperties.Remove(codeProperty);
                 }
+
+                similarClass.MapPropertiesDtoAndDo = listOfSimilarProperties;
             }
         }
 
