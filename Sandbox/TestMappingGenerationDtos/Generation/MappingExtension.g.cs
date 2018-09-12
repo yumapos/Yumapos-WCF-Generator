@@ -9,3 +9,12 @@
 
 using System;
 using System.Linq;
+
+namespace blah
+{
+	public static class MapExtensions
+	{
+		//TestMappingGeneration.DataObjects.ClassWithoutPair
+		//TestMappingGenerationDtos.AnotherClassWithoutPair
+	}
+}

@@ -36,6 +36,18 @@ namespace WCFGenerator.MappingsGeneration
             {
                 sb.AppendLine(prefixString.Text);
             }
+            sb.AppendLine("");
+            sb.AppendLine("namespace " + _configuration.MapExtensionNameSpace);
+            sb.AppendLine("{");
+            sb.AppendLine("public static class " + _configuration.MapExtensionClassName);
+            sb.AppendLine("{");
+            foreach (var classWithoutPair in classesWithoutPair)
+            {
+                sb.AppendLine("//" + classWithoutPair.NamedTypeSymbol.GetFullName());
+            }
+            sb.AppendLine("}");
+            sb.AppendLine("}");
+
             return sb.ToString();
         }
     }

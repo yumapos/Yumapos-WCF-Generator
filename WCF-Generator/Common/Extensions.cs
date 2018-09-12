@@ -58,8 +58,8 @@ namespace WCFGenerator.Common
         public static string GetFullName(this INamedTypeSymbol symbol)
         {
             return symbol.ContainingNamespace
-                   + "." + symbol.Name
-                   + ", " + symbol.ContainingAssembly;
+                   + "." + symbol.Name;
+                   //+ ", " + symbol.ContainingAssembly;
         }
 
         #endregion
@@ -69,8 +69,8 @@ namespace WCFGenerator.Common
         public static string GetFullName(this ITypeSymbol symbol)
         {
             return symbol.ContainingNamespace
-                   + "." + symbol.Name
-                   + ", " + symbol.ContainingAssembly;
+                   + "." + symbol.Name;
+                   //+ ", " + symbol.ContainingAssembly;
         }
         #endregion
 

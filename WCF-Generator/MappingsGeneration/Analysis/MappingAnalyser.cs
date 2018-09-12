@@ -128,6 +128,11 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 classesWithMapAttribute.Remove(doClass);
             }
 
+            foreach (var dtoClass in classesWithMapAttributeDto)
+            {
+                ClassesWithoutPair.Add(dtoClass);
+            }
+
             foreach (var similarClass in listOfSimilarClasses)
             {
                 var allProperties = similarClass.DOClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
