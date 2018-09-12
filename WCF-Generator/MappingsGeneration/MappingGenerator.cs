@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WCFGenerator.Common;
@@ -57,6 +58,19 @@ namespace WCFGenerator.MappingsGeneration
                 {
                     sb.AppendLine("//itemDo." + prop.Name);
                 }
+                sb.AppendLine("");
+                sb.AppendLine("if (item == null) return null;");
+                sb.AppendLine("");
+                sb.AppendLine("var itemDto = new " + dtoClassName + "();");
+                foreach (var property in similarClass.MapPropertiesDtoAndDo)
+                {
+                    if (!String.IsNullOrEmpty(property.ToDtoFunction))
+                    {
+                        sb.AppendLine(property.ToDtoFunction + ";");
+                    }
+                }
+                sb.AppendLine("");
+                sb.AppendLine("return itemDto;");
                 sb.AppendLine("}");
                 sb.AppendLine("");
                 sb.AppendLine("public static " + doClassName + " MapFromDto (this " + dtoClassName + " itemDto)");
@@ -65,6 +79,19 @@ namespace WCFGenerator.MappingsGeneration
                 {
                     sb.AppendLine("//itemDto." + prop.Name);
                 }
+                sb.AppendLine("");
+                sb.AppendLine("if (itemDto == null) return null;");
+                sb.AppendLine("");
+                sb.AppendLine("var item = new " + doClassName + "();");
+                foreach (var property in similarClass.MapPropertiesDtoAndDo)
+                {
+                    if (!String.IsNullOrEmpty(property.FromDtoFunction))
+                    {
+                        sb.AppendLine(property.FromDtoFunction + ";");
+                    }
+                }
+                sb.AppendLine("");
+                sb.AppendLine("return item;");
                 sb.AppendLine("}");
             }
 

@@ -20,10 +20,40 @@ namespace blah
 		public static TestMappingGenerationDtos.AddressDto MapToDto(this TestMappingGeneration.DataObjects.Address item)
 		{
 			//itemDo.IsDeleted
+
+			if (item == null) return null;
+
+			var itemDto = new TestMappingGenerationDtos.AddressDto();
+			itemDto.Id = item.Id;
+			itemDto.Country = item.Country;
+			itemDto.City = item.City;
+			itemDto.State = item.State;
+			itemDto.Street = item.Street;
+			itemDto.Building = item.Building;
+			itemDto.ZipCode = item.ZipCode;
+			itemDto.Latitude = item.Latitude;
+			itemDto.Longitude = item.Longitude;
+
+			return itemDto;
 		}
 
 		public static TestMappingGeneration.DataObjects.Address MapFromDto(this TestMappingGenerationDtos.AddressDto itemDto)
 		{
+
+			if (itemDto == null) return null;
+
+			var item = new TestMappingGeneration.DataObjects.Address();
+			item.Id = itemDto.Id;
+			item.Country = itemDto.Country;
+			item.City = itemDto.City;
+			item.State = itemDto.State;
+			item.Street = itemDto.Street;
+			item.Building = itemDto.Building;
+			item.ZipCode = itemDto.ZipCode;
+			item.Latitude = itemDto.Latitude;
+			item.Longitude = itemDto.Longitude;
+
+			return item;
 		}
 
 		public static TestMappingGenerationDtos.DeliveryZone2StoreDto MapToDto(this TestMappingGeneration.DataObjects.DeliveryZone2Store item)
@@ -32,10 +62,46 @@ namespace blah
 			//itemDo.Modified
 			//itemDo.ModifiedBy
 			//itemDo.IsDeleted
+
+			if (item == null) return null;
+
+			var itemDto = new TestMappingGenerationDtos.DeliveryZone2StoreDto();
+			itemDto.DeliveryZone2StoreId = item.DeliveryZone2StoreId;
+			itemDto.DeliveryZoneId = item.DeliveryZoneId;
+			itemDto.StoreId = item.StoreId;
+			itemDto.Name = item.Name;
+			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery;
+			itemDto.DeliveryPrice = item.DeliveryPrice;
+			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery;
+			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit;
+			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit;
+			itemDto.PriceFixed = item.PriceFixed;
+			itemDto.PricePercentOfOrder = item.PricePercentOfOrder;
+			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery;
+
+			return itemDto;
 		}
 
 		public static TestMappingGeneration.DataObjects.DeliveryZone2Store MapFromDto(this TestMappingGenerationDtos.DeliveryZone2StoreDto itemDto)
 		{
+
+			if (itemDto == null) return null;
+
+			var item = new TestMappingGeneration.DataObjects.DeliveryZone2Store();
+			item.DeliveryZone2StoreId = itemDto.DeliveryZone2StoreId;
+			item.DeliveryZoneId = itemDto.DeliveryZoneId;
+			item.StoreId = itemDto.StoreId;
+			item.Name = itemDto.Name;
+			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery;
+			item.DeliveryPrice = itemDto.DeliveryPrice;
+			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery;
+			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit;
+			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit;
+			item.PriceFixed = itemDto.PriceFixed;
+			item.PricePercentOfOrder = itemDto.PricePercentOfOrder;
+			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery;
+
+			return item;
 		}
 
 		public static TestMappingGenerationDtos.StoreDto MapToDto(this TestMappingGeneration.DataObjects.Store item)
@@ -48,6 +114,30 @@ namespace blah
 			//itemDo.PaymentTypes
 			//itemDo.CustomTenderId
 			//itemDo.AggregatedTenderId
+
+			if (item == null) return null;
+
+			var itemDto = new TestMappingGenerationDtos.StoreDto();
+			itemDto.StoreId = item.StoreId;
+			itemDto.Name = item.Name;
+			itemDto.ContactPerson = item.ContactPerson;
+			itemDto.Email = item.Email;
+			itemDto.EmailsForSendZReport = item.EmailsForSendZReport;
+			itemDto.Phone = item.Phone;
+			itemDto.Url = item.Url;
+			itemDto.Ip = item.Ip;
+			itemDto.Logo = item.Logo;
+			itemDto.IsActive = item.IsActive;
+			itemDto.BusinessDayStartInSeconds = item.BusinessDayStartInSeconds;
+			itemDto.Description = item.Description;
+			itemDto.ImageId = item.ImageId;
+			itemDto.LegalEntityId = item.LegalEntityId;
+			itemDto.MinAverageReceipt = item.MinAverageReceipt;
+			itemDto.MaxAverageReceipt = item.MaxAverageReceipt;
+			itemDto.AddressDto = item.StoreAddress.MapToDto();
+			itemDto.BitSettings = item.BitSettings;
+
+			return itemDto;
 		}
 
 		public static TestMappingGeneration.DataObjects.Store MapFromDto(this TestMappingGenerationDtos.StoreDto itemDto)
@@ -63,6 +153,30 @@ namespace blah
 			//itemDto.PartySizeEnabled
 			//itemDto.DeliveryMoneyChangeEnabled
 			//itemDto.IsSendZReportEnabled
+
+			if (itemDto == null) return null;
+
+			var item = new TestMappingGeneration.DataObjects.Store();
+			item.StoreId = itemDto.StoreId;
+			item.Name = itemDto.Name;
+			item.ContactPerson = itemDto.ContactPerson;
+			item.Email = itemDto.Email;
+			item.EmailsForSendZReport = itemDto.EmailsForSendZReport;
+			item.Phone = itemDto.Phone;
+			item.Url = itemDto.Url;
+			item.Ip = itemDto.Ip;
+			item.Logo = itemDto.Logo;
+			item.IsActive = itemDto.IsActive;
+			item.BusinessDayStartInSeconds = itemDto.BusinessDayStartInSeconds;
+			item.Description = itemDto.Description;
+			item.ImageId = itemDto.ImageId;
+			item.LegalEntityId = itemDto.LegalEntityId;
+			item.MinAverageReceipt = itemDto.MinAverageReceipt;
+			item.MaxAverageReceipt = itemDto.MaxAverageReceipt;
+			item.StoreAddress = itemDto.AddressDto.MapFromDto();
+			item.BitSettings = itemDto.BitSettings;
+
+			return item;
 		}
 	}
 }
