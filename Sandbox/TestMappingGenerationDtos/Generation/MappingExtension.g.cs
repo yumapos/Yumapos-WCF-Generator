@@ -9,6 +9,7 @@
 
 using System;
 using System.Linq;
+using TestMappingGeneration.Enums;
 
 namespace blah
 {
@@ -19,7 +20,6 @@ namespace blah
 
 		public static TestMappingGenerationDtos.AddressDto MapToDto(this TestMappingGeneration.DataObjects.Address item)
 		{
-			//itemDo.IsDeleted
 
 			if (item == null) return null;
 
@@ -107,11 +107,8 @@ namespace blah
 		public static TestMappingGenerationDtos.StoreDto MapToDto(this TestMappingGeneration.DataObjects.Store item)
 		{
 			//itemDo.AddressId
-			//itemDo.MenuUpdated
 			//itemDo.PriceListId
-			//itemDo.IsDeleted
 			//itemDo.ServiceTypes
-			//itemDo.PaymentTypes
 			//itemDo.CustomTenderId
 			//itemDo.AggregatedTenderId
 
@@ -135,7 +132,8 @@ namespace blah
 			itemDto.MinAverageReceipt = item.MinAverageReceipt;
 			itemDto.MaxAverageReceipt = item.MaxAverageReceipt;
 			itemDto.AddressDto = item.StoreAddress.MapToDto();
-			itemDto.BitSettings = item.BitSettings;
+			itemDto.PaymentTypes = (StorePaymentType)item.PaymentTypes;
+			itemDto.IsSendZReportEnabled = item.BitSettings.HasFlag(StoreSettings.SendZReportEnabled); itemDto.DeliveryMoneyChangeEnabled = item.BitSettings.HasFlag(StoreSettings.DeliveryMoneyChangeEnabled); itemDto.PartySizeEnabled = item.BitSettings.HasFlag(StoreSettings.PartySizeEnabled); itemDto.MobileFutureMenuShowing = item.BitSettings.HasFlag(StoreSettings.MobileFutureMenuShowing); itemDto.MobilePromoCampaignsShow = item.BitSettings.HasFlag(StoreSettings.MobilePromoCampaignsShow); itemDto.IsDeliveryRoundTheClock = item.BitSettings.HasFlag(StoreSettings.IsDeliveryRoundTheClock); itemDto.TipEnabled = item.BitSettings.HasFlag(StoreSettings.TipEnabled); itemDto.BitSettings = (StoreSettings)item.BitSettings; ;
 
 			return itemDto;
 		}
@@ -144,7 +142,6 @@ namespace blah
 		{
 			//itemDto.PriceListId
 			//itemDto.DeliveryZones
-			//itemDto.PaymentTypes
 			//itemDto.IsMain
 			//itemDto.TipEnabled
 			//itemDto.IsDeliveryRoundTheClock
@@ -174,7 +171,8 @@ namespace blah
 			item.MinAverageReceipt = itemDto.MinAverageReceipt;
 			item.MaxAverageReceipt = itemDto.MaxAverageReceipt;
 			item.StoreAddress = itemDto.AddressDto.MapFromDto();
-			item.BitSettings = itemDto.BitSettings;
+			item.PaymentTypes = (int)itemDto.PaymentTypes;
+			item.BitSettings = (itemDto.IsSendZReportEnabled ? StoreSettings.SendZReportEnabled : 0) | (itemDto.DeliveryMoneyChangeEnabled ? StoreSettings.DeliveryMoneyChangeEnabled : 0) | (itemDto.PartySizeEnabled ? StoreSettings.PartySizeEnabled : 0) | (itemDto.MobileFutureMenuShowing ? StoreSettings.MobileFutureMenuShowing : 0) | (itemDto.MobilePromoCampaignsShow ? StoreSettings.MobilePromoCampaignsShow : 0) | (itemDto.IsDeliveryRoundTheClock ? StoreSettings.IsDeliveryRoundTheClock : 0) | (itemDto.TipEnabled ? StoreSettings.TipEnabled : 0);
 
 			return item;
 		}

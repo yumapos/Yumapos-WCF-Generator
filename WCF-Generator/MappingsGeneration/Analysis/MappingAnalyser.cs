@@ -162,7 +162,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                     var str = codeProperty.Name;
                     if (_configuration.MapIgnoreAttribute != null && _configuration.MapIgnoreAttribute != "")
                     {
-                        attrIgnoreDo = codeProperty.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == _configuration.MapIgnoreAttribute);
+                        attrIgnoreDo = codeProperty.GetAttributeByName(_configuration.MapIgnoreAttribute);
                     }
 
                     foreach (var dtoCodeProperty in allPropertiesDto)
@@ -180,13 +180,13 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                             var doPropertyName = codeProperty.Name;
                             var dtoPropertyName = dtoCodeProperty.Name;
 
-                            var attrDo = codeProperty.GetAttributes().FirstOrDefault(x => x.AttributeClass.Name == _configuration.MapAttribute);
-                            var attrDto = dtoCodeProperty.GetAttributes().FirstOrDefault(x => x.AttributeClass.Name == _configuration.MapAttribute);
+                            var attrDo = codeProperty.GetAttributeByName(_configuration.MapAttribute);
+                            var attrDto = dtoCodeProperty.GetAttributeByName(_configuration.MapAttribute);
 
-                            var FunctionFromDto = attrDto?.NamedArguments.FirstOrDefault(a => a.Key == "FunctionFrom").Value.Value.ToString();
-                            var FunctionFrom = attrDo?.NamedArguments.FirstOrDefault(a => a.Key == "FunctionFrom").Value.Value.ToString();
-                            var FunctionToDto = attrDto?.NamedArguments.FirstOrDefault(a => a.Key == "FunctionTo").Value.Value.ToString();
-                            var FunctionTo = attrDo?.NamedArguments.FirstOrDefault(a => a.Key == "FunctionTo").Value.Value.ToString();
+                            var FunctionFromDto = attrDto?.GetAttributePropertyValue("FunctionFrom");
+                            var FunctionFrom = attrDo?.GetAttributePropertyValue("FunctionFrom");
+                            var FunctionToDto = attrDto?.GetAttributePropertyValue("FunctionTo");
+                            var FunctionTo = attrDo?.GetAttributePropertyValue("FunctionTo");
 
                             var FromDtoFunction = "";
                             var ToDtoFunction = "";

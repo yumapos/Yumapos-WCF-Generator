@@ -100,49 +100,5 @@ namespace WCFGenerator.MappingsGeneration
 
             return sb.ToString();
         }
-        /*
-         *         public static <#= similarClass.DtoClass != null ? similarClass.DtoClass.FullName : similarClass.DtoInterface.FullName #> MapToDto (this <#= similarClass.DtoClass != null ? similarClass.DOClass.FullName : similarClass.DOInterface.FullName #> item)
-                {  
-        <#+         foreach (var prop in isIgnoreDOProperties)
-                    {
-        #>            //itemDo.<#= prop.Name #>
-        <#+			}
-        #>
-                    if (item == null) return null;
-
-                    var itemDto = new <#= similarClass.DtoClass.FullName #> ();
-        <#+         foreach(MapPropertiesDtoAndDo property in similarClass.MapPropertiesDtoAndDo)
-                    { 
-                        if(property.ToDtoFunction != "" ) 
-                        {
-        #>                <#= property.ToDtoFunction #>;
-        <#+            }
-                    } #>
-
-                    return itemDto;
-                }
-
-                public static <#= similarClass.DOClass != null ? similarClass.DOClass.FullName : similarClass.DOInterface.FullName #> MapFromDto (this <#= similarClass.DtoClass != null ? similarClass.DtoClass.FullName : similarClass.DtoInterface.FullName #> itemDto)
-                {  
-        <#+         foreach (var prop in isIgnoreDTOProperties)
-                    {
-        #>            //itemDto.<#= prop.Name #>
-        <#+			}
-        #>
-                    if (itemDto == null) return null;
-
-                    var item = new <#= similarClass.DOClass.FullName #> ();
-        <#+          foreach(MapPropertiesDtoAndDo property in similarClass.MapPropertiesDtoAndDo)
-                    { 
-                        if(property.FromDtoFunction != "" )
-                        {
-        #>                <#= property.FromDtoFunction #>;
-        <#+             }
-                    } #>
-
-                    return item;
-                }
-            <#+  } #>
-         */
     }
 }

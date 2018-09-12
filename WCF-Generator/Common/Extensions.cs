@@ -74,5 +74,24 @@ namespace WCFGenerator.Common
         }
         #endregion
 
+        #region IPropertySymbol
+
+        public static AttributeData GetAttributeByName(this IPropertySymbol symbol, string name)
+        {
+            return symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == name || a.AttributeClass.Name == (name + "Attribute"));
+        }
+
+        #endregion
+
+        #region AttributeData
+
+        public static string GetAttributePropertyValue(this AttributeData attribute, string propertyName)
+        {
+            var prop = attribute.NamedArguments.FirstOrDefault(a => a.Key == propertyName);
+            if (prop.Equals(default(KeyValuePair<string,TypedConstant>))) return null;
+            return prop.Value.Value.ToString();
+        }
+
+        #endregion
     }
 }
