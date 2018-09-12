@@ -63,39 +63,39 @@ namespace WCFGenerator.MappingsGeneration.Configuration
             get { return ((string)(base["projectForGeneratedCode"])); }
         }
 
-        [ConfigurationProperty("MapExtensionNameSpace", DefaultValue = "", IsKey = true, IsRequired = true)]
+        [ConfigurationProperty("mapExtensionNameSpace", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string MapExtensionNameSpace //= "YumaPos.Server.BackOffice.Presentation.Generation";
         {
-            get { return ((string)(base["MapExtensionNameSpace"])); }
+            get { return ((string)(base["mapExtensionNameSpace"])); }
         }
 
-        [ConfigurationProperty("MapExtensionClassName", DefaultValue = "MapExtensions", IsRequired = false)]
+        [ConfigurationProperty("mapExtensionClassName", DefaultValue = "MapExtensions", IsRequired = false)]
         public string MapExtensionClassName
         {
-            get { return ((string)(base["MapExtensionClassName"])); }
+            get { return ((string)(base["mapExtensionClassName"])); }
         }
 
-        [ConfigurationProperty("MapAttribute", DefaultValue = "Map", IsRequired = false)]
+        [ConfigurationProperty("mapAttribute", DefaultValue = "Map", IsRequired = false)]
         public string MapAttribute
         {
-            get { return ((string)(base["MapAttribute"])); }
+            get { return ((string)(base["mapAttribute"])); }
         }
-        [ConfigurationProperty("MapIgnoreAttribute", DefaultValue = "MapIgnore", IsRequired = false)]
+        [ConfigurationProperty("mapIgnoreAttribute", DefaultValue = "MapIgnore", IsRequired = false)]
         public string MapIgnoreAttribute
         {
-            get { return ((string)(base["MapIgnoreAttribute"])); }
+            get { return ((string)(base["mapIgnoreAttribute"])); }
         }
 
-        [ConfigurationProperty("DoSuffix", DefaultValue = null, IsRequired = false)]
+        [ConfigurationProperty("doSuffix", DefaultValue = null, IsRequired = false)]
         public string DoSuffix
         {
-            get { return ((string)(base["DoSuffix"])); }
+            get { return ((string)(base["doSuffix"])); }
         }
 
-        [ConfigurationProperty("DtoSuffix", DefaultValue = "Dto", IsRequired = false)]
+        [ConfigurationProperty("dtoSuffix", DefaultValue = "Dto", IsRequired = false)]
         public string DtoSuffix
         {
-            get { return ((string)(base["DtoSuffix"])); }
+            get { return ((string)(base["dtoSuffix"])); }
         }
 
         [ConfigurationProperty("doProjects")]

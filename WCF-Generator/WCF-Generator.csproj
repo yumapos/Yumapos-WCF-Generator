@@ -354,7 +354,6 @@
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MappingsGeneration\Old__MappingsGenerator.cs" />
     <Compile Include="SerializeGeneration\Configuration\SerializeConfiguration.cs" />
     <Compile Include="Common\IGeneration.cs" />
     <Compile Include="SerializeGeneration\Generation\TextMigrationPatterns.cs" />
