@@ -16,5 +16,53 @@ namespace blah
 	{
 		//TestMappingGeneration.DataObjects.ClassWithoutPair
 		//TestMappingGenerationDtos.AnotherClassWithoutPair
+
+		public static TestMappingGenerationDtos.AddressDto MapToDto(this TestMappingGeneration.DataObjects.Address item)
+		{
+			//itemDo.IsDeleted
+		}
+
+		public static TestMappingGeneration.DataObjects.Address MapFromDto(this TestMappingGenerationDtos.AddressDto itemDto)
+		{
+		}
+
+		public static TestMappingGenerationDtos.DeliveryZone2StoreDto MapToDto(this TestMappingGeneration.DataObjects.DeliveryZone2Store item)
+		{
+			//itemDo.DeliveryZone2StoreVersionId
+			//itemDo.Modified
+			//itemDo.ModifiedBy
+			//itemDo.IsDeleted
+		}
+
+		public static TestMappingGeneration.DataObjects.DeliveryZone2Store MapFromDto(this TestMappingGenerationDtos.DeliveryZone2StoreDto itemDto)
+		{
+		}
+
+		public static TestMappingGenerationDtos.StoreDto MapToDto(this TestMappingGeneration.DataObjects.Store item)
+		{
+			//itemDo.AddressId
+			//itemDo.MenuUpdated
+			//itemDo.PriceListId
+			//itemDo.IsDeleted
+			//itemDo.ServiceTypes
+			//itemDo.PaymentTypes
+			//itemDo.CustomTenderId
+			//itemDo.AggregatedTenderId
+		}
+
+		public static TestMappingGeneration.DataObjects.Store MapFromDto(this TestMappingGenerationDtos.StoreDto itemDto)
+		{
+			//itemDto.PriceListId
+			//itemDto.DeliveryZones
+			//itemDto.PaymentTypes
+			//itemDto.IsMain
+			//itemDto.TipEnabled
+			//itemDto.IsDeliveryRoundTheClock
+			//itemDto.MobilePromoCampaignsShow
+			//itemDto.MobileFutureMenuShowing
+			//itemDto.PartySizeEnabled
+			//itemDto.DeliveryMoneyChangeEnabled
+			//itemDto.IsSendZReportEnabled
+		}
 	}
 }

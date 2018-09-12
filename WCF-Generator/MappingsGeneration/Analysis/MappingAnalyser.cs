@@ -320,6 +320,8 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 }
 
                 similarClass.MapPropertiesDtoAndDo = listOfSimilarProperties;
+                similarClass.IsIgnoreDOProperties = isIgnoreDOProperties.ToArray();
+                similarClass.IsIgnoreDTOProperties = isIgnoreDTOProperties.ToArray();
             }
 
             ListOfSimilarClasses = listOfSimilarClasses;

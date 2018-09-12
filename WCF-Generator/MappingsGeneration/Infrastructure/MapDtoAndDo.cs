@@ -11,5 +11,7 @@ namespace WCFGenerator.MappingsGeneration.Infrastructure
         public INamedTypeSymbol DOInterface { get; set; }
         public INamedTypeSymbol DtoInterface { get; set; }
         public IEnumerable<MapPropertiesDtoAndDo> MapPropertiesDtoAndDo { get; set; }
+        public IPropertySymbol[] IsIgnoreDOProperties { get; set; }
+        public IPropertySymbol[] IsIgnoreDTOProperties { get; set; }
     }
 }
