@@ -20,9 +20,8 @@ namespace WCFGenerator.MappingsGenerator.Analysis
         private readonly GeneratorWorkspace _generatorWorkspace;
         private Solution _solution = null;
 
-        IDictionary<string, CSharpCompilation> _doProjectsCompilations = new Dictionary<string, CSharpCompilation>();
-
         public IList<ClassCompilerInfo> ClassesWithoutPair = new List<ClassCompilerInfo>();
+        public IList<MapDtoAndDo> ListOfSimilarClasses;
 
         public MappingAnalyser(MappingConfiguration configuration, GeneratorWorkspace generatorWorkspace)
         {
@@ -317,6 +316,8 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
                 similarClass.MapPropertiesDtoAndDo = listOfSimilarProperties;
             }
+
+            ListOfSimilarClasses = listOfSimilarClasses;
         }
 
         public async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)

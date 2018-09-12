@@ -8,4 +8,8 @@
     <ProjectReference Include="..\TestMappingGeneration\TestMappingGeneration.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Generation\" />
+  </ItemGroup>
+
 </Project>

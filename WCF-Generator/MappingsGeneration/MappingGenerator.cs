@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using WCFGenerator.Common;
 using WCFGenerator.MappingsGeneration.Configuration;
+using WCFGenerator.MappingsGeneration.Infrastructure;
 using WCFGenerator.MappingsGenerator.Analysis;
 
 namespace WCFGenerator.MappingsGeneration
@@ -20,6 +22,15 @@ namespace WCFGenerator.MappingsGeneration
         {
             var analyser = new MappingAnalyser(_configuration, _generatorWorkspace);
             await analyser.Run();
+            var code = GetFullCode(analyser.ListOfSimilarClasses.ToArray(), analyser.ClassesWithoutPair.ToArray());
+            _generatorWorkspace.SetTargetProject(_configuration.ProjectForGeneratedCode);
+            _generatorWorkspace.UpdateFileInTargetProject("MappingExtension.g.cs", "Generation", code);
+            await _generatorWorkspace.ApplyTargetProjectChanges(true);
+        }
+
+        private string GetFullCode(MapDtoAndDo[] similarClasses, ClassCompilerInfo[] classesWithoutPair)
+        {
+            return "class C1 {}";
         }
     }
 }

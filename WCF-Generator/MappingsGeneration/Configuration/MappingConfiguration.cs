@@ -57,6 +57,12 @@ namespace WCFGenerator.MappingsGeneration.Configuration
 
     public class MappingConfiguration : ConfigurationElement
     {
+        [ConfigurationProperty("projectForGeneratedCode", DefaultValue = "", IsKey = true, IsRequired = true)]
+        public string ProjectForGeneratedCode //= "YumaPos.Server.BackOffice.Presentation.Generation";
+        {
+            get { return ((string)(base["projectForGeneratedCode"])); }
+        }
+
         [ConfigurationProperty("MapExtensionNameSpace", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string MapExtensionNameSpace //= "YumaPos.Server.BackOffice.Presentation.Generation";
         {
