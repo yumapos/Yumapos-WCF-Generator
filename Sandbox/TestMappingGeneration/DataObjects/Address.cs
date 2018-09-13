@@ -7,7 +7,7 @@ using TestMappingGeneration.Infrastructure;
 namespace TestMappingGeneration.DataObjects
 {
     [Map]
-    public class Address
+    public class Address : BaseAddress
     {
         public Guid Id { get; set; }
         public CountryISOCodes2 Country { get; set; }

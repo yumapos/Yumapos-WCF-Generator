@@ -15,11 +15,13 @@ namespace blah
 {
 	public static class MapExtensions
 	{
+		//TestMappingGeneration.DataObjects.BaseAddress
 		//TestMappingGeneration.DataObjects.ClassWithoutPair
 		//TestMappingGenerationDtos.AnotherClassWithoutPair
 
 		public static TestMappingGenerationDtos.AddressDto MapToDto(this TestMappingGeneration.DataObjects.Address item)
 		{
+			//itemDo.PropertyFromBaseAddress
 
 			if (item == null) return null;
 

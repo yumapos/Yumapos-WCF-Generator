@@ -144,7 +144,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 }
 
                 var allPropertiesDto = similarClass.DtoClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
-                baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
+                baseClass = similarClass.DtoClass.NamedTypeSymbol.BaseType;
                 while (baseClass != null)
                 {
                     allPropertiesDto.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
