@@ -115,7 +115,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
-			menuItem.MenuItemVersionId = Guid.NewGuid();
+			menuItem.MenuItemVersionId = menuItem.MenuItemVersionId == Guid.Empty ? Guid.NewGuid() : menuItem.MenuItemVersionId;
 			if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
 			{
 				throw new ArgumentException("MenuItemId");
@@ -129,7 +129,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
-			menuItem.MenuItemVersionId = Guid.NewGuid();
+			menuItem.MenuItemVersionId = menuItem.MenuItemVersionId == Guid.Empty ? Guid.NewGuid() : menuItem.MenuItemVersionId;
 			if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
 			{
 				throw new ArgumentException("MenuItemId");

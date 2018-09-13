@@ -94,7 +94,7 @@ namespace TestRepositoryGeneration
 		{
 			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
 			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-			tax.TaxVersionId = Guid.NewGuid();
+			tax.TaxVersionId = tax.TaxVersionId == Guid.Empty ? Guid.NewGuid() : tax.TaxVersionId;
 			tax.TaxId = 0;
 			_taxVersionRepository.Insert(tax);
 			_taxCacheRepository.Insert(tax);
@@ -105,7 +105,7 @@ namespace TestRepositoryGeneration
 		{
 			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
 			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-			tax.TaxVersionId = Guid.NewGuid();
+			tax.TaxVersionId = tax.TaxVersionId == Guid.Empty ? Guid.NewGuid() : tax.TaxVersionId;
 			tax.TaxId = 0;
 			await _taxVersionRepository.InsertAsync(tax);
 			await _taxCacheRepository.InsertAsync(tax);
