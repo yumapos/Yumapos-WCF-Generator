@@ -294,6 +294,8 @@
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecoratorsGenerator.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiGenerationFactory.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\Configuration\ClientApiDecoratorsConfiguration.cs" />
+    <Compile Include="ClientApiDecoratorsGeneration\Generation\ApiSecurityDecorator.cs" />
+    <Compile Include="ClientApiDecoratorsGeneration\Generation\IDecoratorClass.cs" />
     <Compile Include="Common\ComparerHelper.cs" />
     <Compile Include="Common\Configuration\TypeElement.cs" />
     <Compile Include="Common\Extensions.cs" />

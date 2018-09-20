@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
+using WCFGenerator.ClientApiDecoratorsGeneration.Generation;
 using WCFGenerator.Common;
 
 namespace WCFGenerator.ClientApiDecoratorsGeneration
@@ -17,6 +18,11 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
         private readonly ClientApiDecoratorsConfiguration _config;
         private readonly INamedTypeSymbol _typeInfo;
 
+        private IDecoratorClass[] _decorators = new IDecoratorClass[]
+        {
+            new ApiSecurityDecorator(),
+        };
+
         public ClientApiDecoratorsGenerator(GeneratorWorkspace generatorWorkspace, ClientApiDecoratorsConfiguration config, INamedTypeSymbol typeInfo)
         {
             _generatorWorkspace = generatorWorkspace;
@@ -24,9 +30,15 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
             _typeInfo = typeInfo;
         }
 
-        public void Generate()
+        public async Task Generate()
         {
-            var methods = _typeInfo.GetMembers().Where(m => m.Kind == SymbolKind.Method);
+            foreach (var decorator in _decorators)
+            {
+                var code = decorator.GetFullText(_typeInfo, _config);
+                _generatorWorkspace.SetTargetProject(_config.TargetProject);
+                _generatorWorkspace.UpdateFileInTargetProject(decorator.ClassName + ".g.cs", _config.TargetFolder, code);
+            }
+            await _generatorWorkspace.ApplyTargetProjectChanges(true);
         }
     }
 }

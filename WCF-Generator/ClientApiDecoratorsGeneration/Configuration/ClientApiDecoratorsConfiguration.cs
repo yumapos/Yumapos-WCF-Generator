@@ -67,5 +67,17 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Configuration
         {
             get { return ((string)(base["sourceProject"])); }
         }
+
+        [ConfigurationProperty("targetProject", DefaultValue = "", IsRequired = true)]
+        public string TargetProject
+        {
+            get { return ((string)(base["targetProject"])); }
+        }
+
+        [ConfigurationProperty("targetFolder", DefaultValue = "", IsRequired = true)]
+        public string TargetFolder
+        {
+            get { return ((string)(base["targetFolder"])); }
+        }
     }
 }

@@ -31,7 +31,7 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
                 foreach (var groupedConfigItem in groupedConfig)
                 {
                     var interfaceInfo = compilation.GetClass(groupedConfigItem.SourceInterface);
-                    new ClientApiDecoratorsGenerator(_generatorWorkspace, groupedConfigItem, interfaceInfo).Generate();
+                    await new ClientApiDecoratorsGenerator(_generatorWorkspace, groupedConfigItem, interfaceInfo).Generate();
                 }
             }
         }
