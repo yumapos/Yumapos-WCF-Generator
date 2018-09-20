@@ -65,6 +65,7 @@
     <Compile Include="Infrastructure\IDateTimeService.cs" />
     <Compile Include="CustomRepositories\BaseRepositories\AddressRepository.cs" />
     <Compile Include="Infrastructure\RepositoryBase.cs" />
+    <Compile Include="Infrastructure\Tenant.cs" />
     <Compile Include="PostgresRepositories\AddressArchiveRepository.g.cs" />
     <Compile Include="PostgresRepositories\CustomerSubscriptionArchiveRepository.g.cs" />
     <Compile Include="RepositoryInterfaces\IAddressArchiveRepository.cs" />

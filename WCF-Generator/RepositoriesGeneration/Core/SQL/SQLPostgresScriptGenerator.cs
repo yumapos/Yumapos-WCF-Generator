@@ -85,6 +85,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return insertJoinedTable;
         }
 
+        public string GenerateInsertMany(SqlInfo info)
+        {
+            return "InsertMany script was not generated";
+        }
+
         public string GenerateInsertToTemp(SqlInfo info)
         {
             return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier);" +
@@ -205,6 +210,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
             return "INSERT INTO " + info.VersionTableName + "(" + classProperties + ")\r\n" +
                        "VALUES (" + classValues + ")";
+        }
+
+        public string GenerateInsertManyToVersionTable(SqlInfo info)
+        {
+            return "InsertMany script was not generated";
         }
 
         public string GenerateSelectByToVersionTable(SqlInfo info)

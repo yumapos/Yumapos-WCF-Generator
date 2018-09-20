@@ -4,6 +4,7 @@
     {
         GetAll,
         Insert,
+        InsertMany,
         GetBy,
         UpdateBy,
         RemoveBy,

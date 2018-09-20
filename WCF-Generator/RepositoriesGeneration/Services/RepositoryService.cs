@@ -355,8 +355,6 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 // Repository interface info
                 repositoryInfo.RepositoryInterfaceName = _solutionSyntaxWalker.GetTypeNamespace(repoInterface) + "." + repoInterface.Identifier.Text;
 
-                #endregion
-
                 #region Repository methods
 
                 // Search method for implementation
@@ -374,6 +372,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 {
                     repositoryInfo.CustomCacheRepositoryMethodNames.AddRange(customCacheRepositoryMethods);
                 }
+
+                #endregion
             }
 
             #endregion
@@ -430,7 +430,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             {
                 new MethodImplementationInfo { Method = RepositoryMethod.GetAll },
                 new MethodImplementationInfo { Method = RepositoryMethod.Insert },
-                new MethodImplementationInfo { Method = RepositoryMethod.InsertOrUpdate}
+                new MethodImplementationInfo { Method = RepositoryMethod.InsertOrUpdate},
+                new MethodImplementationInfo { Method = RepositoryMethod.InsertMany },
             };
 
             // Methods by keys from model (without methods from base model)
