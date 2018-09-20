@@ -4,6 +4,8 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using Nito.AsyncEx;
+using WCFGenerator.ClientApiDecoratorsGeneration;
+using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
 using WCFGenerator.Common;
 using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Core;
@@ -108,6 +110,15 @@ namespace WCFGenerator
             catch (Exception e)
             {
                 throw new ApplicationException($"Error occured on mapping generation: {e.Message}", e);
+            }
+
+            try
+            {
+                RunClientApiDecoratorsGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException($"Error occured on client api decorators generation: {e.Message}", e);
             }
 
             // Apply Changes, close solution
@@ -228,6 +239,24 @@ namespace WCFGenerator
             AsyncContext.Run(() => generationFactory.GenerateAll());
 
             Console.WriteLine("Mapping generation completed.");
+        }
+
+        private static void RunClientApiDecoratorsGeneration()
+        {
+            var curSettings = ClientApiDecoratorsGeneratorSettings.Current;
+            if (!curSettings.Enabled)
+            {
+                Console.WriteLine("Client api decorators generation disabled.");
+                return;
+            }
+
+            Console.WriteLine("Starting сlient api decorators generation...");
+            var configs = curSettings.GetConfigs();
+
+            var factory = new ClientApiGenerationFactory(_generatorWorkspace, configs.ToArray());
+            AsyncContext.Run(() => factory.GenerateAll());
+
+            Console.WriteLine("Сlient api decorators  generation completed.");
         }
     }
 }

@@ -26,9 +26,6 @@ namespace WCFGenerator.MappingsGeneration.Configuration
 
     public class MappingGenerator : BasicConfigurationSection
     {
-        /// <summary>
-        ///     All configured wcf services for generate client
-        /// </summary>
         [ConfigurationProperty("mappingConfigurations")]
         public MappingConfigurationsCollection MappingConfigurations
         {
