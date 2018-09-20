@@ -184,7 +184,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 ClassName = className,
                 ClassFullName = _solutionSyntaxWalker.GetFullRepositoryModelName(doClass),
                 IsTenantRelated = !doClass.BaseTypeExist("ITenantUnrelated"),
-                IsStoreDependent = doClass.BaseTypeExist("IStoreRelated")
+                IsStoreDependent = doClass.BaseTypeExist("IStoreRelated") && doClass.Members.OfType<PropertyDeclarationSyntax>().Any(x => x.Identifier.Text == "StoreId")
             };
 
 
