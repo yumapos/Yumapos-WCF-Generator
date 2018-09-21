@@ -34,10 +34,10 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
 
         public async Task Generate()
         {
+            _generatorWorkspace.SetTargetProject(_config.TargetProject);
             foreach (var decorator in _decorators)
             {
                 var code = decorator.GetFullText(_typeInfo, _config);
-                _generatorWorkspace.SetTargetProject(_config.TargetProject);
                 _generatorWorkspace.UpdateFileInTargetProject(decorator.ClassName + ".g.cs", _config.TargetFolder, code);
             }
             await _generatorWorkspace.ApplyTargetProjectChanges(true);

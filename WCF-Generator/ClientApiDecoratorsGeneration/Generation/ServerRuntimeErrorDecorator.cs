@@ -44,5 +44,14 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 
             sb.AppendLine(returnTemplate);
         }
+
+        protected override void GetUsings(StringBuilder sb)
+        {
+            var usings = @"using System;
+            using System.ServiceModel;
+            using YumaPos.Shared.Terminal.Infrastructure;
+            using YumaPos.FrontEnd.Infrastructure.CommandProcessing;";
+            sb.AppendLine(usings);
+        }
     }
 }
