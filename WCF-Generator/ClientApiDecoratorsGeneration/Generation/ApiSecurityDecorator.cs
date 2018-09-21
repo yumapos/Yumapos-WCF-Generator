@@ -8,47 +8,12 @@ using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
 
 namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 {
-    public class ApiSecurityDecorator : IDecoratorClass
+    public class ApiSecurityDecorator : BaseDecorator
     {
-        public string ClassName => "ApiSecurityDecorator";
-
-        public string GetFullText(INamedTypeSymbol toDecorate, ClientApiDecoratorsConfiguration config)
+        public override string ClassName => "ApiSecurityDecorator";
+        protected override void GenerateMethodBody(StringBuilder sb, IMethodSymbol toDecorate)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("using System;");
-            sb.AppendLine("using YumaPos.Shared.Terminal.Infrastructure;");
-            sb.AppendLine("using YumaPos.FrontEnd.Infrastructure.CommandProcessing;");
 
-            string template = @"
-        namespace {2}
-        {{
-            public sealed class {1} : {0}
-            {{
-            private readonly {0} _actor;
-
-		    #region Properties
-
-		    public ExecutionContext ExecutionContext {{
-                get {{ return _actor.ExecutionContext; }}
-                set {{ _actor.ExecutionContext = value; }}
-            }}
-
-		    #endregion
-
-		    public {1}({0} actor)
-		    {{
-			    if (actor == null) throw new ArgumentNullException(nameof(actor));
-
-		        _actor = actor;
-		    }}";
-
-            sb.AppendFormat(template, config.SourceInterface, ClassName, config.TargetNamespace).AppendLine();
-
-            var methods = toDecorate.GetMembers().Where(m => m.Kind == SymbolKind.Method);
-
-            sb.AppendLine("}");
-            sb.AppendLine("}");
-            return sb.ToString();
         }
     }
 }

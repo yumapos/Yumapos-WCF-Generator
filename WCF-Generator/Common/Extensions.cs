@@ -64,7 +64,6 @@ namespace WCFGenerator.Common
 
         #endregion
 
-
         #region ITypeSymbol
         public static string GetFullName(this ITypeSymbol symbol)
         {
@@ -79,6 +78,33 @@ namespace WCFGenerator.Common
         public static AttributeData GetAttributeByName(this IPropertySymbol symbol, string name)
         {
             return symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == name || a.AttributeClass.Name == (name + "Attribute"));
+        }
+
+        #endregion
+
+        #region IMethodSymbol
+
+        public static string GetSignature(this IMethodSymbol symbol)
+        {
+            var sb = new StringBuilder();
+            var returnType = symbol.ReturnsVoid ? "void" : symbol.ReturnType.GetFullName();
+            sb.Append(returnType + " " + symbol.Name +"(");
+            sb.Append(String.Join(", ", symbol.Parameters.Select(p => p.Type.GetFullName() + " " + p.Name)));
+            sb.Append(")");
+
+            return sb.ToString();
+        }
+
+        public static string GetMethodCall(this IMethodSymbol symbol)
+        {
+            return symbol.Name + '(' + String.Join(", ", symbol.Parameters.Select(p => p.Name.ToString())) + ')';
+        }
+
+        public static bool CanBeAwaited(this IMethodSymbol symbol)
+        {
+            var retTask = symbol.ReturnType.GetFullName().Contains("System.Threading.Tasks.Task");
+            // Method with return type "Task" has not mark as async, but method decorator should be generate as async
+            return symbol.IsAsync || retTask;
         }
 
         #endregion
