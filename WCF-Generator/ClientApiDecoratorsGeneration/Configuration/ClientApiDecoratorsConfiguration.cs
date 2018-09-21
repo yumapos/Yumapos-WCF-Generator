@@ -79,5 +79,11 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Configuration
         {
             get { return ((string)(base["targetFolder"])); }
         }
+
+        [ConfigurationProperty("targetNamespace", DefaultValue = "", IsRequired = true)]
+        public string TargetNamespace
+        {
+            get { return ((string)(base["targetNamespace"])); }
+        }
     }
 }
