@@ -250,7 +250,7 @@ namespace WCFGenerator
                 return;
             }
 
-            Console.WriteLine("Starting сlient api decorators generation...");
+            Console.WriteLine("Starting client api decorators generation...");
             var configs = curSettings.GetConfigs();
 
             var factory = new ClientApiGenerationFactory(_generatorWorkspace, configs.ToArray());

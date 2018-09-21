@@ -58,6 +58,7 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
                     GenerateMethodBody(sb, method);
                 }
                 sb.AppendLine("}");
+                sb.AppendLine();
             }
 
             sb.AppendLine("}");

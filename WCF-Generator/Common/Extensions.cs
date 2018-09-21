@@ -65,12 +65,19 @@ namespace WCFGenerator.Common
         #endregion
 
         #region ITypeSymbol
+
         public static string GetFullName(this ITypeSymbol symbol)
         {
             return symbol.ContainingNamespace
                    + "." + symbol.Name;
                    //+ ", " + symbol.ContainingAssembly;
         }
+
+        public static ITypeSymbol[] GetGenericArguments(this ITypeSymbol symbol)
+        {
+            return ((INamedTypeSymbol)symbol).TypeArguments.ToArray();
+        }
+        
         #endregion
 
         #region IPropertySymbol
@@ -87,9 +94,9 @@ namespace WCFGenerator.Common
         public static string GetSignature(this IMethodSymbol symbol)
         {
             var sb = new StringBuilder();
-            var returnType = symbol.ReturnsVoid ? "void" : symbol.ReturnType.GetFullName();
+            var returnType = symbol.ReturnsVoid ? "void" : symbol.ReturnType.ToString();
             sb.Append(returnType + " " + symbol.Name +"(");
-            sb.Append(String.Join(", ", symbol.Parameters.Select(p => p.Type.GetFullName() + " " + p.Name)));
+            sb.Append(String.Join(", ", symbol.Parameters.Select(p => p.Type.ToString() + " " + p.Name)));
             sb.Append(")");
 
             return sb.ToString();
