@@ -18,9 +18,11 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
         private readonly ClientApiDecoratorsConfiguration _config;
         private readonly INamedTypeSymbol _typeInfo;
 
-        private IDecoratorClass[] _decorators = new IDecoratorClass[]
+        private readonly IDecoratorClass[] _decorators = new IDecoratorClass[]
         {
             new ApiSecurityDecorator(),
+            new ServerRuntimeErrorDecorator(), 
+            new UnauthorizeErrorApiDecorator(), 
         };
 
         public ClientApiDecoratorsGenerator(GeneratorWorkspace generatorWorkspace, ClientApiDecoratorsConfiguration config, INamedTypeSymbol typeInfo)

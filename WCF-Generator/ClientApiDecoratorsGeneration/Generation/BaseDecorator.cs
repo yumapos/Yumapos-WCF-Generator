@@ -68,9 +68,10 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 
         protected virtual void GetUsings(StringBuilder sb)
         {
-            sb.AppendLine("using System;");
-            sb.AppendLine("using YumaPos.Shared.Terminal.Infrastructure;");
-            sb.AppendLine("using YumaPos.FrontEnd.Infrastructure.CommandProcessing;");
+            var usings = @"using System;
+            using YumaPos.Shared.Terminal.Infrastructure;
+            using YumaPos.FrontEnd.Infrastructure.CommandProcessing;";
+            sb.AppendLine(usings);
         }
 
         protected abstract void GenerateMethodBody(StringBuilder sb, IMethodSymbol toDecorate);
