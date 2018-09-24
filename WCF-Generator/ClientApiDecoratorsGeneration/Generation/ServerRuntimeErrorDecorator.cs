@@ -26,6 +26,10 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 			{
 				throw new ServerRuntimeException(ex.Message, ex);
 			}
+			catch (ActionNotSupportedException ex)
+			{
+               throw new ServerRuntimeException(ex.Message, ex);
+			}
             catch (AggregateException ex)
             {
                 foreach (var innerException in ex.Flatten().InnerExceptions)
