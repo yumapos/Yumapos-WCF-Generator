@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Helpers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
@@ -120,6 +121,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                                                         "INSERT INTO "+ _tempTable + " " +
                                                         "SELECT " + Field(info.TableName, info.PrimaryKeyNames.First()) + " FROM " + info.TableName + " ";//TODO FIX TO MANY KEYS
         }
+
+        public string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info)
+        {
+            return Where(parameters, info.TableName) + AndTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " ";
+        }
+
 
         public string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
         {
@@ -332,10 +339,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Where(new[] { info.JoinPrimaryKeyNames.First() }, info.JoinVersionTableName) + AndTenantAndStoreRelated(info.JoinVersionTableName, info.TenantRelated, info.IsStoreDependent) + " "; //TODO FIX TO MANY KEYS
         }
 
-        public string GenerateInsertOrUpdate(SqlInfo info)
+        public string GenerateInsertOrUpdate(List<ParameterInfo> primaryKeys, SqlInfo info)
         {
             var insert = GenerateInsert(info);
-            var where = GenerateWhere(info.PrimaryKeyNames, info);
+            var where = GenerateWhere(primaryKeys, info);
             var conflict = " IF @@ROWCOUNT = 0 BEGIN ";
             var update = GenerateUpdate(info);
             return update + " "+ where + conflict + insert + " END";
@@ -457,6 +464,31 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private static string InnerJoin(string joinTableName, string conditions)
         {
             return "INNER JOIN " + joinTableName + " ON " + conditions;
+        }
+        private static string Where(IEnumerable<ParameterInfo> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+            sb.Append("WHERE ");
+
+            foreach (var parameter in parameters)
+            {
+                if (parameter.NeedGeneratePeriod)
+                {
+                    sb.Append($" AND {ownerTableName}.[{parameter.Name}] >= @start{parameter.Name}");
+                    sb.Append($" AND {ownerTableName}.[{parameter.Name}] < @end{parameter.Name}");
+                }
+                else if (parameter.IsNullable)
+                {
+                    sb.Append($" AND (({ownerTableName}.[{parameter.Name}] IS NULL AND @{parameter.Name} IS NULL) OR {ownerTableName}.[{parameter.Name}] = @{parameter.Name})");
+                }
+                else
+                {
+                    sb.Append($" AND {ownerTableName}.[{parameter.Name}] = @{parameter.Name}");
+                }
+
+            }
+            return sb.ToString().Replace("WHERE  AND ", "WHERE ");
+
         }
 
         private static string Where(IEnumerable<string> parameters, string ownerTableName)

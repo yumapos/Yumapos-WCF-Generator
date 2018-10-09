@@ -27,7 +27,7 @@ namespace TestRepositoryGeneration
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
 		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified ";
 		private const string WhereQueryById = "WHERE archive.addresses.id = @Id ";
-		private const string WhereQueryByModified = "WHERE  archive.addresses.modified >= @startModified AND archive.addresses.modified < @endModified";
+		private const string WhereQueryByModified = "WHERE archive.addresses.modified >= @startModified AND archive.addresses.modified < @endModified ";
 		private const string WhereQueryByCountryAndCity = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City ";
 		private const string WhereQueryByCountryAndCityAndZipCode = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City AND archive.addresses.zip_code = @ZipCode ";
 		private const string AndWithIsDeletedFilter = "AND archive.addresses.is_deleted = @IsDeleted ";

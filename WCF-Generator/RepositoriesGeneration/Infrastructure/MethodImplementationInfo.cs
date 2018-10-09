@@ -38,5 +38,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         ///     Type of returned value
         /// </summary>
         public string ReturnType { get; set; }
+
+        public IEnumerable<ParameterInfo> Parameters { get; set; }
     }
 }

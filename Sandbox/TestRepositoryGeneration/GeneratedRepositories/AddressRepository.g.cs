@@ -27,9 +27,9 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string DeleteQueryBy = @"UPDATE [dbo].[Addresses] SET IsDeleted = 1 ";
 		private const string InsertOrUpdateQuery = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude,[dbo].[Addresses].[Modified] = @Modified FROM [dbo].[Addresses]  WHERE [dbo].[Addresses].[Id] = @Id  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified)  END";
 		private const string WhereQueryById = "WHERE [dbo].[Addresses].[Id] = @Id ";
-		private const string WhereQueryByModified = " WHERE [dbo].[Addresses].[Modified] >= @startModified AND [dbo].[Addresses].[Modified] < @endModified";
-		private const string WhereQueryByModifiedAndCountryAndCity = "WHERE [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City AND [dbo].[Addresses].[Modified] >= @startModified AND [dbo].[Addresses].[Modified] < @endModified";
-		private const string WhereQueryByCountryAndCityAndZipCode = "WHERE [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City AND [dbo].[Addresses].[ZipCode] = @ZipCode ";
+		private const string WhereQueryByModified = "WHERE [dbo].[Addresses].[Modified] >= @startModified AND [dbo].[Addresses].[Modified] < @endModified ";
+		private const string WhereQueryByModifiedAndCountryAndCity = "WHERE [dbo].[Addresses].[Modified] >= @startModified AND [dbo].[Addresses].[Modified] < @endModified AND [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City ";
+		private const string WhereQueryByLatitudeAndLongitude = "WHERE (([dbo].[Addresses].[Latitude] IS NULL AND @Latitude IS NULL) OR [dbo].[Addresses].[Latitude] = @Latitude) AND (([dbo].[Addresses].[Longitude] IS NULL AND @Longitude IS NULL) OR [dbo].[Addresses].[Longitude] = @Longitude) ";
 		private const string AndWithIsDeletedFilter = "AND [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
 
@@ -128,10 +128,10 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			return result.ToList();
 		}
 
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByCountryAndCityAndZipCode(string country, string city, string zipCode, bool? isDeleted = false)
+		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByLatitudeAndLongitude(decimal? latitude, decimal? longitude, bool? isDeleted = false)
 		{
-			object parameters = new { country, city, zipCode, isDeleted };
-			var sql = SelectByQuery + WhereQueryByCountryAndCityAndZipCode;
+			object parameters = new { latitude, longitude, isDeleted };
+			var sql = SelectByQuery + WhereQueryByLatitudeAndLongitude;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithIsDeletedFilter;
@@ -139,10 +139,10 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByCountryAndCityAndZipCodeAsync(string country, string city, string zipCode, bool? isDeleted = false)
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByLatitudeAndLongitudeAsync(decimal? latitude, decimal? longitude, bool? isDeleted = false)
 		{
-			object parameters = new { country, city, zipCode, isDeleted };
-			var sql = SelectByQuery + WhereQueryByCountryAndCityAndZipCode;
+			object parameters = new { latitude, longitude, isDeleted };
+			var sql = SelectByQuery + WhereQueryByLatitudeAndLongitude;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithIsDeletedFilter;
@@ -241,14 +241,14 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		/*
-		public void UpdateByCountryAndCityAndZipCode(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		public void UpdateByLatitudeAndLongitude(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
-		var sql = UpdateQueryBy + WhereQueryByCountryAndCityAndZipCode; 
+		var sql = UpdateQueryBy + WhereQueryByLatitudeAndLongitude; 
 		DataAccessService.PersistObject(address, sql);
 		}
-		public async Task UpdateByCountryAndCityAndZipCodeAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		public async Task UpdateByLatitudeAndLongitudeAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
-		var sql = UpdateQueryBy + WhereQueryByCountryAndCityAndZipCode; 
+		var sql = UpdateQueryBy + WhereQueryByLatitudeAndLongitude; 
 		await DataAccessService.PersistObjectAsync(address, sql);
 		}
 
@@ -279,27 +279,27 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		/*
-		public void RemoveByCountryAndCityAndZipCode(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		public void RemoveByLatitudeAndLongitude(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
-		var sql = DeleteQueryBy + WhereQueryByCountryAndCityAndZipCode; 
+		var sql = DeleteQueryBy + WhereQueryByLatitudeAndLongitude; 
 		DataAccessService.PersistObject(address, sql);
 		}
-		public async Task RemoveByCountryAndCityAndZipCodeAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		public async Task RemoveByLatitudeAndLongitudeAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
-		var sql = DeleteQueryBy + WhereQueryByCountryAndCityAndZipCode; 
+		var sql = DeleteQueryBy + WhereQueryByLatitudeAndLongitude; 
 		await DataAccessService.PersistObjectAsync(address, sql);
 		}
 
-		public void RemoveByCountryAndCityAndZipCode(string country, string city, string zipCode)
+		public void RemoveByLatitudeAndLongitude(decimal latitude, decimal longitude)
 		{
-		object parameters = new {country, city, zipCode};
-		var sql = DeleteQueryBy + WhereQueryByCountryAndCityAndZipCode; 
+		object parameters = new {latitude, longitude};
+		var sql = DeleteQueryBy + WhereQueryByLatitudeAndLongitude; 
 		DataAccessService.PersistObject<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 		}
-		public async Task RemoveByCountryAndCityAndZipCodeAsync(string country, string city, string zipCode)
+		public async Task RemoveByLatitudeAndLongitudeAsync(decimal latitude, decimal longitude)
 		{
-		object parameters = new {country, city, zipCode};
-		var sql = DeleteQueryBy + WhereQueryByCountryAndCityAndZipCode; 
+		object parameters = new {latitude, longitude};
+		var sql = DeleteQueryBy + WhereQueryByLatitudeAndLongitude; 
 		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 		}
 

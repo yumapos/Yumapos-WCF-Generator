@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TestRepositoryGeneration.DataObjects;
 using TestRepositoryGeneration.DataObjects.VersionsRepositories;
 
 namespace TestRepositoryGeneration.RepositoryInterfaces
@@ -10,13 +9,13 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Guid Insert(MenuItem menuItem);
 
         IEnumerable<MenuItem> InsertMany(IEnumerable<MenuItem> menuItem);
-        void UpdateByMenuItemId(MenuItem itemId);
+        void UpdateByMenuItemId(MenuItem menuItemId);
 
-        void RemoveByMenuItemId(MenuItem itemId);
+        void RemoveByMenuItemId(MenuItem menuItemId);
 
-        MenuItem GetByMenuItemId(Guid itemId, DateTimeOffset sliceDate, bool? isDeleted);
+        MenuItem GetByMenuItemId(Guid menuItemId, DateTimeOffset modified, bool? isDeleted = false);
 
-        MenuItem GetByMenuItemVersionId(Guid itemVersionId, bool? isDeleted);
+        MenuItem GetByMenuItemVersionId(Guid menuItemVersionId, bool? isDeleted = false);
 
         IEnumerable<MenuItem> GetAll(bool? isDeleted);
 

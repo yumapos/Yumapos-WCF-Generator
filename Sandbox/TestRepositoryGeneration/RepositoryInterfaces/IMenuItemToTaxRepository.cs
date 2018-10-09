@@ -7,19 +7,19 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 {
     interface IMenuItems2TaxesRepository : IRepository<MenuItems2Taxes>
     {
-        void Insert(MenuItems2Taxes menuItem);
+        void Insert(MenuItems2Taxes menuItems2Taxes);
 
-        void UpdateByMenuItemId(MenuItems2Taxes itemId);
+        void UpdateByMenuItemId(MenuItems2Taxes menuItems2Taxes);
 
-        void RemoveByMenuItemId(MenuItems2Taxes itemId);
+        void RemoveByMenuItemId(MenuItems2Taxes menuItems2Taxes);
 
         IEnumerable<MenuItems2Taxes> GetByTaxId(int TaxId, bool? isDeleted);
 
-        void UpdateByTaxId(MenuItems2Taxes itemId);
+        void UpdateByTaxId(MenuItems2Taxes menuItems2Taxes);
 
-        void RemoveByTaxId(MenuItems2Taxes itemId);
+        void RemoveByTaxId(MenuItems2Taxes menuItems2Taxes);
 
-        IEnumerable<MenuItems2Taxes> GetByMenuItemId(Guid itemId, bool? isDeleted);
+        IEnumerable<MenuItems2Taxes> GetByMenuItemId(Guid menuItemId, bool? isDeleted);
 
         IEnumerable<MenuItems2Taxes> GetAll(bool? isDeleted);
     }

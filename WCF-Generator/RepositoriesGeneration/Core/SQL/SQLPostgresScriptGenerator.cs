@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Helpers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
@@ -97,6 +98,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                                                         "SELECT " + Field(info.TableName, info.PrimaryKeyNames.First()) + " FROM " + info.TableName + " ";//TODO FIX TO MANY KEYS
         }
 
+        public string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info)
+        {
+            return Where(parameters, info.TableName) + AndTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " ";
+        }
+
         public string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info)
         {
             return Where(selectedFilters, info.TableName) + AndTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " ";
@@ -170,7 +176,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Delete(info.TableName) + " ";
         }
 
-        public string GenerateInsertOrUpdate(SqlInfo info)
+        public string GenerateInsertOrUpdate(List<ParameterInfo> primaryKeys, SqlInfo info)
         {
             var insert = GenerateInsert(info);
             var conflict = " ON CONFLICT (" + string.Join(",", info.PrimaryKeyNames.Select(PostgresColumnsHelper.Convert)) + ") DO ";
@@ -378,6 +384,30 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private static string InnerJoin(string joinTableName, string conditions)
         {
             return "INNER JOIN " + joinTableName + " ON " + conditions;
+        }
+        private static string Where(IEnumerable<ParameterInfo> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+            sb.Append("WHERE ");
+
+            foreach (var parameter in parameters)
+            {
+                if (parameter.NeedGeneratePeriod)
+                {
+                    sb.Append($" AND {ownerTableName}.{PostgresColumnsHelper.Convert(parameter.Name)} >= @start{parameter.Name}");
+                    sb.Append($" AND {ownerTableName}.{PostgresColumnsHelper.Convert(parameter.Name)} < @end{parameter.Name}");
+                }
+                else if (parameter.IsNullable)
+                {
+                    sb.Append($" AND (({ownerTableName}.{PostgresColumnsHelper.Convert(parameter.Name)} IS NULL AND @{parameter.Name} IS NULL) OR {ownerTableName}.{PostgresColumnsHelper.Convert(parameter.Name)} = @{parameter.Name})");
+                }
+                else
+                {
+                    sb.Append($" AND {ownerTableName}.{PostgresColumnsHelper.Convert(parameter.Name)} = @{parameter.Name}");
+                }
+
+            }
+            return sb.ToString().Replace("WHERE  AND ", "WHERE ");
         }
 
         private static string Where(IEnumerable<string> parameters, string ownerTableName)

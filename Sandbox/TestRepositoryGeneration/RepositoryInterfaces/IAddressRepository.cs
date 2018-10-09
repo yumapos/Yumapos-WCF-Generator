@@ -12,8 +12,8 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Task<IEnumerable<Address>> GetAllAsync(bool? isDeleted);
         Task<Address> GetByIdAsync(Guid id, bool? isDeleted);
         IEnumerable<Address> GetByModified(DateTime startModified, DateTime endModified, bool? isDeleted = false);
-        IEnumerable<Address> GetByCountryAndCityAndZipCode(string country, string city, string zipCode, bool? isDeleted = false);
         IEnumerable<Address> GetByModifiedAndCountryAndCity(string country, string city, DateTime startModified, DateTime endModified, bool? isDeleted = false);
+        IEnumerable<Address> GetByLatitudeAndLongitude(decimal? latitude, decimal? longitude, bool? isDeleted = false);
         Task UpdateByIdAsync(Address address);
         Task RemoveByIdAsync(Address address);
     }

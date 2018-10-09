@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
@@ -17,6 +18,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         string GenerateInsertMany(SqlInfo info);
 
         string GenerateInsertToTemp(SqlInfo info);
+
+        string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info);
 
         string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info);
 
@@ -50,7 +53,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateWhereJoinPkVersion(SqlInfo info);
 
-        string GenerateInsertOrUpdate(SqlInfo info);
+        string GenerateInsertOrUpdate(List<ParameterInfo> primaryKeys, SqlInfo info);
 
         SqlInfo GetTableInfo(SqlInfo repositoryInfo);
     }
