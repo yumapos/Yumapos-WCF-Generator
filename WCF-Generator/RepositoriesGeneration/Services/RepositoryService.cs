@@ -427,7 +427,11 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<MethodInfo> interfaceMethodNames, List<MethodInfo> customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods, string fullRepositoryModelName)
         {
             // Check implemented methods in custom repository
-            var unimplemented = interfaceMethodNames.Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null);
+            var unimplemented = interfaceMethodNames
+                .Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null)
+                .GroupBy(p=>p.Name)
+                .Select(gr => gr.Count() == 1 ? gr.Single() : gr.FirstOrDefault(p => p.Parameters.First().TypeName != fullRepositoryModelName.Split('.').Last()))
+                .ToList();
 
             // Set methods which possible to generate
 
@@ -454,27 +458,35 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                             Parameters = interfaceMethodNames.FirstOrDefault(p => p.Name == ("GetBy" + filterInfo.Key) || p.Name == ("GetBy" + filterInfo.Key + "Async"))?.Parameters ?? filterInfo.Parameters
                         },
                         new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
-                        new MethodImplementationInfo {Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo}
+                        new MethodImplementationInfo
+                        {
+                            Method = RepositoryMethod.RemoveBy,
+                            FilterInfo = filterInfo,
+                            Parameters = interfaceMethodNames.FirstOrDefault(p => p.Name == ("GetBy" + filterInfo.Key) || p.Name == ("GetBy" + filterInfo.Key + "Async"))?.Parameters ?? filterInfo.Parameters
+                        }
                     });
 
                 methods.AddRange(keyBasedMethods);
             }
             catch
             {
-                Debug.WriteLine(fullRepositoryModelName);
+                Console.WriteLine("GetUnimplementedMethods error for: " + fullRepositoryModelName);
                 throw;
             }
             // Set methods to implementation from possible list
             foreach (var um in unimplemented)
             {
                 // Seach in possible list
-                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um.Name));
-                if (m == null) continue;
+                var mm = methods.Where(methodInfo => NameIsTrue(methodInfo, um.Name));
+                if (!mm.Any()) continue;
                 // Set to implementation
-                m.RequiresImplementation = true;
-                m.Name = um.Name;
-                m.ReturnType = um.ReturnType;
-                m.Parameters = um.Parameters;
+                foreach (var m in mm)
+                {
+                    m.RequiresImplementation = true;
+                    m.Name = um.Name;
+                    m.ReturnType = um.ReturnType;
+                    m.Parameters = um.Parameters;
+                }
             }
 
             return methods;
