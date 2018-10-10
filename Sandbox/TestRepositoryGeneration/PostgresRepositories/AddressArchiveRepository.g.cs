@@ -18,14 +18,14 @@ namespace TestRepositoryGeneration
 {
 	public partial class AddressArchiveRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IAddressArchiveRepository
 	{
-		private const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified";
-		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified FROM archive.addresses   ";
-		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified FROM archive.addresses ";
-		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified) ";
+		private const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date";
+		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses   ";
+		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses ";
+		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate) ";
 		private const string InsertManyQuery = @"InsertMany script was not generated";
-		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified FROM archive.addresses ";
+		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate FROM archive.addresses ";
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
-		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified ";
+		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate ";
 		private const string WhereQueryById = "WHERE archive.addresses.id = @Id ";
 		private const string WhereQueryByModified = "WHERE archive.addresses.modified >= @startModified AND archive.addresses.modified < @endModified ";
 		private const string WhereQueryByCountryAndCity = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City ";
@@ -176,7 +176,7 @@ namespace TestRepositoryGeneration
 		var parameters = new Dictionary<string, object> ();
 		foreach (var address in addressList)
 		{
-		if (parameters.Count + 10 > MaxRepositoryParams)
+		if (parameters.Count + 11 > MaxRepositoryParams)
 		{
 		DataAccessService.Execute(query.ToString(), parameters);
 		query.Clear();
@@ -193,6 +193,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Latitude{counter}", address.Latitude);
 		parameters.Add($"Longitude{counter}", address.Longitude);
 		parameters.Add($"Modified{counter}", address.Modified);
+		parameters.Add($"ExpireDate{counter}", address.ExpireDate);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}
@@ -210,7 +211,7 @@ namespace TestRepositoryGeneration
 		var parameters = new Dictionary<string, object>();
 		foreach (var address in addressList)
 		{
-		if (parameters.Count + 10 > MaxRepositoryParams)
+		if (parameters.Count + 11 > MaxRepositoryParams)
 		{
 		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		query.Clear();
@@ -227,6 +228,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Latitude{counter}", address.Latitude);
 		parameters.Add($"Longitude{counter}", address.Longitude);
 		parameters.Add($"Modified{counter}", address.Modified);
+		parameters.Add($"ExpireDate{counter}", address.ExpireDate);
 		query.AppendFormat(InsertManyQuery, counter);
 		counter++;
 		}

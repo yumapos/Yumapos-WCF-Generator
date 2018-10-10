@@ -18,16 +18,16 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 {
 	public partial class AddressRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IAddressRepository
 	{
-		private const string Fields = @"[dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified]";
-		private const string SelectAllQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified] FROM [dbo].[Addresses]   ";
-		private const string SelectByQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified] FROM [dbo].[Addresses] ";
-		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified) ";
-		private const string InsertManyQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified]) OUTPUT INSERTED.Id VALUES(@Id{0},@Country{0},@City{0},@State{0},@Street{0},@Building{0},@ZipCode{0},@Latitude{0},@Longitude{0},@Modified{0}) ";
-		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude,[dbo].[Addresses].[Modified] = @Modified FROM [dbo].[Addresses] ";
+		private const string Fields = @"[dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate]";
+		private const string SelectAllQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate] FROM [dbo].[Addresses]   ";
+		private const string SelectByQuery = @"SELECT [dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate] FROM [dbo].[Addresses] ";
+		private const string InsertQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate) ";
+		private const string InsertManyQuery = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate]) OUTPUT INSERTED.Id VALUES(@Id{0},@Country{0},@City{0},@State{0},@Street{0},@Building{0},@ZipCode{0},@Latitude{0},@Longitude{0},@Modified{0},@ExpireDate{0}) ";
+		private const string UpdateQueryBy = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude,[dbo].[Addresses].[Modified] = @Modified,[dbo].[Addresses].[ExpireDate] = @ExpireDate FROM [dbo].[Addresses] ";
 		private const string DeleteQueryBy = @"UPDATE [dbo].[Addresses] SET IsDeleted = 1 ";
-		private const string InsertOrUpdateQuery = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude,[dbo].[Addresses].[Modified] = @Modified FROM [dbo].[Addresses]  WHERE [dbo].[Addresses].[Id] = @Id  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified)  END";
+		private const string InsertOrUpdateQuery = @"UPDATE [dbo].[Addresses] SET [dbo].[Addresses].[Id] = @Id,[dbo].[Addresses].[Country] = @Country,[dbo].[Addresses].[City] = @City,[dbo].[Addresses].[State] = @State,[dbo].[Addresses].[Street] = @Street,[dbo].[Addresses].[Building] = @Building,[dbo].[Addresses].[ZipCode] = @ZipCode,[dbo].[Addresses].[Latitude] = @Latitude,[dbo].[Addresses].[Longitude] = @Longitude,[dbo].[Addresses].[Modified] = @Modified,[dbo].[Addresses].[ExpireDate] = @ExpireDate FROM [dbo].[Addresses]  WHERE [dbo].[Addresses].[Id] = @Id  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate]) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate)  END";
 		private const string WhereQueryById = "WHERE [dbo].[Addresses].[Id] = @Id ";
-		private const string WhereQueryByModified = "WHERE [dbo].[Addresses].[Modified] >= @startModified AND [dbo].[Addresses].[Modified] < @endModified ";
+		private const string WhereQueryByExpireDate = "WHERE (([dbo].[Addresses].[ExpireDate] IS NULL AND @ExpireDate IS NULL) OR [dbo].[Addresses].[ExpireDate] = @ExpireDate) ";
 		private const string WhereQueryByModifiedAndCountryAndCity = "WHERE [dbo].[Addresses].[Modified] >= @startModified AND [dbo].[Addresses].[Modified] < @endModified AND [dbo].[Addresses].[Country] = @Country AND [dbo].[Addresses].[City] = @City ";
 		private const string WhereQueryByLatitudeAndLongitude = "WHERE (([dbo].[Addresses].[Latitude] IS NULL AND @Latitude IS NULL) OR [dbo].[Addresses].[Latitude] = @Latitude) AND (([dbo].[Addresses].[Longitude] IS NULL AND @Longitude IS NULL) OR [dbo].[Addresses].[Longitude] = @Longitude) ";
 		private const string AndWithIsDeletedFilter = "AND [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
@@ -82,10 +82,10 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByModified(System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> GetByExpireDate(System.DateTimeOffset? expireDate, bool? isDeleted = false)
 		{
-			object parameters = new { startModified, endModified, isDeleted };
-			var sql = SelectByQuery + WhereQueryByModified;
+			object parameters = new { expireDate, isDeleted };
+			var sql = SelectByQuery + WhereQueryByExpireDate;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithIsDeletedFilter;
@@ -93,10 +93,10 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByModifiedAsync(System.DateTime startModified, System.DateTime endModified, bool? isDeleted = false)
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>> GetByExpireDateAsync(System.DateTimeOffset? expireDate, bool? isDeleted = false)
 		{
-			object parameters = new { startModified, endModified, isDeleted };
-			var sql = SelectByQuery + WhereQueryByModified;
+			object parameters = new { expireDate, isDeleted };
+			var sql = SelectByQuery + WhereQueryByExpireDate;
 			if (isDeleted.HasValue)
 			{
 				sql = sql + AndWithIsDeletedFilter;
@@ -172,7 +172,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var parameters = new Dictionary<string, object>();
 			foreach (var address in addressList)
 			{
-				if (parameters.Count + 10 > MaxRepositoryParams)
+				if (parameters.Count + 11 > MaxRepositoryParams)
 				{
 					DataAccessService.Execute(query.ToString(), parameters);
 					query.Clear();
@@ -189,6 +189,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 				parameters.Add($"Latitude{counter}", address.Latitude);
 				parameters.Add($"Longitude{counter}", address.Longitude);
 				parameters.Add($"Modified{counter}", address.Modified);
+				parameters.Add($"ExpireDate{counter}", address.ExpireDate);
 				query.AppendFormat(InsertManyQuery, counter);
 				counter++;
 			}
@@ -206,7 +207,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			var parameters = new Dictionary<string, object>();
 			foreach (var address in addressList)
 			{
-				if (parameters.Count + 10 > MaxRepositoryParams)
+				if (parameters.Count + 11 > MaxRepositoryParams)
 				{
 					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 					query.Clear();
@@ -223,6 +224,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 				parameters.Add($"Latitude{counter}", address.Latitude);
 				parameters.Add($"Longitude{counter}", address.Longitude);
 				parameters.Add($"Modified{counter}", address.Modified);
+				parameters.Add($"ExpireDate{counter}", address.ExpireDate);
 				query.AppendFormat(InsertManyQuery, counter);
 				counter++;
 			}
@@ -241,6 +243,19 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		/*
+		public void UpdateByExpireDate(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+		var sql = UpdateQueryBy + WhereQueryByExpireDate; 
+		DataAccessService.PersistObject(address, sql);
+		}
+		public async Task UpdateByExpireDateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+		var sql = UpdateQueryBy + WhereQueryByExpireDate; 
+		await DataAccessService.PersistObjectAsync(address, sql);
+		}
+
+
+		*//*
 		public void UpdateByLatitudeAndLongitude(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
 		var sql = UpdateQueryBy + WhereQueryByLatitudeAndLongitude; 
@@ -275,6 +290,30 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		{
 			object parameters = new { id };
 			var sql = DeleteQueryBy + WhereQueryById;
+			await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
+		}
+
+		public void RemoveByExpireDate(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+			var sql = DeleteQueryBy + WhereQueryByExpireDate;
+			DataAccessService.PersistObject(address, sql);
+		}
+		public async Task RemoveByExpireDateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+			var sql = DeleteQueryBy + WhereQueryByExpireDate;
+			await DataAccessService.PersistObjectAsync(address, sql);
+		}
+
+		public void RemoveByExpireDate(System.DateTimeOffset? expireDate)
+		{
+			object parameters = new { expireDate };
+			var sql = DeleteQueryBy + WhereQueryByExpireDate;
+			DataAccessService.PersistObject<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
+		}
+		public async Task RemoveByExpireDateAsync(System.DateTimeOffset? expireDate)
+		{
+			object parameters = new { expireDate };
+			var sql = DeleteQueryBy + WhereQueryByExpireDate;
 			await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address>(sql, parameters);
 		}
 

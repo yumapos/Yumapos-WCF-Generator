@@ -221,15 +221,23 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 sb.AppendLine(updateByMethods);
             }
-
-            // RepositoryMethod.RemoveBy
-            var removeByMethods = filtersWithoutDateTimes
-                .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
-                .Aggregate("", (s, method) => s + GenerateRemove(method));
-
-            if(!string.IsNullOrEmpty(removeByMethods))
+            try
             {
-                sb.AppendLine(removeByMethods);
+                // RepositoryMethod.RemoveBy
+                var removeByMethods = filtersWithoutDateTimes
+                    .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
+                    .Aggregate("", (s, method) => s + GenerateRemove(method));
+
+                if (!string.IsNullOrEmpty(removeByMethods))
+                {
+                    sb.AppendLine(removeByMethods);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("Name mistmatch in I" + RepositoryInfo.ClassName + "Repository");
+                Console.WriteLine("method " + ex.Data["method"]);
+                throw;
             }
 
             // RepositoryMethod.InsertOrUpdate
@@ -347,7 +355,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 parameters = filter.Parameters
                     .Where(x => x.NeedGeneratePeriod == false)
-                    .Select(k => k.TypeName + (method.Parameters.Single(m => m.Name.ToLowerInvariant() == k.Name.ToLowerInvariant()).IsNullable ? "? " : " ") + k.Name.FirstSymbolToLower()).ToList();
+                    .Select(k => k.TypeName + (method.Parameters.Single(m => string.Equals(m.Name, k.Name, StringComparison.InvariantCultureIgnoreCase)).IsNullable ? "? " : " ") + k.Name.FirstSymbolToLower()).ToList();
             }
             catch (InvalidOperationException ex)
             {
@@ -675,6 +683,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             // Remove by filter key
             var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
+            try
+            {
+                if (method.Parameters != null && method.Parameters.Count() == filter.Parameters.Count)
+                {
+                    methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + (method.Parameters.SingleOrDefault(m => string.Equals(m.Name, k.Name, StringComparison.InvariantCultureIgnoreCase))?.IsNullable ?? false ? "? " : " ") + k.Name.FirstSymbolToLower()));
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data["method"] = " RemoveBy" + filter.Key;
+                throw;
+            }
             var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
 
             // Synchronous method
