@@ -236,7 +236,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             var columns = info.TableColumns.Concat(info.HiddenTableColumns).ToList();
             var classProperties = Fields(columns, info.TableName);
-            var classValues = Values(columns.Select(v => $"{v}{{0}}"));
+            var classValues = Values(info.TableColumns.Select(v => $"{v}{{0}}").Union(info.HiddenTableColumns));
 
             if (info.JoinTableName != null)
             {

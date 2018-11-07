@@ -20,7 +20,7 @@ namespace TestRepositoryGeneration
 		private const string InsertQuery = @"INSERT INTO [TaxVersions]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId])
 VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
 		private const string InsertManyQuery = @"INSERT INTO [TaxVersions]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId])
-VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDeleted{0},@TenantId{0})";
+VALUES (@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDeleted{0},@TenantId)";
 		private const string SelectBy = @"SELECT [TaxVersions].[TaxId],[TaxVersions].[TaxVersionId],[TaxVersions].[Name],[TaxVersions].[Modified],[TaxVersions].[ModifiedBy],[TaxVersions].[IsDeleted] FROM [TaxVersions]  {filter} ";
 		private const string SelectByKeyAndSliceDateQuery = @"SELECT [TaxVersions].[TaxId],[TaxVersions].[TaxVersionId],[TaxVersions].[Name],[TaxVersions].[Modified],[TaxVersions].[ModifiedBy],[TaxVersions].[IsDeleted] FROM (SELECT versionTable1.[TaxId], MAX(versionTable1.[Modified]) as Modified FROM [TaxVersions] versionTable1  {filter}  GROUP BY versionTable1.[TaxId]) versionTable INNER JOIN [TaxVersions] ON versionTable.[TaxId] = [TaxVersions].[TaxId] AND versionTable.[Modified] = [TaxVersions].[Modified]";
 		private const string WhereQueryByTaxId = "WHERE [TaxVersions].[TaxId] = @TaxId{andTenantId:[TaxVersions]} ";
