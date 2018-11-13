@@ -313,6 +313,7 @@
     <Compile Include="DecoratorGeneration\Infrastructure\MethodImplementationInfo.cs" />
     <Compile Include="DecoratorGeneration\Infrastructure\DecoratorInfo.cs" />
     <Compile Include="MappingsGeneration\Analysis\MappingAnalyser.cs" />
+    <Compile Include="MappingsGeneration\Analysis\MappingAnalyser2.cs" />
     <Compile Include="MappingsGeneration\Configuration\MappingConfiguration.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\ClassCompilerInfo.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\KindOfProperty.cs" />
@@ -383,7 +384,9 @@
     <Compile Include="WcfClientGeneration\WCFGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using WCFGenerator.Common;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Infrastructure;
-using WCFGenerator.MappingsGenerator.Analysis;
+using WCFGenerator.MappingsGeneration.Analysis;
 
 namespace WCFGenerator.MappingsGeneration
 {
@@ -51,8 +51,17 @@ namespace WCFGenerator.MappingsGeneration
             {
                 sb.AppendLine("");
                 var doClassName = similarClass.DtoClass != null ? similarClass.DOClass.NamedTypeSymbol.GetFullName() : similarClass.DOInterface.GetFullName();
+                var doShortClassName = similarClass.DtoClass != null ? similarClass.DOClass.NamedTypeSymbol.Name : similarClass.DOInterface.Name;
                 var dtoClassName = similarClass.DtoClass != null ? similarClass.DtoClass.NamedTypeSymbol.GetFullName() : similarClass.DtoInterface.GetFullName();
-                sb.AppendLine("public static " + dtoClassName + " MapToDto (this " + doClassName + " item)");
+                var dtoShortClassName = similarClass.DtoClass != null ? similarClass.DtoClass.NamedTypeSymbol.Name : similarClass.DtoInterface.Name;
+                if(similarClass.IsClassesIntersects)
+                {
+                    sb.AppendLine("public static " + dtoClassName + " MapTo"+ dtoShortClassName +" (this " + doClassName + " item)");
+                }
+                else
+                {
+                    sb.AppendLine("public static " + dtoClassName + " MapToDto (this " + doClassName + " item)");
+                }
                 sb.AppendLine("{");
                 foreach (var prop in similarClass.IsIgnoreDOProperties)
                 {
@@ -73,7 +82,15 @@ namespace WCFGenerator.MappingsGeneration
                 sb.AppendLine("return itemDto;");
                 sb.AppendLine("}");
                 sb.AppendLine("");
-                sb.AppendLine("public static " + doClassName + " MapFromDto (this " + dtoClassName + " itemDto)");
+                if (similarClass.IsClassesIntersects)
+                {
+                    sb.AppendLine("public static " + doClassName + " MapTo"+ doShortClassName +" (this " + dtoClassName + " itemDto)");
+                }
+                else
+                {
+                    sb.AppendLine("public static " + doClassName + " MapFromDto (this " + dtoClassName + " itemDto)");
+                }
+
                 sb.AppendLine("{");
                 foreach (var prop in similarClass.IsIgnoreDTOProperties)
                 {

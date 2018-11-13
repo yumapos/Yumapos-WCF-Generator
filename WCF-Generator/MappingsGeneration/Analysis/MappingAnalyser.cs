@@ -12,7 +12,7 @@ using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Infrastructure;
 
-namespace WCFGenerator.MappingsGenerator.Analysis
+namespace WCFGenerator.MappingsGeneration.Analysis
 {
     public class MappingAnalyser
     {
@@ -32,8 +32,186 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
         public async Task Run()
         {
-            StringBuilder sb = new StringBuilder();
+            Validate();
+            var listOfSimilarClasses =  await MatchSimilarClasses();
 
+            foreach (var similarClass in listOfSimilarClasses)
+            {
+                var allProperties = GetAllProperties(similarClass);
+                var allPropertiesDto = GetAllProperties(similarClass, true);
+
+                var listOfSimilarProperties = new List<MapPropertiesDtoAndDo>();
+
+                var isIgnoreDoProperties = new List<IPropertySymbol>(allProperties.ToList()); // to remove items from it later
+                var isIgnoreDtoProperties = new List<IPropertySymbol>(allPropertiesDto.ToList());
+                foreach (var codeProperty in allProperties.ToArray())
+                {
+                    AttributeData attrIgnoreDo = null;
+                    if (!string.IsNullOrEmpty(_configuration.MapIgnoreAttribute))
+                    {
+                        attrIgnoreDo = codeProperty.GetAttributeByName(_configuration.MapIgnoreAttribute);
+                    }
+                    foreach (var dtoCodeProperty in allPropertiesDto.ToArray())
+                    {
+                        if (!AreNamesEqual(codeProperty, dtoCodeProperty)) continue;
+
+                        AttributeData attrIgnoreDto = null;
+
+                        if (!string.IsNullOrEmpty(_configuration.MapIgnoreAttribute))
+                        {
+                            attrIgnoreDto = dtoCodeProperty.GetAttributes().FirstOrDefault(x => x.AttributeClass.Name == _configuration.MapIgnoreAttribute);
+                        }
+
+                        var attrDo = codeProperty.GetAttributeByName(_configuration.MapAttribute);
+                        var attrDto = dtoCodeProperty.GetAttributeByName(_configuration.MapAttribute);
+
+                        var functionFromDto = attrDto?.GetAttributePropertyValue("FunctionFrom");
+                        var functionFrom = attrDo?.GetAttributePropertyValue("FunctionFrom");
+                        var functionToDto = attrDto?.GetAttributePropertyValue("FunctionTo");
+                        var functionTo = attrDo?.GetAttributePropertyValue("FunctionTo");
+
+                        var fromDtoFunction = "";
+                        var toDtoFunction = "";
+
+                        if (functionFromDto != null)
+                        {
+                            if (functionTo != null && functionFromDto != functionTo)
+                            {
+                                throw new Exception("In the pair: " + similarClass.DOClass.NamedTypeSymbol.Name + " " + similarClass.DtoClass.NamedTypeSymbol.Name +
+                                                    " was occured exception. Check pair " + dtoCodeProperty.Name + " " + codeProperty.Name + " properties");
+                            }
+
+                            fromDtoFunction = functionFromDto;
+                        }
+                        else
+                        {
+                            if (functionTo != null)
+                            {
+                                fromDtoFunction = functionTo;
+                            }
+                        }
+
+                        if (functionToDto != null)
+                        {
+                            if (functionFrom != null && functionToDto != functionFrom)
+                            {
+                                throw new Exception("In the pair: " + similarClass.DOClass.NamedTypeSymbol.Name + " " + similarClass.DtoClass.NamedTypeSymbol.Name +
+                                                    " was occured exception. Check pair " + dtoCodeProperty.Name + " " + codeProperty.Name + " properties");
+                            }
+
+                            toDtoFunction = functionToDto;
+                        }
+                        else
+                        {
+                            if (functionFrom != null)
+                            {
+                                toDtoFunction = functionFrom;
+                            }
+                        }
+
+                        if (!CompareTwoPropertyType(codeProperty, dtoCodeProperty, listOfSimilarClasses) && toDtoFunction == "" && fromDtoFunction == "")
+                        {
+                            var tmp = false;
+                            if (IsInNullableDictionary(codeProperty.Type.Name, dtoCodeProperty.Type.Name))
+                            {
+                                fromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name + ".HasValue ? itemDto." + dtoCodeProperty.Name + ".Value : default(" + codeProperty.Type.Name + ")";
+                                toDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name;
+                                tmp = true;
+                            }
+
+                            if (IsInNullableDictionary(dtoCodeProperty.Type.Name, codeProperty.Type.Name))
+                            {
+                                toDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name + ".HasValue ? item." + codeProperty.Name + ".Value : default(" + dtoCodeProperty.Type.Name + ")";
+                                fromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name;
+                                tmp = true;
+                            }
+
+                            if (!tmp)
+                            {
+                                continue;
+                            }
+                        }
+
+                        var kindOfProperty = GetKindOfMapProperty(codeProperty, listOfSimilarClasses, dtoCodeProperty);
+                        var isFlag = false;
+                        if (toDtoFunction == "" && fromDtoFunction == "")
+                        {
+                            switch (kindOfProperty)
+                            {
+                                case KindOfProperty.AttributeClass:
+                                    toDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name + ".MapToDto()";
+                                    fromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name + ".MapFromDto()";
+                                    break;
+                                case KindOfProperty.CollectionAttributeClasses:
+                                    toDtoFunction = "if(item." + codeProperty.Name + " != null) itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name + ".Select(x => x.MapToDto())";
+                                    fromDtoFunction = "if(itemDto." + codeProperty.Name + " != null) item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name + ".Select(x => x.MapFromDto())";
+                                    break;
+                                case KindOfProperty.EnumToInt:
+                                    toDtoFunction = "item." + codeProperty.Name + " = (" + codeProperty.Type.Name + ") itemDto." + dtoCodeProperty.Name;
+                                    fromDtoFunction = "itemDto." + dtoCodeProperty.Name + " = (" + dtoCodeProperty.Type.Name + ") item." + codeProperty.Name;
+                                    break;
+                                case KindOfProperty.IntToEnum:
+                                    toDtoFunction = "itemDto." + dtoCodeProperty.Name + " = ("+ dtoCodeProperty.Type.Name + ") item." + codeProperty.Name;
+                                    fromDtoFunction = "item." + codeProperty.Name + " = ("+ codeProperty.Type.Name + ") itemDto." + dtoCodeProperty.Name;
+                                    break;
+                                case KindOfProperty.EnumFlag:
+                                    isFlag = true;
+                                    toDtoFunction = "itemDto." + dtoCodeProperty.Name + " = item." + codeProperty.Name + ".HasFlag(" + codeProperty.Type.Name + "." + dtoCodeProperty.Name + ")";
+                                    fromDtoFunction = "item." + codeProperty.Name + " |= " + "(itemDto." + dtoCodeProperty.Name + " ? " + codeProperty.Type.Name + "." + dtoCodeProperty.Name + " : 0)";
+                                    break;
+                                default:
+                                    toDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name;
+                                    fromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name;
+                                    break;
+                            }
+                        }
+
+                        var ignoreBySetter = codeProperty.SetMethod == null || dtoCodeProperty.SetMethod == null;
+
+                        if (attrIgnoreDo == null && attrIgnoreDto == null && !ignoreBySetter)
+                        {
+                            listOfSimilarProperties.Add(new MapPropertiesDtoAndDo
+                            {
+                                DOPropertyName = codeProperty,
+                                DTOPropertyName = dtoCodeProperty,
+                                DOPropertyType = codeProperty.Type,
+                                DtoropertyType = dtoCodeProperty.Type,
+                                KindOMapfProperty = kindOfProperty,
+                                FromDtoFunction = fromDtoFunction,
+                                ToDtoFunction = toDtoFunction
+                            });
+                            isIgnoreDoProperties.Remove(codeProperty);
+                            isIgnoreDtoProperties.Remove(dtoCodeProperty);
+                        }
+
+                        if (attrIgnoreDto != null)
+                        {
+                            isIgnoreDtoProperties.Remove(dtoCodeProperty);
+                        }
+
+                        allPropertiesDto.Remove(dtoCodeProperty);
+                        if (!isFlag)
+                        {
+                            break;
+                        }
+                    }
+                    if (attrIgnoreDo != null)
+                    {
+                        isIgnoreDoProperties.Remove(codeProperty);
+                    }
+                    allProperties.Remove(codeProperty);
+                }
+
+                similarClass.MapPropertiesDtoAndDo = listOfSimilarProperties;
+                similarClass.IsIgnoreDOProperties = isIgnoreDoProperties.ToArray();
+                similarClass.IsIgnoreDTOProperties = isIgnoreDtoProperties.ToArray();
+            }
+
+            ListOfSimilarClasses = listOfSimilarClasses;
+        }
+
+        private void Validate()
+        {
             if (_configuration.DoProjects == null || _configuration.DoProjects.Count == 0)
             {
                 throw new Exception("List of DoProjects doesn't exist");
@@ -58,273 +236,114 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             {
                 throw new Exception("Attribute for Mapping doesn't exist");
             }
+        }
 
+        private async Task<List<ClassCompilerInfo>> GetClassesWithMapAttribute(bool dto = false)
+        {
             var classesWithMapAttribute = new List<ClassCompilerInfo>();
-            var classesWithMapAttributeDto = new List<ClassCompilerInfo>();
-
-            foreach (MappingSourceProject project in _configuration.DoProjects)
+            var projects = dto ? _configuration.DtoProjects : _configuration.DoProjects;
+            foreach (MappingSourceProject project in projects)
             {
                 classesWithMapAttribute.AddRange(
                     await GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
             }
+            return classesWithMapAttribute;
+        }
 
-            foreach (MappingSourceProject project in _configuration.DtoProjects)
-            {
-                classesWithMapAttributeDto.AddRange(
-                    await GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
-            }
-
+        private async Task<List<MapDtoAndDo>> MatchSimilarClasses()
+        {
             var listOfSimilarClasses = new List<MapDtoAndDo>();
-            var isPairFound = false;
-            while (classesWithMapAttribute.Any())
+            var classesWithMapAttribute = await GetClassesWithMapAttribute();
+            var classesWithMapAttributeDto = await GetClassesWithMapAttribute(true);
+            var usedDtos = new HashSet<ClassCompilerInfo>();
+            foreach (var doClass in classesWithMapAttribute)
             {
-                isPairFound = false;
-                var doClass = classesWithMapAttribute.First();
+               var isPairFound = false;
                 foreach (var dtoClass in classesWithMapAttributeDto)
                 {
-                    INamedTypeSymbol doInterface = null;
-                    INamedTypeSymbol dtoInterface = null;
+                    if (GetMapNameForClass(doClass.NamedTypeSymbol) != GetMapNameForClass(dtoClass.NamedTypeSymbol) &&
+                        !(_configuration.DOSkipAttribute && GetMapNameForClass(dtoClass.NamedTypeSymbol) == doClass.NamedTypeSymbol.Name) &&
+                        !(_configuration.DTOSkipAttribute && GetMapNameForClass(doClass.NamedTypeSymbol) == dtoClass.NamedTypeSymbol.Name)) continue;
 
-                    if (GetMapNameForClass(doClass.NamedTypeSymbol) == GetMapNameForClass(dtoClass.NamedTypeSymbol) ||
-                        (_configuration.DOSkipAttribute && GetMapNameForClass(dtoClass.NamedTypeSymbol) == doClass.NamedTypeSymbol.Name) ||
-                        (_configuration.DTOSkipAttribute && GetMapNameForClass(doClass.NamedTypeSymbol) == dtoClass.NamedTypeSymbol.Name))
+                    var doInterface = GetBaseInterface(doClass);
+                    var dtoInterface = GetBaseInterface(dtoClass);
+
+                    listOfSimilarClasses.Add(new MapDtoAndDo
                     {
-                        // TODO: recursion for getting base interfaces
-                        foreach (var ce in doClass.NamedTypeSymbol.Interfaces)
+                        DOClass = doClass,
+                        DtoClass = dtoClass,
+                        DOInterface = doInterface,
+                        DtoInterface = dtoInterface
+                    });
+                    if (isPairFound)
+                    {
+                        listOfSimilarClasses.Last().IsClassesIntersects = true;
+                        foreach (var listOfSimilarClass in listOfSimilarClasses)
                         {
-                            if (ce.Name.IndexOf("I") == 0 && doClass.NamedTypeSymbol.Name == ce.Name.Remove(0, 1))
+                            if (listOfSimilarClass.DOClass.Equals(doClass))
                             {
-                                doInterface = ce;
+                                listOfSimilarClass.IsClassesIntersects = true;
                             }
                         }
-
-                        // TODO: recursion
-                        foreach (var ce in dtoClass.NamedTypeSymbol.Interfaces)
-                        {
-                            if (ce.Name.IndexOf("I") == 0 && dtoClass.NamedTypeSymbol.Name == ce.Name.Remove(0, 1))
-                            {
-                                dtoInterface = ce;
-                            }
-                        }
-
-                        listOfSimilarClasses.Add(new MapDtoAndDo
-                        {
-                            DOClass = doClass,
-                            DtoClass = dtoClass,
-                            DOInterface = doInterface,
-                            DtoInterface = dtoInterface
-                        });
-
-                        classesWithMapAttributeDto.Remove(dtoClass);
-                        isPairFound = true;
-                        break;
                     }
+                    if (usedDtos.Contains(dtoClass))
+                    {
+                        listOfSimilarClasses.Last().IsClassesIntersects = true;
+                        foreach (var listOfSimilarClass in listOfSimilarClasses)
+                        {
+                            if (listOfSimilarClass.DtoClass.Equals( dtoClass))
+                            {
+                                listOfSimilarClass.IsClassesIntersects = true;
+                            }
+                        }
+                    }
+
+                    usedDtos.Add(dtoClass);
+                    isPairFound = true;
                 }
 
                 if (!isPairFound)
                 {
                     ClassesWithoutPair.Add(doClass);
                 }
-                classesWithMapAttribute.Remove(doClass);
             }
 
             foreach (var dtoClass in classesWithMapAttributeDto)
             {
-                ClassesWithoutPair.Add(dtoClass);
+                if (!usedDtos.Contains(dtoClass))
+                {
+                    ClassesWithoutPair.Add(dtoClass);
+                }
             }
 
-            foreach (var similarClass in listOfSimilarClasses)
+            return listOfSimilarClasses;
+        }
+
+        private static INamedTypeSymbol GetBaseInterface(ClassCompilerInfo baseClass)
+        {
+            INamedTypeSymbol baseInterface = null;
+            // TODO: recursion for getting base interfaces
+            foreach (var @interface in baseClass.NamedTypeSymbol.Interfaces)
             {
-                var allProperties = similarClass.DOClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
-                var baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
-                while (baseClass != null)
+                if (@interface.Name.IndexOf("I") == 0 && baseClass.NamedTypeSymbol.Name == @interface.Name.Remove(0, 1))
                 {
-                    allProperties.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
-                    baseClass = baseClass.BaseType;
+                    baseInterface = @interface;
                 }
-
-                var allPropertiesDto = similarClass.DtoClass.NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
-                baseClass = similarClass.DtoClass.NamedTypeSymbol.BaseType;
-                while (baseClass != null)
-                {
-                    allPropertiesDto.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
-                    baseClass = baseClass.BaseType;
-                }
-                var listOfSimilarProperties = new List<MapPropertiesDtoAndDo>();
-
-                var isIgnoreDOProperties = new List<IPropertySymbol>(allProperties.ToList()); // to remove items from it later
-                var isIgnoreDTOProperties = new List<IPropertySymbol>(allPropertiesDto.ToList());
-                while (allProperties.Any())
-                {
-                    AttributeData attrIgnoreDo = null;
-
-                    var codeProperty = allProperties.First();
-                    var str = codeProperty.Name;
-                    if (_configuration.MapIgnoreAttribute != null && _configuration.MapIgnoreAttribute != "")
-                    {
-                        attrIgnoreDo = codeProperty.GetAttributeByName(_configuration.MapIgnoreAttribute);
-                    }
-
-                    foreach (var dtoCodeProperty in allPropertiesDto)
-                    {
-                        var str1 = dtoCodeProperty.Name;
-                        AttributeData attrIgnoreDto = null;
-
-                        if (_configuration.MapIgnoreAttribute != null && _configuration.MapIgnoreAttribute != "")
-                        {
-                            attrIgnoreDto = dtoCodeProperty.GetAttributes().FirstOrDefault(x => x.AttributeClass.Name == _configuration.MapIgnoreAttribute);
-                        }
-
-                        if (GetMapNameForProperty(codeProperty) == GetMapNameForProperty(dtoCodeProperty))
-                        {
-                            var doPropertyName = codeProperty.Name;
-                            var dtoPropertyName = dtoCodeProperty.Name;
-
-                            var attrDo = codeProperty.GetAttributeByName(_configuration.MapAttribute);
-                            var attrDto = dtoCodeProperty.GetAttributeByName(_configuration.MapAttribute);
-
-                            var FunctionFromDto = attrDto?.GetAttributePropertyValue("FunctionFrom");
-                            var FunctionFrom = attrDo?.GetAttributePropertyValue("FunctionFrom");
-                            var FunctionToDto = attrDto?.GetAttributePropertyValue("FunctionTo");
-                            var FunctionTo = attrDo?.GetAttributePropertyValue("FunctionTo");
-
-                            var FromDtoFunction = "";
-                            var ToDtoFunction = "";
-
-                            if (FunctionFromDto != null)
-                            {
-                                if (FunctionTo != null)
-                                {
-                                    if (FunctionFromDto != FunctionTo)
-                                    {
-                                        throw new Exception("In the pair: " + similarClass.DOClass.NamedTypeSymbol.Name + " " + similarClass.DtoClass.NamedTypeSymbol.Name + " was occured exception. Check pair " + dtoCodeProperty.Name + " " + codeProperty.Name + " properties");
-                                    }
-                                }
-
-                                FromDtoFunction = FunctionFromDto;
-                            }
-                            else
-                            {
-                                if (FunctionTo != null)
-                                {
-                                    FromDtoFunction = FunctionTo;
-                                }
-                            }
-
-                            if (FunctionToDto != null)
-                            {
-                                if (FunctionFrom != null)
-                                {
-                                    if (FunctionToDto != FunctionFrom)
-                                    {
-                                        throw new Exception("In the pair: " + similarClass.DOClass.NamedTypeSymbol.Name + " " + similarClass.DtoClass.NamedTypeSymbol.Name + " was occured exception. Check pair " + dtoCodeProperty.Name + " " + codeProperty.Name + " properties");
-                                    }
-                                }
-
-                                ToDtoFunction = FunctionToDto;
-                            }
-                            else
-                            {
-                                if (FunctionFrom != null)
-                                {
-                                    ToDtoFunction = FunctionFrom;
-                                }
-                            }
-
-                            if (!CompareTwoPropertyType(codeProperty, dtoCodeProperty, listOfSimilarClasses) && ToDtoFunction == "" && FromDtoFunction == "")
-                            {
-                                if (IsInNullableDictionary(codeProperty.Type.Name, dtoCodeProperty.Type.Name))
-                                {
-                                    FromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name + ".HasValue ? itemDto." + dtoCodeProperty.Name + ".Value : default(" + codeProperty.Type.Name + ")";
-                                    ToDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name;
-                                }
-
-                                if (IsInNullableDictionary(dtoCodeProperty.Type.Name, codeProperty.Type.Name))
-                                {
-                                    ToDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name + ".HasValue ? item." + codeProperty.Name + ".Value : default(" + dtoCodeProperty.Type.Name + ")";
-                                    FromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name;
-                                }
-                            }
-
-                            var isSetterDO = codeProperty.SetMethod != null;
-                            var isSetterDto = dtoCodeProperty.SetMethod != null;
-                            bool ignoreBySetter = false;
-
-                            if (!isSetterDO)
-                            {
-                                ignoreBySetter = true;
-                            }
-
-                            if (!isSetterDto)
-                            {
-                                ignoreBySetter = true;
-                            }
-
-                            if (CompareTwoPropertyType(codeProperty, dtoCodeProperty, listOfSimilarClasses) || ToDtoFunction != "" || FromDtoFunction != "")
-                            {
-                                var kindOfProperty = GetKindOfMapProperty(codeProperty, listOfSimilarClasses);
-
-                                if (ToDtoFunction == "" && FromDtoFunction == "")
-                                {
-                                    if (kindOfProperty == KindOfProperty.AttributeClass)
-                                    {
-                                        ToDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name + ".MapToDto()";
-                                        FromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name + ".MapFromDto()";
-                                    }
-                                    else
-                                    {
-                                        if (kindOfProperty == KindOfProperty.CollectionAttributeClasses)
-                                        {
-                                            ToDtoFunction = "if(item." + codeProperty.Name + " != null) itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name + ".Select(x => x.MapToDto())";
-                                            FromDtoFunction = "if(itemDto." + codeProperty.Name + " != null) item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name + ".Select(x => x.MapFromDto())";
-                                        }
-                                        else
-                                        {
-                                            ToDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name;
-                                            FromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name;
-                                        }
-                                    }
-                                }
-
-                                if (attrIgnoreDo == null && attrIgnoreDto == null && !ignoreBySetter)
-                                {
-                                    listOfSimilarProperties.Add(new MapPropertiesDtoAndDo
-                                    {
-                                        DOPropertyName = codeProperty,
-                                        DTOPropertyName = dtoCodeProperty,
-                                        DOPropertyType = codeProperty.Type,
-                                        DtoropertyType = dtoCodeProperty.Type,
-                                        KindOMapfProperty = kindOfProperty,
-                                        FromDtoFunction = FromDtoFunction,
-                                        ToDtoFunction = ToDtoFunction
-                                    });
-                                    isIgnoreDOProperties.Remove(codeProperty);
-                                    isIgnoreDTOProperties.Remove(dtoCodeProperty);
-                                }
-
-                                if (attrIgnoreDto != null)
-                                {
-                                    isIgnoreDTOProperties.Remove(dtoCodeProperty);
-                                }
-
-                                allPropertiesDto.Remove(dtoCodeProperty);
-                                break;
-                            }
-                        }
-                    }
-                    if (attrIgnoreDo != null)
-                    {
-                        isIgnoreDOProperties.Remove(codeProperty);
-                    }
-                    allProperties.Remove(codeProperty);
-                }
-
-                similarClass.MapPropertiesDtoAndDo = listOfSimilarProperties;
-                similarClass.IsIgnoreDOProperties = isIgnoreDOProperties.ToArray();
-                similarClass.IsIgnoreDTOProperties = isIgnoreDTOProperties.ToArray();
+            }
+            return baseInterface;
+        }
+        
+        private static List<IPropertySymbol> GetAllProperties(MapDtoAndDo similarClass, bool dto = false)
+        {
+            var allProperties = (dto ?  similarClass.DtoClass : similarClass.DOClass).NamedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
+            var baseClass = (dto ? similarClass.DtoClass : similarClass.DOClass).NamedTypeSymbol.BaseType;
+            while (baseClass != null)
+            {
+                allProperties.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
+                baseClass = baseClass.BaseType;
             }
 
-            ListOfSimilarClasses = listOfSimilarClasses;
+            return allProperties;
         }
 
         public async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
@@ -363,6 +382,34 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             }
 
             return ret;
+        }
+
+        private bool AreNamesEqual(IPropertySymbol codePropertySymbol, IPropertySymbol dtoCodePropertySymbol)
+        {
+            if (IsPropertyFlagEnum(codePropertySymbol) && GetBaseType(dtoCodePropertySymbol).SpecialType == SpecialType.System_Boolean)
+            {
+                return IsEnumContainsBoolProperty(codePropertySymbol, dtoCodePropertySymbol);
+            }
+            return GetMapNameForProperty(codePropertySymbol) == GetMapNameForProperty(dtoCodePropertySymbol);
+        }
+
+        private bool IsPropertyFlagEnum(IPropertySymbol codePropertySymbol)
+        {
+            return GetBaseType(codePropertySymbol).SpecialType == SpecialType.System_Enum && codePropertySymbol.Type.GetAttributes().Any(x => x.AttributeClass.Name == "FlagsAttribute");
+        }
+
+        private bool IsEnumContainsBoolProperty(IPropertySymbol @enum, IPropertySymbol property)
+        {
+            var members = @enum.Type.GetMembers();
+            foreach (var member in members)
+            {
+                if (member.Name == property.Name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public string GetMapNameForProperty(IPropertySymbol propertySymbol)
@@ -436,32 +483,52 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             return value;
         }
 
-        public bool CompareTwoPropertyType(IPropertySymbol DOCodeProperty, IPropertySymbol DtoCodeProperty, List<MapDtoAndDo> similarClasses)
+        public bool CompareTwoPropertyType(IPropertySymbol doCodeProperty, IPropertySymbol dtoCodeProperty, List<MapDtoAndDo> similarClasses)
         {
-            var DOType = DOCodeProperty.Type.GetFullName();
-            var DtoType = DtoCodeProperty.Type.GetFullName();
+            var doType = doCodeProperty.Type.GetFullName();
+            var dtoType = dtoCodeProperty.Type.GetFullName();
 
-            if (DOType.Contains("IEnumerable") && DtoType.Contains("IEnumerable"))
+            if (doType.Contains("IEnumerable") && dtoType.Contains("IEnumerable"))
             {
-                DOType = DOType.Remove(0, DOType.IndexOf("<") + 1);
-                DOType = DOType.Replace(">", "");
+                doType = doType.Remove(0, doType.IndexOf("<") + 1);
+                doType = doType.Replace(">", "");
 
-                DtoType = DtoType.Remove(0, DtoType.IndexOf("<") + 1);
-                DtoType = DtoType.Replace(">", "");
-
-                if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
-                    return true;
+                dtoType = dtoType.Remove(0, dtoType.IndexOf("<") + 1);
+                dtoType = dtoType.Replace(">", "");
             }
 
-            if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
-                return true;
-
-            if (DOType == DtoType)
+            if (CompareInMapDtoAndDoCollection(doType, dtoType, similarClasses))
             {
                 return true;
             }
 
-            return false;
+            if (GetBaseType(doCodeProperty).SpecialType == SpecialType.System_Enum && GetBaseType(dtoCodeProperty).SpecialType == SpecialType.System_Int32 ||
+                GetBaseType(dtoCodeProperty).SpecialType == SpecialType.System_Enum && GetBaseType(doCodeProperty).SpecialType == SpecialType.System_Int32)
+            {
+                return true;
+            }
+
+            if (IsPropertyFlagEnum(doCodeProperty) && GetBaseType(dtoCodeProperty).SpecialType == SpecialType.System_Boolean)
+            {
+                return true;
+            }
+
+            return doType == dtoType;
+        }
+
+        private static ITypeSymbol GetBaseType(IPropertySymbol property)
+        {
+            var baseType = property.Type;
+            while (baseType.BaseType != null)
+            {
+                if (baseType.BaseType.SpecialType == SpecialType.System_Object || baseType.BaseType.SpecialType == SpecialType.System_ValueType)
+                {
+                    break;
+                }
+                baseType = baseType.BaseType;
+            }
+
+            return baseType;
         }
 
         public bool CompareTwoPropertyType(string DOType, string DtoType, List<MapDtoAndDo> similarClasses)
@@ -489,32 +556,28 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             return false;
         }
 
-        public bool CompareInMapDtoAndDoCollection(string DOType, string DtoType, List<MapDtoAndDo> similarClasses)
+        public bool CompareInMapDtoAndDoCollection(string doType, string dtoType, List<MapDtoAndDo> similarClasses)
         {
-            var similarInterfacesDO = similarClasses.Where(x => x.DOInterface != null).FirstOrDefault(x => x.DOInterface.GetFullName() == DOType);
-            var similarInterfacesDto = similarClasses.Where(x => x.DtoInterface != null).FirstOrDefault(x => x.DtoInterface.GetFullName() == DtoType);
-            var checkingMapClass = new MapDtoAndDo();
-
-            checkingMapClass = similarClasses.FirstOrDefault(x => x.DOClass.NamedTypeSymbol.GetFullName() == DOType);
-            if (checkingMapClass != null && checkingMapClass == similarClasses.FirstOrDefault(x => x.DtoClass.NamedTypeSymbol.GetFullName() == DtoType))
+            var checkingMapClass = similarClasses.FirstOrDefault(x => x.DOClass.NamedTypeSymbol.GetFullName() == doType);
+            if (checkingMapClass != null && checkingMapClass == similarClasses.FirstOrDefault(x => x.DtoClass.NamedTypeSymbol.GetFullName() == dtoType))
             {
                 return true;
             }
 
-            similarInterfacesDO = similarClasses.Where(x => x.DOInterface != null).FirstOrDefault(x => x.DOInterface.GetFullName() == DOType);
-            similarInterfacesDto = similarClasses.Where(x => x.DtoInterface != null).FirstOrDefault(x => x.DtoInterface.GetFullName() == DtoType);
+            var similarInterfacesDo = similarClasses.Where(x => x.DOInterface != null).FirstOrDefault(x => x.DOInterface.GetFullName() == doType);
+            var similarInterfacesDto = similarClasses.Where(x => x.DtoInterface != null).FirstOrDefault(x => x.DtoInterface.GetFullName() == dtoType);
 
-            if (similarInterfacesDO != null && similarInterfacesDO == similarClasses.FirstOrDefault(x => x.DtoClass.NamedTypeSymbol.GetFullName() == DtoType))
+            if (similarInterfacesDo != null && similarInterfacesDo == similarClasses.FirstOrDefault(x => x.DtoClass.NamedTypeSymbol.GetFullName() == dtoType))
             {
                 return true;
             }
 
-            if (similarInterfacesDto != null && similarClasses.FirstOrDefault(x => x.DOClass.NamedTypeSymbol.GetFullName() == DOType) == similarInterfacesDto)
+            if (similarInterfacesDto != null && similarClasses.FirstOrDefault(x => x.DOClass.NamedTypeSymbol.GetFullName() == doType) == similarInterfacesDto)
             {
                 return true;
             }
 
-            if (similarInterfacesDO != null && similarInterfacesDO == similarInterfacesDto)
+            if (similarInterfacesDo != null && similarInterfacesDo == similarInterfacesDto)
             {
                 return true;
             }
@@ -522,9 +585,9 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             return false;
         }
 
-        public KindOfProperty GetKindOfMapProperty(IPropertySymbol codeProperty, List<MapDtoAndDo> listOfSimilarClasses)
+        public KindOfProperty GetKindOfMapProperty(IPropertySymbol doCodeProperty, List<MapDtoAndDo> listOfSimilarClasses, IPropertySymbol dtoCodeProperty)
         {
-            var type = codeProperty.Type.GetFullName();
+            var type = doCodeProperty.Type.GetFullName();
 
             if (type.Contains("IEnumerable"))
             {
@@ -550,6 +613,21 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             if (listOfSimilarClasses.Any(x => x.DtoClass.NamedTypeSymbol.GetFullName() == type) || listOfSimilarClasses.Where(x => x.DtoInterface != null).Any(x => x.DtoInterface.GetFullName() == type))
             {
                 return KindOfProperty.AttributeClass;
+            }
+
+            if (GetBaseType(doCodeProperty).SpecialType == SpecialType.System_Enum && GetBaseType(dtoCodeProperty).SpecialType == SpecialType.System_Int32)
+            {
+                return KindOfProperty.EnumToInt;
+            }
+
+            if (GetBaseType(dtoCodeProperty).SpecialType == SpecialType.System_Enum && GetBaseType(doCodeProperty).SpecialType == SpecialType.System_Int32)
+            {
+                return KindOfProperty.IntToEnum;
+            }
+
+            if (IsPropertyFlagEnum(doCodeProperty) && GetBaseType(dtoCodeProperty).SpecialType == SpecialType.System_Boolean)
+            {
+                return KindOfProperty.EnumFlag;
             }
 
             return KindOfProperty.None;

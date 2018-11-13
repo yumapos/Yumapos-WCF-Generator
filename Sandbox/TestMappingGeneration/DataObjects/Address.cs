@@ -10,7 +10,7 @@ namespace TestMappingGeneration.DataObjects
     public class Address : BaseAddress
     {
         public Guid Id { get; set; }
-        public CountryISOCodes2 Country { get; set; }
+        public int Country { get; set; }
         public string City { get; set; }
         public string State { get; set; }
         public string Street { get; set; }
