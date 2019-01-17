@@ -27,12 +27,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateFields(SqlInfo info)
         {
-            return Fields(info.TableColumns, info.TableName);
+            return Fields(info.TableColumns.Select(c => c.Name), info.TableName);
         }
 
         public string GenerateValues(SqlInfo info)
         {
-            return Values(info.TableColumns);
+            return Values(info.TableColumns.Select(c => c.Name));
         }
 
         public string GenerateSelectAll(SqlInfo info)
@@ -45,21 +45,22 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
                 // return select from table and join table
-                return Select(info.TableColumns, info.TableName, topNumber) + ","
-                       + Fields(info.JoinTableColumns, info.JoinTableName) + " "
+                return Select(info.TableColumns.Select(c => c.Name), info.TableName, topNumber) + ","
+                       + Fields(info.JoinTableColumns.Select(c => c.Name), info.JoinTableName) + " "
                        + From(info.TableName) + " "
                        + InnerJoin(info.TableName, info.PrimaryKeyNames.First(), info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " ";//TODO FIX TO MANY KEYS
             }
             // return select from table
-            return Select(info.TableColumns, info.TableName, topNumber) + " " + From(info.TableName) + " ";
+            return Select(info.TableColumns.Select(c => c.Name), info.TableName, topNumber) + " " + From(info.TableName) + " ";
         }
 
         public string GenerateInsert(SqlInfo info)
         {
             // Skip PK if identity = true
             var columns = info.TableColumns
-                .Except(info.IdentityColumns)
                 .Concat(info.HiddenTableColumns)
+                .Select(c => c.Name)
+                .Except(info.IdentityColumns)
                 .ToList();
 
             var insertSql = !info.ReturnPrimaryKey 
@@ -74,8 +75,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
             // Skip PK if identity of joined table = true
             var columnsJoned = info.JoinTableColumns
-                .Except(info.IdentityColumnsJoined)
                 .Concat(info.HiddenTableColumns)
+                .Select(c => c.Name)
+                .Except(info.IdentityColumnsJoined)
                 .ToList();
 
             var valuesJoined = columnsJoned.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList();
@@ -86,15 +88,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return insertJoinedTable;
         }
 
-        public string GenerateInsertMany(SqlInfo info)
+        public string GenerateInsertManyQueryTemplate(SqlInfo info, RepositoryType repositoryType)
         {
-            var columns = info.TableColumns
+            var columns = info.TableColumns.Select(c => c.Name)
                 .Except(info.IdentityColumns)
                 .ToList();
 
             var insertSql = !info.ReturnPrimaryKey
-                ? InsertMany(columns, info.HiddenTableColumns, info.TableName)
-                : InsertMany(columns, info.HiddenTableColumns, info.TableName, info.PrimaryKeyNames.First());
+                ? InsertMany(columns, info.HiddenTableColumns.Select(c => c.Name), repositoryType == RepositoryType.Version ? info.VersionTableName : info.TableName)
+                : InsertMany(columns, info.HiddenTableColumns.Select(c => c.Name), repositoryType == RepositoryType.Version ? info.VersionTableName : info.TableName, info.PrimaryKeyNames.First());
 
             // Return if have not joined table 
             if (info.JoinTableColumns == null)
@@ -103,16 +105,25 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             }
 
             // Skip PK if identity of joined table = true
-            var columnsJoned = info.JoinTableColumns
+            var columnsJoned = info.JoinTableColumns.Select(c => c.Name)
                 .Except(info.IdentityColumnsJoined)
                 .ToList();
 
             var valuesJoined = columnsJoned.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList();
 
-            var insertJoinedTable = InsertManyWithJoined(columnsJoned, info.HiddenTableColumns.ToList(), valuesJoined, info.JoinTableName, info.JoinPrimaryKeyNames.First(), info.PrimaryKeyType, columns, columns, info.TableName, info.PrimaryKeyNames.First());
+            var insertJoinedTable = InsertManyWithJoined(columnsJoned, info.HiddenTableColumns.Select(c => c.Name).ToList(), valuesJoined, info.JoinTableName, info.JoinPrimaryKeyNames.First(), info.PrimaryKeyType, columns, columns, info.TableName, info.PrimaryKeyNames.First());
 
             // return inset into table and join table
             return insertJoinedTable;
+        }
+
+        public string GenerateInsertManyValuesTemplate(SqlInfo info)
+        {
+            var columns = InsertManyValuesTemplate(info.TableColumns.Concat(info.JoinTableColumns ?? new List<PropertyInfo>()));
+            var hidenColumns = info.HiddenTableColumns.Any()
+                ? "," + Values(info.HiddenTableColumns.Select(c => c.Name))
+                : "";
+            return $"({columns}{hidenColumns})";
         }
 
         public string GenerateInsertToTemp(SqlInfo info)
@@ -160,7 +171,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
-            var columns = info.TableColumns.Where(c => info.IdentityColumns.All(pk => pk != c)).ToList();
+            var columns = info.TableColumns.Select(c => c.Name).Where(c => info.IdentityColumns.All(pk => pk != c)).ToList();
             return Update(info.TableName) + " " 
                     + Set(columns, info.TableName) + " " 
                     + From(info.TableName) + " ";
@@ -169,7 +180,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public string GenerateUpdateJoin(SqlInfo info)
         {
             // use pk from inherite model
-            var values = info.JoinTableColumns
+            var values = info.JoinTableColumns.Select(c => c.Name)
                 .Except(info.IdentityColumnsJoined)
                 .Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c));//TODO FIX TO MANY KEYS
 
@@ -204,13 +215,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateInsertToVersionTable(SqlInfo info)
         {
-            var columns = info.TableColumns.Concat(info.HiddenTableColumns).ToList();
+            var columns = info.TableColumns.Concat(info.HiddenTableColumns).Select(c => c.Name).ToList();
             var classProperties = Fields(columns, info.TableName);
             var classValues = Values(columns);
 
             if (info.JoinTableName != null)
             {
-                var joinFields = info.JoinTableColumns.Concat(info.HiddenTableColumns).ToList();
+                var joinFields = info.JoinTableColumns.Concat(info.HiddenTableColumns).Select(c => c.Name).ToList();
                 var joinClassProperties = Fields(joinFields, info.JoinTableName);
                 // use versionId & primary key from inherite model
                 var values = joinFields.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList(); //TODO FIX TO MANY KEYS
@@ -234,17 +245,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateInsertManyToVersionTable(SqlInfo info)
         {
-            var columns = info.TableColumns.Concat(info.HiddenTableColumns).ToList();
+            var columns = info.TableColumns.Concat(info.HiddenTableColumns).Select(c => c.Name).ToList();
             var classProperties = Fields(columns, info.TableName);
-            var classValues = Values(info.TableColumns.Select(v => $"{v}{{0}}").Union(info.HiddenTableColumns));
+            var classValues = Values(info.TableColumns.Union(info.HiddenTableColumns).Select((v, i) => v.IsParameter ? $"{v.Name}{{0}}" : $"{{{i + 1}}}"));
 
             if (info.JoinTableName != null)
             {
                 var joinFields = info.JoinTableColumns.ToList();
-                var joinClassProperties = Fields(joinFields.Concat(info.HiddenTableColumns), info.JoinTableName);
+                var joinClassProperties = Fields(joinFields.Concat(info.HiddenTableColumns).Select(c => c.Name), info.JoinTableName);
                 // use versionId & primary key from inherite model
-                var values = joinFields.Select(c => c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c).ToList(); //TODO FIX TO MANY KEYS
-                var joinClassValues = Values(values.Select(v => $"{v}{{0}}").Concat(info.HiddenTableColumns));
+                var values = joinFields.Select(c => c.Name == info.JoinVersionKeyName ? new PropertyInfo(info.VersionKeyName) : c.Name == info.JoinPrimaryKeyNames.First() ? new PropertyInfo(info.PrimaryKeyNames.First()) : c).ToList(); //TODO FIX TO MANY KEYS
+                var joinClassValues = Values(values.Select(v => $"{v}{{0}}").Concat(info.HiddenTableColumns.Select(c => c.Name)));
 
                 return "INSERT INTO " + info.JoinVersionTableName + "(" + joinClassProperties + ")\r\n" +
                        "VALUES (" + joinClassValues + ")\r\n" +
@@ -267,15 +278,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
             {
                 // return select from table and join table
-                return Select(info.TableColumns, info.VersionTableName) + ","
-                       + Fields(info.JoinTableColumns, info.JoinVersionTableName) + " "
+                return Select(info.TableColumns.Select(c=>c.Name), info.VersionTableName) + ","
+                       + Fields(info.JoinTableColumns.Select(c => c.Name), info.JoinVersionTableName) + " "
                        + From(info.VersionTableName) + " "
                        + (info.IsVersionTableJoined()
                        ? InnerJoin(info.VersionTableName, info.VersionKeyName, info.JoinVersionTableName, info.JoinVersionKeyName)
                        : InnerJoin(info.VersionTableName, info.PrimaryKeyNames.First(), info.JoinVersionTableName, info.JoinPrimaryKeyNames.First())) + " ";//TODO FIX TO MANY KEYS
             }
             // return select from table
-            return Select(info.TableColumns, info.VersionTableName) + " " + From(info.VersionTableName) + " ";
+            return Select(info.TableColumns.Select(c => c.Name), info.VersionTableName) + " " + From(info.VersionTableName) + " ";
         }
 
         public string GenerateSelectByKeyAndSliceDateToVersionTable(SqlInfo info)
@@ -300,7 +311,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 // join all columns from joinned table
                 var compareVersionId = Field(info.JoinVersionTableName, info.JoinVersionKeyName) + " = " + Field(info.VersionTableName, info.VersionKeyName);
                 var join2 = InnerJoin(info.VersionTableName, compareVersionId);
-                return Select(info.TableColumns, info.VersionTableName) + " FROM " + selectMaxModifiedJoin + " " + join1 + " " + join2;
+                return Select(info.TableColumns.Select(c => c.Name), info.VersionTableName) + " FROM " + selectMaxModifiedJoin + " " + join1 + " " + join2;
             }
             else
             {
@@ -314,7 +325,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 var compareSliceDate = Field(versionTableAlias, _sliceDateColumnName) + " = " + Field(info.VersionTableName, _sliceDateColumnName);
                 var join1 = InnerJoin(info.VersionTableName, comparePrimaryKey + " AND " + compareSliceDate);
 
-                return Select(info.TableColumns, info.VersionTableName) + " FROM " + selectMaxModified + " " + join1;
+                return Select(info.TableColumns.Select(c => c.Name), info.VersionTableName) + " FROM " + selectMaxModified + " " + join1;
             }
         }
 
@@ -348,6 +359,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return update + " "+ where + conflict + insert + " END";
         }
 
+        public string GenerateNoCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType)
+        {
+            var table = repositoryType == RepositoryType.Version ? sqlInfo.VersionTableName : sqlInfo.TableName;
+            return $"ALTER TABLE {table} NOCHECK CONSTRAINT ALL";
+        }
+
+        public string GenerateCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType)
+        {
+            var table = repositoryType == RepositoryType.Version ? sqlInfo.VersionTableName : sqlInfo.TableName;
+            return $"ALTER TABLE {table} CHECK CONSTRAINT ALL";
+        }
+
         #endregion
 
         #region SQL operators
@@ -359,6 +382,35 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private static string Values(IEnumerable<string> columns)
         {
             return string.Join(",", columns.Select(e => "@" + e));
+        }
+
+        private static string InsertManyValuesTemplate(IEnumerable<PropertyInfo> columns)
+        {
+            var columnList = columns.ToList();
+            var maxIndex = columnList.Count(c => !c.IsParameter);
+            var sb = new StringBuilder();
+            var index = 0;
+
+            for (var i = 0; i < columnList.Count; i++)
+            {
+                var c = columnList[i];
+                if (c.IsParameter)
+                {
+                    sb.Append($"@{c.Name}{{{maxIndex}}}");
+                }
+                else
+                {
+                    sb.Append($"'{{{index}}}'");
+                    index++;
+                }
+
+                if (i < columnList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+
+            return sb.ToString();
         }
 
         private static string Select(IEnumerable<string> columns, string table, int? topNumber = null)
@@ -376,7 +428,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             var hiddenColumns = hiddenTableColumns.ToList();
             var columns = tableColumns.ToList();
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns.Concat(hiddenColumns), ownerTableName) + ")  VALUES(" + Values(columns.Select(c => $"{c}{{0}}").Concat(hiddenColumns)) + ") ";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns.Concat(hiddenColumns), ownerTableName) + ")  VALUES {0}";
         }
 
         private static string Insert(IEnumerable<string> tableColumns, string ownerTableName, string returnInserted)
@@ -391,7 +443,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var hiddenColumns = hiddenTableColumns.ToList();
             var columns = tableColumns.ToList();
             var outputKey = "OUTPUT INSERTED." + returnInserted;
-            return "INSERT INTO " + ownerTableName + "(" + Fields(columns.Concat(hiddenColumns), ownerTableName) + ") " + outputKey + " VALUES(" + Values(columns.Select(c => $"{c}{{0}}").Concat(hiddenColumns)) + ") ";
+            return "INSERT INTO " + ownerTableName + "(" + Fields(columns.Concat(hiddenColumns), ownerTableName) + ") " + outputKey + " VALUES {0}";
         }
 
         private static string InsertWithJoined(List<string> joinedTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, List<string> tableValues, string tableName, string pkColumn)
@@ -572,12 +624,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
     internal struct SqlInfo
     {
         public string TableName;
-        public IList<string> TableColumns;
-        public IList<string> HiddenTableColumns;
+        public IList<PropertyInfo> TableColumns;
+        public IList<PropertyInfo> HiddenTableColumns;
         public string VersionKeyType;
         public bool ReturnPrimaryKey;
         public string JoinTableName;
-        public IList<string> JoinTableColumns;
+        public IList<PropertyInfo> JoinTableColumns;
         public IList<string> JoinPrimaryKeyNames;
         public bool TenantRelated;
         public bool IsStoreDependent;
@@ -595,4 +647,20 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool IsDeleted { get; set; }
         public DatabaseType DatabaseType { get; set; }
     }
+
+    //internal struct Column
+    //{
+    //    public string Name;
+    //    public bool IsNullable;
+    //    public bool IsParameter;
+    //    public bool IsDataType;
+
+    //    public Column(string name, bool isParameter = true, bool isNullable = false, bool isDataType = false)
+    //    {
+    //        Name = name;
+    //        IsParameter = isParameter;
+    //        IsNullable = isNullable;
+    //        IsDataType = isDataType;
+    //    }
+    //}
 }

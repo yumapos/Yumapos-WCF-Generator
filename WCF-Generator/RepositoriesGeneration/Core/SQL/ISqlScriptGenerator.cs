@@ -15,7 +15,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsert(SqlInfo info);
 
-        string GenerateInsertMany(SqlInfo info);
+        string GenerateInsertManyQueryTemplate(SqlInfo info, RepositoryType repositoryType);
+
+        string GenerateInsertManyValuesTemplate(SqlInfo info);
 
         string GenerateInsertToTemp(SqlInfo info);
 
@@ -54,6 +56,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         string GenerateWhereJoinPkVersion(SqlInfo info);
 
         string GenerateInsertOrUpdate(List<ParameterInfo> primaryKeys, SqlInfo info);
+
+        string GenerateNoCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType);
+
+        string GenerateCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType);
 
         SqlInfo GetTableInfo(SqlInfo repositoryInfo);
     }

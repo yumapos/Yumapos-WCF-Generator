@@ -77,8 +77,21 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var allTrees = new List<SyntaxTree>();
             allTrees.AddRange(repositoryModelTrees);
             allTrees.AddRange(repositoryInterfaceTrees);
-            allTrees.AddRange(repositoryTrees);
             allTrees.AddRange(additionalTrees);
+            //foreach (var tree in repositoryInterfaceTrees)
+            //{
+            //    if (allTrees.All(t => t.FilePath != tree.FilePath))
+            //    {
+            //        allTrees.Add(tree);
+            //    }
+            //}
+            //foreach (var tree in additionalTrees)
+            //{
+            //    if (allTrees.All(t => t.FilePath != tree.FilePath))
+            //    {
+            //        allTrees.Add(tree);
+            //    }
+            //}
             
             _fullCompilation = CSharpCompilation.Create("FullCompilation")
                 .AddSyntaxTrees(allTrees)
@@ -110,7 +123,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         public string GetFullTypeName(string typeName)
         {
             var resultList = _fullCompilation.GetSymbolsWithName(s => s == typeName);
-            return resultList.FirstOrDefault().ToString();
+            return resultList.FirstOrDefault()?.ToString();
         }
 
         public InterfaceDeclarationSyntax GetInheritedInterface(string interfaceName)
@@ -175,6 +188,14 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             return mSyntaxTrees;
         }
 
-      
+
+        public bool PropertyIsEnum(PropertyDeclarationSyntax propertyDeclarationSyntax)
+        {
+            var semanticModel = _fullCompilation.GetSemanticModel(propertyDeclarationSyntax.SyntaxTree);
+
+            var symbol = semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
+
+            return symbol.Type.TypeKind == TypeKind.Enum;
+        }
     }
 }
