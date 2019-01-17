@@ -22,7 +22,6 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string SelectAllQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId]  {whereTenantId:[MenuItems]} ";
 		private const string SelectByQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
 		private const string InsertQuery = @"DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@TenantId);SELECT ItemId FROM @TempTable;";
-		private const string InsertManyQuery = @"DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId{0},@MenuItemVersionId{0},@IsDeleted{0},@Modified{0},@ModifiedBy{0},@CategoryId{0},@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId);SELECT ItemId FROM @TempTable;";
 		private const string UpdateQueryBy = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemId] = @MenuItemId,[MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId FROM [MenuItems] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
 		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemId] = @MenuItemId,[MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId FROM [MenuItems]  WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]}  IF @@ROWCOUNT = 0 BEGIN DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@TenantId);SELECT ItemId FROM @TempTable; END";
@@ -34,6 +33,11 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string WhereQueryByJoinPk = "WHERE [RecipieItems].[ItemId] = @ItemId{andTenantId:[RecipieItems]} ";
 		private const string AndWithIsDeletedFilter = "AND [RecipieItems].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems].[IsDeleted] = @IsDeleted{andTenantId:[MenuItems]} ";
+		private const string InsertManyQueryTemplate = @"DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId{0},@MenuItemVersionId{0},@IsDeleted{0},@Modified{0},@ModifiedBy{0},@CategoryId{0},@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@MenuItemId{0},@MenuItemVersionId{0},@MenuCategoryId{0},@TenantId);SELECT ItemId FROM @TempTable;";
+		private const string InsertManyValuesTemplate = @"({0},{1},{2},{3},{4},{5},{6},{7},@CategoryId{8},@TenantId)";
+		private const string NoCheckConstraint = @"ALTER TABLE [MenuItems] NOCHECK CONSTRAINT ALL";
+		private const string CheckConstraint = @"ALTER TABLE [MenuItems] CHECK CONSTRAINT ALL";
+
 
 
 		public MenuItemCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
@@ -147,33 +151,35 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 			if (!menuItemList.Any()) return;
 
+			var maxInsertManyRows = MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
 			var query = new System.Text.StringBuilder();
-			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			DataAccessService.Execute(NoCheckConstraint);
+
 			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-			foreach (var menuItem in menuItemList)
+			foreach (var items in itemsPerRequest)
 			{
-				if (parameters.Count + 4 > MaxRepositoryParams)
+				foreach (var item in items)
 				{
-					DataAccessService.Execute(query.ToString(), parameters);
-					query.Clear();
-					counter = 0;
-					parameters.Clear();
-					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+					var menuItem = item.Value;
+					var index = item.Index;
+					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, $"'{menuItem.MenuItemId}'", $"'{menuItem.MenuItemVersionId}'", $"'{menuItem.MenuCategoryId}'", $"'{menuItem.ItemId}'", $"'{menuItem.ItemVersionId}'", menuItem.IsDeleted, $"'{menuItem.Modified}'", $"'{menuItem.ModifiedBy}'", index);
 				}
-				parameters.Add($"MenuItemId{counter}", menuItem.MenuItemId);
-				parameters.Add($"MenuItemVersionId{counter}", menuItem.MenuItemVersionId);
-				parameters.Add($"MenuCategoryId{counter}", menuItem.MenuCategoryId);
-				parameters.Add($"ItemId{counter}", menuItem.ItemId);
-				parameters.Add($"ItemVersionId{counter}", menuItem.ItemVersionId);
-				parameters.Add($"IsDeleted{counter}", menuItem.IsDeleted);
-				parameters.Add($"Modified{counter}", menuItem.Modified);
-				parameters.Add($"ModifiedBy{counter}", menuItem.ModifiedBy);
-				parameters.Add($"CategoryId{counter}", menuItem.CategoryId);
-				query.AppendFormat(InsertManyQuery, counter);
-				counter++;
+				query.AppendFormat(InsertManyQueryTemplate, values.ToString());
+				DataAccessService.Execute(query.ToString(), parameters);
 			}
-			DataAccessService.Execute(query.ToString(), parameters);
+
+			DataAccessService.Execute(CheckConstraint);
+
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
@@ -182,34 +188,40 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 			if (!menuItemList.Any()) return;
 
+			var maxInsertManyRows = MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
 			var query = new System.Text.StringBuilder();
-			var counter = 0;
 			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			await Task.Delay(10);
+			await DataAccessService.ExecuteAsync(NoCheckConstraint);
+
 			parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-			foreach (var menuItem in menuItemList)
+			foreach (var items in itemsPerRequest)
 			{
-				if (parameters.Count + 4 > MaxRepositoryParams)
+				foreach (var item in items)
 				{
-					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-					query.Clear();
-					counter = 0;
-					parameters.Clear();
-					parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+					var menuItem = item.Value;
+					var index = item.Index;
+					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, $"'{menuItem.MenuItemId}'", $"'{menuItem.MenuItemVersionId}'", $"'{menuItem.MenuCategoryId}'", $"'{menuItem.ItemId}'", $"'{menuItem.ItemVersionId}'", menuItem.IsDeleted, $"'{menuItem.Modified}'", $"'{menuItem.ModifiedBy}'", index);
 				}
-				parameters.Add($"MenuItemId{counter}", menuItem.MenuItemId);
-				parameters.Add($"MenuItemVersionId{counter}", menuItem.MenuItemVersionId);
-				parameters.Add($"MenuCategoryId{counter}", menuItem.MenuCategoryId);
-				parameters.Add($"ItemId{counter}", menuItem.ItemId);
-				parameters.Add($"ItemVersionId{counter}", menuItem.ItemVersionId);
-				parameters.Add($"IsDeleted{counter}", menuItem.IsDeleted);
-				parameters.Add($"Modified{counter}", menuItem.Modified);
-				parameters.Add($"ModifiedBy{counter}", menuItem.ModifiedBy);
-				parameters.Add($"CategoryId{counter}", menuItem.CategoryId);
-				query.AppendFormat(InsertManyQuery, counter);
-				counter++;
+				query.AppendFormat(InsertManyQueryTemplate, values.ToString());
+				await Task.Delay(10);
+				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 			}
-			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+
+			await Task.Delay(10);
+			await DataAccessService.ExecuteAsync(CheckConstraint);
+
 		}
+
 
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{

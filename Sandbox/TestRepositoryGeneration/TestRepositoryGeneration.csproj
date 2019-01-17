@@ -47,9 +47,11 @@
   <ItemGroup>
     <Compile Include="CustomRepositories\BaseRepositories\ElectronicCouponRepository.cs" />
     <Compile Include="CustomRepositories\BaseRepositories\ElectronicCouponsTypedRepository.cs" />
+    <Compile Include="DataObjects\BaseRepositories\Availability.cs" />
     <Compile Include="DataObjects\BaseRepositories\ElectronicCouponsTyped.cs" />
     <Compile Include="DataObjects\BaseRepositories\ElectronicCoupon.cs" />
     <Compile Include="GeneratedRepositories\AddressRepository.g.cs" />
+    <Compile Include="GeneratedRepositories\AvailabilityRepository.g.cs" />
     <Compile Include="GeneratedRepositories\CustomerSubscriptionRepository.g.cs" />
     <Compile Include="GeneratedRepositories\ElectronicCouponRepository.g.cs" />
     <Compile Include="GeneratedRepositories\ElectronicCouponsTypedRepository.g.cs" />
@@ -69,6 +71,7 @@
     <Compile Include="PostgresRepositories\AddressArchiveRepository.g.cs" />
     <Compile Include="PostgresRepositories\CustomerSubscriptionArchiveRepository.g.cs" />
     <Compile Include="RepositoryInterfaces\IAddressArchiveRepository.cs" />
+    <Compile Include="RepositoryInterfaces\IAvailabilityRepository.cs" />
     <Compile Include="RepositoryInterfaces\IArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\ICustomerSubscriptionArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\IElectronicCouponRepository.cs" />

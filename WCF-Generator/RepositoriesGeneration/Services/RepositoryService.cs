@@ -258,7 +258,14 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Add sql column name - skip members marked [DbIgnoreAttribute]
             var elements = properties
                 .Where(p => !p.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
-                .Select(p => p.Identifier.Text);
+                .Select(p =>
+                {
+                    var type = p.Type.ToString();
+                    return new PropertyInfo(p.Identifier.Text, 
+                        type == "string",
+                        type.Contains("?"),
+                        type.Contains("Guid") || type.Contains("DateTime"));
+                });
             repositoryInfo.Elements.AddRange(elements);
 
             // Primary keys info

@@ -22,7 +22,6 @@ namespace TestRepositoryGeneration
 		private const string SelectAllQuery = @"SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs]  {whereTenantId:[Taxs]} ";
 		private const string SelectByQuery = @"SELECT [Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted] FROM [Taxs] ";
 		private const string InsertQuery = @"INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId) ";
-		private const string InsertManyQuery = @"INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES(@TaxId{0},@TaxVersionId{0},@Name{0},@Modified{0},@ModifiedBy{0},@IsDeleted{0},@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [Taxs] SET [Taxs].[TaxId] = @TaxId,[Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs] ";
 		private const string DeleteQueryBy = @"DELETE FROM [Taxs] ";
 		private const string InsertOrUpdateQuery = @"UPDATE [Taxs] SET [Taxs].[TaxId] = @TaxId,[Taxs].[TaxVersionId] = @TaxVersionId,[Taxs].[Name] = @Name,[Taxs].[Modified] = @Modified,[Taxs].[ModifiedBy] = @ModifiedBy,[Taxs].[IsDeleted] = @IsDeleted FROM [Taxs]  WHERE [Taxs].[TaxId] = @TaxId{andTenantId:[Taxs]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES(@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)  END";
@@ -30,6 +29,11 @@ namespace TestRepositoryGeneration
 		private const string WhereQueryByTaxVersionId = "WHERE [Taxs].[TaxVersionId] = @TaxVersionId{andTenantId:[Taxs]} ";
 		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [Taxs].[IsDeleted] = @IsDeleted{andTenantId:[Taxs]} ";
+		private const string InsertManyQueryTemplate = @"INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES {0}";
+		private const string InsertManyValuesTemplate = @"({0},{1},@Name{5},{2},{3},{4},@TenantId)";
+		private const string NoCheckConstraint = @"ALTER TABLE [Taxs] NOCHECK CONSTRAINT ALL";
+		private const string CheckConstraint = @"ALTER TABLE [Taxs] CHECK CONSTRAINT ALL";
+
 
 
 		public TaxCacheRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
@@ -124,30 +128,38 @@ namespace TestRepositoryGeneration
 
 		if(!taxList.Any()) return;
 
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
 		var query = new System.Text.StringBuilder();
-		var counter = 0;
-		var parameters = new Dictionary<string, object> ();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = taxList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		DataAccessService.Execute(NoCheckConstraint);
+
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		foreach (var tax in taxList)
+		foreach (var items in itemsPerRequest)
 		{
-		if (parameters.Count + 7 > MaxRepositoryParams)
+		foreach (var item in items)
 		{
-		DataAccessService.Execute(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
-		parameters.Clear();
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		var tax = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Name{index}", tax.Name);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,$"'{tax.TaxVersionId}'",$"'{tax.Modified}'",$"'{tax.ModifiedBy}'",tax.IsDeleted, index);
 		}
-		parameters.Add($"TaxId{counter}", tax.TaxId);
-		parameters.Add($"TaxVersionId{counter}", tax.TaxVersionId);
-		parameters.Add($"Name{counter}", tax.Name);
-		parameters.Add($"Modified{counter}", tax.Modified);
-		parameters.Add($"ModifiedBy{counter}", tax.ModifiedBy);
-		parameters.Add($"IsDeleted{counter}", tax.IsDeleted);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
+		query.AppendFormat(InsertManyQueryTemplate, values.ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
+		}
+
+		DataAccessService.Execute(CheckConstraint);
+
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
@@ -156,31 +168,43 @@ namespace TestRepositoryGeneration
 
 		if(!taxList.Any()) return;
 
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
 		var query = new System.Text.StringBuilder();
-		var counter = 0;
 		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = taxList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(NoCheckConstraint);
+
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-		foreach (var tax in taxList)
+		foreach (var items in itemsPerRequest)
 		{
-		if (parameters.Count + 7 > MaxRepositoryParams)
+		foreach (var item in items)
 		{
-		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
-		parameters.Clear();
-		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		var tax = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Name{index}", tax.Name);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,$"'{tax.TaxVersionId}'",$"'{tax.Modified}'",$"'{tax.ModifiedBy}'",tax.IsDeleted, index);
 		}
-		parameters.Add($"TaxId{counter}", tax.TaxId);
-		parameters.Add($"TaxVersionId{counter}", tax.TaxVersionId);
-		parameters.Add($"Name{counter}", tax.Name);
-		parameters.Add($"Modified{counter}", tax.Modified);
-		parameters.Add($"ModifiedBy{counter}", tax.ModifiedBy);
-		parameters.Add($"IsDeleted{counter}", tax.IsDeleted);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
+		query.AppendFormat(InsertManyQueryTemplate, values.ToString());
+		await Task.Delay(10);
 		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		}
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(CheckConstraint);
+
+		}
+
 
 		*/
 		public void UpdateByTaxId(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)

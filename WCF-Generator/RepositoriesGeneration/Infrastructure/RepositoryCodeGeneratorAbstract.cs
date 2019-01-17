@@ -11,6 +11,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         protected const string DataAccessControllerBaseRepositoryField = "DataAccessController";
         protected const string DataAccessServiceBaseRepositoryField = "DataAccessService";
         protected const string MaxRepositoryParamsBaseRepositoryField = "MaxRepositoryParams";
+        protected const string MaxInsertManyRowsBaseRepositoryField = "MaxInsertManyRows";
 
         #region Properties
 
