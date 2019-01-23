@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 using TestRepositoryGeneration.RepositoryInterfaces;
 
 
@@ -120,7 +121,7 @@ namespace TestRepositoryGeneration
 		var employeesInRolesSchedule = item.Value;
 		var index = item.Index; 
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start,employeesInRolesSchedule.End,employeesInRolesSchedule.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0, index);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -158,7 +159,7 @@ namespace TestRepositoryGeneration
 		var employeesInRolesSchedule = item.Value;
 		var index = item.Index; 
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start,employeesInRolesSchedule.End,employeesInRolesSchedule.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0, index);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);

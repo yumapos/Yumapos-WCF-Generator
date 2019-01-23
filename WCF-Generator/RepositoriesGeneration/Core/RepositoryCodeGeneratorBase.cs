@@ -106,6 +106,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                             return $"(int){name}";
                         }
 
+                        if (c.CultureDependent)
+                        {
+                            return $"{name}.ToString(CultureInfo.InvariantCulture)";
+                        }
+
                         return name;
                     }
                     if (c.IsBool)
@@ -115,6 +120,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                     if (c.IsEnum)
                     {
                         return $"((int?){name})?.ToString() ?? \"NULL\"";
+                    }
+                    if (c.CultureDependent)
+                    {
+                        return $"{name}?.ToString(CultureInfo.InvariantCulture) ?? \"NULL\"";
                     }
 
                     return $"{name}?.ToString() ?? \"NULL\"";

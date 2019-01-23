@@ -267,7 +267,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                         isParameter: typeName == "string",
                         isNullable: typeName.EndsWith("?"),
                         isBool: typeName.Contains("bool"),
-                        isEnum: _solutionSyntaxWalker.PropertyIsEnum(p));
+                        isEnum: _solutionSyntaxWalker.PropertyIsEnum(p),
+                        cultureDependent: typeName.Contains("decimal") || typeName.Contains("double") || typeName.Contains("float") || typeName.Contains("DateTime"));
                 });
             repositoryInfo.Elements.AddRange(elements);
 
@@ -406,7 +407,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 "System",
                 "System.Collections.Generic",
                 "System.Linq",
-                "System.Threading.Tasks"
+                "System.Threading.Tasks",
+                "System.Globalization"
             };
 
             repositoryInfo.RequiredNamespaces.Add(RepositoryType.General, requiredNamespaces);

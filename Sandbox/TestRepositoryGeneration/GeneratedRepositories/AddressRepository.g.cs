@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 using TestRepositoryGeneration.RepositoryInterfaces;
 
 
@@ -196,7 +197,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Building{index}", address.Building);
 					parameters.Add($"ZipCode{index}", address.ZipCode);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, address.Id, address.Latitude?.ToString() ?? "NULL", address.Longitude?.ToString() ?? "NULL", address.Modified, address.ExpireDate?.ToString() ?? "NULL", index);
+					values.AppendFormat(InsertManyValuesTemplate, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", index);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				DataAccessService.Execute(query.ToString(), parameters);
@@ -242,7 +243,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Building{index}", address.Building);
 					parameters.Add($"ZipCode{index}", address.ZipCode);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, address.Id, address.Latitude?.ToString() ?? "NULL", address.Longitude?.ToString() ?? "NULL", address.Modified, address.ExpireDate?.ToString() ?? "NULL", index);
+					values.AppendFormat(InsertManyValuesTemplate, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", index);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				await Task.Delay(10);

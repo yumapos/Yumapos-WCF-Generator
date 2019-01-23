@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 using TestRepositoryGeneration.RepositoryInterfaces;
 
 
@@ -124,7 +125,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Name{index}", electronicCouponsTyped.Name);
 					parameters.Add($"PrintText{index}", electronicCouponsTyped.PrintText);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, electronicCouponsTyped.ElectronicCouponsId, electronicCouponsTyped.ElectronicCouponsPresetId, electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString() ?? "NULL", electronicCouponsTyped.ValidTo?.ToString() ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0, index);
+					values.AppendFormat(InsertManyValuesTemplate, electronicCouponsTyped.ElectronicCouponsId, electronicCouponsTyped.ElectronicCouponsPresetId, electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0, index);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				DataAccessService.Execute(query.ToString(), parameters);
@@ -164,7 +165,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Name{index}", electronicCouponsTyped.Name);
 					parameters.Add($"PrintText{index}", electronicCouponsTyped.PrintText);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, electronicCouponsTyped.ElectronicCouponsId, electronicCouponsTyped.ElectronicCouponsPresetId, electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString() ?? "NULL", electronicCouponsTyped.ValidTo?.ToString() ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0, index);
+					values.AppendFormat(InsertManyValuesTemplate, electronicCouponsTyped.ElectronicCouponsId, electronicCouponsTyped.ElectronicCouponsPresetId, electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0, index);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				await Task.Delay(10);

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 using TestRepositoryGeneration.RepositoryInterfaces;
 
 
@@ -149,7 +150,7 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"Name{index}", tax.Name);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,tax.TaxVersionId,tax.Modified,tax.ModifiedBy,tax.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,tax.TaxVersionId,tax.Modified.ToString(CultureInfo.InvariantCulture),tax.ModifiedBy,tax.IsDeleted ? 1 : 0, index);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -191,7 +192,7 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"Name{index}", tax.Name);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,tax.TaxVersionId,tax.Modified,tax.ModifiedBy,tax.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,tax.TaxVersionId,tax.Modified.ToString(CultureInfo.InvariantCulture),tax.ModifiedBy,tax.IsDeleted ? 1 : 0, index);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);
