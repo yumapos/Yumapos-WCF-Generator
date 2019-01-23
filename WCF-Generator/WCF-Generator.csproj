@@ -179,6 +179,7 @@
     <Compile Include="RepositoriesGeneration\Core\CacheRepositoryCodeGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryCodeGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\CodeClassGeneratorVersionedRepositoryService.cs" />
+    <Compile Include="RepositoriesGeneration\Core\RepositoryCodeGeneratorBase.cs" />
     <Compile Include="RepositoriesGeneration\Core\SQL\ISqlScriptGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\VersionsRepositoryCodeGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Core\RepositoryFactory.cs" />
@@ -195,6 +196,7 @@
     <Compile Include="RepositoriesGeneration\Helpers\SyntaxAnalysisHelper.cs" />
     <Compile Include="RepositoriesGeneration\Helpers\SystemToSqlTypeMapper.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\AnalysisError.cs" />
+    <Compile Include="RepositoriesGeneration\Infrastructure\PropertyInfo.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryCodeGeneratorAbstract.cs" />
     <Compile Include="Common\Infrastructure\ICodeClassGenerator.cs" />
     <Compile Include="RepositoriesGeneration\Infrastructure\RepositoryAnalysisError.cs" />

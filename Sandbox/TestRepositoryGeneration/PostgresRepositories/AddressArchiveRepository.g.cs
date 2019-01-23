@@ -22,7 +22,6 @@ namespace TestRepositoryGeneration
 		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses   ";
 		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses ";
 		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate) ";
-		private const string InsertManyQuery = @"InsertMany script was not generated";
 		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate FROM archive.addresses ";
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
 		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate ";
@@ -32,6 +31,9 @@ namespace TestRepositoryGeneration
 		private const string WhereQueryByCountryAndCityAndZipCode = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City AND archive.addresses.zip_code = @ZipCode ";
 		private const string AndWithIsDeletedFilter = "AND archive.addresses.is_deleted = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE archive.addresses.is_deleted = @IsDeleted ";
+		private const string InsertManyQueryTemplate = @"InsertMany script was not generated";
+		private const string InsertManyValuesTemplate = @"InsertMany script was not generated";
+
 
 
 		public AddressArchiveRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
@@ -171,33 +173,43 @@ namespace TestRepositoryGeneration
 
 		if(!addressList.Any()) return;
 
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
 		var query = new System.Text.StringBuilder();
-		var counter = 0;
-		var parameters = new Dictionary<string, object> ();
-		foreach (var address in addressList)
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
 		{
-		if (parameters.Count + 11 > MaxRepositoryParams)
+		foreach (var item in items)
 		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, address.Id,address.Latitude?.ToString() ?? "NULL",address.Longitude?.ToString() ?? "NULL",address.Modified,address.ExpireDate?.ToString() ?? "NULL", index);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
 		parameters.Clear();
+		values.Clear();
+		query.Clear();
 		}
-		parameters.Add($"Id{counter}", address.Id);
-		parameters.Add($"Country{counter}", address.Country);
-		parameters.Add($"City{counter}", address.City);
-		parameters.Add($"State{counter}", address.State);
-		parameters.Add($"Street{counter}", address.Street);
-		parameters.Add($"Building{counter}", address.Building);
-		parameters.Add($"ZipCode{counter}", address.ZipCode);
-		parameters.Add($"Latitude{counter}", address.Latitude);
-		parameters.Add($"Longitude{counter}", address.Longitude);
-		parameters.Add($"Modified{counter}", address.Modified);
-		parameters.Add($"ExpireDate{counter}", address.ExpireDate);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
-		}
-		DataAccessService.Execute(query.ToString(), parameters);
+
+
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
@@ -206,34 +218,48 @@ namespace TestRepositoryGeneration
 
 		if(!addressList.Any()) return;
 
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
 		var query = new System.Text.StringBuilder();
-		var counter = 0;
 		var parameters = new Dictionary<string, object>();
-		foreach (var address in addressList)
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
 		{
-		if (parameters.Count + 11 > MaxRepositoryParams)
+		foreach (var item in items)
 		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, address.Id,address.Latitude?.ToString() ?? "NULL",address.Longitude?.ToString() ?? "NULL",address.Modified,address.ExpireDate?.ToString() ?? "NULL", index);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		await Task.Delay(10);
 		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-		query.Clear();
-		counter = 0;
 		parameters.Clear();
+		values.Clear();
+		query.Clear();
 		}
-		parameters.Add($"Id{counter}", address.Id);
-		parameters.Add($"Country{counter}", address.Country);
-		parameters.Add($"City{counter}", address.City);
-		parameters.Add($"State{counter}", address.State);
-		parameters.Add($"Street{counter}", address.Street);
-		parameters.Add($"Building{counter}", address.Building);
-		parameters.Add($"ZipCode{counter}", address.ZipCode);
-		parameters.Add($"Latitude{counter}", address.Latitude);
-		parameters.Add($"Longitude{counter}", address.Longitude);
-		parameters.Add($"Modified{counter}", address.Modified);
-		parameters.Add($"ExpireDate{counter}", address.ExpireDate);
-		query.AppendFormat(InsertManyQuery, counter);
-		counter++;
+
+		await Task.Delay(10);
+
 		}
-		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-		}
+
 
 		*/
 		public void UpdateById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)

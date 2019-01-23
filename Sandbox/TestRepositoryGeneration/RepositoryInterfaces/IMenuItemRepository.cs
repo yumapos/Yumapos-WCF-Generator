@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TestRepositoryGeneration.DataObjects.VersionsRepositories;
 
 namespace TestRepositoryGeneration.RepositoryInterfaces
@@ -9,6 +10,9 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Guid Insert(MenuItem menuItem);
 
         IEnumerable<MenuItem> InsertMany(IEnumerable<MenuItem> menuItem);
+
+        Task<IEnumerable<MenuItem>> InsertManyAsync(IEnumerable<MenuItem> menuItem);
+
         void UpdateByMenuItemId(MenuItem menuItemId);
 
         void RemoveByMenuItemId(MenuItem menuItemId);

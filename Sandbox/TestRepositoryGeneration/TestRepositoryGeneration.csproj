@@ -49,6 +49,8 @@
     <Compile Include="CustomRepositories\BaseRepositories\ElectronicCouponsTypedRepository.cs" />
     <Compile Include="DataObjects\BaseRepositories\ElectronicCouponsTyped.cs" />
     <Compile Include="DataObjects\BaseRepositories\ElectronicCoupon.cs" />
+    <Compile Include="DataObjects\KitchenPrinter.cs" />
+    <Compile Include="DataObjects\MenuItemType.cs" />
     <Compile Include="GeneratedRepositories\AddressRepository.g.cs" />
     <Compile Include="GeneratedRepositories\CustomerSubscriptionRepository.g.cs" />
     <Compile Include="GeneratedRepositories\ElectronicCouponRepository.g.cs" />
