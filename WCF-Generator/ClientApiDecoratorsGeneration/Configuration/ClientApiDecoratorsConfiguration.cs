@@ -85,5 +85,29 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Configuration
         {
             get { return ((string)(base["targetNamespace"])); }
         }
+
+        [ConfigurationProperty("partialClass", DefaultValue = "", IsRequired = false)]
+        public string PartialClass
+        {
+            get { return ((string)(base["partialClass"])); }
+        }
+
+        [ConfigurationProperty("apiSecurityEnabled", DefaultValue = "false", IsRequired = false)]
+        public bool ApiSecurityEnabled
+        {
+            get { return (bool.Parse(base["apiSecurityEnabled"].ToString())); }
+        }
+
+        [ConfigurationProperty("serverRuntimeErrorEnabled", DefaultValue = "false", IsRequired = false)]
+        public bool ServerRuntimeErrorEnabled
+        {
+            get { return (bool.Parse(base["serverRuntimeErrorEnabled"].ToString())); }
+        }
+
+        [ConfigurationProperty("unauthorizeErrorApiEnabled", DefaultValue = "false", IsRequired = false)]
+        public bool UnauthorizeErrorApiEnabled
+        {
+            get { return (bool.Parse(base["unauthorizeErrorApiEnabled"].ToString())); }
+        }
     }
 }

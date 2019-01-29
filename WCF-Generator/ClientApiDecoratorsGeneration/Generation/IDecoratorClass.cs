@@ -11,6 +11,6 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
     public interface IDecoratorClass
     {
         string ClassName { get; }
-        string GetFullText(INamedTypeSymbol toDecorate, ClientApiDecoratorsConfiguration config);
+        string GetFullText(INamedTypeSymbol toDecorate, ClientApiDecoratorsConfiguration config, INamedTypeSymbol partialClassInfo = null);
     }
 }

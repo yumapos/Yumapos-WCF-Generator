@@ -15,24 +15,12 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
         protected override void GenerateMethodBody(StringBuilder sb, IMethodSymbol toDecorate)
         {
             sb.AppendLine("var response = await _actor." + toDecorate.GetMethodCall() + ';');
-            var returnTemplate = @"if (!response.Context.IsEmpty() || response.PostprocessingType != null){
-                throw new ServerSecurityException(response.Context, response.PostprocessingType, response.Errors, response.ServerInfo);
+            var returnTemplate = @"if (response?.PostprocessingType != null){
+                throw new CustomerException(response.Context, response.PostprocessingType.Value, response.Errors);
             }
             return response;";
-
-            var returnValueTempalte = @"if (!response.Context.IsEmpty() || response.PostprocessingType != null){
-                throw new ServerSecurityException(response.Context, response.PostprocessingType, response.Errors, response.ServerInfo){Value = response.Value};
-            }
-            return response;";
-
-            if (toDecorate.ReturnType.GetGenericArguments()[0].GetFullName() == "YumaPos.Shared.API.ResponseDtos.ResponseDto")
-            {
                 sb.AppendLine(returnTemplate);
-            }
-            else
-            {
-                sb.AppendLine(returnValueTempalte);
-            }
+           
         }
     }
 }

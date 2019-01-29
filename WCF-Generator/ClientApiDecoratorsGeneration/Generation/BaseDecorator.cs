@@ -12,7 +12,7 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
     public abstract class BaseDecorator : IDecoratorClass
     {
         public abstract string ClassName { get; }
-        public string GetFullText(INamedTypeSymbol toDecorate, ClientApiDecoratorsConfiguration config)
+        public string GetFullText(INamedTypeSymbol toDecorate, ClientApiDecoratorsConfiguration config, INamedTypeSymbol partialClassInfo = null)
         {
             var sb = new StringBuilder();
             GetUsings(sb);
@@ -20,18 +20,9 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
             string template = @"
         namespace {2}
         {{
-            public sealed class {1} : {0}
+            public sealed partial class {1} : {0}
             {{
-            private readonly {0} _actor;
-
-		    #region Properties
-
-		    public ExecutionContext ExecutionContext {{
-                get {{ return _actor.ExecutionContext; }}
-                set {{ _actor.ExecutionContext = value; }}
-            }}
-
-		    #endregion
+            private readonly {3} _actor;
 
 		    public {1}({0} actor)
 		    {{
@@ -39,13 +30,18 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 
 		        _actor = actor;
 		    }}";
-
-            sb.AppendFormat(template, config.SourceInterface, ClassName, config.TargetNamespace).AppendLine();
-
-            var methods = toDecorate.GetMembers().Where(m => m.Kind == SymbolKind.Method).Cast<IMethodSymbol>().Where(m => 
+            var baseInterface = toDecorate.AllInterfaces.FirstOrDefault();
+            sb.AppendFormat(template, config.SourceInterface, ClassName, config.TargetNamespace, baseInterface.MetadataName ?? config.SourceInterface).AppendLine();
+            
+            var methods = baseInterface.GetMembers().Where(m => m.Kind == SymbolKind.Method).Cast<IMethodSymbol>().Where(m => 
                 m.MethodKind != MethodKind.PropertyGet && m.MethodKind != MethodKind.PropertySet );
+            var partialMethods = partialClassInfo?.GetMembers().Where(m => m.Locations.Any(l => !l.SourceTree.FilePath.Contains(".g.cs"))) ?? Enumerable.Empty<ISymbol>();
             foreach (var method in methods)
             {
+                if (partialMethods.Any(m => m.Name == method.Name))
+                {
+                    continue;
+                }
                 var sign = method.GetSignature();
                 sb.AppendLine("public " + (method.CanBeAwaited()?" async ":"") + sign);
                 sb.AppendLine("{");
@@ -69,8 +65,9 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
         protected virtual void GetUsings(StringBuilder sb)
         {
             var usings = @"using System;
-            using YumaPos.Shared.Terminal.Infrastructure;
-            using YumaPos.FrontEnd.Infrastructure.CommandProcessing;";
+                        using YumaPos.Customer.Shared.Infrastructure.Services;
+                        using YumaPos.Shared.Online.Infrastructure;
+                        using YumaPos.Customer.Shared.Infrastructure.Exceptions;";
             sb.AppendLine(usings);
         }
 

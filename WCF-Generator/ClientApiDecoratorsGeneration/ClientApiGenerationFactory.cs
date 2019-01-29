@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
@@ -31,7 +32,12 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
                 foreach (var groupedConfigItem in groupedConfig)
                 {
                     var interfaceInfo = compilation.GetClass(groupedConfigItem.SourceInterface);
-                    await new ClientApiDecoratorsGenerator(_generatorWorkspace, groupedConfigItem, interfaceInfo).Generate();
+                    INamedTypeSymbol partialClassInfo = null;
+                    if (!string.IsNullOrEmpty(groupedConfigItem.PartialClass))
+                    {
+                        partialClassInfo = compilation.GetClass(groupedConfigItem.PartialClass);
+                    }
+                    await new ClientApiDecoratorsGenerator(_generatorWorkspace, groupedConfigItem, interfaceInfo, partialClassInfo).Generate();
                 }
             }
         }

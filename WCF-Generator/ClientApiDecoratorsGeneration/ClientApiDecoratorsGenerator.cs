@@ -17,30 +17,38 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
         private readonly GeneratorWorkspace _generatorWorkspace;
         private readonly ClientApiDecoratorsConfiguration _config;
         private readonly INamedTypeSymbol _typeInfo;
+        private readonly INamedTypeSymbol _partialClassInfo;
 
-        private readonly IDecoratorClass[] _decorators = new IDecoratorClass[]
-        {
-            new ApiSecurityDecorator(),
-            new ServerRuntimeErrorDecorator(), 
-            new UnauthorizeErrorApiDecorator(), 
-        };
-
-        public ClientApiDecoratorsGenerator(GeneratorWorkspace generatorWorkspace, ClientApiDecoratorsConfiguration config, INamedTypeSymbol typeInfo)
+        public ClientApiDecoratorsGenerator(GeneratorWorkspace generatorWorkspace, ClientApiDecoratorsConfiguration config, INamedTypeSymbol typeInfo, INamedTypeSymbol partialClassInfo = null)
         {
             _generatorWorkspace = generatorWorkspace;
             _config = config;
             _typeInfo = typeInfo;
+            _partialClassInfo = partialClassInfo;
         }
 
         public async Task Generate()
         {
             _generatorWorkspace.SetTargetProject(_config.TargetProject);
-            foreach (var decorator in _decorators)
+            if (_config.ApiSecurityEnabled)
             {
-                var code = decorator.GetFullText(_typeInfo, _config);
-                _generatorWorkspace.UpdateFileInTargetProject(decorator.ClassName + ".g.cs", _config.TargetFolder, code);
+                GenerateByDecorator(new ApiSecurityDecorator());
+            }
+            if (_config.ServerRuntimeErrorEnabled)
+            {
+                GenerateByDecorator(new ServerRuntimeErrorDecorator());
+            }
+            if (_config.UnauthorizeErrorApiEnabled)
+            {
+                GenerateByDecorator(new UnauthorizeErrorApiDecorator());
             }
             await _generatorWorkspace.ApplyTargetProjectChanges(true);
+        }
+
+        private void GenerateByDecorator(IDecoratorClass decorator)
+        {
+            var code = decorator.GetFullText(_typeInfo, _config, _partialClassInfo);
+            _generatorWorkspace.UpdateFileInTargetProject(decorator.ClassName + ".g.cs", _config.TargetFolder, code);
         }
     }
 }
