@@ -31,7 +31,7 @@ namespace TestRepositoryGeneration
 		private const string AndWithIsDeletedFilter = "AND [Taxs].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [Taxs].[IsDeleted] = @IsDeleted{andTenantId:[Taxs]} ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [Taxs]([Taxs].[TaxId],[Taxs].[TaxVersionId],[Taxs].[Name],[Taxs].[Modified],[Taxs].[ModifiedBy],[Taxs].[IsDeleted],[Taxs].[TenantId]) OUTPUT INSERTED.TaxId VALUES {0}";
-		private const string InsertManyValuesTemplate = @"('{0}','{1}',@Name{5},'{2}','{3}','{4}',@TenantId)";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}',@Name{0},'{3}','{4}','{5}',@TenantId)";
 
 
 
@@ -150,7 +150,7 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"Name{index}", tax.Name);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,tax.TaxVersionId,tax.Modified.ToString(CultureInfo.InvariantCulture),tax.ModifiedBy,tax.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, tax.TaxId,tax.TaxVersionId,tax.Modified.ToString(CultureInfo.InvariantCulture),tax.ModifiedBy,tax.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -192,7 +192,7 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"Name{index}", tax.Name);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, tax.TaxId,tax.TaxVersionId,tax.Modified.ToString(CultureInfo.InvariantCulture),tax.ModifiedBy,tax.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, tax.TaxId,tax.TaxVersionId,tax.Modified.ToString(CultureInfo.InvariantCulture),tax.ModifiedBy,tax.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);

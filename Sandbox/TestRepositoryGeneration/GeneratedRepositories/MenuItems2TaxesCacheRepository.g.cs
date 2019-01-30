@@ -31,7 +31,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string AndWithIsDeletedFilter = "AND [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES {0}";
-		private const string InsertManyValuesTemplate = @"('{0}','{1}','{2}','{3}','{4}','{5}','{6}')";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}')";
 
 
 
@@ -140,7 +140,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		var menuItems2Taxes = item.Value;
 		var index = item.Index; 
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -177,7 +177,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		var menuItems2Taxes = item.Value;
 		var index = item.Index; 
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);

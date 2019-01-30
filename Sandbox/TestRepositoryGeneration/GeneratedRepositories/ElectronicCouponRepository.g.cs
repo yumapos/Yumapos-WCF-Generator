@@ -30,7 +30,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string AndWithIsDeletedFilter = "AND [ElectronicCoupons].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [ElectronicCoupons].[IsDeleted] = @IsDeleted{andTenantId:[ElectronicCoupons]} ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [ElectronicCoupons]([ElectronicCoupons].[Name],[ElectronicCoupons].[PrintText],[ElectronicCoupons].[ImageId],[ElectronicCoupons].[ValidFrom],[ElectronicCoupons].[ValidTo],[ElectronicCoupons].[IsDeleted],[ElectronicCoupons].[LimitPerOrder],[ElectronicCoupons].[Priority],[ElectronicCoupons].[MaxTimesPerCustomer],[ElectronicCoupons].[IsActive],[ElectronicCoupons].[TenantId]) OUTPUT INSERTED.Id VALUES {0}";
-		private const string InsertManyValuesTemplate = @"('{0}',@Name{9},@PrintText{9},'{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}',@TenantId)";
+		private const string InsertManyValuesTemplate = @"('{1}',@Name{0},@PrintText{0},'{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',@TenantId)";
 
 
 
@@ -126,7 +126,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Name{index}", electronicCoupon.Name);
 					parameters.Add($"PrintText{index}", electronicCoupon.PrintText);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, electronicCoupon.Id, electronicCoupon.ImageId?.ToString() ?? "NULL", electronicCoupon.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCoupon.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCoupon.IsDeleted != null ? (electronicCoupon.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCoupon.LimitPerOrder?.ToString() ?? "NULL", electronicCoupon.Priority?.ToString() ?? "NULL", electronicCoupon.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCoupon.IsActive ? 1 : 0, index);
+					values.AppendFormat(InsertManyValuesTemplate, index, electronicCoupon.Id, electronicCoupon.ImageId?.ToString() ?? "NULL", electronicCoupon.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCoupon.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCoupon.IsDeleted != null ? (electronicCoupon.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCoupon.LimitPerOrder?.ToString() ?? "NULL", electronicCoupon.Priority?.ToString() ?? "NULL", electronicCoupon.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCoupon.IsActive ? 1 : 0);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				DataAccessService.Execute(query.ToString(), parameters);
@@ -169,7 +169,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Name{index}", electronicCoupon.Name);
 					parameters.Add($"PrintText{index}", electronicCoupon.PrintText);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, electronicCoupon.Id, electronicCoupon.ImageId?.ToString() ?? "NULL", electronicCoupon.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCoupon.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCoupon.IsDeleted != null ? (electronicCoupon.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCoupon.LimitPerOrder?.ToString() ?? "NULL", electronicCoupon.Priority?.ToString() ?? "NULL", electronicCoupon.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCoupon.IsActive ? 1 : 0, index);
+					values.AppendFormat(InsertManyValuesTemplate, index, electronicCoupon.Id, electronicCoupon.ImageId?.ToString() ?? "NULL", electronicCoupon.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCoupon.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCoupon.IsDeleted != null ? (electronicCoupon.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCoupon.LimitPerOrder?.ToString() ?? "NULL", electronicCoupon.Priority?.ToString() ?? "NULL", electronicCoupon.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCoupon.IsActive ? 1 : 0);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				await Task.Delay(10);

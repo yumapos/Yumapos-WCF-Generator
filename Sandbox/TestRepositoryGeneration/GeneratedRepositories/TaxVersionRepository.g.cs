@@ -30,7 +30,7 @@ VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
 		private const string AndWithIsDeletedFilterWithAlias = "AND versionTable1.[IsDeleted] = @IsDeleted ";
 		private const string AndWithSliceDateFilter = "AND versionTable1.[Modified] <= @Modified ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [TaxVersions]([TaxVersions].[TaxId],[TaxVersions].[TaxVersionId],[TaxVersions].[Name],[TaxVersions].[Modified],[TaxVersions].[ModifiedBy],[TaxVersions].[IsDeleted],[TaxVersions].[TenantId]) OUTPUT INSERTED.TaxId VALUES {0}";
-		private const string InsertManyValuesTemplate = @"('{0}','{1}',@Name{5},'{2}','{3}','{4}',@TenantId)";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}',@Name{0},'{3}','{4}','{5}',@TenantId)";
 
 
 		public TaxVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
@@ -72,7 +72,7 @@ VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
 					var index = item.Index;
 					parameters.Add($"Name{index}", tax.Name);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, tax.TaxId, tax.TaxVersionId, tax.Modified.ToString(CultureInfo.InvariantCulture), tax.ModifiedBy, tax.IsDeleted ? 1 : 0, index);
+					values.AppendFormat(InsertManyValuesTemplate, index, tax.TaxId, tax.TaxVersionId, tax.Modified.ToString(CultureInfo.InvariantCulture), tax.ModifiedBy, tax.IsDeleted ? 1 : 0);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				DataAccessService.Execute(query.ToString(), parameters);
@@ -114,7 +114,7 @@ VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
 					var index = item.Index;
 					parameters.Add($"Name{index}", tax.Name);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, tax.TaxId, tax.TaxVersionId, tax.Modified.ToString(CultureInfo.InvariantCulture), tax.ModifiedBy, tax.IsDeleted ? 1 : 0, index);
+					values.AppendFormat(InsertManyValuesTemplate, index, tax.TaxId, tax.TaxVersionId, tax.Modified.ToString(CultureInfo.InvariantCulture), tax.ModifiedBy, tax.IsDeleted ? 1 : 0);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				await Task.Delay(10);

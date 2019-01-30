@@ -35,8 +35,8 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 		private const string AndWithIsDeletedFilterWithAlias = "AND joinVersionTable1.[IsDeleted] = @IsDeleted ";
 		private const string AndWithSliceDateFilter = "AND joinVersionTable1.[Modified] <= @Modified ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [RecipieItemVersions]([RecipieItemVersions].[ItemId],[RecipieItemVersions].[ItemVersionId],[RecipieItemVersions].[IsDeleted],[RecipieItemVersions].[Modified],[RecipieItemVersions].[ModifiedBy],[RecipieItemVersions].[CategoryId],[RecipieItemVersions].[TenantId])  VALUES {0};INSERT INTO [MenuItemVersions]([MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown],[MenuItemVersions].[TenantId])  VALUES {1}";
-		private const string InsertManyValuesTemplate = @"('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}',@TenantId)";
-		private const string InsertManyJoinedValuesTemplate = @"('{0}','{1}','{2}','{3}','{4}',@CategoryId{5},@TenantId)";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',@TenantId)";
+		private const string InsertManyJoinedValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}',@CategoryId{0},@TenantId)";
 
 
 		public MenuItemVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
@@ -79,9 +79,9 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 					var index = item.Index;
 					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL", index);
+					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 					joinedValues.AppendLine(index != 0 ? "," : "");
-					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy, index);
+					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
 				DataAccessService.Execute(query.ToString(), parameters);
@@ -125,9 +125,9 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 					var index = item.Index;
 					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL", index);
+					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 					joinedValues.AppendLine(index != 0 ? "," : "");
-					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy, index);
+					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
 				await Task.Delay(10);

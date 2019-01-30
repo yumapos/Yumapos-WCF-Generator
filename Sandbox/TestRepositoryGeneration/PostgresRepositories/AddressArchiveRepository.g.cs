@@ -201,7 +201,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", index);
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -247,7 +247,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", index);
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);

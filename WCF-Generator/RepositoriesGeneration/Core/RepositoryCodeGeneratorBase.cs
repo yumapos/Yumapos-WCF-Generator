@@ -197,7 +197,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
 
             sb.AppendLine(values.Any()
-                ? $"values.AppendFormat({InsertManyValuesTempleteField}, {string.Join(",", values)}, index);"
+                ? $"values.AppendFormat({InsertManyValuesTempleteField}, index, {string.Join(",", values)});"
                 : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
 
             if (joined)
@@ -205,7 +205,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
 
                 sb.AppendLine(values.Any()
-                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, {string.Join(",", joinedValues)}, index);"
+                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index, {string.Join(",", joinedValues)});"
                     : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
             }
 
@@ -297,7 +297,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
 
             sb.AppendLine(values.Any()
-                ? $"values.AppendFormat({InsertManyValuesTempleteField}, {string.Join(",", values)}, index);"
+                ? $"values.AppendFormat({InsertManyValuesTempleteField}, index, {string.Join(",", values)});"
                 : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
 
 
@@ -306,7 +306,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
 
                 sb.AppendLine(values.Any()
-                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, {string.Join(",", joinedValues)}, index);"
+                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index, {string.Join(",", joinedValues)});"
                     : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
             }
 

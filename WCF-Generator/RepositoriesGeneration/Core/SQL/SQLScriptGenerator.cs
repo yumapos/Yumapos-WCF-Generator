@@ -380,16 +380,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private static string InsertManyValuesTemplate(IEnumerable<PropertyInfo> columns)
         {
             var columnList = columns.ToList();
-            var maxIndex = columnList.Count(c => !c.IsParameter);
             var sb = new StringBuilder();
-            var index = 0;
+            var index = 1;
 
             for (var i = 0; i < columnList.Count; i++)
             {
                 var c = columnList[i];
                 if (c.IsParameter)
                 {
-                    sb.Append($"@{c.Name}{{{maxIndex}}}");
+                    sb.Append($"@{c.Name}{{0}}");
                 }
                 else
                 {

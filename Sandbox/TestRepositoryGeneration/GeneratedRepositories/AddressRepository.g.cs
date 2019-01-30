@@ -33,7 +33,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		private const string AndWithIsDeletedFilter = "AND [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [dbo].[Addresses].[IsDeleted] = @IsDeleted ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [dbo].[Addresses]([dbo].[Addresses].[Id],[dbo].[Addresses].[Country],[dbo].[Addresses].[City],[dbo].[Addresses].[State],[dbo].[Addresses].[Street],[dbo].[Addresses].[Building],[dbo].[Addresses].[ZipCode],[dbo].[Addresses].[Latitude],[dbo].[Addresses].[Longitude],[dbo].[Addresses].[Modified],[dbo].[Addresses].[ExpireDate]) OUTPUT INSERTED.Id VALUES {0}";
-		private const string InsertManyValuesTemplate = @"('{0}',@Country{5},@City{5},@State{5},@Street{5},@Building{5},@ZipCode{5},'{1}','{2}','{3}','{4}')";
+		private const string InsertManyValuesTemplate = @"('{1}',@Country{0},@City{0},@State{0},@Street{0},@Building{0},@ZipCode{0},'{2}','{3}','{4}','{5}')";
 
 
 
@@ -197,7 +197,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Building{index}", address.Building);
 					parameters.Add($"ZipCode{index}", address.ZipCode);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", index);
+					values.AppendFormat(InsertManyValuesTemplate, index, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				DataAccessService.Execute(query.ToString(), parameters);
@@ -243,7 +243,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"Building{index}", address.Building);
 					parameters.Add($"ZipCode{index}", address.ZipCode);
 					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", index);
+					values.AppendFormat(InsertManyValuesTemplate, index, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
 				await Task.Delay(10);

@@ -107,7 +107,7 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL",customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL",customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -149,7 +149,7 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL",customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL",customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);

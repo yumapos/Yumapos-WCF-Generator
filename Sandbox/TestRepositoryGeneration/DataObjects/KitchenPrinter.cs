@@ -1,5 +1,8 @@
-﻿namespace TestRepositoryGeneration.DataObjects
+﻿using System;
+
+namespace TestRepositoryGeneration.DataObjects
 {
+    [Flags]
     public enum KitchenPrinter
     {
         KitchenPrinter1 = 1,

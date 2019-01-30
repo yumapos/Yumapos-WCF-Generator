@@ -30,7 +30,7 @@ namespace TestRepositoryGeneration
 		private const string AndWithIsDeletedFilter = "AND [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted{andTenantId:[EmployeesInRolesSchedule]} ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES {0}";
-		private const string InsertManyValuesTemplate = @"('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}',@TenantId)";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}',@TenantId)";
 
 
 
@@ -121,7 +121,7 @@ namespace TestRepositoryGeneration
 		var employeesInRolesSchedule = item.Value;
 		var index = item.Index; 
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -159,7 +159,7 @@ namespace TestRepositoryGeneration
 		var employeesInRolesSchedule = item.Value;
 		var index = item.Index; 
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0, index);
+		values.AppendFormat(InsertManyValuesTemplate, index, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);
