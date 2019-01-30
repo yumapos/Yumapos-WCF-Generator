@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WCFGenerator.Common;
+using WCFGenerator.Common.ApiDecoration;
 
 namespace WCFGenerator.ClientApiDecoratorsGeneration.Configuration
 {
@@ -12,12 +11,12 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Configuration
     {
         protected override string ConfigSectionName { get; } = "clientApiDecoratorsGenerator";
 
-        public IReadOnlyCollection<ClientApiDecoratorsConfiguration> GetConfigs()
+        public IReadOnlyCollection<ApiDecoratorsConfiguration> GetConfigs()
         {
             try
             {
                 var section = ConfigurationManager.GetSection(ConfigSectionName) as ClientApiDecoratorsGenerator;
-                return section?.ClientApiDecoratorsConfigurations.Cast<ClientApiDecoratorsConfiguration>().ToList();
+                return section?.ClientApiDecoratorsConfigurations.Cast<ApiDecoratorsConfiguration>().ToList();
             }
             catch (ConfigurationErrorsException e)
             {
@@ -35,55 +34,22 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Configuration
         }
     }
 
-    [ConfigurationCollection(typeof(ClientApiDecoratorsConfiguration))]
+    [ConfigurationCollection(typeof(ApiDecoratorsConfiguration))]
     public class ClientApiDecoratorsConfigurationsCollection : ConfigurationElementCollection
     {
         protected override ConfigurationElement CreateNewElement()
         {
-            return new ClientApiDecoratorsConfiguration();
+            return new ApiDecoratorsConfiguration();
         }
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((ClientApiDecoratorsConfiguration)(element)).SourceInterface;
+            return ((ApiDecoratorsConfiguration)(element)).SourceInterface;
         }
 
-        public ClientApiDecoratorsConfiguration this[int idx]
+        public ApiDecoratorsConfiguration this[int idx]
         {
-            get { return (ClientApiDecoratorsConfiguration)BaseGet(idx); }
-        }
-    }
-
-    public class ClientApiDecoratorsConfiguration : ConfigurationElement
-    {
-        [ConfigurationProperty("sourceInterface", DefaultValue = "", IsKey = true, IsRequired = true)]
-        public string SourceInterface
-        {
-            get { return ((string)(base["sourceInterface"])); }
-        }
-
-        [ConfigurationProperty("sourceProject", DefaultValue = "", IsRequired = true)]
-        public string SourceProject
-        {
-            get { return ((string)(base["sourceProject"])); }
-        }
-
-        [ConfigurationProperty("targetProject", DefaultValue = "", IsRequired = true)]
-        public string TargetProject
-        {
-            get { return ((string)(base["targetProject"])); }
-        }
-
-        [ConfigurationProperty("targetFolder", DefaultValue = "", IsRequired = true)]
-        public string TargetFolder
-        {
-            get { return ((string)(base["targetFolder"])); }
-        }
-
-        [ConfigurationProperty("targetNamespace", DefaultValue = "", IsRequired = true)]
-        public string TargetNamespace
-        {
-            get { return ((string)(base["targetNamespace"])); }
+            get { return (ApiDecoratorsConfiguration)BaseGet(idx); }
         }
     }
 }

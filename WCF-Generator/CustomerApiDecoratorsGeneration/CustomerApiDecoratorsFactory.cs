@@ -3,16 +3,15 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using WCFGenerator.Common;
 using WCFGenerator.Common.ApiDecoration;
-using WCFGenerator.CustomerApiDecoratorsGeneration.Configuration;
 
 namespace WCFGenerator.CustomerApiDecoratorsGeneration
 {
     public class CustomerApiDecoratorsFactory
     {
         private readonly GeneratorWorkspace _generatorWorkspace;
-        private readonly CustomerApiDecoratorsConfiguration[] _configs;
+        private readonly ApiDecoratorsConfiguration[] _configs;
 
-        public CustomerApiDecoratorsFactory(GeneratorWorkspace generatorWorkspace, CustomerApiDecoratorsConfiguration[] configs)
+        public CustomerApiDecoratorsFactory(GeneratorWorkspace generatorWorkspace, ApiDecoratorsConfiguration[] configs)
         {
             _generatorWorkspace = generatorWorkspace;
             _configs = configs;

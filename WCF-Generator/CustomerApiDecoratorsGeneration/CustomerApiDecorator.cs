@@ -8,12 +8,12 @@ namespace WCFGenerator.CustomerApiDecoratorsGeneration
 {
     public abstract class CustomerApiDecorator : BaseDecorator
     {
-        protected override void GenerateTemplate(StringBuilder sb, GenerationConfig config)
+        protected override void GenerateClassDeclaration(StringBuilder sb, GenerationConfig config)
         {
-            const string template = @"
+            var template = @"
         namespace {2}
         {{
-            public partial class {1} : {0}
+            public" + (config.PartialClass == null ? "" : " partial") + @" class {1} : {0}
             {{
             private readonly {3} _actor;
 
@@ -22,7 +22,6 @@ namespace WCFGenerator.CustomerApiDecoratorsGeneration
 			    if (actor == null) throw new ArgumentNullException(nameof(actor));
 		        _actor = actor;
 		    }}";
-            
 
             sb.AppendFormat(template, config.SourceInterface, ClassName, config.TargetNamespace, config.ToDecorate.AllInterfaces.FirstOrDefault()).AppendLine();
         }
@@ -32,7 +31,7 @@ namespace WCFGenerator.CustomerApiDecoratorsGeneration
             var baseInterface = config.ToDecorate.AllInterfaces.FirstOrDefault();
             var methods = baseInterface.GetMembers().Where(m => m.Kind == SymbolKind.Method).Cast<IMethodSymbol>().Where(m =>
                 m.MethodKind != MethodKind.PropertyGet && m.MethodKind != MethodKind.PropertySet);
-            var partialMethods = config.PartialClass?.GetMembers().Where(m => m.Locations.Any(l => !l.SourceTree.FilePath.Contains(".g.cs"))) ?? Enumerable.Empty<ISymbol>();
+            var partialMethods = (config.PartialClass?.GetMembers().Where(m => m.Locations.Any(l => !l.SourceTree.FilePath.Contains(".g.cs"))) ?? Enumerable.Empty<ISymbol>()).ToList();
             foreach (var method in methods)
             {
                 var isCommented = partialMethods.Any(m => m.Name == method.Name);

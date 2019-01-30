@@ -4,7 +4,7 @@ using WCFGenerator.Common.ApiDecoration;
 
 namespace WCFGenerator.ClientApiDecoratorsGeneration
 {
-    public class ClientApiDecoratorsGenerator : DecaratorsGenerator
+    public class ClientApiDecoratorsGenerator : DecoratorsGenerator
     {
         public ClientApiDecoratorsGenerator(GeneratorWorkspace generatorWorkspace, GenerationConfig config) : base(generatorWorkspace, config)
         {

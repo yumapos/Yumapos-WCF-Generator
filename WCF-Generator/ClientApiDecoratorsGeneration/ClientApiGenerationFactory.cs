@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
-using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
 using WCFGenerator.Common;
 using WCFGenerator.Common.ApiDecoration;
 
@@ -10,9 +9,9 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
     public class ClientApiGenerationFactory
     {
         private readonly GeneratorWorkspace _generatorWorkspace;
-        private readonly ClientApiDecoratorsConfiguration[] _configs;
+        private readonly ApiDecoratorsConfiguration[] _configs;
 
-        public ClientApiGenerationFactory(GeneratorWorkspace generatorWorkspace, ClientApiDecoratorsConfiguration[] configs)
+        public ClientApiGenerationFactory(GeneratorWorkspace generatorWorkspace, ApiDecoratorsConfiguration[] configs)
         {
             _generatorWorkspace = generatorWorkspace;
             _configs = configs;
@@ -28,8 +27,9 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
                 foreach (var groupedConfigItem in groupedConfig)
                 {
                     var interfaceInfo = compilation.GetClass(groupedConfigItem.SourceInterface);
+                    var partialClass = string.IsNullOrEmpty(groupedConfigItem.PartialClass) ? null : compilation.GetClass(groupedConfigItem.PartialClass);
                     await new ClientApiDecoratorsGenerator(_generatorWorkspace,
-                        new GenerationConfig(groupedConfigItem.SourceInterface, null, interfaceInfo, groupedConfigItem.TargetNamespace, groupedConfigItem.TargetProject,
+                        new GenerationConfig(groupedConfigItem.SourceInterface, partialClass, interfaceInfo, groupedConfigItem.TargetNamespace, groupedConfigItem.TargetProject,
                             groupedConfigItem.TargetFolder)).Generate();
                 }
             }

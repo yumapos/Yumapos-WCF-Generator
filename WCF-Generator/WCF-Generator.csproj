@@ -292,9 +292,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecorator.cs" />
+    <Compile Include="Common\ApiDecoration\ApiDecoratorsConfiguration.cs" />
     <Compile Include="Common\ApiDecoration\GenerationConfig.cs" />
     <Compile Include="CustomerApiDecoratorsGeneration\Configuration\CustomerApiDecoratorsSettings.cs" />
-    <Compile Include="Common\ApiDecoration\DecaratorsGenerator.cs" />
+    <Compile Include="Common\ApiDecoration\DecoratorsGenerator.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecoratorsGenerator.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiGenerationFactory.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\Configuration\ClientApiDecoratorsConfiguration.cs" />

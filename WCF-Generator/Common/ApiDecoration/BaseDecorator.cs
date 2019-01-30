@@ -11,7 +11,7 @@ namespace WCFGenerator.Common.ApiDecoration
             var sb = new StringBuilder();
             GenerateUsings(sb);
 
-            GenerateTemplate(sb, config);
+            GenerateClassDeclaration(sb, config);
 
             GenerateMethods(sb, config);
 
@@ -22,7 +22,7 @@ namespace WCFGenerator.Common.ApiDecoration
 
         protected abstract void GenerateUsings(StringBuilder sb);
 
-        protected abstract void GenerateTemplate(StringBuilder sb, GenerationConfig config);
+        protected abstract void GenerateClassDeclaration(StringBuilder sb, GenerationConfig config);
         protected abstract void GenerateMethods(StringBuilder sb, GenerationConfig config);
 
         protected abstract void GenerateMethodBody(StringBuilder sb, IMethodSymbol toDecorate);

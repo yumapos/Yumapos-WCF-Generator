@@ -8,12 +8,12 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
 {
     public abstract class ClientApiDecorator : BaseDecorator
     {
-        protected override void GenerateTemplate(StringBuilder sb, GenerationConfig config)
+        protected override void GenerateClassDeclaration(StringBuilder sb, GenerationConfig config)
         {
-            const string template = @"
+            var template = @"
         namespace {2}
         {{
-            public sealed class {1} : {0}
+            public sealed" + (config.PartialClass == null ? "" : " partial") + @" class {1} : {0}
             {{
             private readonly {0} _actor;
 		    #region Properties
@@ -35,8 +35,14 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
         {
             var methods = config.ToDecorate.GetMembers().Where(m => m.Kind == SymbolKind.Method).Cast<IMethodSymbol>().Where(m =>
                 m.MethodKind != MethodKind.PropertyGet && m.MethodKind != MethodKind.PropertySet);
+            var partialMethods = (config.PartialClass?.GetMembers().Where(m => m.Locations.Any(l => !l.SourceTree.FilePath.Contains(".g.cs"))) ?? Enumerable.Empty<ISymbol>()).ToList();
             foreach (var method in methods)
             {
+                var isCommented = partialMethods.Any(m => m.Name == method.Name);
+                if (isCommented)
+                {
+                    sb.AppendLine("/*");
+                }
                 var sign = method.GetSignature();
                 sb.AppendLine("public " + (method.CanBeAwaited() ? " async " : "") + sign);
                 sb.AppendLine("{");
@@ -49,6 +55,10 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
                     GenerateMethodBody(sb, method);
                 }
                 sb.AppendLine("}");
+                if (isCommented)
+                {
+                    sb.AppendLine("*/");
+                }
                 sb.AppendLine();
             }
         }
