@@ -7,6 +7,8 @@ using Nito.AsyncEx;
 using WCFGenerator.ClientApiDecoratorsGeneration;
 using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
 using WCFGenerator.Common;
+using WCFGenerator.CustomerApiDecoratorsGeneration;
+using WCFGenerator.CustomerApiDecoratorsGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Core;
 using WCFGenerator.MappingsGeneration;
@@ -114,11 +116,20 @@ namespace WCFGenerator
 
             try
             {
-                RunClientApiDecoratorsGeneration();
+                 RunClientApiDecoratorsGeneration();
             }
             catch (Exception e)
             {
                 throw new ApplicationException($"Error occured on client api decorators generation: {e.Message}", e);
+            }
+
+            try
+            {
+                RunCustomerApiDecoratorsGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException($"Error occured on customer api decorators generation: {e.Message}", e);
             }
 
             // Apply Changes, close solution
@@ -257,6 +268,24 @@ namespace WCFGenerator
             AsyncContext.Run(() => factory.GenerateAll());
 
             Console.WriteLine("Сlient api decorators  generation completed.");
+        }
+
+        private static void RunCustomerApiDecoratorsGeneration()
+        {
+            var curSettings = CustomerApiDecoratorsSettings.Current;
+            if (!curSettings.Enabled)
+            {
+                Console.WriteLine("Customer api decorators generation disabled.");
+                return;
+            }
+
+            Console.WriteLine("Starting customer api decorators generation...");
+            var configs = curSettings.GetConfigs();
+
+            var factory = new CustomerApiDecoratorsFactory(_generatorWorkspace, configs.ToArray());
+            AsyncContext.Run(() => factory.GenerateAll());
+
+            Console.WriteLine("Customer api decorators  generation completed.");
         }
     }
 }

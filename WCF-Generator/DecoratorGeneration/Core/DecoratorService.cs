@@ -64,7 +64,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                 decoratedClassInfo.Namespace = decoratedClass.ContainingNamespace.ToString();
                 decoratedClassInfo.DecoratorClassTypeFullName = decoratedClassInfo.Namespace + "." + cls.TargetClassName;
                
-                //decoratedClassInfo.RequiredNamespaces = _syntaxWalker.GetUsings(decoratedClass);
+                //decoratedClassInfo.RequiredNamespaces = _syntaxWalker.GenerateUsings(decoratedClass);
 
                 // Get decorator class
                 var decoratorClass = _syntaxWalker.GetClassByFullName(decoratedClassInfo.DecoratorClassTypeFullName);
