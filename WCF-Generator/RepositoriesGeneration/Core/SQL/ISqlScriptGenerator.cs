@@ -19,6 +19,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsertManyValuesTemplate(SqlInfo info);
 
+        string GenerateInsertManyJoinedValuesTemplate(SqlInfo info);
+
         string GenerateInsertToTemp(SqlInfo info);
 
         string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info);
@@ -41,8 +43,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsertToVersionTable(SqlInfo info);
 
-        string GenerateInsertManyToVersionTable(SqlInfo info);
-
         string GenerateSelectByToVersionTable(SqlInfo info);
 
         string GenerateSelectByKeyAndSliceDateToVersionTable(SqlInfo info);
@@ -62,5 +62,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         string GenerateCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType);
 
         SqlInfo GetTableInfo(SqlInfo repositoryInfo);
+
     }
 }

@@ -9,6 +9,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
     {
         protected readonly string InsertManyQueryTemplateField = "InsertManyQueryTemplate";
         protected readonly string InsertManyValuesTempleteField = "InsertManyValuesTemplate";
+        protected readonly string InsertManyJoinedValuesTempleteField = "InsertManyJoinedValuesTemplate";
 
         public override string GetFields()
         {
@@ -23,18 +24,32 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + InsertManyQueryTemplateField + " = @" + insertManyQueryTemplate + ";");
             sb.AppendLine("private const string " + InsertManyValuesTempleteField + " = @" + insertManyValuesTemplate + ";");
 
+            if (RepositoryInfo.JoinRepositoryInfo != null)
+            {
+                var insertManyJoinedValuesTemplate = ScriptGenerator.GenerateInsertManyJoinedValuesTemplate(sqlInfo).SurroundWithQuotes();
+
+                sb.AppendLine("private const string " + InsertManyJoinedValuesTempleteField + " = @" + insertManyJoinedValuesTemplate + ";");
+            }
+
             return sb.ToString();
         }
 
         protected string GenerateInsertMany(bool requiresImplementation = true)
         {
+            var joined = RepositoryInfo.JoinRepositoryInfo != null;
+
             var sb = new StringBuilder();
 
             var elementName = RepositoryInfo.ClassName.FirstSymbolToLower();
             var parameterName = $"{elementName}List";
             var methodParameter = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterName}";
-            var columns = RepositoryInfo.Elements.Concat(RepositoryInfo.JoinRepositoryInfo?.Elements ?? Enumerable.Empty<PropertyInfo>()).ToList();
+            var allColumns = RepositoryInfo.Elements.Concat(RepositoryInfo.JoinRepositoryInfo?.Elements ?? Enumerable.Empty<PropertyInfo>()).ToList();
             var valuesAsParametesCount = RepositoryInfo.Elements.Count(p => p.IsParameter) + RepositoryInfo.HiddenElements.Count(p => p.IsParameter);
+
+            if (joined)
+            {
+                valuesAsParametesCount += 2;// @TempTable, @TempId
+            }
 
             // Synchronous method
             sb.AppendLine("public void InsertMany(" + methodParameter + ")");
@@ -59,6 +74,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             sb.AppendLine($"var values = new System.Text.StringBuilder();");
+
+            if (joined)
+            {
+                sb.AppendLine($"var joinedValues = new System.Text.StringBuilder();");
+            }
+
             sb.AppendLine($"var query = new System.Text.StringBuilder();");
             sb.AppendLine($"var parameters = new Dictionary<string, object>();");
             sb.AppendLine();
@@ -83,14 +104,56 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine($"var {elementName} = item.Value;");
             sb.AppendLine("var index = item.Index; ");
 
-            var columnsAsParameters = columns.Where(c => c.IsParameter).ToList();
+            var columnsAsParameters = allColumns.Where(c => c.IsParameter).ToList();
 
             foreach (var column in columnsAsParameters)
             {
                 sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {elementName}.{column.Name});");
             }
 
-            var values = columns.Where(c => !c.IsParameter)
+            var values = RepositoryInfo.Elements.Where(c => !c.IsParameter)
+                .Select(c =>
+                {
+                    var name = $"{elementName}.{c.Name}";
+
+                    if (!c.IsNullable)
+                    {
+                        if (c.IsBool)
+                        {
+                            return $"{name} ? 1 : 0";
+                        }
+                        if (c.IsEnum)
+                        {
+                            return $"(int){name}";
+                        }
+
+                        if (c.CultureDependent)
+                        {
+                            return $"{name}.ToString(CultureInfo.InvariantCulture)";
+                        }
+
+                        return name;
+                    }
+                    if (c.IsBool)
+                    {
+                        return $"({name} != null ? ({name}.Value ? 1 : 0).ToString() : null) ?? \"NULL\"";
+                    }
+                    if (c.IsEnum)
+                    {
+                        return $"((int?){name})?.ToString() ?? \"NULL\"";
+                    }
+                    if (c.CultureDependent)
+                    {
+                        return $"{name}?.ToString(CultureInfo.InvariantCulture) ?? \"NULL\"";
+                    }
+
+                    return $"{name}?.ToString() ?? \"NULL\"";
+
+                })
+                .ToList();
+
+
+            var joinedValues = RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter)
                 .Select(c =>
                 {
                     var name = $"{elementName}.{c.Name}";
@@ -137,12 +200,33 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 ? $"values.AppendFormat({InsertManyValuesTempleteField}, {string.Join(",", values)}, index);"
                 : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
 
+            if (joined)
+            {
+                sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
+
+                sb.AppendLine(values.Any()
+                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, {string.Join(",", joinedValues)}, index);"
+                    : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
+            }
+
             sb.AppendLine("}");
 
-            sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
+            if (joined)
+            {
+                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, joinedValues.Replace(\"'NULL'\",\"NULL\").ToString(), values.Replace(\"'NULL'\",\"NULL\").ToString());");
+            }
+            else
+            {
+                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
+            }
+
             sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
             sb.AppendLine("parameters.Clear();");
             sb.AppendLine("values.Clear();");
+            if (joined)
+            {
+                sb.AppendLine("joinedValues.Clear();");
+            }
             sb.AppendLine("query.Clear();");
 
             sb.AppendLine("}");
@@ -173,6 +257,12 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             sb.AppendLine($"var values = new System.Text.StringBuilder();");
+
+            if (joined)
+            {
+                sb.AppendLine($"var joinedValues = new System.Text.StringBuilder();");
+            }
+
             sb.AppendLine($"var query = new System.Text.StringBuilder();");
             sb.AppendLine($"var parameters = new Dictionary<string, object>();");
             sb.AppendLine();
@@ -210,14 +300,36 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 ? $"values.AppendFormat({InsertManyValuesTempleteField}, {string.Join(",", values)}, index);"
                 : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
 
+
+            if (joined)
+            {
+                sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
+
+                sb.AppendLine(values.Any()
+                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, {string.Join(",", joinedValues)}, index);"
+                    : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
+            }
+
             sb.AppendLine("}");
 
-            sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
+            if (joined)
+            {
+                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, joinedValues.Replace(\"'NULL'\",\"NULL\").ToString(), values.Replace(\"'NULL'\",\"NULL\").ToString());");
+            }
+            else
+            {
+                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
+            }
+
             sb.AppendLine($"await Task.Delay(10);");
 
             sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
             sb.AppendLine("parameters.Clear();");
             sb.AppendLine("values.Clear();");
+            if (joined)
+            {
+                sb.AppendLine("joinedValues.Clear();");
+            }
             sb.AppendLine("query.Clear();");
 
             sb.AppendLine("}");
