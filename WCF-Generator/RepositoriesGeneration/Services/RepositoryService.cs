@@ -258,7 +258,18 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Add sql column name - skip members marked [DbIgnoreAttribute]
             var elements = properties
                 .Where(p => !p.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
-                .Select(p => p.Identifier.Text);
+                .Select(p =>
+                {
+                    var typeName = p.Type.ToString();
+                    
+                    return new PropertyInfo(
+                        name:p.Identifier.Text,
+                        isParameter: typeName == "string",
+                        isNullable: typeName.EndsWith("?"),
+                        isBool: typeName.Contains("bool"),
+                        isEnum: _solutionSyntaxWalker.PropertyIsEnum(p),
+                        cultureDependent: typeName.Contains("decimal") || typeName.Contains("double") || typeName.Contains("float") || typeName.Contains("DateTime"));
+                });
             repositoryInfo.Elements.AddRange(elements);
 
             // Primary keys info
@@ -396,7 +407,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 "System",
                 "System.Collections.Generic",
                 "System.Linq",
-                "System.Threading.Tasks"
+                "System.Threading.Tasks",
+                "System.Globalization"
             };
 
             repositoryInfo.RequiredNamespaces.Add(RepositoryType.General, requiredNamespaces);

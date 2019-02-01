@@ -22,5 +22,17 @@ namespace TestRepositoryGeneration.DataObjects.VersionsRepositories
         public IEnumerable<int> TaxIds { get; set; }
 
         public Guid MenuCategoryId { get; set; }
+
+        public Guid? ExternalId { get; set; }
+
+        public decimal? DiscountValue { get; set; }
+
+        public DateTime? DiscountStartDate { get; set; }
+
+        public MenuItemType Type { get; set; }
+
+        public KitchenPrinter? BitKitchenPrinters { get; set; }
+
+        public bool? YesNoUnknown { get; set; }
     }
 }
