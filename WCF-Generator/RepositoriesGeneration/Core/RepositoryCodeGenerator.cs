@@ -71,7 +71,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var insertOrUpdate = ScriptGenerator.GenerateInsertOrUpdate(RepositoryInfo.PrimaryKeys, sqlInfo).SurroundWithQuotes();
            
 
-            sb.AppendLine("private const string Fields = @" + fields.SurroundWithQuotes() + ";");
+            sb.AppendLine("public const string Fields = @" + fields.SurroundWithQuotes() + ";");
             sb.AppendLine("private const string " + _selectAllQuery + " = @" + selectAllQuery + ";");
             sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
