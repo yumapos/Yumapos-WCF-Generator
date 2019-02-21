@@ -19,7 +19,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 {
 	internal partial class MenuItems2TaxesCacheRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase
 	{
-		private const string Fields = @"[MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted]";
+		public const string Fields = @"[MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted]";
 		private const string SelectAllQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess]   ";
 		private const string SelectByQuery = @"SELECT [MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted] FROM [MenuItems2Taxess] ";
 		private const string InsertQuery = @"INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted) ";
