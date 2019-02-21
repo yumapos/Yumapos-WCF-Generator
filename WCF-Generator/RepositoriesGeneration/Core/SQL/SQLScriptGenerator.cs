@@ -194,7 +194,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
-            var columns = info.TableColumns.Select(c => c.Name).Where(c => info.IdentityColumns.All(pk => pk != c)).ToList();
+            var columns = info.TableColumns.Select(c => c.Name).Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c)).ToList();
             return Update(info.TableName) + " " 
                     + Set(columns, info.TableName) + " " 
                     + From(info.TableName) + " ";
