@@ -353,7 +353,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var filterByIsDeleted = RepositoryInfo.IsDeletedExist;
             var sqlWhere = _whereQueryBy + filter.Key;
             var selectQuery = _selectByQuery;
-
+            if(filter.Parameters.Any(p => p == null))
+            {
+                filter.Parameters = new List<ParameterInfo>();
+                return "";
+            }
             List<string> parameters;
             try
             {
