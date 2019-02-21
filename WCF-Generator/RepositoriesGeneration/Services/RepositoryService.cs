@@ -219,6 +219,10 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                     {
                         var name = f.Trim();
                         var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == name);
+                        if(parameter == null)
+                        {
+                            return null;
+                        }
                         var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(parameter);
                         var needGeneratePeriod = fullTypeName == "System.DateTime" || fullTypeName == "System.DateTimeOffset";
                         return new ParameterInfo(name, parameter != null ? fullTypeName : null, needGeneratePeriod);

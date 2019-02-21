@@ -515,6 +515,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
             foreach (var parameter in parameters)
             {
+                if (parameter == null)
+                {
+                    sb.Append("\"INVALID FILTERKEY\"");
+                    break;
+                }
                 if (parameter.NeedGeneratePeriod)
                 {
                     sb.Append($" AND {ownerTableName}.[{parameter.Name}] >= @start{parameter.Name}");
@@ -528,7 +533,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 {
                     sb.Append($" AND {ownerTableName}.[{parameter.Name}] = @{parameter.Name}");
                 }
-
             }
             return sb.ToString().Replace("WHERE  AND ", "WHERE ");
 
