@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using WCFGenerator.Common;
@@ -30,6 +31,7 @@ namespace WCFGenerator.WcfClientGeneration
         #region Properties
 
         public List<ServiceDetail> Services { get; set; }
+        private static SemanticModel _model;
 
         #endregion
 
@@ -208,16 +210,16 @@ namespace WCFGenerator.WcfClientGeneration
             var parameters = "";
             var size = parametersList.Parameters.Count;
             var count = 1;
-
             foreach (var parm in parametersList.Parameters)
             {
-                var param = parm.ToString();
+                var symbol = _model.GetDeclaredSymbol(parm);
 
-                if (param.Contains("IEnumerable<"))
+                var parameterTypeString = symbol.OriginalDefinition.ToDisplayString();
+                if (parameterTypeString != null && parameterTypeString.Contains("IEnumerable<"))
                 {
-                    param = param.Replace("IEnumerable<", "").Replace(">", "[]");
+                    parameterTypeString = parameterTypeString.Substring(parameterTypeString.IndexOf("<") + 1).Replace(">", "[]");
                 }
-
+                var param = parameterTypeString + " " + symbol.Name;
                 parameters += param;
 
                 if (count < size)
@@ -923,7 +925,7 @@ namespace WCFGenerator.WcfClientGeneration
             var documentRoot = await svc.GetSyntaxRootAsync();
             var rootCompUnit = (CompilationUnitSyntax) documentRoot;
             var defaultUsings = rootCompUnit.Usings.Select(x => x.Name.ToString()).ToList();
-
+            _model = await svc.GetSemanticModelAsync();
             var tree = await svc.GetSyntaxTreeAsync();
             var methodDeclarationSyntaxs = GetMethodSyntaxesFromTree(tree);
 

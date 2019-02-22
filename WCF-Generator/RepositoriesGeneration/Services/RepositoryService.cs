@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
@@ -184,7 +185,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 ClassName = className,
                 ClassFullName = _solutionSyntaxWalker.GetFullRepositoryModelName(doClass),
                 IsTenantRelated = !doClass.BaseTypeExist("ITenantUnrelated"),
-                IsStoreDependent = doClass.BaseTypeExist("IStoreRelated")
+                IsStoreDependent = doClass.BaseTypeExist("IStoreRelated") && doClass.Members.OfType<PropertyDeclarationSyntax>().Any(x => x.Identifier.Text == "StoreId")
             };
 
 
@@ -218,6 +219,10 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                     {
                         var name = f.Trim();
                         var parameter = doClass.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(cp => cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == name);
+                        if(parameter == null)
+                        {
+                            return null;
+                        }
                         var fullTypeName = _solutionSyntaxWalker.GetFullPropertyTypeName(parameter);
                         var needGeneratePeriod = fullTypeName == "System.DateTime" || fullTypeName == "System.DateTimeOffset";
                         return new ParameterInfo(name, parameter != null ? fullTypeName : null, needGeneratePeriod);
@@ -257,7 +262,18 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Add sql column name - skip members marked [DbIgnoreAttribute]
             var elements = properties
                 .Where(p => !p.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
-                .Select(p => p.Identifier.Text);
+                .Select(p =>
+                {
+                    var typeName = p.Type.ToString();
+                    
+                    return new PropertyInfo(
+                        name:p.Identifier.Text,
+                        isParameter: typeName == "string",
+                        isNullable: typeName.EndsWith("?"),
+                        isBool: typeName.Contains("bool"),
+                        isEnum: _solutionSyntaxWalker.PropertyIsEnum(p),
+                        cultureDependent: typeName.Contains("decimal") || typeName.Contains("double") || typeName.Contains("float") || typeName.Contains("DateTime"));
+                });
             repositoryInfo.Elements.AddRange(elements);
 
             // Primary keys info
@@ -359,7 +375,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
                 // Search method for implementation
                 var repositoryInterfaceMethods = repoInterface.Members.OfType<MethodDeclarationSyntax>()
-                    .Select(m => new MethodInfo() {Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString()})
+                    .Select(m => new MethodInfo()
+                    {
+                        Name = m.Identifier.Text,
+                        ReturnType = m.ReturnType.ToString(),
+                        Parameters = m.ParameterList.Parameters.Select(p => new ParameterInfo(p.Identifier.ToString(), p.Type.ToString(), false)).ToList()
+                    })
                     .ToList();
 
                 repositoryInfo.InterfaceMethods.AddRange(repositoryInterfaceMethods);
@@ -390,7 +411,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 "System",
                 "System.Collections.Generic",
                 "System.Linq",
-                "System.Threading.Tasks"
+                "System.Threading.Tasks",
+                "System.Globalization"
             };
 
             repositoryInfo.RequiredNamespaces.Add(RepositoryType.General, requiredNamespaces);
@@ -421,7 +443,11 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<MethodInfo> interfaceMethodNames, List<MethodInfo> customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods, string fullRepositoryModelName)
         {
             // Check implemented methods in custom repository
-            var unimplemented = interfaceMethodNames.Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null);
+            var unimplemented = interfaceMethodNames
+                .Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null)
+                .GroupBy(p=>p.Name)
+                .Select(gr => gr.Count() == 1 ? gr.Single() : gr.FirstOrDefault(p => p.Parameters.First().TypeName != fullRepositoryModelName.Split('.').Last()))
+                .ToList();
 
             // Set methods which possible to generate
 
@@ -433,27 +459,50 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 new MethodImplementationInfo { Method = RepositoryMethod.InsertOrUpdate},
                 new MethodImplementationInfo { Method = RepositoryMethod.InsertMany },
             };
+            try
+            {
 
-            // Methods by keys from model (without methods from base model)
-            var keyBasedMethods = possibleKeysForMethods
-                .SelectMany(filterInfo => new List<MethodImplementationInfo>
-                {
-                    new MethodImplementationInfo {Method = RepositoryMethod.GetBy, ReturnType = "IEnumerable<" + fullRepositoryModelName + ">" , FilterInfo = filterInfo},
-                    new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
-                    new MethodImplementationInfo {Method = RepositoryMethod.RemoveBy, FilterInfo = filterInfo}
-                });
-            methods.AddRange(keyBasedMethods);
+                // Methods by keys from model (without methods from base model)
+                var keyBasedMethods = possibleKeysForMethods
+                    .SelectMany(filterInfo => new List<MethodImplementationInfo>
+                    {
+                        new MethodImplementationInfo
+                        {
+                            Method = RepositoryMethod.GetBy,
+                            ReturnType = "IEnumerable<" + fullRepositoryModelName + ">",
+                            FilterInfo = filterInfo,
+                            Parameters = interfaceMethodNames.FirstOrDefault(p => p.Name == ("GetBy" + filterInfo.Key) || p.Name == ("GetBy" + filterInfo.Key + "Async"))?.Parameters ?? filterInfo.Parameters
+                        },
+                        new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
+                        new MethodImplementationInfo
+                        {
+                            Method = RepositoryMethod.RemoveBy,
+                            FilterInfo = filterInfo,
+                            Parameters = interfaceMethodNames.FirstOrDefault(p => p.Name == ("GetBy" + filterInfo.Key) || p.Name == ("GetBy" + filterInfo.Key + "Async"))?.Parameters ?? filterInfo.Parameters
+                        }
+                    });
 
+                methods.AddRange(keyBasedMethods);
+            }
+            catch
+            {
+                Console.WriteLine("GetUnimplementedMethods error for: " + fullRepositoryModelName);
+                throw;
+            }
             // Set methods to implementation from possible list
             foreach (var um in unimplemented)
             {
                 // Seach in possible list
-                var m = methods.FirstOrDefault(methodInfo => NameIsTrue(methodInfo, um.Name));
-                if (m == null) continue;
+                var mm = methods.Where(methodInfo => NameIsTrue(methodInfo, um.Name));
+                if (!mm.Any()) continue;
                 // Set to implementation
-                m.RequiresImplementation = true;
-                m.ReturnType = um.Name;
-                m.ReturnType = um.ReturnType;
+                foreach (var m in mm)
+                {
+                    m.RequiresImplementation = true;
+                    m.Name = um.Name;
+                    m.ReturnType = um.ReturnType;
+                    m.Parameters = um.Parameters;
+                }
             }
 
             return methods;

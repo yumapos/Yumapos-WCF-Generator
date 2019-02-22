@@ -10,15 +10,15 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 
         Task<IEnumerable<ElectronicCouponsTyped>> GetAllAsync(bool? isDeleted = false);
 
-        Task<ElectronicCouponsTyped> Get(int id);
+        Task<ElectronicCouponsTyped> Get(int electronicCouponsId);
 
         Task<int> InsertAsync(ElectronicCouponsTyped electronicCouponsTyped);
 
-        Task InsertManyAsync(IEnumerable<ElectronicCouponsTyped> electronicCouponsTypedList);
+        Task InsertManyAsync(IEnumerable<ElectronicCouponsTyped> electronicCouponsTyped);
         
         Task UpdateByElectronicCouponsIdAsync(ElectronicCouponsTyped electronicCouponsTyped);
 
-        Task RemoveByElectronicCouponsIdAsync(int id);
+        Task RemoveByElectronicCouponsIdAsync(int electronicCouponsId);
 
         Task RemoveList(IEnumerable<int> ids);
     }

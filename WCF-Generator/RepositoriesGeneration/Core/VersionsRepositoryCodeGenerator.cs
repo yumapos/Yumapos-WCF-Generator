@@ -6,11 +6,10 @@ using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core
 {
-    internal class VersionsRepositoryCodeGenerator : RepositoryCodeGeneratorAbstract
+    internal class VersionsRepositoryCodeGenerator : RepositoryCodeGeneratorBase
     {
         public static string RepositoryKind = "Version";
         private string _insertQueryName = "InsertQuery";
-        private string _insertManyQueryName = "InsertManyQuery";
         private string _whereQueryBy = "WhereQueryBy";
         private string _whereQueryByWithAlias = "WhereQueryByWithAlias";
         private string _selectByQuery = "SelectBy";
@@ -54,12 +53,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var sqlInfo = ScriptGenerator.GetTableInfo(RepositoryInfo.RepositorySqlInfo);
 
             var insertQuery = ScriptGenerator.GenerateInsertToVersionTable(sqlInfo).SurroundWithQuotes();
-            var insertManyQuery = ScriptGenerator.GenerateInsertManyToVersionTable(sqlInfo).SurroundWithQuotes();
 
             var sb = new StringBuilder();
 
             sb.AppendLine("private const string " + _insertQueryName + " = @" + insertQuery + ";");
-            sb.AppendLine("private const string " + _insertManyQueryName + " = @" + insertManyQuery + ";");
 
             if (!RepositoryInfo.IsManyToMany)
             {
@@ -106,6 +103,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                     sb.AppendLine("private const string " + _andWithSliceDateFilter + " = " + filter.SurroundWithQuotes() + ";");
                 }
             }
+
+            sb.AppendLine(base.GetFields());
 
             return sb.ToString();
         }
@@ -172,110 +171,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("public async Task InsertAsync(" + RepositoryInfo.ClassFullName + " " + parameterName + ")");
             sb.AppendLine("{");
             sb.AppendLine("await DataAccessService.InsertObjectAsync(" + parameterName + ", " + _insertQueryName + ");");
-            sb.AppendLine("}");
-
-            return sb.ToString();
-        }
-
-        private string GenerateInsertMany()
-        {
-            var sb = new StringBuilder();
-
-            var elementName = RepositoryInfo.ClassName.FirstSymbolToLower();
-            var parameterName = $"{elementName}List";
-            var methodParameter = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterName}";
-            var columns = RepositoryInfo.Elements.Concat(RepositoryInfo.JoinRepositoryInfo?.Elements ?? Enumerable.Empty<string>()).ToList();
-            var queryName = _insertManyQueryName;
-
-            // Synchronous method
-            sb.AppendLine("public void InsertMany(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
-            sb.AppendLine();
-            sb.AppendLine($"if(!{parameterName}.Any()) return;");
-            sb.AppendLine();
-            sb.AppendLine("var query = new System.Text.StringBuilder();");
-            sb.AppendLine("var counter = 0;");
-            sb.AppendLine($"var parameters = new Dictionary<string, object> ();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-
-            sb.AppendLine($"if (parameters.Count + {RepositoryInfo.Elements.Count + RepositoryInfo.HiddenElements.Count} > {MaxRepositoryParamsBaseRepositoryField})");
-            sb.AppendLine("{");
-            sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
-            sb.AppendLine("query.Clear();");
-            sb.AppendLine("counter = 0;");
-            sb.AppendLine("parameters.Clear();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine("}");
-
-            foreach (var column in columns)
-            {
-                sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
-            }
-
-            sb.AppendLine($"query.AppendFormat({queryName}, counter);");
-            sb.AppendLine("counter++;");
-
-            sb.AppendLine("}");
-            sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
-            sb.AppendLine("}");
-            sb.AppendLine();
-
-            // Asynchronous method
-            sb.AppendLine("public async Task InsertManyAsync(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
-            sb.AppendLine();
-            sb.AppendLine($"if(!{parameterName}.Any()) return;");
-            sb.AppendLine();
-            sb.AppendLine("var query = new System.Text.StringBuilder();");
-            sb.AppendLine("var counter = 0;");
-            sb.AppendLine($"var parameters = new Dictionary<string, object>();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-
-            sb.AppendLine($"if (parameters.Count + {RepositoryInfo.Elements.Count + RepositoryInfo.HiddenElements.Count} > {MaxRepositoryParamsBaseRepositoryField})");
-            sb.AppendLine("{");
-            sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
-            sb.AppendLine("query.Clear();");
-            sb.AppendLine("counter = 0;");
-            sb.AppendLine("parameters.Clear();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine("}");
-
-            foreach (var column in columns)
-            {
-                sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
-            }
-
-            sb.AppendLine($"query.AppendFormat({queryName}, counter);");
-            sb.AppendLine("counter++;");
-            
-            sb.AppendLine("}");
-            sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
             sb.AppendLine("}");
 
             return sb.ToString();

@@ -27,6 +27,8 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         // Classes from all configured projects
         private readonly List<ClassDeclarationSyntax> _allClasses;
 
+        private readonly List<string> _enums;
+
         public SolutionSyntaxWalker(Solution solution, List<string> repositoryModelsProjects, string repositoryAttributeName, List<string> repositoryInterfaceProjects, string targetProject,  List<string> additionalProjectsForAnalysis)
         {
             if (solution == null) throw new ArgumentException("solution");
@@ -39,6 +41,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             _customRepositoryClasses = new List<ClassDeclarationSyntax>();
             _repositoryModelClasses = new List<ClassDeclarationSyntax>();
             _repositoryInterfaces = new List<InterfaceDeclarationSyntax>();
+            _enums = new List<string>();
 
             // Get repository model Classes
             var repositoryModelTrees = GetTrees(solution, repositoryModelsProjects);
@@ -77,7 +80,6 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var allTrees = new List<SyntaxTree>();
             allTrees.AddRange(repositoryModelTrees);
             allTrees.AddRange(repositoryInterfaceTrees);
-            allTrees.AddRange(repositoryTrees);
             allTrees.AddRange(additionalTrees);
             
             _fullCompilation = CSharpCompilation.Create("FullCompilation")
@@ -87,6 +89,19 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IEnumerable).Assembly.Location)
                 });
+
+            var allProjectsTrees = repositoryInterfaceProjects
+                .Concat(repositoryModelsProjects)
+                .Concat(additionalProjectsForAnalysis)
+                .Distinct()
+                .ToDictionary(p => p, p => GetTrees(solution, new List<string> { p }));
+
+            _enums = allProjectsTrees
+                .SelectMany(t => t.Value)
+                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<EnumDeclarationSyntax>())
+                .Select(e=> e.Identifier.Text.ToString())
+                .ToList();
+
         }
 
         public IEnumerable<ClassDeclarationSyntax> GetRepositoryClasses()
@@ -110,7 +125,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         public string GetFullTypeName(string typeName)
         {
             var resultList = _fullCompilation.GetSymbolsWithName(s => s == typeName);
-            return resultList.FirstOrDefault().ToString();
+            return resultList.FirstOrDefault()?.ToString();
         }
 
         public InterfaceDeclarationSyntax GetInheritedInterface(string interfaceName)
@@ -175,6 +190,12 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             return mSyntaxTrees;
         }
 
-      
+
+        public bool PropertyIsEnum(PropertyDeclarationSyntax propertyDeclarationSyntax)
+        {
+            var t = propertyDeclarationSyntax.Type.ToString().TrimEnd('?');
+            
+            return _enums.Any(e => e == t);
+        }
     }
 }
