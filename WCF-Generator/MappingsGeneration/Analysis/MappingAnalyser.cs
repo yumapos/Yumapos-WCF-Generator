@@ -280,8 +280,48 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                                         }
                                         else
                                         {
-                                            ToDtoFunction = "itemDto." + dtoCodeProperty.Name + " = " + "item." + codeProperty.Name;
-                                            FromDtoFunction = "item." + codeProperty.Name + " = " + "itemDto." + dtoCodeProperty.Name;
+                                            var itemDtoValue = $"itemDto.{dtoCodeProperty.Name}";
+                                            var itemDoValue = $"item.{codeProperty.Name}";
+                                            var dtoType = dtoCodeProperty.Type as INamedTypeSymbol;
+                                            var doType = codeProperty.Type as INamedTypeSymbol;
+
+                                            if (dtoCodeProperty.Type.GetFullName().Contains("Nullable"))
+                                            {
+                                                itemDtoValue += ".Value";
+                                                dtoType = dtoType.TypeArguments.First() as INamedTypeSymbol;
+                                            }
+                                            if (codeProperty.Type.GetFullName().Contains("Nullable"))
+                                            {
+                                                itemDoValue += ".Value";
+                                                doType = doType.TypeArguments.First() as INamedTypeSymbol;
+                                            }
+
+                                            if (doType.Name == "DateTime" && dtoType.Name == "DateTimeOffset")
+                                            {
+                                                itemDoValue = $"new DateTimeOffset({itemDoValue}, new TimeSpan(0))";
+                                                itemDtoValue += ".UtcDateTime";
+                                            }
+
+                                            if (doType.Name == "DateTimeOffset" && dtoType.Name == "DateTime")
+                                            {
+                                                itemDoValue += ".UtcDateTime";
+                                                itemDtoValue = $"new DateTimeOffset({itemDtoValue}, new TimeSpan(0))";
+                                            }
+
+                                            if (dtoCodeProperty.Type.GetFullName().Contains("Nullable") && !codeProperty.Type.GetFullName().Contains("Nullable"))
+                                            {
+                                                FromDtoFunction =
+                                                    $"item.{codeProperty.Name} = itemDto.{dtoCodeProperty.Name}.HasValue ? {itemDtoValue} : default({doType.GetFullName()})";
+                                            }
+
+                                            if (!dtoCodeProperty.Type.GetFullName().Contains("Nullable") && codeProperty.Type.GetFullName().Contains("Nullable"))
+                                            {
+                                                ToDtoFunction =
+                                                    $"itemDto.{dtoCodeProperty.Name} = item.{codeProperty.Name}.HasValue ? {itemDoValue} : default({dtoType.GetFullName()})";
+                                            }
+
+                                            FromDtoFunction = string.IsNullOrEmpty(FromDtoFunction) ? "item." + codeProperty.Name + " = " + itemDtoValue : FromDtoFunction;
+                                            ToDtoFunction = string.IsNullOrEmpty(ToDtoFunction) ? "itemDto." + dtoCodeProperty.Name + " = " + itemDoValue : ToDtoFunction;
                                         }
                                     }
                                 }
@@ -440,7 +480,16 @@ namespace WCFGenerator.MappingsGenerator.Analysis
         {
             var DOType = DOCodeProperty.Type.GetFullName();
             var DtoType = DtoCodeProperty.Type.GetFullName();
-
+            if (DOType.Contains("Nullable"))
+            {
+                var tmp = DOCodeProperty.Type as INamedTypeSymbol;
+                DOType = tmp.TypeArguments.First().GetFullName();
+            }
+            if (DtoType.Contains("Nullable"))
+            {
+                var tmp = DtoCodeProperty.Type as INamedTypeSymbol;
+                DtoType = tmp.TypeArguments.First().GetFullName();
+            }
             if (DOType.Contains("IEnumerable") && DtoType.Contains("IEnumerable"))
             {
                 DOType = DOType.Remove(0, DOType.IndexOf("<") + 1);
@@ -456,7 +505,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             if (CompareInMapDtoAndDoCollection(DOType, DtoType, similarClasses))
                 return true;
 
-            if (DOType == DtoType)
+            if (DOType == DtoType || DOType.Contains("DateTime") && DtoType.Contains("DateTime"))
             {
                 return true;
             }

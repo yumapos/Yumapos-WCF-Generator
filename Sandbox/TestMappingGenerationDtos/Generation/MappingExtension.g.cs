@@ -27,14 +27,19 @@ namespace blah
 
 			var itemDto = new TestMappingGenerationDtos.AddressDto();
 			itemDto.Id = item.Id;
-			itemDto.Country = item.Country;
+			itemDto.Country = item.Country.Value;
 			itemDto.City = item.City;
 			itemDto.State = item.State;
 			itemDto.Street = item.Street;
 			itemDto.Building = item.Building;
 			itemDto.ZipCode = item.ZipCode;
 			itemDto.Latitude = item.Latitude;
-			itemDto.Longitude = item.Longitude;
+			itemDto.Longitude = item.Longitude.HasValue ? item.Longitude.Value : default(System.Decimal);
+			itemDto.SomeDateTime = item.SomeDateTime;
+			itemDto.SomeTime = new DateTimeOffset(item.SomeTime, new TimeSpan(0));
+			itemDto.SomeTimeOffset = item.SomeTimeOffset.UtcDateTime;
+			itemDto.SomeTimeNullable = item.SomeTimeNullable.HasValue ? new DateTimeOffset(item.SomeTimeNullable.Value, new TimeSpan(0)) : default(System.DateTimeOffset);
+			itemDto.SomeTimeOffsetNullable = item.SomeTimeOffsetNullable.UtcDateTime;
 
 			return itemDto;
 		}
@@ -46,14 +51,19 @@ namespace blah
 
 			var item = new TestMappingGeneration.DataObjects.Address();
 			item.Id = itemDto.Id;
-			item.Country = itemDto.Country;
+			item.Country = itemDto.Country.Value;
 			item.City = itemDto.City;
 			item.State = itemDto.State;
 			item.Street = itemDto.Street;
 			item.Building = itemDto.Building;
 			item.ZipCode = itemDto.ZipCode;
-			item.Latitude = itemDto.Latitude;
+			item.Latitude = itemDto.Latitude.HasValue ? itemDto.Latitude.Value : default(System.Decimal);
 			item.Longitude = itemDto.Longitude;
+			item.SomeDateTime = itemDto.SomeDateTime;
+			item.SomeTime = itemDto.SomeTime.UtcDateTime;
+			item.SomeTimeOffset = new DateTimeOffset(itemDto.SomeTimeOffset, new TimeSpan(0));
+			item.SomeTimeNullable = itemDto.SomeTimeNullable.UtcDateTime;
+			item.SomeTimeOffsetNullable = itemDto.SomeTimeOffsetNullable.HasValue ? new DateTimeOffset(itemDto.SomeTimeOffsetNullable.Value, new TimeSpan(0)) : default(System.DateTimeOffset);
 
 			return item;
 		}
@@ -72,14 +82,14 @@ namespace blah
 			itemDto.DeliveryZoneId = item.DeliveryZoneId;
 			itemDto.StoreId = item.StoreId;
 			itemDto.Name = item.Name;
-			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery;
-			itemDto.DeliveryPrice = item.DeliveryPrice;
-			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery;
-			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit;
-			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit;
-			itemDto.PriceFixed = item.PriceFixed;
-			itemDto.PricePercentOfOrder = item.PricePercentOfOrder;
-			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery;
+			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery.Value;
+			itemDto.DeliveryPrice = item.DeliveryPrice.Value;
+			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery.Value;
+			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit.Value;
+			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit.Value;
+			itemDto.PriceFixed = item.PriceFixed.Value;
+			itemDto.PricePercentOfOrder = item.PricePercentOfOrder.Value;
+			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery.Value;
 
 			return itemDto;
 		}
@@ -94,14 +104,14 @@ namespace blah
 			item.DeliveryZoneId = itemDto.DeliveryZoneId;
 			item.StoreId = itemDto.StoreId;
 			item.Name = itemDto.Name;
-			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery;
-			item.DeliveryPrice = itemDto.DeliveryPrice;
-			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery;
-			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit;
-			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit;
-			item.PriceFixed = itemDto.PriceFixed;
-			item.PricePercentOfOrder = itemDto.PricePercentOfOrder;
-			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery;
+			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery.Value;
+			item.DeliveryPrice = itemDto.DeliveryPrice.Value;
+			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery.Value;
+			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit.Value;
+			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit.Value;
+			item.PriceFixed = itemDto.PriceFixed.Value;
+			item.PricePercentOfOrder = itemDto.PricePercentOfOrder.Value;
+			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery.Value;
 
 			return item;
 		}
@@ -109,7 +119,6 @@ namespace blah
 		public static TestMappingGenerationDtos.StoreDto MapToDto(this TestMappingGeneration.DataObjects.Store item)
 		{
 			//itemDo.AddressId
-			//itemDo.PriceListId
 			//itemDo.ServiceTypes
 			//itemDo.CustomTenderId
 			//itemDo.AggregatedTenderId
@@ -129,11 +138,12 @@ namespace blah
 			itemDto.IsActive = item.IsActive;
 			itemDto.BusinessDayStartInSeconds = item.BusinessDayStartInSeconds;
 			itemDto.Description = item.Description;
-			itemDto.ImageId = item.ImageId;
-			itemDto.LegalEntityId = item.LegalEntityId;
+			itemDto.ImageId = item.ImageId.Value;
+			itemDto.LegalEntityId = item.LegalEntityId.Value;
 			itemDto.MinAverageReceipt = item.MinAverageReceipt;
 			itemDto.MaxAverageReceipt = item.MaxAverageReceipt;
 			itemDto.AddressDto = item.StoreAddress.MapToDto();
+			itemDto.PriceListId = item.PriceListId;
 			itemDto.PaymentTypes = (StorePaymentType)item.PaymentTypes;
 			itemDto.IsSendZReportEnabled = item.BitSettings.HasFlag(StoreSettings.SendZReportEnabled); itemDto.DeliveryMoneyChangeEnabled = item.BitSettings.HasFlag(StoreSettings.DeliveryMoneyChangeEnabled); itemDto.PartySizeEnabled = item.BitSettings.HasFlag(StoreSettings.PartySizeEnabled); itemDto.MobileFutureMenuShowing = item.BitSettings.HasFlag(StoreSettings.MobileFutureMenuShowing); itemDto.MobilePromoCampaignsShow = item.BitSettings.HasFlag(StoreSettings.MobilePromoCampaignsShow); itemDto.IsDeliveryRoundTheClock = item.BitSettings.HasFlag(StoreSettings.IsDeliveryRoundTheClock); itemDto.TipEnabled = item.BitSettings.HasFlag(StoreSettings.TipEnabled); itemDto.BitSettings = (StoreSettings)item.BitSettings; ;
 
@@ -142,7 +152,6 @@ namespace blah
 
 		public static TestMappingGeneration.DataObjects.Store MapFromDto(this TestMappingGenerationDtos.StoreDto itemDto)
 		{
-			//itemDto.PriceListId
 			//itemDto.DeliveryZones
 			//itemDto.IsMain
 			//itemDto.TipEnabled
@@ -168,11 +177,12 @@ namespace blah
 			item.IsActive = itemDto.IsActive;
 			item.BusinessDayStartInSeconds = itemDto.BusinessDayStartInSeconds;
 			item.Description = itemDto.Description;
-			item.ImageId = itemDto.ImageId;
-			item.LegalEntityId = itemDto.LegalEntityId;
+			item.ImageId = itemDto.ImageId.Value;
+			item.LegalEntityId = itemDto.LegalEntityId.Value;
 			item.MinAverageReceipt = itemDto.MinAverageReceipt;
 			item.MaxAverageReceipt = itemDto.MaxAverageReceipt;
 			item.StoreAddress = itemDto.AddressDto.MapFromDto();
+			item.PriceListId = itemDto.PriceListId.HasValue ? itemDto.PriceListId.Value : default(System.Guid);
 			item.PaymentTypes = (int)itemDto.PaymentTypes;
 			item.BitSettings = (itemDto.IsSendZReportEnabled ? StoreSettings.SendZReportEnabled : 0) | (itemDto.DeliveryMoneyChangeEnabled ? StoreSettings.DeliveryMoneyChangeEnabled : 0) | (itemDto.PartySizeEnabled ? StoreSettings.PartySizeEnabled : 0) | (itemDto.MobileFutureMenuShowing ? StoreSettings.MobileFutureMenuShowing : 0) | (itemDto.MobilePromoCampaignsShow ? StoreSettings.MobilePromoCampaignsShow : 0) | (itemDto.IsDeliveryRoundTheClock ? StoreSettings.IsDeliveryRoundTheClock : 0) | (itemDto.TipEnabled ? StoreSettings.TipEnabled : 0);
 
