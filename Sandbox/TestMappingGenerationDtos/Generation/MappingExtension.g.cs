@@ -27,7 +27,7 @@ namespace blah
 
 			var itemDto = new TestMappingGenerationDtos.AddressDto();
 			itemDto.Id = item.Id;
-			itemDto.Country = item.Country;
+			itemDto.Country = item.Country.HasValue ? item.Country.Value : default(TestMappingGeneration.Enums.CountryISOCodes2);
 			itemDto.City = item.City;
 			itemDto.State = item.State;
 			itemDto.Street = item.Street;

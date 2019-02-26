@@ -8,7 +8,7 @@ namespace TestMappingGenerationDtos
     public class AddressDto
     {
         public Guid Id { get; set; }
-        public CountryISOCodes2? Country { get; set; }
+        public CountryISOCodes2 Country { get; set; }
         public string City { get; set; }
         public string State { get; set; }
         public string Street { get; set; }
