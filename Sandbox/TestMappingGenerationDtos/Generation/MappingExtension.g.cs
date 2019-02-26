@@ -27,7 +27,7 @@ namespace blah
 
 			var itemDto = new TestMappingGenerationDtos.AddressDto();
 			itemDto.Id = item.Id;
-			itemDto.Country = item.Country.Value;
+			itemDto.Country = item.Country;
 			itemDto.City = item.City;
 			itemDto.State = item.State;
 			itemDto.Street = item.Street;
@@ -51,7 +51,7 @@ namespace blah
 
 			var item = new TestMappingGeneration.DataObjects.Address();
 			item.Id = itemDto.Id;
-			item.Country = itemDto.Country.Value;
+			item.Country = itemDto.Country;
 			item.City = itemDto.City;
 			item.State = itemDto.State;
 			item.Street = itemDto.Street;
@@ -82,14 +82,14 @@ namespace blah
 			itemDto.DeliveryZoneId = item.DeliveryZoneId;
 			itemDto.StoreId = item.StoreId;
 			itemDto.Name = item.Name;
-			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery.Value;
-			itemDto.DeliveryPrice = item.DeliveryPrice.Value;
-			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery.Value;
-			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit.Value;
-			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit.Value;
-			itemDto.PriceFixed = item.PriceFixed.Value;
-			itemDto.PricePercentOfOrder = item.PricePercentOfOrder.Value;
-			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery.Value;
+			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery;
+			itemDto.DeliveryPrice = item.DeliveryPrice;
+			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery;
+			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit;
+			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit;
+			itemDto.PriceFixed = item.PriceFixed;
+			itemDto.PricePercentOfOrder = item.PricePercentOfOrder;
+			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery;
 
 			return itemDto;
 		}
@@ -104,14 +104,14 @@ namespace blah
 			item.DeliveryZoneId = itemDto.DeliveryZoneId;
 			item.StoreId = itemDto.StoreId;
 			item.Name = itemDto.Name;
-			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery.Value;
-			item.DeliveryPrice = itemDto.DeliveryPrice.Value;
-			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery.Value;
-			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit.Value;
-			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit.Value;
-			item.PriceFixed = itemDto.PriceFixed.Value;
-			item.PricePercentOfOrder = itemDto.PricePercentOfOrder.Value;
-			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery.Value;
+			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery;
+			item.DeliveryPrice = itemDto.DeliveryPrice;
+			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery;
+			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit;
+			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit;
+			item.PriceFixed = itemDto.PriceFixed;
+			item.PricePercentOfOrder = itemDto.PricePercentOfOrder;
+			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery;
 
 			return item;
 		}
@@ -138,8 +138,8 @@ namespace blah
 			itemDto.IsActive = item.IsActive;
 			itemDto.BusinessDayStartInSeconds = item.BusinessDayStartInSeconds;
 			itemDto.Description = item.Description;
-			itemDto.ImageId = item.ImageId.Value;
-			itemDto.LegalEntityId = item.LegalEntityId.Value;
+			itemDto.ImageId = item.ImageId;
+			itemDto.LegalEntityId = item.LegalEntityId;
 			itemDto.MinAverageReceipt = item.MinAverageReceipt;
 			itemDto.MaxAverageReceipt = item.MaxAverageReceipt;
 			itemDto.AddressDto = item.StoreAddress.MapToDto();
@@ -177,8 +177,8 @@ namespace blah
 			item.IsActive = itemDto.IsActive;
 			item.BusinessDayStartInSeconds = itemDto.BusinessDayStartInSeconds;
 			item.Description = itemDto.Description;
-			item.ImageId = itemDto.ImageId.Value;
-			item.LegalEntityId = itemDto.LegalEntityId.Value;
+			item.ImageId = itemDto.ImageId;
+			item.LegalEntityId = itemDto.LegalEntityId;
 			item.MinAverageReceipt = itemDto.MinAverageReceipt;
 			item.MaxAverageReceipt = itemDto.MaxAverageReceipt;
 			item.StoreAddress = itemDto.AddressDto.MapFromDto();

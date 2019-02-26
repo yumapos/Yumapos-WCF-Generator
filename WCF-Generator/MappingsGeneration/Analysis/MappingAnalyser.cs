@@ -285,12 +285,12 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                                             var dtoType = dtoCodeProperty.Type as INamedTypeSymbol;
                                             var doType = codeProperty.Type as INamedTypeSymbol;
 
-                                            if (dtoCodeProperty.Type.GetFullName().Contains("Nullable"))
+                                            if (dtoCodeProperty.Type.GetFullName().Contains("Nullable") && !codeProperty.Type.GetFullName().Contains("Nullable"))
                                             {
                                                 itemDtoValue += ".Value";
                                                 dtoType = dtoType.TypeArguments.First() as INamedTypeSymbol;
                                             }
-                                            if (codeProperty.Type.GetFullName().Contains("Nullable"))
+                                            if (!dtoCodeProperty.Type.GetFullName().Contains("Nullable") && codeProperty.Type.GetFullName().Contains("Nullable"))
                                             {
                                                 itemDoValue += ".Value";
                                                 doType = doType.TypeArguments.First() as INamedTypeSymbol;
