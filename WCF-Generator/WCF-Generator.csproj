@@ -294,6 +294,7 @@
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecorator.cs" />
     <Compile Include="Common\ApiDecoration\ApiDecoratorsConfiguration.cs" />
     <Compile Include="Common\ApiDecoration\GenerationConfig.cs" />
+    <Compile Include="Common\Configuration\PrefixStrings.cs" />
     <Compile Include="CustomerApiDecoratorsGeneration\Configuration\CustomerApiDecoratorsSettings.cs" />
     <Compile Include="Common\ApiDecoration\DecoratorsGenerator.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecoratorsGenerator.cs" />

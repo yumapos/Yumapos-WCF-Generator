@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WCFGenerator.Common;
+using WCFGenerator.Common.Configuration;
 
 namespace WCFGenerator.ResponseDtoGeneration.Configuration
 {
@@ -66,6 +67,11 @@ namespace WCFGenerator.ResponseDtoGeneration.Configuration
         public string MapExtensionNameSpace //= "YumaPos.Server.BackOffice.Presentation.Generation";
         {
             get { return ((string)(base["generatedDtosNameSpace"])); }
+        }
+        [ConfigurationProperty("prefixStrings")]
+        public PrefixStrings PrefixStrings
+        {
+            get { return ((PrefixStrings)(base["prefixStrings"])); }
         }
     }
 }
