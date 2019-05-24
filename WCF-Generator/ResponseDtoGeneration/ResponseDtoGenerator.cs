@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WCFGenerator.Common;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGenerator.Analysis;
+using WCFGenerator.ResponseDtoGeneration.Analyser;
 using WCFGenerator.ResponseDtoGeneration.Configuration;
 
 
@@ -24,6 +25,8 @@ namespace WCFGenerator.ResponseDtoGeneration
 
         public async Task Generate()
         {
+            var analyser = new ResponseDtoGenerationAnalyser(_configuration, _generatorWorkspace);
+            await analyser.Run();
         }
     }
 }

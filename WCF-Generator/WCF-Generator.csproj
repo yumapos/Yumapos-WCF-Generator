@@ -373,6 +373,7 @@
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResponseDtoGeneration\Analyser\ResponseDtoGenerationAnalyser.cs" />
     <Compile Include="ResponseDtoGeneration\Configuration\ResponseDtoConfiguration.cs" />
     <Compile Include="ResponseDtoGeneration\ResponseDtoGenerator.cs" />
     <Compile Include="ResponseDtoGeneration\ResponseDtoGeneratorsFactory.cs" />
