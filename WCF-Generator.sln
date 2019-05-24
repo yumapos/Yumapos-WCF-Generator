@@ -30,7 +30,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSerializationGeneration
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMappingGeneration", "Sandbox\TestMappingGeneration\TestMappingGeneration.csproj", "{88F379B9-54BF-4815-B339-7C11C82D2713}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMappingGenerationDtos", "Sandbox\TestMappingGenerationDtos\TestMappingGenerationDtos.csproj", "{A9559841-3DE1-40CD-BE54-6F282F10267C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMappingGenerationDtos", "Sandbox\TestMappingGenerationDtos\TestMappingGenerationDtos.csproj", "{A9559841-3DE1-40CD-BE54-6F282F10267C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestResponseDtoGeneration", "TestResponseDtoGeneration\TestResponseDtoGeneration.csproj", "{03C7DFEF-019B-431C-B827-2FED5739CA3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,10 @@ Global
 		{A9559841-3DE1-40CD-BE54-6F282F10267C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9559841-3DE1-40CD-BE54-6F282F10267C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9559841-3DE1-40CD-BE54-6F282F10267C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03C7DFEF-019B-431C-B827-2FED5739CA3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03C7DFEF-019B-431C-B827-2FED5739CA3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03C7DFEF-019B-431C-B827-2FED5739CA3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03C7DFEF-019B-431C-B827-2FED5739CA3B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
