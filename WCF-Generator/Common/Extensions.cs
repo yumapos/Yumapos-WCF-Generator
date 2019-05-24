@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator.Common.Infrastructure;
 
 namespace WCFGenerator.Common
 {
@@ -21,6 +22,45 @@ namespace WCFGenerator.Common
             var mDocuments = mProjects.SelectMany(p => p.Documents.Where(d => !d.Name.Contains(".g.cs")));
             var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
             return mSyntaxTrees;
+        }
+
+        public static async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(this Solution solution, string projectName, 
+            bool isSkipAttribute, string attribute)
+        {
+            var project = solution.Projects.First(x => x.Name == projectName);
+            var compilation = (CSharpCompilation)(await project.GetCompilationAsync());
+            var classVisitor = new ClassVirtualizationVisitor();
+            var classes = new List<ClassDeclarationSyntax>();
+
+            foreach (var syntaxTree in compilation.SyntaxTrees)
+            {
+                classVisitor.Visit(syntaxTree.GetRoot());
+            }
+
+            if (!isSkipAttribute)
+            {
+                classes = classVisitor.Classes.Where(x => x.AttributeLists
+                    .Any(att => att.Attributes
+                        .Any(att2 => att2.Name.ToString() == attribute))).ToList();
+            }
+            else
+            {
+                classes = classVisitor.Classes;
+            }
+
+            var ret = new List<ClassCompilerInfo>();
+
+            foreach (var classDeclarationSyntax in classes)
+            {
+                var typeInfo = compilation.GetClass(classDeclarationSyntax);
+                ret.Add(new ClassCompilerInfo()
+                {
+                    ClassDeclarationSyntax = classDeclarationSyntax,
+                    NamedTypeSymbol = typeInfo
+                });
+            }
+
+            return ret;
         }
 
         #endregion
