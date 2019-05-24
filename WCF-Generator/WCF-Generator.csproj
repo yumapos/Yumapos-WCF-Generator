@@ -373,6 +373,9 @@
     <Compile Include="RepositoriesGeneration\Yumapos.Infrastructure.Clone\Attributes\DbIgnoreAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResponseDtoGeneration\Configuration\ResponseDtoConfiguration.cs" />
+    <Compile Include="ResponseDtoGeneration\ResponseDtoGenerator.cs" />
+    <Compile Include="ResponseDtoGeneration\ResponseDtoGeneratorsFactory.cs" />
     <Compile Include="SerializeGeneration\Configuration\SerializeConfiguration.cs" />
     <Compile Include="Common\IGeneration.cs" />
     <Compile Include="SerializeGeneration\Generation\TextMigrationPatterns.cs" />
@@ -394,7 +397,9 @@
     <Compile Include="WcfClientGeneration\WCFGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

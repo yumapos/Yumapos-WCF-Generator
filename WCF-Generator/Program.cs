@@ -16,6 +16,8 @@ using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGenerator;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
+using WCFGenerator.ResponseDtoGeneration;
+using WCFGenerator.ResponseDtoGeneration.Configuration;
 using WCFGenerator.SerializeGeneration.Configuration;
 using WCFGenerator.SerializeGeneration.Generation;
 using WCFGenerator.WcfClientGeneration;
@@ -130,6 +132,15 @@ namespace WCFGenerator
             catch (Exception e)
             {
                 throw new ApplicationException($"Error occured on customer api decorators generation: {e.Message}", e);
+            }
+
+            try
+            {
+                RunResponseDtoGeneration();
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException($"Error occured on response dto generation: {e.Message}", e);
             }
 
             // Apply Changes, close solution
@@ -286,6 +297,24 @@ namespace WCFGenerator
             AsyncContext.Run(() => factory.GenerateAll());
 
             Console.WriteLine("Customer api decorators  generation completed.");
+        }
+
+        private static void RunResponseDtoGeneration()
+        {
+            var curSettings = ResponseDtoGeneratorSettings.Current;
+            if (!curSettings.Enabled)
+            {
+                Console.WriteLine("Response dto generation disabled.");
+                return;
+            }
+
+            Console.WriteLine("Response dto generation...");
+            var configs = curSettings.GetConfigs();
+
+            var factory = new ResponseDtoGeneratorsFactory(_generatorWorkspace, configs.ToArray());
+            AsyncContext.Run(() => factory.GenerateAll());
+
+            Console.WriteLine("Response dto generation completed.");
         }
     }
 }
