@@ -19,6 +19,36 @@ using Dto2Namespace.Dto2Subnamespace;
 namespace blah
 {
 	[DataContract]
+	public class KitchenActiveOrdersChangeDigestResponseDto
+	{
+		[DataMember]
+		public KitchenActiveOrdersChangeDigest Value { get; set; }
+		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
+		[DataMember]
+		public virtual ResponseServerInfoDto ServerInfo { get; set; }
+		[DataMember]
+		public string Context { get; set; }
+		[DataMember]
+		public CommandPostprocessingType? PostprocessingType { get; set; }
+	}
+
+	[DataContract]
+	public class KitchenActiveOrdersChangeDigestListResponseDto
+	{
+		[DataMember]
+		public IEnumerable<KitchenActiveOrdersChangeDigest> Value { get; set; }
+		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
+		[DataMember]
+		public virtual ResponseServerInfoDto ServerInfo { get; set; }
+		[DataMember]
+		public string Context { get; set; }
+		[DataMember]
+		public CommandPostprocessingType? PostprocessingType { get; set; }
+	}
+
+	[DataContract]
 	public class Test1ResponseDto
 	{
 		[DataMember]
@@ -47,6 +77,7 @@ namespace blah
 		[DataMember]
 		public CommandPostprocessingType? PostprocessingType { get; set; }
 	}
+
 	[DataContract]
 	public class Test2ResponseDto
 	{
@@ -76,4 +107,5 @@ namespace blah
 		[DataMember]
 		public CommandPostprocessingType? PostprocessingType { get; set; }
 	}
+
 }

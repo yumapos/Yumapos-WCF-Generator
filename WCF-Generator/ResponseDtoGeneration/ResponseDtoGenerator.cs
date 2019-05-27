@@ -56,7 +56,11 @@ using YumaPos.Shared.API.ResponseDtos;
             foreach (var classCompilerInfo in classes)
             {
                 var className = classCompilerInfo.NamedTypeSymbol.Name;
-                var nameWithoutDto = className.Substring(0, className.Length - 3);
+                string nameWithoutDto = className;
+                if (className.EndsWith("Dto"))
+                {
+                    nameWithoutDto = className.Substring(0, className.Length - 3);
+                }
                 sb.AppendLine(@"[DataContract]
         public class " + nameWithoutDto + @"ResponseDto
         {
@@ -86,12 +90,11 @@ using YumaPos.Shared.API.ResponseDtos;
             [DataMember]
             public CommandPostprocessingType? PostprocessingType { get; set; }
         }");
+                sb.AppendLine("");
             }
 
-
             sb.AppendLine("}");
-
-        return sb.ToString();
+            return sb.ToString();
         }
     }
 }
