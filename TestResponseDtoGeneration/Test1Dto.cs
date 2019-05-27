@@ -4,7 +4,7 @@ using TestResponseDtoGeneration;
 namespace Dto1Namespace
 {
     [GenerateResponseDto]
-    public class Dto1
+    public class Test1Dto
     {
         public Guid Id { get; set; }
         public string City { get; set; }
