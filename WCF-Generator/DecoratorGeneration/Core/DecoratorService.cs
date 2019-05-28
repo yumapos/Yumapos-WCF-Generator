@@ -29,7 +29,8 @@ namespace WCFGenerator.DecoratorGeneration.Core
         {
             _workSpace = workSpace;
             _configuration = configuration;
-            _syntaxWalker = new SyntaxWalker(_workSpace.Solution, configuration.SolutionProjectName);
+            var fileNamesToExclude = configuration.DecoratedClass.Select(s => s.TargetClassName + ".g.cs").ToArray();
+            _syntaxWalker = new SyntaxWalker(_workSpace.Solution, configuration.SolutionProjectName, fileNamesToExclude);
         }
 
         #endregion

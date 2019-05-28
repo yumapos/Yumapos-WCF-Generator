@@ -14,12 +14,25 @@ namespace WCFGenerator.Common
     {
         #region Solution
 
-        public static IReadOnlyCollection<SyntaxTree> GetTrees(this Solution solution, string[] selectedProjects = null)
+        public static IReadOnlyCollection<SyntaxTree> GetTrees(this Solution solution, string[] selectedProjects = null,
+            string[] fileNamesToExclude = null)
         {
-            var mProjects = selectedProjects != null
+            var mProjects = (selectedProjects != null
                 ? solution.Projects.Where(proj => selectedProjects.Any(p => p == proj.Name))
-                : solution.Projects;
-            var mDocuments = mProjects.SelectMany(p => p.Documents.Where(d => !d.Name.Contains(".g.cs")));
+                : solution.Projects).ToArray();
+            List<Document> mDocuments = new List<Document>();
+            foreach (var mProject in mProjects)
+            {
+                var docs = mProject.Documents.ToList();
+                if (fileNamesToExclude != null)
+                {
+                    foreach (var fileName in fileNamesToExclude)
+                    {
+                        docs.RemoveAll(r => r.Name == fileName);
+                    }
+                }
+                mDocuments.AddRange(docs);
+            }
             var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
             return mSyntaxTrees;
         }
