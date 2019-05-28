@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
+using WCFGenerator.Common.Infrastructure;
 using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Infrastructure;
@@ -65,13 +66,13 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             foreach (MappingSourceProject project in _configuration.DoProjects)
             {
                 classesWithMapAttribute.AddRange(
-                    await GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
+                    await _solution.GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
             }
 
             foreach (MappingSourceProject project in _configuration.DtoProjects)
             {
                 classesWithMapAttributeDto.AddRange(
-                    await GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
+                    await _solution.GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
             }
 
             var listOfSimilarClasses = new List<MapDtoAndDo>();
@@ -365,44 +366,6 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             }
 
             ListOfSimilarClasses = listOfSimilarClasses;
-        }
-
-        public async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
-        {
-            var project = _solution.Projects.First(x => x.Name == projectName);
-            var compilation = (CSharpCompilation)(await project.GetCompilationAsync());
-            var classVisitor = new ClassVirtualizationVisitor();
-            var classes = new List<ClassDeclarationSyntax>();
-
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                classVisitor.Visit(syntaxTree.GetRoot());
-            }
-
-            if (!isSkipAttribute)
-            {
-                classes = classVisitor.Classes.Where(x => x.AttributeLists
-                    .Any(att => att.Attributes
-                        .Any(att2 => att2.Name.ToString() == attribute))).ToList();
-            }
-            else
-            {
-                classes = classVisitor.Classes;
-            }
-
-            var ret = new List<ClassCompilerInfo>();
-
-            foreach (var classDeclarationSyntax in classes)
-            {
-                var typeInfo = compilation.GetClass(classDeclarationSyntax);
-                ret.Add(new ClassCompilerInfo()
-                {
-                    ClassDeclarationSyntax = classDeclarationSyntax,
-                    NamedTypeSymbol = typeInfo
-                });
-            }
-
-            return ret;
         }
 
         public string GetMapNameForProperty(IPropertySymbol propertySymbol)

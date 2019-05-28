@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator.Common.Infrastructure;
 
 namespace WCFGenerator.Common
 {
@@ -13,14 +14,66 @@ namespace WCFGenerator.Common
     {
         #region Solution
 
-        public static IReadOnlyCollection<SyntaxTree> GetTrees(this Solution solution, string[] selectedProjects = null)
+        public static IReadOnlyCollection<SyntaxTree> GetTrees(this Solution solution, string[] selectedProjects = null,
+            string[] fileNamesToExclude = null)
         {
-            var mProjects = selectedProjects != null
+            var mProjects = (selectedProjects != null
                 ? solution.Projects.Where(proj => selectedProjects.Any(p => p == proj.Name))
-                : solution.Projects;
-            var mDocuments = mProjects.SelectMany(p => p.Documents.Where(d => !d.Name.Contains(".g.cs")));
+                : solution.Projects).ToArray();
+            List<Document> mDocuments = new List<Document>();
+            foreach (var mProject in mProjects)
+            {
+                var docs = mProject.Documents.ToList();
+                if (fileNamesToExclude != null)
+                {
+                    foreach (var fileName in fileNamesToExclude)
+                    {
+                        docs.RemoveAll(r => r.Name == fileName);
+                    }
+                }
+                mDocuments.AddRange(docs);
+            }
             var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
             return mSyntaxTrees;
+        }
+
+        public static async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(this Solution solution, string projectName, 
+            bool isSkipAttribute, string attribute)
+        {
+            var project = solution.Projects.First(x => x.Name == projectName);
+            var compilation = (CSharpCompilation)(await project.GetCompilationAsync());
+            var classVisitor = new ClassVirtualizationVisitor();
+            var classes = new List<ClassDeclarationSyntax>();
+
+            foreach (var syntaxTree in compilation.SyntaxTrees)
+            {
+                classVisitor.Visit(syntaxTree.GetRoot());
+            }
+
+            if (!isSkipAttribute)
+            {
+                classes = classVisitor.Classes.Where(x => x.AttributeLists
+                    .Any(att => att.Attributes
+                        .Any(att2 => att2.Name.ToString() == attribute))).ToList();
+            }
+            else
+            {
+                classes = classVisitor.Classes;
+            }
+
+            var ret = new List<ClassCompilerInfo>();
+
+            foreach (var classDeclarationSyntax in classes)
+            {
+                var typeInfo = compilation.GetClass(classDeclarationSyntax);
+                ret.Add(new ClassCompilerInfo()
+                {
+                    ClassDeclarationSyntax = classDeclarationSyntax,
+                    NamedTypeSymbol = typeInfo
+                });
+            }
+
+            return ret;
         }
 
         #endregion

@@ -18,7 +18,7 @@ namespace WCFGenerator.DecoratorGeneration.Analysis
         private Solution _solution;
         private Project _project;
 
-        public SyntaxWalker(Solution solution, string project)
+        public SyntaxWalker(Solution solution, string project, string[] fileNamesToExclude)
         {
             if (solution == null) throw new ArgumentException("solution");
             if (project == null) throw new ArgumentException("classProject");
@@ -26,7 +26,7 @@ namespace WCFGenerator.DecoratorGeneration.Analysis
             _solution = solution;
             _project = solution.Projects.First(proj => proj.Name == project);
 
-                var solutionTrees = solution.GetTrees();
+                var solutionTrees = solution.GetTrees(null, fileNamesToExclude);
             _solutionCompilation = CSharpCompilation.Create("SolutionCompilation")
                 .AddSyntaxTrees(solutionTrees)
                 .WithReferences(new List<MetadataReference>()
@@ -36,7 +36,7 @@ namespace WCFGenerator.DecoratorGeneration.Analysis
                     MetadataReference.CreateFromFile(typeof(Task).Assembly.Location)
                 });
 
-            _allTrees = solution.GetTrees(new[] {project}).ToList();
+            _allTrees = solution.GetTrees(new[] {project}, fileNamesToExclude).ToList();
             _projectCompilation = CSharpCompilation.Create("ProjectCompilation")
                 .AddSyntaxTrees(_allTrees)
                 .WithReferences(new List<MetadataReference>()
