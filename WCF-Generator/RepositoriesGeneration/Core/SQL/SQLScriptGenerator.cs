@@ -217,19 +217,29 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             // base type of repository and "isDeleted" flag - set IsDeleted = true
             if (info.IsDeleted && info.VersionTableName == null)
             {
+                string syncSql = info.IsSyncState ? ", SyncState = 0 " : " ";
                 if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
-                    return
-                        Update(info.JoinTableName) + " SET IsDeleted = 1 ";
-
-                return Update(info.TableName) + " SET IsDeleted = 1 ";
+                {
+                    return Update(info.JoinTableName) + " SET IsDeleted = 1" + syncSql;
+                }
+                else
+                {
+                    return Update(info.TableName) + " SET IsDeleted = 1" + syncSql;
+                }
             }
-            
-            // base or version repository without "isDeleted" flag
-            if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
-                return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" +//TODO FIX TO MANY KEYS
-                        Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " ";//TODO FIX TO MANY KEYS
-
-            return Delete(info.TableName) + " ";
+            else
+            {
+                // base or version repository without "isDeleted" flag
+                if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
+                {
+                    return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + //TODO FIX TO MANY KEYS
+                           Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " "; //TODO FIX TO MANY KEYS
+                }
+                else
+                {
+                    return Delete(info.TableName) + " ";
+                }
+            }
         }
 
         #endregion
@@ -640,6 +650,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool Identity;
         public bool JoinIdentity;
         public bool IsDeleted { get; set; }
+        public bool IsSyncState { get; set; }
         public DatabaseType DatabaseType { get; set; }
     }
 }
