@@ -296,11 +296,26 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             }
         }
 
+        public bool IsSyncStateExists
+        {
+            get
+            {
+                var specialOption = "SyncState";
+
+                if (JoinRepositoryInfo != null)
+                {
+                    return JoinRepositoryInfo.Elements.Exists(s => s.Name == specialOption);
+                }
+
+                return Elements.Exists(s => s.Name == specialOption);
+            }
+        }
+
         /// <summary>
         ///     List of method implementation info
         /// </summary>
         public List<MethodImplementationInfo> MethodImplementationInfo { get; set; }
-        
+
         /// <summary>
         ///     List of cache repository method implementation info
         /// </summary>
@@ -327,6 +342,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public List<MethodInfo> CustomCacheRepositoryMethodNames { get; set; }
 
         public DatabaseType DatabaseType { get; set; }
+
 
         /// <summary>
         ///     Return list of filters key for key based methods
@@ -400,6 +416,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 sqlInfo.PrimaryKeyType = pk?.TypeName;
                 sqlInfo.Identity = Identity;
                 sqlInfo.IsDeleted = IsDeletedExist;
+                sqlInfo.IsSyncState = IsSyncStateExists;
 
                 if (PrimaryKeys.Count == 1 && Identity)
                 {
