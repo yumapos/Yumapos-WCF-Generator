@@ -378,17 +378,17 @@ namespace TestRepositoryGeneration
 
 
 		*/
-		  /*
-		  public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
-		  {
-		  DataAccessService.ExecuteScalar(InsertOrUpdateQuery,address);
-		  }
-		  public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
-		  {
-		  await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address >(InsertOrUpdateQuery,address);
-		  }
+		/*
+		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+		DataAccessService.ExecuteScalar(InsertOrUpdateQuery,address);
+		}
+		public async Task InsertOrUpdateAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
+		{
+		await DataAccessService.ExecuteScalarAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Address >(InsertOrUpdateQuery,address);
+		}
 
-		  */
+		*/
 
 	}
 }
