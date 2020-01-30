@@ -21,54 +21,54 @@ namespace blah
 
 		public static TestMappingGenerationDtos.AddressDto MapToDto(this TestMappingGeneration.DataObjects.Address item)
 		{
+			//itemDo.Latitude
+			//itemDo.Longitude
+			//itemDo.SomeTime
+			//itemDo.SomeTimeOffset
+			//itemDo.SomeTimeNullable
+			//itemDo.SomeTimeOffsetNullable
 			//itemDo.PropertyFromBaseAddress
 
 			if (item == null) return null;
 
 			var itemDto = new TestMappingGenerationDtos.AddressDto();
 			itemDto.Id = item.Id;
-			itemDto.Country = item.Country.HasValue ? item.Country.Value : default(TestMappingGeneration.Enums.CountryISOCodes2);
+			itemDto.Country = (CountryISOCodes2)item.Country;
 			itemDto.City = item.City;
 			itemDto.State = item.State;
 			itemDto.Street = item.Street;
 			itemDto.Building = item.Building;
 			itemDto.ZipCode = item.ZipCode;
-			itemDto.Latitude = item.Latitude;
-			itemDto.Longitude = item.Longitude.HasValue ? item.Longitude.Value : default(System.Decimal);
 			itemDto.SomeDateTime = item.SomeDateTime;
-			itemDto.SomeTime = new DateTimeOffset(item.SomeTime, new TimeSpan(0));
-			itemDto.SomeTimeOffset = item.SomeTimeOffset.UtcDateTime;
-			itemDto.SomeTimeNullable = item.SomeTimeNullable.HasValue ? new DateTimeOffset(item.SomeTimeNullable.Value, new TimeSpan(0)) : default(System.DateTimeOffset);
-			itemDto.SomeTimeOffsetNullable = item.SomeTimeOffsetNullable.UtcDateTime;
 
 			return itemDto;
 		}
 
 		public static TestMappingGeneration.DataObjects.Address MapFromDto(this TestMappingGenerationDtos.AddressDto itemDto)
 		{
+			//itemDto.Latitude
+			//itemDto.Longitude
+			//itemDto.SomeTime
+			//itemDto.SomeTimeOffset
+			//itemDto.SomeTimeNullable
+			//itemDto.SomeTimeOffsetNullable
 
 			if (itemDto == null) return null;
 
 			var item = new TestMappingGeneration.DataObjects.Address();
 			item.Id = itemDto.Id;
-			item.Country = itemDto.Country;
+			item.Country = (Int32)itemDto.Country;
 			item.City = itemDto.City;
 			item.State = itemDto.State;
 			item.Street = itemDto.Street;
 			item.Building = itemDto.Building;
 			item.ZipCode = itemDto.ZipCode;
-			item.Latitude = itemDto.Latitude.HasValue ? itemDto.Latitude.Value : default(System.Decimal);
-			item.Longitude = itemDto.Longitude;
 			item.SomeDateTime = itemDto.SomeDateTime;
-			item.SomeTime = itemDto.SomeTime.UtcDateTime;
-			item.SomeTimeOffset = new DateTimeOffset(itemDto.SomeTimeOffset, new TimeSpan(0));
-			item.SomeTimeNullable = itemDto.SomeTimeNullable.UtcDateTime;
-			item.SomeTimeOffsetNullable = itemDto.SomeTimeOffsetNullable.HasValue ? new DateTimeOffset(itemDto.SomeTimeOffsetNullable.Value, new TimeSpan(0)) : default(System.DateTimeOffset);
 
 			return item;
 		}
 
-		public static TestMappingGenerationDtos.DeliveryZone2StoreDto MapToDto(this TestMappingGeneration.DataObjects.DeliveryZone2Store item)
+		public static TestMappingGenerationDtos.DeliveryZone2StoreDto MapToDeliveryZone2StoreDto(this TestMappingGeneration.DataObjects.DeliveryZone2Store item)
 		{
 			//itemDo.DeliveryZone2StoreVersionId
 			//itemDo.Modified
@@ -94,7 +94,7 @@ namespace blah
 			return itemDto;
 		}
 
-		public static TestMappingGeneration.DataObjects.DeliveryZone2Store MapFromDto(this TestMappingGenerationDtos.DeliveryZone2StoreDto itemDto)
+		public static TestMappingGeneration.DataObjects.DeliveryZone2Store MapToDeliveryZone2Store(this TestMappingGenerationDtos.DeliveryZone2StoreDto itemDto)
 		{
 
 			if (itemDto == null) return null;
@@ -116,9 +116,154 @@ namespace blah
 			return item;
 		}
 
+		public static TestMappingGenerationDtos.DeliveryZone2StoreDtoDup MapToDeliveryZone2StoreDtoDup(this TestMappingGeneration.DataObjects.DeliveryZone2Store item)
+		{
+			//itemDo.DeliveryZone2StoreVersionId
+			//itemDo.Modified
+			//itemDo.ModifiedBy
+			//itemDo.IsDeleted
+
+			if (item == null) return null;
+
+			var itemDto = new TestMappingGenerationDtos.DeliveryZone2StoreDtoDup();
+			itemDto.DeliveryZone2StoreId = item.DeliveryZone2StoreId;
+			itemDto.DeliveryZoneId = item.DeliveryZoneId;
+			itemDto.StoreId = item.StoreId;
+			itemDto.Name = item.Name;
+			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery;
+			itemDto.DeliveryPrice = item.DeliveryPrice;
+			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery;
+			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit;
+			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit;
+			itemDto.PriceFixed = item.PriceFixed;
+			itemDto.PricePercentOfOrder = item.PricePercentOfOrder;
+			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery;
+
+			return itemDto;
+		}
+
+		public static TestMappingGeneration.DataObjects.DeliveryZone2Store MapToDeliveryZone2Store(this TestMappingGenerationDtos.DeliveryZone2StoreDtoDup itemDto)
+		{
+
+			if (itemDto == null) return null;
+
+			var item = new TestMappingGeneration.DataObjects.DeliveryZone2Store();
+			item.DeliveryZone2StoreId = itemDto.DeliveryZone2StoreId;
+			item.DeliveryZoneId = itemDto.DeliveryZoneId;
+			item.StoreId = itemDto.StoreId;
+			item.Name = itemDto.Name;
+			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery;
+			item.DeliveryPrice = itemDto.DeliveryPrice;
+			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery;
+			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit;
+			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit;
+			item.PriceFixed = itemDto.PriceFixed;
+			item.PricePercentOfOrder = itemDto.PricePercentOfOrder;
+			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery;
+
+			return item;
+		}
+
+		public static TestMappingGenerationDtos.DeliveryZone2StoreDto MapToDeliveryZone2StoreDto(this TestMappingGeneration.DataObjects.DeliveryZone2StoreDup item)
+		{
+			//itemDo.DeliveryZone2StoreVersionId
+			//itemDo.Modified
+			//itemDo.ModifiedBy
+			//itemDo.IsDeleted
+
+			if (item == null) return null;
+
+			var itemDto = new TestMappingGenerationDtos.DeliveryZone2StoreDto();
+			itemDto.DeliveryZone2StoreId = item.DeliveryZone2StoreId;
+			itemDto.DeliveryZoneId = item.DeliveryZoneId;
+			itemDto.StoreId = item.StoreId;
+			itemDto.Name = item.Name;
+			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery;
+			itemDto.DeliveryPrice = item.DeliveryPrice;
+			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery;
+			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit;
+			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit;
+			itemDto.PriceFixed = item.PriceFixed;
+			itemDto.PricePercentOfOrder = item.PricePercentOfOrder;
+			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery;
+
+			return itemDto;
+		}
+
+		public static TestMappingGeneration.DataObjects.DeliveryZone2StoreDup MapToDeliveryZone2StoreDup(this TestMappingGenerationDtos.DeliveryZone2StoreDto itemDto)
+		{
+
+			if (itemDto == null) return null;
+
+			var item = new TestMappingGeneration.DataObjects.DeliveryZone2StoreDup();
+			item.DeliveryZone2StoreId = itemDto.DeliveryZone2StoreId;
+			item.DeliveryZoneId = itemDto.DeliveryZoneId;
+			item.StoreId = itemDto.StoreId;
+			item.Name = itemDto.Name;
+			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery;
+			item.DeliveryPrice = itemDto.DeliveryPrice;
+			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery;
+			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit;
+			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit;
+			item.PriceFixed = itemDto.PriceFixed;
+			item.PricePercentOfOrder = itemDto.PricePercentOfOrder;
+			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery;
+
+			return item;
+		}
+
+		public static TestMappingGenerationDtos.DeliveryZone2StoreDtoDup MapToDeliveryZone2StoreDtoDup(this TestMappingGeneration.DataObjects.DeliveryZone2StoreDup item)
+		{
+			//itemDo.DeliveryZone2StoreVersionId
+			//itemDo.Modified
+			//itemDo.ModifiedBy
+			//itemDo.IsDeleted
+
+			if (item == null) return null;
+
+			var itemDto = new TestMappingGenerationDtos.DeliveryZone2StoreDtoDup();
+			itemDto.DeliveryZone2StoreId = item.DeliveryZone2StoreId;
+			itemDto.DeliveryZoneId = item.DeliveryZoneId;
+			itemDto.StoreId = item.StoreId;
+			itemDto.Name = item.Name;
+			itemDto.MinimumSumForFreeDelivery = item.MinimumSumForFreeDelivery;
+			itemDto.DeliveryPrice = item.DeliveryPrice;
+			itemDto.MinimumSumForDelivery = item.MinimumSumForDelivery;
+			itemDto.SecondsTimeCookingLimit = item.SecondsTimeCookingLimit;
+			itemDto.SecondsTimeDeliveryLimit = item.SecondsTimeDeliveryLimit;
+			itemDto.PriceFixed = item.PriceFixed;
+			itemDto.PricePercentOfOrder = item.PricePercentOfOrder;
+			itemDto.PricePercentOfCostDelivery = item.PricePercentOfCostDelivery;
+
+			return itemDto;
+		}
+
+		public static TestMappingGeneration.DataObjects.DeliveryZone2StoreDup MapToDeliveryZone2StoreDup(this TestMappingGenerationDtos.DeliveryZone2StoreDtoDup itemDto)
+		{
+
+			if (itemDto == null) return null;
+
+			var item = new TestMappingGeneration.DataObjects.DeliveryZone2StoreDup();
+			item.DeliveryZone2StoreId = itemDto.DeliveryZone2StoreId;
+			item.DeliveryZoneId = itemDto.DeliveryZoneId;
+			item.StoreId = itemDto.StoreId;
+			item.Name = itemDto.Name;
+			item.MinimumSumForFreeDelivery = itemDto.MinimumSumForFreeDelivery;
+			item.DeliveryPrice = itemDto.DeliveryPrice;
+			item.MinimumSumForDelivery = itemDto.MinimumSumForDelivery;
+			item.SecondsTimeCookingLimit = itemDto.SecondsTimeCookingLimit;
+			item.SecondsTimeDeliveryLimit = itemDto.SecondsTimeDeliveryLimit;
+			item.PriceFixed = itemDto.PriceFixed;
+			item.PricePercentOfOrder = itemDto.PricePercentOfOrder;
+			item.PricePercentOfCostDelivery = itemDto.PricePercentOfCostDelivery;
+
+			return item;
+		}
+
 		public static TestMappingGenerationDtos.StoreDto MapToDto(this TestMappingGeneration.DataObjects.Store item)
 		{
 			//itemDo.AddressId
+			//itemDo.PriceListId
 			//itemDo.ServiceTypes
 			//itemDo.CustomTenderId
 			//itemDo.AggregatedTenderId
@@ -143,24 +288,23 @@ namespace blah
 			itemDto.MinAverageReceipt = item.MinAverageReceipt;
 			itemDto.MaxAverageReceipt = item.MaxAverageReceipt;
 			itemDto.AddressDto = item.StoreAddress.MapToDto();
-			itemDto.PriceListId = item.PriceListId;
 			itemDto.PaymentTypes = (StorePaymentType)item.PaymentTypes;
-			itemDto.IsSendZReportEnabled = item.BitSettings.HasFlag(StoreSettings.SendZReportEnabled); itemDto.DeliveryMoneyChangeEnabled = item.BitSettings.HasFlag(StoreSettings.DeliveryMoneyChangeEnabled); itemDto.PartySizeEnabled = item.BitSettings.HasFlag(StoreSettings.PartySizeEnabled); itemDto.MobileFutureMenuShowing = item.BitSettings.HasFlag(StoreSettings.MobileFutureMenuShowing); itemDto.MobilePromoCampaignsShow = item.BitSettings.HasFlag(StoreSettings.MobilePromoCampaignsShow); itemDto.IsDeliveryRoundTheClock = item.BitSettings.HasFlag(StoreSettings.IsDeliveryRoundTheClock); itemDto.TipEnabled = item.BitSettings.HasFlag(StoreSettings.TipEnabled); itemDto.BitSettings = (StoreSettings)item.BitSettings; ;
+			itemDto.TipEnabled = item.BitSettings.HasFlag(StoreSettings.TipEnabled);
+			itemDto.IsDeliveryRoundTheClock = item.BitSettings.HasFlag(StoreSettings.IsDeliveryRoundTheClock);
+			itemDto.MobilePromoCampaignsShow = item.BitSettings.HasFlag(StoreSettings.MobilePromoCampaignsShow);
+			itemDto.MobileFutureMenuShowing = item.BitSettings.HasFlag(StoreSettings.MobileFutureMenuShowing);
+			itemDto.PartySizeEnabled = item.BitSettings.HasFlag(StoreSettings.PartySizeEnabled);
+			itemDto.DeliveryMoneyChangeEnabled = item.BitSettings.HasFlag(StoreSettings.DeliveryMoneyChangeEnabled);
+			itemDto.SendZReportEnabled = item.BitSettings.HasFlag(StoreSettings.SendZReportEnabled);
 
 			return itemDto;
 		}
 
 		public static TestMappingGeneration.DataObjects.Store MapFromDto(this TestMappingGenerationDtos.StoreDto itemDto)
 		{
+			//itemDto.PriceListId
 			//itemDto.DeliveryZones
 			//itemDto.IsMain
-			//itemDto.TipEnabled
-			//itemDto.IsDeliveryRoundTheClock
-			//itemDto.MobilePromoCampaignsShow
-			//itemDto.MobileFutureMenuShowing
-			//itemDto.PartySizeEnabled
-			//itemDto.DeliveryMoneyChangeEnabled
-			//itemDto.IsSendZReportEnabled
 
 			if (itemDto == null) return null;
 
@@ -182,9 +326,14 @@ namespace blah
 			item.MinAverageReceipt = itemDto.MinAverageReceipt;
 			item.MaxAverageReceipt = itemDto.MaxAverageReceipt;
 			item.StoreAddress = itemDto.AddressDto.MapFromDto();
-			item.PriceListId = itemDto.PriceListId.HasValue ? itemDto.PriceListId.Value : default(System.Guid);
-			item.PaymentTypes = (int)itemDto.PaymentTypes;
-			item.BitSettings = (itemDto.IsSendZReportEnabled ? StoreSettings.SendZReportEnabled : 0) | (itemDto.DeliveryMoneyChangeEnabled ? StoreSettings.DeliveryMoneyChangeEnabled : 0) | (itemDto.PartySizeEnabled ? StoreSettings.PartySizeEnabled : 0) | (itemDto.MobileFutureMenuShowing ? StoreSettings.MobileFutureMenuShowing : 0) | (itemDto.MobilePromoCampaignsShow ? StoreSettings.MobilePromoCampaignsShow : 0) | (itemDto.IsDeliveryRoundTheClock ? StoreSettings.IsDeliveryRoundTheClock : 0) | (itemDto.TipEnabled ? StoreSettings.TipEnabled : 0);
+			item.PaymentTypes = (Int32)itemDto.PaymentTypes;
+			item.BitSettings |= (itemDto.TipEnabled ? StoreSettings.TipEnabled : 0);
+			item.BitSettings |= (itemDto.IsDeliveryRoundTheClock ? StoreSettings.IsDeliveryRoundTheClock : 0);
+			item.BitSettings |= (itemDto.MobilePromoCampaignsShow ? StoreSettings.MobilePromoCampaignsShow : 0);
+			item.BitSettings |= (itemDto.MobileFutureMenuShowing ? StoreSettings.MobileFutureMenuShowing : 0);
+			item.BitSettings |= (itemDto.PartySizeEnabled ? StoreSettings.PartySizeEnabled : 0);
+			item.BitSettings |= (itemDto.DeliveryMoneyChangeEnabled ? StoreSettings.DeliveryMoneyChangeEnabled : 0);
+			item.BitSettings |= (itemDto.SendZReportEnabled ? StoreSettings.SendZReportEnabled : 0);
 
 			return item;
 		}

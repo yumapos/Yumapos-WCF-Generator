@@ -7,7 +7,6 @@ using WCFGenerator.Common;
 using WCFGenerator.Common.Configuration;
 using WCFGenerator.Common.Infrastructure;
 using WCFGenerator.MappingsGeneration.Configuration;
-using WCFGenerator.MappingsGenerator.Analysis;
 using WCFGenerator.ResponseDtoGeneration.Analyser;
 using WCFGenerator.ResponseDtoGeneration.Configuration;
 

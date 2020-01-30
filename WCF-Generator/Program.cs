@@ -13,7 +13,6 @@ using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Core;
 using WCFGenerator.MappingsGeneration;
 using WCFGenerator.MappingsGeneration.Configuration;
-using WCFGenerator.MappingsGenerator;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.ResponseDtoGeneration;
@@ -31,6 +30,7 @@ namespace WCFGenerator
 
         static void Main(string[] args)
         {
+
             Console.WriteLine("WCF-Generator.exe started.");
 
             // Set path to app.config for current application domain
@@ -44,12 +44,14 @@ namespace WCFGenerator
             {
                 absoluteConfigPath = AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString();
             }
+            
+          
             if (!File.Exists(absoluteConfigPath))
             {
                 throw new ArgumentException("File of configuration file not found. " + absoluteConfigPath);
             }
-            Console.WriteLine("Configuration: " + absoluteConfigPath);
-
+            
+            
             // Get solution
             Console.Write("Open solulion: " );
             var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];

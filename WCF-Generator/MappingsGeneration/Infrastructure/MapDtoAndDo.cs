@@ -14,5 +14,7 @@ namespace WCFGenerator.MappingsGeneration.Infrastructure
         public IEnumerable<MapPropertiesDtoAndDo> MapPropertiesDtoAndDo { get; set; }
         public IPropertySymbol[] IsIgnoreDOProperties { get; set; }
         public IPropertySymbol[] IsIgnoreDTOProperties { get; set; }
+
+        public bool IsClassesIntersects { get; set; }
     }
 }

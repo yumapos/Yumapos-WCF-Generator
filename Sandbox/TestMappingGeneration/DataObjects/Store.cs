@@ -33,12 +33,10 @@ namespace TestMappingGeneration.DataObjects
         public Guid PriceListId { get; set; }
         [MapIgnore]
         public bool IsDeleted { get; set; }
-        [Map(FunctionTo = "item.ServiceTypes = (int)itemDto.ServiceTypes", FunctionFrom = "itemDto.ServiceTypes = (StoreServiceType)item.ServiceTypes")]
         public int ServiceTypes { get; set; }
-        [Map(FunctionTo = "item.PaymentTypes = (int)itemDto.PaymentTypes", FunctionFrom = "itemDto.PaymentTypes = (StorePaymentType)item.PaymentTypes")]
         public int PaymentTypes { get; set; }
-        public StoreSettings BitSettings { get; set; }
         public Guid? CustomTenderId { get; set; }
         public Guid? AggregatedTenderId { get; set; }
+        public StoreSettings BitSettings { get; set; }
     }
 }
