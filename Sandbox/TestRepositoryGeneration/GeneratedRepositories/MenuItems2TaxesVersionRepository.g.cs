@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 
 
 namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
@@ -19,8 +20,9 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 	{
 		private const string InsertQuery = @"INSERT INTO [MenuItemToTaxVersions]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
 VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)";
-		private const string InsertManyQuery = @"INSERT INTO [MenuItemToTaxVersions]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])
-VALUES (@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{0},@TaxVersionId{0},@IsDeleted{0})";
+		private const string InsertManyQueryTemplate = @"INSERT INTO [MenuItemToTaxVersions]([MenuItemToTaxVersions].[MenuItemId],[MenuItemToTaxVersions].[MenuItemVersionId],[MenuItemToTaxVersions].[Modified],[MenuItemToTaxVersions].[ModifiedBy],[MenuItemToTaxVersions].[TaxId],[MenuItemToTaxVersions].[TaxVersionId],[MenuItemToTaxVersions].[IsDeleted])  VALUES {0}";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}')";
+
 
 		public MenuItems2TaxesVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
@@ -38,29 +40,34 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{
 
 			if (!menuItems2TaxesList.Any()) return;
 
+			var maxInsertManyRows = MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
 			var query = new System.Text.StringBuilder();
-			var counter = 0;
 			var parameters = new Dictionary<string, object>();
-			foreach (var menuItems2Taxes in menuItems2TaxesList)
+
+			var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+
+			foreach (var items in itemsPerRequest)
 			{
-				if (parameters.Count + 7 > MaxRepositoryParams)
+				foreach (var item in items)
 				{
-					DataAccessService.Execute(query.ToString(), parameters);
-					query.Clear();
-					counter = 0;
-					parameters.Clear();
+					var menuItems2Taxes = item.Value;
+					var index = item.Index;
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId, menuItems2Taxes.MenuItemVersionId, menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture), menuItems2Taxes.ModifiedBy, menuItems2Taxes.TaxId, menuItems2Taxes.TaxVersionId, menuItems2Taxes.IsDeleted ? 1 : 0);
 				}
-				parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
-				parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
-				parameters.Add($"Modified{counter}", menuItems2Taxes.Modified);
-				parameters.Add($"ModifiedBy{counter}", menuItems2Taxes.ModifiedBy);
-				parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
-				parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
-				parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
-				query.AppendFormat(InsertManyQuery, counter);
-				counter++;
+				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
+				DataAccessService.Execute(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				query.Clear();
 			}
-			DataAccessService.Execute(query.ToString(), parameters);
+
+
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
@@ -69,30 +76,39 @@ VALUES (@MenuItemId{0},@MenuItemVersionId{0},@Modified{0},@ModifiedBy{0},@TaxId{
 
 			if (!menuItems2TaxesList.Any()) return;
 
+			var maxInsertManyRows = MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
 			var query = new System.Text.StringBuilder();
-			var counter = 0;
 			var parameters = new Dictionary<string, object>();
-			foreach (var menuItems2Taxes in menuItems2TaxesList)
+
+			var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			await Task.Delay(10);
+
+			foreach (var items in itemsPerRequest)
 			{
-				if (parameters.Count + 7 > MaxRepositoryParams)
+				foreach (var item in items)
 				{
-					await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-					query.Clear();
-					counter = 0;
-					parameters.Clear();
+					var menuItems2Taxes = item.Value;
+					var index = item.Index;
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId, menuItems2Taxes.MenuItemVersionId, menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture), menuItems2Taxes.ModifiedBy, menuItems2Taxes.TaxId, menuItems2Taxes.TaxVersionId, menuItems2Taxes.IsDeleted ? 1 : 0);
 				}
-				parameters.Add($"MenuItemId{counter}", menuItems2Taxes.MenuItemId);
-				parameters.Add($"MenuItemVersionId{counter}", menuItems2Taxes.MenuItemVersionId);
-				parameters.Add($"Modified{counter}", menuItems2Taxes.Modified);
-				parameters.Add($"ModifiedBy{counter}", menuItems2Taxes.ModifiedBy);
-				parameters.Add($"TaxId{counter}", menuItems2Taxes.TaxId);
-				parameters.Add($"TaxVersionId{counter}", menuItems2Taxes.TaxVersionId);
-				parameters.Add($"IsDeleted{counter}", menuItems2Taxes.IsDeleted);
-				query.AppendFormat(InsertManyQuery, counter);
-				counter++;
+				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
+				await Task.Delay(10);
+				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				query.Clear();
 			}
-			await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+
+			await Task.Delay(10);
+
 		}
+
 
 
 	}

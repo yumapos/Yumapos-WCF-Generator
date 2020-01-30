@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 {
@@ -14,9 +15,15 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsert(SqlInfo info);
 
-        string GenerateInsertMany(SqlInfo info);
+        string GenerateInsertManyQueryTemplate(SqlInfo info, RepositoryType repositoryType);
+
+        string GenerateInsertManyValuesTemplate(SqlInfo info);
+
+        string GenerateInsertManyJoinedValuesTemplate(SqlInfo info);
 
         string GenerateInsertToTemp(SqlInfo info);
+
+        string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info);
 
         string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info);
 
@@ -36,8 +43,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsertToVersionTable(SqlInfo info);
 
-        string GenerateInsertManyToVersionTable(SqlInfo info);
-
         string GenerateSelectByToVersionTable(SqlInfo info);
 
         string GenerateSelectByKeyAndSliceDateToVersionTable(SqlInfo info);
@@ -50,8 +55,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateWhereJoinPkVersion(SqlInfo info);
 
-        string GenerateInsertOrUpdate(SqlInfo info);
+        string GenerateInsertOrUpdate(List<ParameterInfo> primaryKeys, SqlInfo info);
+
+        string GenerateNoCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType);
+
+        string GenerateCheckConstraint(SqlInfo sqlInfo, RepositoryType repositoryType);
 
         SqlInfo GetTableInfo(SqlInfo repositoryInfo);
+
     }
 }

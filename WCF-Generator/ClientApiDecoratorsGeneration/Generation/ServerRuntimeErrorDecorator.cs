@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using WCFGenerator.Common;
 
 namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 {
-    public class ServerRuntimeErrorDecorator : BaseDecorator
+    public class ServerRuntimeErrorDecorator : ClientApiDecorator
     {
         public override string ClassName => "ServerRuntimeErrorDecorator";
         protected override void GenerateMethodBody(StringBuilder sb, IMethodSymbol toDecorate)
@@ -49,7 +45,7 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
             sb.AppendLine(returnTemplate);
         }
 
-        protected override void GetUsings(StringBuilder sb)
+        protected override void GenerateUsings(StringBuilder sb)
         {
             var usings = @"using System;
             using System.ServiceModel;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator.Common.Infrastructure;
 
 namespace WCFGenerator.MappingsGeneration.Infrastructure
 {

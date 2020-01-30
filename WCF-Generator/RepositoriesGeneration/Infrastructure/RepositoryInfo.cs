@@ -24,7 +24,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         {
             FilterInfos = new List<FilterInfo>();
             PrimaryKeys = new List<ParameterInfo>();
-            Elements = new List<string>();
+            Elements = new List<PropertyInfo>();
             Many2ManyInfo = new List<Many2ManyInfo>();
             InterfaceMethods = new List<MethodInfo>();
             CustomRepositoryMethodNames = new List<MethodInfo>();
@@ -82,18 +82,18 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// <summary>
         ///     Property names - table columns
         /// </summary>
-        public List<string> Elements { get; set; }
+        public List<PropertyInfo> Elements { get; set; }
 
         /// <summary>
         ///    Dependent properties names - hidden table columns
         /// </summary>
-        public List<string> HiddenElements
+        public List<PropertyInfo> HiddenElements
         {
             get
             {
                 return IsTenantRelated
-                    ? new List<string>() {"TenantId"}
-                    : new List<string>();
+                    ? new List<PropertyInfo>() {new PropertyInfo("TenantId")}
+                    : new List<PropertyInfo>();
             }
         }
 
@@ -289,10 +289,25 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
                 if (JoinRepositoryInfo != null)
                 {
-                    return JoinRepositoryInfo.Elements.Exists(s => s == specialOption);
+                    return JoinRepositoryInfo.Elements.Exists(s => s.Name == specialOption);
                 }
 
-                return Elements.Exists(s => s == specialOption);
+                return Elements.Exists(s => s.Name == specialOption);
+            }
+        }
+
+        public bool IsSyncStateExists
+        {
+            get
+            {
+                var specialOption = "SyncState";
+
+                if (JoinRepositoryInfo != null)
+                {
+                    return JoinRepositoryInfo.Elements.Exists(s => s.Name == specialOption);
+                }
+
+                return Elements.Exists(s => s.Name == specialOption);
             }
         }
 
@@ -300,7 +315,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         ///     List of method implementation info
         /// </summary>
         public List<MethodImplementationInfo> MethodImplementationInfo { get; set; }
-        
+
         /// <summary>
         ///     List of cache repository method implementation info
         /// </summary>
@@ -327,6 +342,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public List<MethodInfo> CustomCacheRepositoryMethodNames { get; set; }
 
         public DatabaseType DatabaseType { get; set; }
+
 
         /// <summary>
         ///     Return list of filters key for key based methods
@@ -367,8 +383,8 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 // Common info for generate sql scriptes
                 var sqlInfo = new SqlInfo
                 {
-                    TableColumns = Elements,
-                    HiddenTableColumns = new List<string>(),
+                    TableColumns = Elements.Select(e => new PropertyInfo(e.Name, e.IsParameter)).ToList(),
+                    HiddenTableColumns = new List<PropertyInfo>(),
                     TableName = TableName,
                     PrimaryKeyNames = PrimaryKeys.Select(k => k.Name).ToList(),
                     TenantRelated = IsTenantRelated,
@@ -384,7 +400,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
                 if (JoinRepositoryInfo != null)
                 {
-                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements;
+                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements.Select(e => new PropertyInfo(e.Name, e.IsParameter)).ToList();
                     sqlInfo.JoinTableName = JoinRepositoryInfo.TableName;
                     sqlInfo.JoinPrimaryKeyNames = JoinRepositoryInfo.PrimaryKeys.Select(k => k.Name).ToList();
                     sqlInfo.JoinVersionTableName = VersionTableName != null ? JoinRepositoryInfo.VersionTableName : null;
@@ -400,13 +416,14 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 sqlInfo.PrimaryKeyType = pk?.TypeName;
                 sqlInfo.Identity = Identity;
                 sqlInfo.IsDeleted = IsDeletedExist;
+                sqlInfo.IsSyncState = IsSyncStateExists;
 
                 if (PrimaryKeys.Count == 1 && Identity)
                 {
                     sqlInfo.IdentityColumns.Add(PrimaryKeys[0].Name);
                 }
 
-                sqlInfo.HiddenTableColumns = HiddenElements;
+                sqlInfo.HiddenTableColumns = HiddenElements.Select(e => new PropertyInfo(e.Name)).ToList();
 
                 return sqlInfo;
             }

@@ -21,6 +21,12 @@ namespace blah
 
 		public static TestMappingGenerationDtos.AddressDto MapToDto(this TestMappingGeneration.DataObjects.Address item)
 		{
+			//itemDo.Latitude
+			//itemDo.Longitude
+			//itemDo.SomeTime
+			//itemDo.SomeTimeOffset
+			//itemDo.SomeTimeNullable
+			//itemDo.SomeTimeOffsetNullable
 			//itemDo.PropertyFromBaseAddress
 
 			if (item == null) return null;
@@ -33,14 +39,19 @@ namespace blah
 			itemDto.Street = item.Street;
 			itemDto.Building = item.Building;
 			itemDto.ZipCode = item.ZipCode;
-			itemDto.Latitude = item.Latitude;
-			itemDto.Longitude = item.Longitude;
+			itemDto.SomeDateTime = item.SomeDateTime;
 
 			return itemDto;
 		}
 
 		public static TestMappingGeneration.DataObjects.Address MapFromDto(this TestMappingGenerationDtos.AddressDto itemDto)
 		{
+			//itemDto.Latitude
+			//itemDto.Longitude
+			//itemDto.SomeTime
+			//itemDto.SomeTimeOffset
+			//itemDto.SomeTimeNullable
+			//itemDto.SomeTimeOffsetNullable
 
 			if (itemDto == null) return null;
 
@@ -52,8 +63,7 @@ namespace blah
 			item.Street = itemDto.Street;
 			item.Building = itemDto.Building;
 			item.ZipCode = itemDto.ZipCode;
-			item.Latitude = itemDto.Latitude;
-			item.Longitude = itemDto.Longitude;
+			item.SomeDateTime = itemDto.SomeDateTime;
 
 			return item;
 		}

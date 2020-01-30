@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using WCFGenerator.Common;
 
 namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
 {
-    public class UnauthorizeErrorApiDecorator : BaseDecorator
+    public class UnauthorizeErrorApiDecorator : ClientApiDecorator
     {
         public override string ClassName => "UnauthorizeErrorApiDecorator";
         protected override void GenerateMethodBody(StringBuilder sb, IMethodSymbol toDecorate)
@@ -29,7 +25,7 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration.Generation
             sb.AppendLine(returnTemplate);
         }
 
-        protected override void GetUsings(StringBuilder sb)
+        protected override void GenerateUsings(StringBuilder sb)
         {
             var usings = @"using System;
             using System.Linq;

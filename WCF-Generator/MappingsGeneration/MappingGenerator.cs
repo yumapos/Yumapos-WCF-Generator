@@ -3,6 +3,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WCFGenerator.Common;
+using WCFGenerator.Common.Configuration;
+using WCFGenerator.Common.Infrastructure;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Infrastructure;
 using WCFGenerator.MappingsGeneration.Analysis;

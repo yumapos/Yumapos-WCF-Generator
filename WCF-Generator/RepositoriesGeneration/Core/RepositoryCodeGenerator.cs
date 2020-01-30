@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Helpers;
@@ -6,7 +8,7 @@ using WCFGenerator.RepositoriesGeneration.Infrastructure;
 
 namespace WCFGenerator.RepositoriesGeneration.Core
 {
-    internal class RepositoryCodeGenerator : RepositoryCodeGeneratorAbstract
+    internal class RepositoryCodeGenerator : RepositoryCodeGeneratorBase
     {
         #region Query field names
 
@@ -15,7 +17,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private readonly string _selectIntoTemp = "SelectIntoTempTable";
 
         private readonly string _insertQuery = "InsertQuery";
-        private readonly string _insertManyQuery = "InsertManyQuery";
+        
 
         private readonly string _updateQuery = "UpdateQuery";
         private readonly string _updateQueryBy = "UpdateQueryBy";
@@ -26,7 +28,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private readonly string _whereWithIsDeletedFilter = "WhereWithIsDeletedFilter";
         private readonly string _join = "Join";
         private readonly string _pk = "Pk";
-        public string _insertOrUpdateQuery = "InsertOrUpdateQuery";
+        private readonly string _insertOrUpdateQuery = "InsertOrUpdateQuery";
+        
 
         #endregion
 
@@ -62,20 +65,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var selectAllQuery = ScriptGenerator.GenerateSelectAll(sqlInfo).SurroundWithQuotes();
             var selectByQuery = ScriptGenerator.GenerateSelectBy(sqlInfo, null).SurroundWithQuotes();
             var insertQuery = ScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
-            var insertManyQuery = ScriptGenerator.GenerateInsertMany(sqlInfo).SurroundWithQuotes();
+           
             var updateBy = ScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
             var deleteBy = ScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
-            var insertOrUpdate = ScriptGenerator.GenerateInsertOrUpdate(sqlInfo).SurroundWithQuotes();
+            var insertOrUpdate = ScriptGenerator.GenerateInsertOrUpdate(RepositoryInfo.PrimaryKeys, sqlInfo).SurroundWithQuotes();
+           
 
-            sb.AppendLine("private const string Fields = @" + fields.SurroundWithQuotes() + ";");
+            sb.AppendLine("public const string Fields = @" + fields.SurroundWithQuotes() + ";");
             sb.AppendLine("private const string " + _selectAllQuery + " = @" + selectAllQuery + ";");
             sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
-            sb.AppendLine("private const string " + _insertManyQuery + " = @" + insertManyQuery + ";");
+            
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
             sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
-
+            
             if(RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var updateJoin = ScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
@@ -88,9 +92,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             foreach (var method in RepositoryInfo.PossibleKeysForMethods)
             {
                 var key = method.Key;
-                var parametrs = method.Parameters.Where(x => x.NeedGeneratePeriod == false).Select(p => p.Name).ToList();
-                var datesParams = method.Parameters.Where(x => x.NeedGeneratePeriod).Select(p => p.Name);
-                var sql = datesParams.Any() ? ScriptGenerator.GenerateWhere(parametrs, datesParams, sqlInfo).SurroundWithQuotes() : ScriptGenerator.GenerateWhere(parametrs, sqlInfo).SurroundWithQuotes();
+                var sql = ScriptGenerator.GenerateWhere(method.Parameters, sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
             }
 
@@ -110,6 +112,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("private const string " + _whereWithIsDeletedFilter + " = " + isDeletedOnlyFilter.SurroundWithQuotes() + ";");
             }
 
+            sb.AppendLine(base.GetFields());
+
             return sb.ToString();
         }
 
@@ -128,33 +132,60 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
 
             // RepositoryMethod.GetBy - for primary key
-            var getByPrimaryKeyMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.PrimaryKey)
-                .Aggregate("", (s, method) => s + GenerateGetByPrimaryKey(method));
-
-            if(!string.IsNullOrEmpty(getByPrimaryKeyMethods))
+            try
             {
-                sb.AppendLine(getByPrimaryKeyMethods);
+                var getByPrimaryKeyMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.PrimaryKey)
+                    .Aggregate("", (s, method) => s + GenerateGetByPrimaryKey(method));
+
+                if (!string.IsNullOrEmpty(getByPrimaryKeyMethods))
+                {
+                    sb.AppendLine(getByPrimaryKeyMethods);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("Name mistmatch in " + RepositoryInfo.RepositoryInterfaceName );
+                Console.WriteLine("method " + ex.Data["method"]);
+                throw;
             }
 
-            // RepositoryMethod.GetBy - for filter key
-            var getByFilterKeyMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.FilterKey)
-                .Aggregate("", (s, method) => s + GenerateGetByFilterKey(method));
-
-            if(!string.IsNullOrEmpty(getByFilterKeyMethods))
+            try
             {
-                sb.AppendLine(getByFilterKeyMethods);
+                // RepositoryMethod.GetBy - for filter key
+                var getByFilterKeyMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.FilterKey)
+                    .Aggregate("", (s, method) => s + GenerateGetByFilterKey(method));
+
+                if (!string.IsNullOrEmpty(getByFilterKeyMethods))
+                {
+                    sb.AppendLine(getByFilterKeyMethods);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("Name mistmatch in I" + RepositoryInfo.ClassName + "Repository");
+                Console.WriteLine("method " + ex.Data["method"]);
+                throw;
             }
 
-            // RepositoryMethod.GetBy - for version key
-            var getByVersionKeyMethods = RepositoryInfo.MethodImplementationInfo
-                .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.VersionKey)
-                .Aggregate("", (s, method) => s + GenerateGetByVersionKey(method));
-
-            if(!string.IsNullOrEmpty(getByVersionKeyMethods))
+            try
             {
-                sb.AppendLine(getByVersionKeyMethods);
+                // RepositoryMethod.GetBy - for version key
+                var getByVersionKeyMethods = RepositoryInfo.MethodImplementationInfo
+                    .Where(m => m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.VersionKey)
+                    .Aggregate("", (s, method) => s + GenerateGetByVersionKey(method));
+
+                if (!string.IsNullOrEmpty(getByVersionKeyMethods))
+                {
+                    sb.AppendLine(getByVersionKeyMethods);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("Name mistmatch in I" + RepositoryInfo.ClassName + "Repository");
+                Console.WriteLine("method " + ex.Data["method"]);
+                throw;
             }
 
             // RepositoryMethod.Insert
@@ -170,7 +201,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             // RepositoryMethod.InsertMany
             var insertManyMethods = RepositoryInfo.MethodImplementationInfo
                 .Where(m => m.Method == RepositoryMethod.InsertMany)
-                .Aggregate("", (s, method) => s + GenerateInsertMany(method));
+                .Aggregate("", (s, method) => s + GenerateInsertMany(method.RequiresImplementation));
 
             if (!string.IsNullOrEmpty(insertManyMethods))
             {
@@ -194,15 +225,23 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 sb.AppendLine(updateByMethods);
             }
-
-            // RepositoryMethod.RemoveBy
-            var removeByMethods = filtersWithoutDateTimes
-                .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
-                .Aggregate("", (s, method) => s + GenerateRemove(method));
-
-            if(!string.IsNullOrEmpty(removeByMethods))
+            try
             {
-                sb.AppendLine(removeByMethods);
+                // RepositoryMethod.RemoveBy
+                var removeByMethods = filtersWithoutDateTimes
+                    .Where(m => m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType != FilterType.VersionKey)
+                    .Aggregate("", (s, method) => s + GenerateRemove(method));
+
+                if (!string.IsNullOrEmpty(removeByMethods))
+                {
+                    sb.AppendLine(removeByMethods);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("Name mistmatch in I" + RepositoryInfo.ClassName + "Repository");
+                Console.WriteLine("method " + ex.Data["method"]);
+                throw;
             }
 
             // RepositoryMethod.InsertOrUpdate
@@ -314,10 +353,23 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var filterByIsDeleted = RepositoryInfo.IsDeletedExist;
             var sqlWhere = _whereQueryBy + filter.Key;
             var selectQuery = _selectByQuery;
-
-            var parameters = filter.Parameters
-                .Where(x => x.NeedGeneratePeriod == false)
-                .Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()).ToList();
+            if(filter.Parameters.Any(p => p == null))
+            {
+                filter.Parameters = new List<ParameterInfo>();
+                return "";
+            }
+            List<string> parameters;
+            try
+            {
+                parameters = filter.Parameters
+                    .Where(x => x.NeedGeneratePeriod == false)
+                    .Select(k => k.TypeName + (method.Parameters.Single(m => string.Equals(m.Name, k.Name, StringComparison.InvariantCultureIgnoreCase)).IsNullable ? "? " : " ") + k.Name.FirstSymbolToLower()).ToList();
+            }
+            catch (InvalidOperationException ex)
+            {
+                ex.Data["method"] = " GetBy" + filter.Key;
+                throw;
+            }
             var parameterNames = filter.Parameters
                 .Where(x => x.NeedGeneratePeriod == false)
                 .Select(k => k.Name.FirstSymbolToLower()).ToList();
@@ -446,110 +498,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
-        private string GenerateInsertMany(MethodImplementationInfo method)
-        {
-            var sb = new StringBuilder();
-
-            var elementName = RepositoryInfo.ClassName.FirstSymbolToLower();
-            var parameterName = $"{elementName}List";
-            var methodParameter = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterName}";
-            var columns = RepositoryInfo.Elements.Concat(RepositoryInfo.JoinRepositoryInfo?.Elements ?? Enumerable.Empty<string>()).ToList();
-            var queryName = _insertManyQuery;
-
-            // Synchronous method
-            sb.AppendLine("public void InsertMany(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
-            sb.AppendLine();
-            sb.AppendLine($"if(!{parameterName}.Any()) return;");
-            sb.AppendLine();
-            sb.AppendLine("var query = new System.Text.StringBuilder();");
-            sb.AppendLine("var counter = 0;");
-            sb.AppendLine($"var parameters = new Dictionary<string, object> ();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-
-            sb.AppendLine($"if (parameters.Count + {RepositoryInfo.Elements.Count + RepositoryInfo.HiddenElements.Count} > {MaxRepositoryParamsBaseRepositoryField})");
-            sb.AppendLine("{");
-            sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
-            sb.AppendLine("query.Clear();");
-            sb.AppendLine("counter = 0;");
-            sb.AppendLine("parameters.Clear();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine("}");
-
-            foreach (var column in columns)
-            {
-                sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
-            }
-            
-            sb.AppendLine($"query.AppendFormat({queryName}, counter);");
-            sb.AppendLine("counter++;");
-            
-            sb.AppendLine("}");
-            sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
-            sb.AppendLine("}");
-            sb.AppendLine();
-
-            // Asynchronous method
-            sb.AppendLine("public async Task InsertManyAsync(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
-            sb.AppendLine();
-            sb.AppendLine($"if(!{parameterName}.Any()) return;");
-            sb.AppendLine();
-            sb.AppendLine("var query = new System.Text.StringBuilder();");
-            sb.AppendLine("var counter = 0;");
-            sb.AppendLine($"var parameters = new Dictionary<string, object>();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-
-            sb.AppendLine($"if (parameters.Count + {RepositoryInfo.Elements.Count + RepositoryInfo.HiddenElements.Count} > {MaxRepositoryParamsBaseRepositoryField})");
-            sb.AppendLine("{");
-            sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
-            sb.AppendLine("query.Clear();");
-            sb.AppendLine("counter = 0;");
-            sb.AppendLine("parameters.Clear();");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine("}");
-
-            foreach (var column in columns)
-            {
-                 sb.AppendLine($"parameters.Add($\"{column}{{counter}}\", {elementName}.{column});");
-            }
-            
-            sb.AppendLine($"query.AppendFormat({queryName}, counter);");
-            sb.AppendLine("counter++;");
-          
-            sb.AppendLine("}");
-            sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
-            sb.AppendLine("}");
-
-            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
-        }
-
         private string GenerateUpdate(MethodImplementationInfo method)
         {
             var filter = method.FilterInfo;
@@ -639,6 +587,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             // Remove by filter key
             var methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + " " + k.Name.FirstSymbolToLower()));
+            try
+            {
+                if (method.Parameters != null && method.Parameters.Count() == filter.Parameters.Count)
+                {
+                    methodParameters = string.Join(", ", filter.Parameters.Select(k => k.TypeName + (method.Parameters.SingleOrDefault(m => string.Equals(m.Name, k.Name, StringComparison.InvariantCultureIgnoreCase))?.IsNullable ?? false ? "? " : " ") + k.Name.FirstSymbolToLower()));
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data["method"] = " RemoveBy" + filter.Key;
+                throw;
+            }
             var sqlParameters = string.Join(", ", filter.Parameters.Select(k => k.Name.FirstSymbolToLower()));
 
             // Synchronous method

@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
+using WCFGenerator.Common.Infrastructure;
 using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Configuration;
 using WCFGenerator.MappingsGeneration.Infrastructure;
@@ -245,7 +246,7 @@ namespace WCFGenerator.MappingsGeneration.Analysis
             foreach (MappingSourceProject project in projects)
             {
                 classesWithMapAttribute.AddRange(
-                    await GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
+                    await _solution.GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
             }
             return classesWithMapAttribute;
         }
@@ -344,44 +345,6 @@ namespace WCFGenerator.MappingsGeneration.Analysis
             }
 
             return allProperties;
-        }
-
-        public async Task<IEnumerable<ClassCompilerInfo>> GetAllClasses(string projectName, bool isSkipAttribute, string attribute)
-        {
-            var project = _solution.Projects.First(x => x.Name == projectName);
-            var compilation = (CSharpCompilation)(await project.GetCompilationAsync());
-            var classVisitor = new ClassVirtualizationVisitor();
-            var classes = new List<ClassDeclarationSyntax>();
-
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                classVisitor.Visit(syntaxTree.GetRoot());
-            }
-
-            if (!isSkipAttribute)
-            {
-                classes = classVisitor.Classes.Where(x => x.AttributeLists
-                    .Any(att => att.Attributes
-                        .Any(att2 => att2.Name.ToString() == attribute))).ToList();
-            }
-            else
-            {
-                classes = classVisitor.Classes;
-            }
-
-            var ret = new List<ClassCompilerInfo>();
-
-            foreach (var classDeclarationSyntax in classes)
-            {
-                var typeInfo = compilation.GetClass(classDeclarationSyntax);
-                ret.Add(new ClassCompilerInfo()
-                {
-                    ClassDeclarationSyntax = classDeclarationSyntax,
-                    NamedTypeSymbol = typeInfo
-                });
-            }
-
-            return ret;
         }
 
         private bool AreNamesEqual(IPropertySymbol codePropertySymbol, IPropertySymbol dtoCodePropertySymbol)
@@ -490,11 +453,20 @@ namespace WCFGenerator.MappingsGeneration.Analysis
 
             if (doType.Contains("IEnumerable") && dtoType.Contains("IEnumerable"))
             {
-                doType = doType.Remove(0, doType.IndexOf("<") + 1);
-                doType = doType.Replace(">", "");
+                var tmp1 = doCodeProperty.Type as INamedTypeSymbol;
+                doType = tmp1.TypeArguments.First().GetFullName();
 
-                dtoType = dtoType.Remove(0, dtoType.IndexOf("<") + 1);
-                dtoType = dtoType.Replace(">", "");
+                var tmp2 = dtoCodeProperty.Type as INamedTypeSymbol;
+                dtoType = tmp2.TypeArguments.First().GetFullName();
+            }
+
+            if (doType.Contains("Nullable") && dtoType.Contains("Nullable"))
+            {
+                var tmp1 = doCodeProperty.Type as INamedTypeSymbol;
+                doType = tmp1.TypeArguments.First().GetFullName();
+
+                var tmp2 = dtoCodeProperty.Type as INamedTypeSymbol;
+                dtoType = tmp2.TypeArguments.First().GetFullName();
             }
 
             if (CompareInMapDtoAndDoCollection(doType, dtoType, similarClasses))
@@ -512,8 +484,8 @@ namespace WCFGenerator.MappingsGeneration.Analysis
             {
                 return true;
             }
-
-            return doType == dtoType;
+             
+            return doType == dtoType;   
         }
 
         private static ITypeSymbol GetBaseType(IPropertySymbol property)

@@ -11,7 +11,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 {
     public partial class ElectronicCouponsTypedRepository : RepositoryBase, IElectronicCouponsTypedRepository
     {
-        public async Task<ElectronicCouponsTyped> Get(int id)
+        public async Task<ElectronicCouponsTyped> Get(int electronicCouponsId)
         {
             throw new NotImplementedException();
         }
