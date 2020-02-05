@@ -82,7 +82,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// <summary>
         ///     Property names - table columns
         /// </summary>
-        public List<PropertyInfo> Elements { get; set; }
+        public List<PropertyInfo> Elements { set; get; }
 
         /// <summary>
         ///    Dependent properties names - hidden table columns
@@ -383,7 +383,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 // Common info for generate sql scriptes
                 var sqlInfo = new SqlInfo
                 {
-                    TableColumns = Elements.Select(e => new PropertyInfo(e.Name, e.IsParameter)).ToList(),
+                    TableColumns = Elements.ToList(),
                     HiddenTableColumns = new List<PropertyInfo>(),
                     TableName = TableName,
                     PrimaryKeyNames = PrimaryKeys.Select(k => k.Name).ToList(),
@@ -400,7 +400,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
                 if (JoinRepositoryInfo != null)
                 {
-                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements.Select(e => new PropertyInfo(e.Name, e.IsParameter)).ToList();
+                    sqlInfo.JoinTableColumns = JoinRepositoryInfo.Elements.ToList();
                     sqlInfo.JoinTableName = JoinRepositoryInfo.TableName;
                     sqlInfo.JoinPrimaryKeyNames = JoinRepositoryInfo.PrimaryKeys.Select(k => k.Name).ToList();
                     sqlInfo.JoinVersionTableName = VersionTableName != null ? JoinRepositoryInfo.VersionTableName : null;

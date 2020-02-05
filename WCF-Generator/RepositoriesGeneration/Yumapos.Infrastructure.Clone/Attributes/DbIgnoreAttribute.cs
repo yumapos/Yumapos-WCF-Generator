@@ -4,5 +4,6 @@ namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attri
 {
     public class DbIgnoreAttribute : Attribute
     {
+        public bool IgnoreOnUpdate { get; set; }
     }
 }

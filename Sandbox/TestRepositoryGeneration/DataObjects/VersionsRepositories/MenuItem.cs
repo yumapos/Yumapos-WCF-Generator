@@ -34,5 +34,8 @@ namespace TestRepositoryGeneration.DataObjects.VersionsRepositories
         public KitchenPrinter? BitKitchenPrinters { get; set; }
 
         public bool? YesNoUnknown { get; set; }
+
+        [DbIgnore(IgnoreOnUpdate = true)]
+        public string CreatedBy { get; set; }
     }
 }

@@ -20,10 +20,10 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 	{
 		private const string InsertQuery = @"INSERT INTO [RecipieItemVersions]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId])
 VALUES (@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId)
-INSERT INTO [MenuItemVersions]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[TenantId])
-VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@TenantId)";
-		private const string SelectBy = @"SELECT [MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown],[RecipieItemVersions].[ItemId],[RecipieItemVersions].[ItemVersionId],[RecipieItemVersions].[IsDeleted],[RecipieItemVersions].[Modified],[RecipieItemVersions].[ModifiedBy],[RecipieItemVersions].[CategoryId] FROM [MenuItemVersions] INNER JOIN [RecipieItemVersions] ON [MenuItemVersions].[MenuItemVersionId] = [RecipieItemVersions].[ItemVersionId]  {filter} ";
-		private const string SelectByKeyAndSliceDateQuery = @"SELECT [MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown] FROM (SELECT versionTable1.[MenuItemId], MAX(joinVersionTable1.[Modified]) as Modified FROM [MenuItemVersions] versionTable1 INNER JOIN [RecipieItems] joinVersionTable1 ON versionTable1.[MenuItemVersionId] = joinVersionTable1.[ItemVersionId] {filter}  GROUP BY versionTable1.[MenuItemId]) versionTable INNER JOIN [RecipieItemVersions] ON versionTable.[MenuItemId] = [RecipieItemVersions].[ItemId] AND versionTable.[Modified] = [RecipieItemVersions].[Modified] INNER JOIN [MenuItemVersions] ON [RecipieItemVersions].[ItemVersionId] = [MenuItemVersions].[MenuItemVersionId]";
+INSERT INTO [MenuItemVersions]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[MenuItems].[TenantId])
+VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@CreatedBy,@TenantId)";
+		private const string SelectBy = @"SELECT [MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown],[MenuItemVersions].[CreatedBy],[RecipieItemVersions].[ItemId],[RecipieItemVersions].[ItemVersionId],[RecipieItemVersions].[IsDeleted],[RecipieItemVersions].[Modified],[RecipieItemVersions].[ModifiedBy],[RecipieItemVersions].[CategoryId] FROM [MenuItemVersions] INNER JOIN [RecipieItemVersions] ON [MenuItemVersions].[MenuItemVersionId] = [RecipieItemVersions].[ItemVersionId]  {filter} ";
+		private const string SelectByKeyAndSliceDateQuery = @"SELECT [MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown],[MenuItemVersions].[CreatedBy] FROM (SELECT versionTable1.[MenuItemId], MAX(joinVersionTable1.[Modified]) as Modified FROM [MenuItemVersions] versionTable1 INNER JOIN [RecipieItems] joinVersionTable1 ON versionTable1.[MenuItemVersionId] = joinVersionTable1.[ItemVersionId] {filter}  GROUP BY versionTable1.[MenuItemId]) versionTable INNER JOIN [RecipieItemVersions] ON versionTable.[MenuItemId] = [RecipieItemVersions].[ItemId] AND versionTable.[Modified] = [RecipieItemVersions].[Modified] INNER JOIN [MenuItemVersions] ON [RecipieItemVersions].[ItemVersionId] = [MenuItemVersions].[MenuItemVersionId]";
 		private const string WhereQueryByMenuItemId = "WHERE [MenuItemVersions].[MenuItemId] = @MenuItemId{andTenantId:[MenuItemVersions]} ";
 		private const string WhereQueryByWithAliasMenuItemId = "WHERE versionTable1.[MenuItemId] = @MenuItemId{andTenantId:versionTable1} ";
 		private const string WhereQueryByMenuItemVersionId = "WHERE [MenuItemVersions].[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItemVersions]} ";
@@ -34,8 +34,8 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 		private const string AndWithIsDeletedFilter = "AND [RecipieItemVersions].[IsDeleted] = @IsDeleted ";
 		private const string AndWithIsDeletedFilterWithAlias = "AND joinVersionTable1.[IsDeleted] = @IsDeleted ";
 		private const string AndWithSliceDateFilter = "AND joinVersionTable1.[Modified] <= @Modified ";
-		private const string InsertManyQueryTemplate = @"INSERT INTO [RecipieItemVersions]([RecipieItemVersions].[ItemId],[RecipieItemVersions].[ItemVersionId],[RecipieItemVersions].[IsDeleted],[RecipieItemVersions].[Modified],[RecipieItemVersions].[ModifiedBy],[RecipieItemVersions].[CategoryId],[RecipieItemVersions].[TenantId])  VALUES {0};INSERT INTO [MenuItemVersions]([MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown],[MenuItemVersions].[TenantId])  VALUES {1}";
-		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',@TenantId)";
+		private const string InsertManyQueryTemplate = @"INSERT INTO [RecipieItemVersions]([RecipieItemVersions].[ItemId],[RecipieItemVersions].[ItemVersionId],[RecipieItemVersions].[IsDeleted],[RecipieItemVersions].[Modified],[RecipieItemVersions].[ModifiedBy],[RecipieItemVersions].[CategoryId],[RecipieItemVersions].[TenantId])  VALUES {0};INSERT INTO [MenuItemVersions]([MenuItemVersions].[MenuItemId],[MenuItemVersions].[MenuItemVersionId],[MenuItemVersions].[MenuCategoryId],[MenuItemVersions].[ExternalId],[MenuItemVersions].[DiscountValue],[MenuItemVersions].[DiscountStartDate],[MenuItemVersions].[Type],[MenuItemVersions].[BitKitchenPrinters],[MenuItemVersions].[YesNoUnknown],[MenuItemVersions].[CreatedBy],[MenuItemVersions].[TenantId])  VALUES {1}";
+		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',@CreatedBy{0},@TenantId)";
 		private const string InsertManyJoinedValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}',@CategoryId{0},@TenantId)";
 
 
@@ -55,7 +55,7 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 
 			if (!menuItemList.Any()) return;
 
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 3;
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
 			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
 																	? maxInsertManyRowsWithParameters
 																	: MaxInsertManyRows;
@@ -77,6 +77,7 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 				{
 					var menuItem = item.Value;
 					var index = item.Index;
+					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
 					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
 					values.AppendLine(index != 0 ? "," : "");
 					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
@@ -100,7 +101,7 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 
 			if (!menuItemList.Any()) return;
 
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 3;
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
 			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
 																	? maxInsertManyRowsWithParameters
 																	: MaxInsertManyRows;
@@ -123,6 +124,7 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 				{
 					var menuItem = item.Value;
 					var index = item.Index;
+					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
 					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
 					values.AppendLine(index != 0 ? "," : "");
 					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
