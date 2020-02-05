@@ -194,7 +194,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
-            var columns = info.TableColumns.Select(c => c.Name).Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c)).ToList();
+            var columns = info.TableColumns.Where(c => !c.IgnoreOnUpdate).Select(c => c.Name).Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c)).ToList();
             return Update(info.TableName) + " " 
                     + Set(columns, info.TableName) + " " 
                     + From(info.TableName) + " ";
@@ -203,7 +203,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public string GenerateUpdateJoin(SqlInfo info)
         {
             // use pk from inherite model
-            var values = info.JoinTableColumns.Select(c => c.Name)
+            var values = info.JoinTableColumns.Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
                 .Except(info.IdentityColumnsJoined)
                 .Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c));//TODO FIX TO MANY KEYS
 

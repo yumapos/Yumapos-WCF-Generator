@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
@@ -261,19 +260,21 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
             // Add sql column name - skip members marked [DbIgnoreAttribute]
             var elements = properties
-                .Where(p => !p.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
                 .Select(p =>
                 {
                     var typeName = p.Type.ToString();
                     
                     return new PropertyInfo(
-                        name:p.Identifier.Text,
+                        name: p.Identifier.Text,
                         isParameter: typeName == "string",
                         isNullable: typeName.EndsWith("?"),
                         isBool: typeName.Contains("bool"),
                         isEnum: _solutionSyntaxWalker.PropertyIsEnum(p),
-                        cultureDependent: typeName.Contains("decimal") || typeName.Contains("double") || typeName.Contains("float") || typeName.Contains("DateTime"));
-                });
+                        cultureDependent: typeName.Contains("decimal") || typeName.Contains("double") || typeName.Contains("float") || typeName.Contains("DateTime"),
+                        ignoreOptions: GetIgnoreOptions(doClass, p));
+                })
+                .Where(info => !info.IgnoreAlways);
+
             repositoryInfo.Elements.AddRange(elements);
 
             // Primary keys info
@@ -511,6 +512,30 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         private static bool NameIsTrue(MethodImplementationInfo methodInfo, string name)
         {
             return methodInfo.Method.GetName() + (methodInfo.FilterInfo != null ? methodInfo.FilterInfo.Key ?? "" : "") == name || methodInfo.Method.GetName() + (methodInfo.FilterInfo != null ? methodInfo.FilterInfo.Key ?? "" : "") + "Async" == name;
+        }
+
+        private PropertyIgnoreOptions GetIgnoreOptions(ClassDeclarationSyntax doClass, PropertyDeclarationSyntax property)
+        {
+            if (!property.AttributeExist(RepositoryDataModelHelper.DbIgnoreAttributeName))
+            {
+                return PropertyIgnoreOptions.None;
+            }
+
+            var propertyName = property.Identifier.Text;
+
+            var value = _solutionSyntaxWalker.GetAttributeArgumentValue(doClass, 
+                propertyName,
+                RepositoryDataModelHelper.DbIgnoreAttributeName,
+                "IgnoreOnUpdate");
+
+            if (value == null || !bool.TryParse(value, out bool ignoreOnUpdate))
+            {
+                return PropertyIgnoreOptions.Always;
+            }
+
+            return ignoreOnUpdate
+                ? PropertyIgnoreOptions.OnUpdate
+                : PropertyIgnoreOptions.Always;
         }
 
         #endregion

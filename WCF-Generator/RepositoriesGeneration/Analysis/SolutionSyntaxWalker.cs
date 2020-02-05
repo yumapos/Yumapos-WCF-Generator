@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WCFGenerator.Common;
+using WCFGenerator.Common.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Helpers;
 
 namespace WCFGenerator.RepositoriesGeneration.Analysis
@@ -14,6 +17,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         private readonly CSharpCompilation _repositoryModelsCompilation;
         private readonly CSharpCompilation _customRepositoriesCompilation;
         private readonly CSharpCompilation _fullCompilation;
+        private readonly Task<IEnumerable<ClassCompilerInfo>> _getAllClasses;
 
         // Classes from all projects with repository models marked repostiry attribute
         private readonly List<ClassDeclarationSyntax> _repositoryModelClasses;
@@ -23,9 +27,6 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 
         // interfaces from all projects with repository interfaces
         private readonly List<InterfaceDeclarationSyntax> _repositoryInterfaces;
-
-        // Classes from all configured projects
-        private readonly List<ClassDeclarationSyntax> _allClasses;
 
         private readonly List<string> _enums;
 
@@ -37,18 +38,18 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             if (repositoryInterfaceProjects == null) throw new ArgumentException("repositoryInterfaceProjects");
             if (targetProject == null) throw new ArgumentException("targetProject");
 
-            _allClasses = new List<ClassDeclarationSyntax>();
             _customRepositoryClasses = new List<ClassDeclarationSyntax>();
             _repositoryModelClasses = new List<ClassDeclarationSyntax>();
             _repositoryInterfaces = new List<InterfaceDeclarationSyntax>();
             _enums = new List<string>();
+
+            _getAllClasses = solution.GetAllClasses(targetProject, false, "");
 
             // Get repository model Classes
             var repositoryModelTrees = GetTrees(solution, repositoryModelsProjects);
             var allClasses = repositoryModelTrees
                 .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
                 .ToList();
-            _allClasses.AddRange(allClasses);
 
             var repositoryModels = allClasses.Where(c => c.AttributeExist(repositoryAttributeName));
             _repositoryModelClasses.AddRange(repositoryModels);
@@ -69,10 +70,6 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 
             // Get additional Classes
             var additionalTrees = GetTrees(solution, additionalProjectsForAnalysis);
-            var additionalClasses = repositoryTrees
-                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
-                .ToList();
-            _allClasses.AddRange(additionalClasses);
 
             _repositoryModelsCompilation = CSharpCompilation.Create("RepositoryModelCompilation").AddSyntaxTrees(repositoryModelTrees);
             _customRepositoriesCompilation = CSharpCompilation.Create("CustomRepositoriesCompilation").AddSyntaxTrees(repositoryTrees);
@@ -81,7 +78,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             allTrees.AddRange(repositoryModelTrees);
             allTrees.AddRange(repositoryInterfaceTrees);
             allTrees.AddRange(additionalTrees);
-            
+
             _fullCompilation = CSharpCompilation.Create("FullCompilation")
                 .AddSyntaxTrees(allTrees)
                 .WithReferences(new List<MetadataReference>()
@@ -196,6 +193,58 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var t = propertyDeclarationSyntax.Type.ToString().TrimEnd('?');
             
             return _enums.Any(e => e == t);
+        }
+
+        public string GetAttributeArgumentValue(ClassDeclarationSyntax parentClass, string propertyName, string attributeName, string argumentName)
+        {
+            return GetAttributeArgumentValueFromSyntax(parentClass, propertyName, attributeName, argumentName);
+
+            // TODO Restore, research why NamedArguments list is empty
+            //return GetAttributeArgumentValueFromCompilationFromNamedArguments(codeclass, propertyName, attributeName, argumentName);
+        }
+
+        private static string GetAttributeArgumentValueFromSyntax(ClassDeclarationSyntax parentClass, string propertyName, string attributeName, string argumentName)
+        {
+            var prop = parentClass.Members.OfType<PropertyDeclarationSyntax>().First(cp =>
+                cp.GetterExist() && cp.SetterExist() && cp.Identifier.Text == propertyName);
+
+            var ignoreAtt = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(prop)
+                .FirstOrDefault(x => x.Name.ToString().Contains(attributeName));
+            
+            var value = ignoreAtt?.Parameters?.FirstOrDefault(pair => pair.Key.Contains(argumentName));
+
+            return value?.Value;
+        }
+
+        private string GetAttributeArgumentValueFromCompilationFromNamedArguments(BaseTypeDeclarationSyntax codeclass,
+            string propertyName, string attributeName, string argumentName)
+        {
+            var symbol = _fullCompilation.GetClass(codeclass);
+
+            if (symbol == null)
+            {
+                return null;
+            }
+
+            var property = symbol.GetMembers()
+                .Where(m => m.Kind == SymbolKind.Property)
+                .Cast<IPropertySymbol>().FirstOrDefault(m => m.Name == propertyName);
+
+            if (property == null)
+            {
+                return null;
+            }
+
+            var attribute = property.GetAttributeByName(attributeName);
+
+            if (attribute == null)
+            {
+                return null;
+            }
+
+            var value = attribute.GetAttributePropertyValue(argumentName);
+
+            return value;
         }
     }
 }
