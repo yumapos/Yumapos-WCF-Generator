@@ -164,6 +164,35 @@ namespace TestRepositoryGeneration
 			UpdateMenuItems2Taxes(tax);
 		}
 
+		/*
+		public void UpdateManyByTaxId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+		{
+		foreach (var tax in taxList)
+		{
+		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
+		tax.TaxVersionId = Guid.NewGuid();
+		tax.TaxId = 0;
+		}
+		_taxVersionRepository.InsertMany(taxList);
+		_taxCacheRepository.UpdateManyByTaxId(taxList);
+		UpdateManyMenuItems2Taxes(taxList);
+		}
+		public async Task UpdateManyByTaxIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+		{
+		foreach (var tax in taxList)
+		{
+		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
+		tax.TaxVersionId = Guid.NewGuid();
+		tax.TaxId = 0;
+		}
+		await _taxVersionRepository.InsertManyAsync(taxList);
+		await _taxCacheRepository.UpdateManyByTaxIdAsync(taxList);
+		UpdateManyMenuItems2Taxes(taxList);
+		}
+
+		*/
 		private void UpdateMenuItems2Taxes(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			if (tax.MenuItemIds == null)

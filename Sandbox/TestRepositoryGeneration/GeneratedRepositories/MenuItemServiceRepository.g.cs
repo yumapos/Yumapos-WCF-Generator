@@ -215,6 +215,73 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 
 		*/
+		public void UpdateManyByMenuItemId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+				menuItem.MenuItemVersionId = Guid.NewGuid();
+				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
+				{
+					throw new ArgumentException("MenuItemId");
+				}
+			}
+			_menuItemVersionRepository.InsertMany(menuItemList);
+			_menuItemCacheRepository.UpdateManyByMenuItemId(menuItemList);
+			UpdateManyMenuItems2Taxes(menuItemList);
+		}
+		public async Task UpdateManyByMenuItemIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+				menuItem.MenuItemVersionId = Guid.NewGuid();
+				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
+				{
+					throw new ArgumentException("MenuItemId");
+				}
+			}
+			await _menuItemVersionRepository.InsertManyAsync(menuItemList);
+			await _menuItemCacheRepository.UpdateManyByMenuItemIdAsync(menuItemList);
+			UpdateManyMenuItems2Taxes(menuItemList);
+		}
+		/*
+		public void UpdateManyByMenuCategoryId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		foreach (var menuItem in menuItemList)
+		{
+		menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+		menuItem.MenuItemVersionId = Guid.NewGuid();
+		if(menuItem.MenuItemId == null || menuItem.MenuItemId== Guid.Empty )
+		{
+		throw new ArgumentException("MenuItemId");
+		}
+		}
+		_menuItemVersionRepository.InsertMany(menuItemList);
+		_menuItemCacheRepository.UpdateManyByMenuCategoryId(menuItemList);
+		UpdateManyMenuItems2Taxes(menuItemList);
+		}
+		public async Task UpdateManyByMenuCategoryIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		foreach (var menuItem in menuItemList)
+		{
+		menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+		menuItem.MenuItemVersionId = Guid.NewGuid();
+		if(menuItem.MenuItemId == null || menuItem.MenuItemId== Guid.Empty )
+		{
+		throw new ArgumentException("MenuItemId");
+		}
+		}
+		await _menuItemVersionRepository.InsertManyAsync(menuItemList);
+		await _menuItemCacheRepository.UpdateManyByMenuCategoryIdAsync(menuItemList);
+		UpdateManyMenuItems2Taxes(menuItemList);
+		}
+
+		*/
 		private void UpdateMenuItems2Taxes(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
 			if (menuItem.TaxIds == null)

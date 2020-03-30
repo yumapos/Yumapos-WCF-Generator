@@ -24,6 +24,8 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
         public string ZipCode { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
+        [DbIgnore(IgnoreOnUpdate = true)]
+        public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
         public DateTimeOffset? ExpireDate { get; set; }
         [DbIgnore]

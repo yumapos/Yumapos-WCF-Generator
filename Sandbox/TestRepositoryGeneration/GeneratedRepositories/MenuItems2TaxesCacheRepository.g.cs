@@ -26,6 +26,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string UpdateQueryBy = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems2Taxess] ";
 		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems2Taxess] SET [MenuItems2Taxess].[MenuItemId] = @MenuItemId,[MenuItems2Taxess].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems2Taxess].[Modified] = @Modified,[MenuItems2Taxess].[ModifiedBy] = @ModifiedBy,[MenuItems2Taxess].[TaxId] = @TaxId,[MenuItems2Taxess].[TaxVersionId] = @TaxVersionId,[MenuItems2Taxess].[IsDeleted] = @IsDeleted FROM [MenuItems2Taxess]  WHERE   IF @@ROWCOUNT = 0 BEGIN INSERT INTO [MenuItems2Taxess]([MenuItems2Taxess].[MenuItemId],[MenuItems2Taxess].[MenuItemVersionId],[MenuItems2Taxess].[Modified],[MenuItems2Taxess].[ModifiedBy],[MenuItems2Taxess].[TaxId],[MenuItems2Taxess].[TaxVersionId],[MenuItems2Taxess].[IsDeleted])  VALUES(@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionId,@IsDeleted)  END";
+		private const string UpdateManyByQueryTemplate = @"UPDATE [MenuItems2Taxess] SET MenuItemId = '{1}',MenuItemVersionId = '{2}',Modified = '{3}',ModifiedBy = '{4}',TaxId = '{5}',TaxVersionId = '{6}',IsDeleted = '{7}' WHERE ";
 		private const string WhereQueryByMenuItemId = "WHERE [MenuItems2Taxess].[MenuItemId] = @MenuItemId ";
 		private const string WhereQueryByTaxId = "WHERE [MenuItems2Taxess].[TaxId] = @TaxId ";
 		private const string AndWithIsDeletedFilter = "AND [MenuItems2Taxess].[IsDeleted] = @IsDeleted ";
@@ -216,6 +217,153 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 
 
+		/*
+
+		public void UpdateManyByMenuItemId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxUpdateManyRows = MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		parameters.Add($"MenuItemId{index}", menuItems2Taxes.MenuItemId);
+		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByMenuItemIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxUpdateManyRows = MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		parameters.Add($"MenuItemId{index}", menuItems2Taxes.MenuItemId);
+		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*//*
+
+		public void UpdateManyByTaxId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxUpdateManyRows = MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		parameters.Add($"TaxId{index}", menuItems2Taxes.TaxId);
+		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByTaxIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxUpdateManyRows = MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		parameters.Add($"TaxId{index}", menuItems2Taxes.TaxId);
+		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*/
 		public void RemoveByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			var sql = DeleteQueryBy + WhereQueryByMenuItemId;

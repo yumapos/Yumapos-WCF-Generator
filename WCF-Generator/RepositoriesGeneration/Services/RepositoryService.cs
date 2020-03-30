@@ -475,6 +475,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                             Parameters = interfaceMethodNames.FirstOrDefault(p => p.Name == ("GetBy" + filterInfo.Key) || p.Name == ("GetBy" + filterInfo.Key + "Async"))?.Parameters ?? filterInfo.Parameters
                         },
                         new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
+                        new MethodImplementationInfo {Method = RepositoryMethod.UpdateManyBy, FilterInfo = filterInfo},
                         new MethodImplementationInfo
                         {
                             Method = RepositoryMethod.RemoveBy,

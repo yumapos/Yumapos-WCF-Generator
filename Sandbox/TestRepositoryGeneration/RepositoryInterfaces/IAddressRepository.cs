@@ -17,6 +17,7 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         IEnumerable<Address> GetByModifiedAndCountryAndCity(string country, string city, DateTime startModified, DateTime endModified, bool? isDeleted = false);
         IEnumerable<Address> GetByLatitudeAndLongitude(decimal? latitude, decimal? longitude, bool? isDeleted = false);
         Task UpdateByIdAsync(Address address);
+        Task UpdateManyByIdAsync(IEnumerable<Address> address);
         Task RemoveByIdAsync(Address address);
         Task RemoveByIdAsync(Guid id);
     }

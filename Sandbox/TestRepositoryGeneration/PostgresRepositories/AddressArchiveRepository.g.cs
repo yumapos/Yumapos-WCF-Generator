@@ -19,13 +19,14 @@ namespace TestRepositoryGeneration
 {
 	public partial class AddressArchiveRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IAddressArchiveRepository
 	{
-		public const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date";
-		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses   ";
-		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses ";
-		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate) ";
-		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate FROM archive.addresses ";
+		public const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date";
+		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses   ";
+		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses ";
+		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Created,@Modified,@ExpireDate) ";
+		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.created = @Created,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate FROM archive.addresses ";
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
-		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Modified,@ExpireDate)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate ";
+		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Created,@Modified,@ExpireDate)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.created = @Created,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate ";
+		private const string UpdateManyByIdQueryTemplate = @"GenerateUpdateMany script was not generated";
 		private const string WhereQueryById = "WHERE archive.addresses.id = @Id ";
 		private const string WhereQueryByModified = "WHERE archive.addresses.modified >= @startModified AND archive.addresses.modified < @endModified ";
 		private const string WhereQueryByCountryAndCity = "WHERE archive.addresses.country = @Country AND archive.addresses.city = @City ";
@@ -201,7 +202,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -247,7 +248,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		await Task.Delay(10);
@@ -299,6 +300,377 @@ namespace TestRepositoryGeneration
 		await DataAccessService.PersistObjectAsync(address, sql);
 		}
 
+
+		*/
+		/*
+
+		public void UpdateManyById(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Id{index}", address.Id);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Id{index}", address.Id);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*//*
+
+		public void UpdateManyByModified(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Modified{index}", address.Modified);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByModifiedAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Modified{index}", address.Modified);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*//*
+
+		public void UpdateManyByCountryAndCity(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByCountryAndCityAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*//*
+
+		public void UpdateManyByCountryAndCityAndZipCode(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByCountryAndCityAndZipCodeAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
 
 		*/
 		public void RemoveById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)

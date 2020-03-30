@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Helpers;
@@ -18,9 +17,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private readonly string _insertQuery = "InsertQuery";
         
-
         private readonly string _updateQuery = "UpdateQuery";
         private readonly string _updateQueryBy = "UpdateQueryBy";
+        private readonly string _updateManyByQueryTemplateField = "UpdateManyBy{0}QueryTemplate";
+        private readonly string _updateManyByJoinedQueryTemplateField = "UpdateManyBy{0}JoinedQueryTemplate";
 
         private readonly string _deleteQueryBy = "DeleteQueryBy";
         private readonly string _whereQueryBy = "WhereQueryBy";
@@ -29,7 +29,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private readonly string _join = "Join";
         private readonly string _pk = "Pk";
         private readonly string _insertOrUpdateQuery = "InsertOrUpdateQuery";
-        
 
         #endregion
 
@@ -69,8 +68,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var updateBy = ScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
             var deleteBy = ScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
             var insertOrUpdate = ScriptGenerator.GenerateInsertOrUpdate(RepositoryInfo.PrimaryKeys, sqlInfo).SurroundWithQuotes();
-           
-
+            
             sb.AppendLine("public const string Fields = @" + fields.SurroundWithQuotes() + ";");
             sb.AppendLine("private const string " + _selectAllQuery + " = @" + selectAllQuery + ";");
             sb.AppendLine("private const string " + _selectByQuery + " = @" + selectByQuery + ";");
@@ -79,11 +77,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
             sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
+
+            var updateManyQueryTemplate = ScriptGenerator.GenerateUpdateMany(sqlInfo).SurroundWithQuotes();
+            sb.AppendLine("private const string " + GetUpdateManyByQueryTemplateField(RepositoryInfo.PrimaryKeyName) + " = @" + updateManyQueryTemplate + ";");
             
-            if(RepositoryInfo.JoinRepositoryInfo != null)
+            if (RepositoryInfo.JoinRepositoryInfo != null)
             {
                 var updateJoin = ScriptGenerator.GenerateUpdateJoin(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _updateQuery + _join + " = " + updateJoin + ";");
+
+                var updateManyByQueryJoinedTemplate = ScriptGenerator.GenerateUpdateManyJoined(sqlInfo).SurroundWithQuotes();
+                sb.AppendLine("private const string " + GetUpdateManyByJoinedQueryTemplateField(RepositoryInfo.JoinRepositoryInfo.PrimaryKeyName) + " = @" + updateManyByQueryJoinedTemplate + ";");
 
                 var selectIntoTemp = ScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + _selectIntoTemp + " = @" + selectIntoTemp + ";");
@@ -115,6 +119,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine(base.GetFields());
 
             return sb.ToString();
+        }
+
+        private string GetUpdateManyByQueryTemplateField(string filterInfoKey)
+        {
+            return  string.Format(_updateManyByQueryTemplateField, filterInfoKey);
+        }
+
+        private string GetUpdateManyByJoinedQueryTemplateField(string filterInfoKey)
+        {
+            return string.Format(_updateManyByJoinedQueryTemplateField, filterInfoKey);
         }
 
         public override string GetMethods()
@@ -225,6 +239,17 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 sb.AppendLine(updateByMethods);
             }
+
+            // RepositoryMethod.UpdateManyBy
+            var updateManyMethods = RepositoryInfo.MethodImplementationInfo
+                .Where(m => m.Method == RepositoryMethod.UpdateManyBy)
+                .Aggregate("", (s, method) => s + GenerateUpdateMany(method));
+
+            if (!string.IsNullOrEmpty(updateManyMethods))
+            {
+                sb.AppendLine(updateManyMethods);
+            }
+
             try
             {
                 // RepositoryMethod.RemoveBy
@@ -544,7 +569,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
-        public string GenerateRemove(MethodImplementationInfo method)
+        private string GenerateRemove(MethodImplementationInfo method)
         {
             var filter = method.FilterInfo;
 
@@ -659,6 +684,171 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("}");
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
+
+        private string GenerateUpdateMany(MethodImplementationInfo method)
+        {
+            var filter = method.FilterInfo;
+            var joined = RepositoryInfo.JoinRepositoryInfo != null;
+
+            var sb = new StringBuilder();
+
+            var entityName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var parameterName = $"{entityName}List";
+            var methodParameter = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterName}";
+            var allColumns = RepositoryInfo.Elements.Concat(RepositoryInfo.JoinRepositoryInfo?.Elements ?? Enumerable.Empty<PropertyInfo>()).ToList();
+            var columnsAsParameters = allColumns.Where(c => c.IsParameter).ToList();
+            var valuesAsParametesCount = RepositoryInfo.Elements.Count(p => p.IsParameter) + RepositoryInfo.HiddenElements.Count(p => p.IsParameter);
+
+            var updateManyByQueryTemplateField = GetUpdateManyByQueryTemplateField(RepositoryInfo.PrimaryKeyName);
+            var updateManyByJoinedQueryTemplateField = RepositoryInfo.JoinRepositoryInfo != null
+                ? GetUpdateManyByJoinedQueryTemplateField(RepositoryInfo.JoinRepositoryInfo.PrimaryKeyName)
+                : string.Empty;
+
+            var values = ExtractValuesForUpdateAsString(entityName);
+            var joinedValues = ExtractJoinedValuesForUpdateAsString(entityName);
+
+            if (joined)
+            {
+                valuesAsParametesCount += 2;// @TempTable, @TempId
+            }
+
+            #region Method generator
+
+            Action<bool> generator = (isAsync) =>
+            {
+                if (isAsync)
+                {
+                    sb.AppendLine("public async Task UpdateManyBy" + filter.Key + "Async(" + methodParameter + ")");
+                }
+                else
+                {
+                    sb.AppendLine("public void UpdateManyBy" + filter.Key + "(" + methodParameter + ")");
+                }
+                sb.AppendLine("{");
+                sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
+                sb.AppendLine();
+                sb.AppendLine($"if(!{parameterName}.Any()) return;");
+                sb.AppendLine();
+                if (valuesAsParametesCount > 1)
+                {
+                    sb.AppendLine($"var maxUpdateManyRowsWithParameters = {MaxRepositoryParamsBaseRepositoryField} / {valuesAsParametesCount};");
+
+                    sb.AppendLine($@"var maxUpdateManyRows = maxUpdateManyRowsWithParameters < {MaxUpdateManyRowsBaseRepositoryField} 
+                                                        ? maxUpdateManyRowsWithParameters
+                                                        : {MaxUpdateManyRowsBaseRepositoryField};");
+                }
+                else
+                {
+                    sb.AppendLine($"var maxUpdateManyRows = {MaxUpdateManyRowsBaseRepositoryField};");
+                }
+
+                sb.AppendLine("var query = new System.Text.StringBuilder();");
+                sb.AppendLine("var parameters = new Dictionary<string, object>();");
+                sb.AppendLine();
+                sb.AppendLine($@"var itemsPerRequest = {parameterName}.Select((x, i) => new {{Index = i,Value = x}})
+                .GroupBy(x => x.Index / maxUpdateManyRows)
+                .Select(x => x.Select((v, i) => new {{ Index = i, Value = v.Value }}).ToList())
+                .ToList(); ");
+                sb.AppendLine();
+
+                if (isAsync)
+                {
+                    sb.AppendLine($"await Task.Delay(10);");
+                }
+
+                sb.AppendLine();
+
+                sb.AppendLine("foreach (var items in itemsPerRequest)");
+                sb.AppendLine("{");
+
+                if (RepositoryInfo.IsTenantRelated)
+                {
+                    sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
+                }
+
+                sb.AppendLine("foreach (var item in items)");
+                sb.AppendLine("{");
+                sb.AppendLine($"var {entityName} = item.Value;");
+                sb.AppendLine("var index = item.Index; ");
+
+                foreach (var filterParameter in filter.Parameters)
+                {
+                    sb.AppendLine($"parameters.Add($\"{filterParameter.Name}{{index}}\", {entityName}.{filterParameter.Name});");
+                }
+
+                foreach (var column in columnsAsParameters)
+                {
+                    sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {entityName}.{column.Name});");
+                }
+
+                sb.AppendLine($"query.AppendFormat($\"{{{updateManyByQueryTemplateField}}};\", index, {string.Join(",", values)});");
+                if (joined)
+                {
+                    sb.AppendLine($"query.AppendFormat($\"{{{updateManyByJoinedQueryTemplateField}}};\", index, {string.Join(",", joinedValues)});");
+                }
+
+                sb.AppendLine("}");
+
+                if (isAsync)
+                {
+                    sb.AppendLine("await Task.Delay(10);");
+                }
+
+                sb.AppendLine(
+                    $"var fullSqlStatement = {DataAccessServiceBaseRepositoryField}.GenerateFullSqlStatement(query.ToString().Replace(\"'NULL'\", \"NULL\"), typeof({RepositoryInfo.ClassFullName}));");
+
+                if (isAsync)
+                {
+                    sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(fullSqlStatement.ToString(), parameters);");
+                }
+                else
+                {
+                    sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(fullSqlStatement.ToString(), parameters);");
+                }
+                
+                sb.AppendLine("parameters.Clear();");
+                sb.AppendLine("query.Clear();");
+
+                sb.AppendLine("}");
+                sb.AppendLine();
+                if (isAsync)
+                {
+                    sb.AppendLine("await Task.Delay(10);");
+                }
+
+                sb.AppendLine();
+
+                sb.AppendLine("}");
+            };
+
+            #endregion
+           
+            // Synchronous method
+            sb.AppendLine();
+            generator(false);
+            // Asynchronous method
+            sb.AppendLine();
+            generator(true);
+
+            return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
+
+
+        private List<string> ExtractValuesForUpdateAsString(string entityName)
+        {
+            return ExtractValuesAsString(entityName,
+                RepositoryInfo.Elements.Where(c => !c.IsParameter  
+                                                                  && !c.IgnoreOnUpdate 
+                                                                  && RepositoryInfo.PrimaryKeys.All(k => k.Name != c.Name)));
+        }
+
+        private List<string> ExtractJoinedValuesForUpdateAsString(string entityName)
+        {
+            return ExtractValuesAsString(entityName,
+                RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter 
+                                                                        && !c.IgnoreOnUpdate 
+                                                                        && RepositoryInfo.PrimaryKeys.All(k => k.Name != c.Name)));
         }
 
         #endregion

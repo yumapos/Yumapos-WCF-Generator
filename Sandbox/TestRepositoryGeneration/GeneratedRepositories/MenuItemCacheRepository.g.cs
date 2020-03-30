@@ -26,7 +26,9 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		private const string UpdateQueryBy = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId,[MenuItems].[ExternalId] = @ExternalId,[MenuItems].[DiscountValue] = @DiscountValue,[MenuItems].[DiscountStartDate] = @DiscountStartDate,[MenuItems].[Type] = @Type,[MenuItems].[BitKitchenPrinters] = @BitKitchenPrinters,[MenuItems].[YesNoUnknown] = @YesNoUnknown FROM [MenuItems] ";
 		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
 		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId,[MenuItems].[ExternalId] = @ExternalId,[MenuItems].[DiscountValue] = @DiscountValue,[MenuItems].[DiscountStartDate] = @DiscountStartDate,[MenuItems].[Type] = @Type,[MenuItems].[BitKitchenPrinters] = @BitKitchenPrinters,[MenuItems].[YesNoUnknown] = @YesNoUnknown FROM [MenuItems]  WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]}  IF @@ROWCOUNT = 0 BEGIN DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@CreatedBy,@TenantId);SELECT ItemId FROM @TempTable; END";
+		private const string UpdateManyByMenuItemIdQueryTemplate = @"UPDATE [MenuItems] SET MenuItemVersionId = '{1}',MenuCategoryId = '{2}',ExternalId = '{3}',DiscountValue = '{4}',DiscountStartDate = '{5}',Type = '{6}',BitKitchenPrinters = '{7}',YesNoUnknown = '{8}' WHERE [MenuItems].[MenuItemId] = @MenuItemId{0}{{andTenantId:[MenuItems]}}";
 		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET [RecipieItems].[ItemId] = @MenuItemId,[RecipieItems].[ItemVersionId] = @MenuItemVersionId,[RecipieItems].[IsDeleted] = @IsDeleted,[RecipieItems].[Modified] = @Modified,[RecipieItems].[ModifiedBy] = @ModifiedBy,[RecipieItems].[CategoryId] = @CategoryId FROM [RecipieItems] ";
+		private const string UpdateManyByItemIdJoinedQueryTemplate = @"UPDATE [RecipieItems] SET ItemId = '{1}',ItemVersionId = '{2}',IsDeleted = '{3}',Modified = '{4}',ModifiedBy = '{5}',CategoryId = @CategoryId{0} WHERE [MenuItems].[ItemId] = @ItemId{0}{{andTenantId:[MenuItems]}}";
 		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItems].[MenuItemId] FROM [MenuItems] ";
 		private const string WhereQueryByMenuItemId = "WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuItemVersionId = "WHERE [MenuItems].[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
@@ -264,6 +266,266 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 
+
+		*/
+
+		public void UpdateManyByMenuItemId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+
+			if (!menuItemList.Any()) return;
+
+			var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 4;
+			var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows
+																	? maxUpdateManyRowsWithParameters
+																	: MaxUpdateManyRows;
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxUpdateManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+
+			foreach (var items in itemsPerRequest)
+			{
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var menuItem = item.Value;
+					var index = item.Index;
+					parameters.Add($"MenuItemId{index}", menuItem.MenuItemId);
+					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+					query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+					query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
+				}
+				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
+				DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+				parameters.Clear();
+				query.Clear();
+			}
+
+
+		}
+
+		public async Task UpdateManyByMenuItemIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+
+			if (!menuItemList.Any()) return;
+
+			var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 4;
+			var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows
+																	? maxUpdateManyRowsWithParameters
+																	: MaxUpdateManyRows;
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxUpdateManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			await Task.Delay(10);
+
+			foreach (var items in itemsPerRequest)
+			{
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var menuItem = item.Value;
+					var index = item.Index;
+					parameters.Add($"MenuItemId{index}", menuItem.MenuItemId);
+					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+					query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+					query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
+				}
+				await Task.Delay(10);
+				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
+				await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+				parameters.Clear();
+				query.Clear();
+			}
+
+			await Task.Delay(10);
+
+		}
+		/*
+
+		public void UpdateManyByMenuItemVersionId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 4;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"MenuItemVersionId{index}", menuItem.MenuItemVersionId);
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByMenuItemVersionIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 4;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"MenuItemVersionId{index}", menuItem.MenuItemVersionId);
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*//*
+
+		public void UpdateManyByMenuCategoryId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 4;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"MenuCategoryId{index}", menuItem.MenuCategoryId);
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByMenuCategoryIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 4;
+		var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows 
+																? maxUpdateManyRowsWithParameters
+																: MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"MenuCategoryId{index}", menuItem.MenuCategoryId);
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
 
 		*/
 		public void RemoveByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)

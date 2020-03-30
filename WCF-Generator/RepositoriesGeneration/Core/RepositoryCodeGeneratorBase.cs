@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WCFGenerator.RepositoriesGeneration.Helpers;
@@ -111,88 +112,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {elementName}.{column.Name});");
             }
 
-            var values = RepositoryInfo.Elements.Where(c => !c.IsParameter)
-                .Select(c =>
-                {
-                    var name = $"{elementName}.{c.Name}";
-
-                    if (!c.IsNullable)
-                    {
-                        if (c.IsBool)
-                        {
-                            return $"{name} ? 1 : 0";
-                        }
-                        if (c.IsEnum)
-                        {
-                            return $"(int){name}";
-                        }
-
-                        if (c.CultureDependent)
-                        {
-                            return $"{name}.ToString(CultureInfo.InvariantCulture)";
-                        }
-
-                        return name;
-                    }
-                    if (c.IsBool)
-                    {
-                        return $"({name} != null ? ({name}.Value ? 1 : 0).ToString() : null) ?? \"NULL\"";
-                    }
-                    if (c.IsEnum)
-                    {
-                        return $"((int?){name})?.ToString() ?? \"NULL\"";
-                    }
-                    if (c.CultureDependent)
-                    {
-                        return $"{name}?.ToString(CultureInfo.InvariantCulture) ?? \"NULL\"";
-                    }
-
-                    return $"{name}?.ToString() ?? \"NULL\"";
-
-                })
-                .ToList();
-
-
-            var joinedValues = RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter)
-                .Select(c =>
-                {
-                    var name = $"{elementName}.{c.Name}";
-
-                    if (!c.IsNullable)
-                    {
-                        if (c.IsBool)
-                        {
-                            return $"{name} ? 1 : 0";
-                        }
-                        if (c.IsEnum)
-                        {
-                            return $"(int){name}";
-                        }
-
-                        if (c.CultureDependent)
-                        {
-                            return $"{name}.ToString(CultureInfo.InvariantCulture)";
-                        }
-
-                        return name;
-                    }
-                    if (c.IsBool)
-                    {
-                        return $"({name} != null ? ({name}.Value ? 1 : 0).ToString() : null) ?? \"NULL\"";
-                    }
-                    if (c.IsEnum)
-                    {
-                        return $"((int?){name})?.ToString() ?? \"NULL\"";
-                    }
-                    if (c.CultureDependent)
-                    {
-                        return $"{name}?.ToString(CultureInfo.InvariantCulture) ?? \"NULL\"";
-                    }
-
-                    return $"{name}?.ToString() ?? \"NULL\"";
-
-                })
-                .ToList();
+            var values = ExtractValuesAsString(elementName, RepositoryInfo.Elements.Where(c => !c.IsParameter));
+            var joinedValues = ExtractValuesAsString(elementName, RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter));
 
             sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
 
@@ -343,5 +264,51 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             return requiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
+
+        protected List<string> ExtractValuesAsString(string entityName, IEnumerable<PropertyInfo> properties)
+        {
+            if (properties == null) return null;
+            return properties.Select(c =>
+                {
+                    var name = $"{entityName}.{c.Name}";
+
+                    if (!c.IsNullable)
+                    {
+                        if (c.IsBool)
+                        {
+                            return $"{name} ? 1 : 0";
+                        }
+                        if (c.IsEnum)
+                        {
+                            return $"(int){name}";
+                        }
+
+                        if (c.CultureDependent)
+                        {
+                            return $"{name}.ToString(CultureInfo.InvariantCulture)";
+                        }
+
+                        return name;
+                    }
+                    if (c.IsBool)
+                    {
+                        return $"({name} != null ? ({name}.Value ? 1 : 0).ToString() : null) ?? \"NULL\"";
+                    }
+                    if (c.IsEnum)
+                    {
+                        return $"((int?){name})?.ToString() ?? \"NULL\"";
+                    }
+                    if (c.CultureDependent)
+                    {
+                        return $"{name}?.ToString(CultureInfo.InvariantCulture) ?? \"NULL\"";
+                    }
+
+                    return $"{name}?.ToString() ?? \"NULL\"";
+
+                })
+                .ToList();
+        }
+
+      
     }
 }
