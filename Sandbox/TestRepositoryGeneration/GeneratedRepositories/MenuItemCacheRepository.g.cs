@@ -269,7 +269,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		*/
 
-		public void UpdateManyByMenuItemId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		public void UpdateManyByMenuItemIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
 
@@ -290,6 +290,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 			foreach (var items in itemsPerRequest)
 			{
+				query.AppendLine("BEGIN TRANSACTION");
 				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				foreach (var item in items)
 				{
@@ -301,6 +302,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 					query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 					query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
 				}
+				query.AppendLine("COMMIT TRANSACTION");
 				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
 				DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 				parameters.Clear();
@@ -310,7 +312,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
-		public async Task UpdateManyByMenuItemIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		public async Task UpdateManyByMenuItemIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
 
@@ -332,6 +334,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 			foreach (var items in itemsPerRequest)
 			{
+				query.AppendLine("BEGIN TRANSACTION");
 				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 				foreach (var item in items)
 				{
@@ -343,6 +346,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 					query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 					query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
 				}
+				query.AppendLine("COMMIT TRANSACTION");
 				await Task.Delay(10);
 				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
 				await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
@@ -355,7 +359,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 		/*
 
-		public void UpdateManyByMenuItemVersionId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		public void UpdateManyByMenuItemVersionIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
 
@@ -376,6 +380,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -387,6 +392,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -396,7 +402,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
-		public async Task UpdateManyByMenuItemVersionIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		public async Task UpdateManyByMenuItemVersionIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
 
@@ -418,6 +424,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -429,6 +436,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
@@ -442,7 +450,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		*//*
 
-		public void UpdateManyByMenuCategoryId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		public void UpdateManyByMenuCategoryIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
 
@@ -463,6 +471,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -474,6 +483,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -483,7 +493,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
-		public async Task UpdateManyByMenuCategoryIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		public async Task UpdateManyByMenuCategoryIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
 
@@ -505,6 +515,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -516,6 +527,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		query.AppendFormat($"{UpdateManyByMenuItemIdQueryTemplate};", index, menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
 		query.AppendFormat($"{UpdateManyByItemIdJoinedQueryTemplate};", index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);

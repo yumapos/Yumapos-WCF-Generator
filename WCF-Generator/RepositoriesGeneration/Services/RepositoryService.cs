@@ -512,7 +512,37 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
         private static bool NameIsTrue(MethodImplementationInfo methodInfo, string name)
         {
-            return methodInfo.Method.GetName() + (methodInfo.FilterInfo != null ? methodInfo.FilterInfo.Key ?? "" : "") == name || methodInfo.Method.GetName() + (methodInfo.FilterInfo != null ? methodInfo.FilterInfo.Key ?? "" : "") + "Async" == name;
+            var methodsPatterns = new List<string>();
+
+            switch (methodInfo.Method)
+            {
+                case RepositoryMethod.GetAll:
+                case RepositoryMethod.Insert:
+                case RepositoryMethod.InsertOrUpdate:
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}");
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
+                    break;
+                case RepositoryMethod.GetBy:
+                case RepositoryMethod.UpdateBy:
+                case RepositoryMethod.RemoveBy:
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}");
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}Async");
+                    break;
+                case RepositoryMethod.InsertMany:
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}");
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}SplitByTransactions");
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}SplitByTransactionsAsync");
+                    break;
+                case RepositoryMethod.UpdateManyBy:
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}SplitByTransactions");
+                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}SplitByTransactionsAsync");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return methodsPatterns.Contains(name);
         }
 
         private PropertyIgnoreOptions GetIgnoreOptions(ClassDeclarationSyntax doClass, PropertyDeclarationSyntax property)

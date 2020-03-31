@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -449,7 +450,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var parameterType = $"IEnumerable<{RepositoryInfo.ClassFullName}>";
             var methodParameter = $"{parameterType} {parameterName}";
 
-            var updateMethodNames = GetUpdateManyMethodNames();
+            var updateMethodNames = GetUpdateMany2ManyMethodNames();
             var updateMethods = updateMethodNames.Select(name => name + "(" + parameterName + ");").ToList();
 
             var returnType = parameterType;
@@ -594,83 +595,81 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var parameterName = $"{elementName}List";
             var parameterType = $"IEnumerable<{RepositoryInfo.ClassFullName}>";
             var methodParameter = $"{parameterType} {parameterName}";
-            var updateMethodNames = GetUpdateManyMethodNames();
-            var updateMethods = updateMethodNames.Select(name => name + "(" + parameterName + ");").ToList();
-
+            var updateMethodNames = GetUpdateMany2ManyMethodNames();
+            
             var sb = new StringBuilder();
 
+            Action<bool> generator = (isAsync) =>
+            {
+                if (isAsync)
+                {
+                    sb.AppendLine("public async Task UpdateManyBy" + filter.Key + "SplitByTransactionsAsync(" + methodParameter + ")");
+                }
+                else
+                {
+                    sb.AppendLine("public void UpdateManyBy" + filter.Key + "SplitByTransactions(" + methodParameter + ")");
+                }
+                sb.AppendLine("{");
+                sb.AppendLine($"foreach (var {elementName} in {parameterName})");
+                sb.AppendLine("{");
+                sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
+                sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
+                sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
+                foreach (var key in RepositoryInfo.PrimaryKeys)
+                {
+                    var primaryKeyProperty = elementName + "." + key.Name;
+
+                    if (key.TypeName.IsInt()) // int skipped on insert
+                    {
+                        sb.AppendLine(primaryKeyProperty + " = 0;");
+                    }
+                    else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
+                    {
+                        sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
+                        sb.AppendLine("{");
+                        sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
+                        sb.AppendLine("}");
+                    }
+                }
+                sb.AppendLine("}");
+
+                if (isAsync)
+                {
+                    sb.AppendLine("await " + VersionRepositoryField + ".InsertManyAsync(" + parameterName + ");");
+                    sb.AppendLine("await " + CacheRepositoryField + ".UpdateManyBy" + filter.Key + "SplitByTransactionsAsync(" +
+                                  parameterName + ");");
+                }
+                else
+                {
+                    sb.AppendLine(VersionRepositoryField + ".InsertMany(" + parameterName + ");");
+                    sb.AppendLine(CacheRepositoryField + ".UpdateManyBy" + filter.Key + "SplitByTransactions(" +
+                                  parameterName + ");");
+                }
+
+                foreach (var name in updateMethodNames)
+                {
+                    // TODO Async methods for update many to many generation disabled in GenerateUpdateManyToMany
+                    //if (isAsync)
+                    //{
+                    //    sb.AppendLine("await " + name + "Async(" + parameterName + ");");
+                    //}
+                    //else
+                    //{
+                    sb.AppendLine(name + "(" + parameterName + ");");
+                    //}
+                }
+
+                sb.AppendLine("}");
+
+            };
+
             // Synchronous method
-            sb.AppendLine("public void UpdateManyBy" + filter.Key + "(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-            sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
-            sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
-            sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
-            foreach (var key in RepositoryInfo.PrimaryKeys)
-            {
-                var primaryKeyProperty = elementName + "." + key.Name;
-
-                if (key.TypeName.IsInt()) // int skipped on insert
-                {
-                    sb.AppendLine(primaryKeyProperty + " = 0;");
-                }
-                else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
-                {
-                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
-                    sb.AppendLine("{");
-                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
-                    sb.AppendLine("}");
-                }
-            }
-            sb.AppendLine("}");
-
-            sb.AppendLine(VersionRepositoryField + ".InsertMany(" + parameterName + ");");
-            sb.AppendLine(CacheRepositoryField + ".UpdateManyBy" + filter.Key + "(" + parameterName + ");");
-
-            foreach (var m in updateMethods)
-            {
-                sb.AppendLine(m);
-            }
-
-            sb.AppendLine("}");
-
+            sb.AppendLine("");
+            generator(false);
             // Asynchronous method
-            sb.AppendLine("public async Task UpdateManyBy" + filter.Key + "Async(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-            sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
-            sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
-            sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
-            foreach (var key in RepositoryInfo.PrimaryKeys)
-            {
-                var primaryKeyProperty = elementName + "." + key.Name;
-
-                if (key.TypeName.IsInt()) // int skipped on insert
-                {
-                    sb.AppendLine(primaryKeyProperty + " = 0;");
-                }
-                else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
-                {
-                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
-                    sb.AppendLine("{");
-                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
-                    sb.AppendLine("}");
-                }
-            }
-            sb.AppendLine("}");
-
-            sb.AppendLine("await " + VersionRepositoryField + ".InsertManyAsync(" + parameterName + ");");
-            sb.AppendLine("await " + CacheRepositoryField + ".UpdateManyBy" + filter.Key + "Async(" + parameterName + ");");
-
-            foreach (var m in updateMethods)
-            {
-                sb.AppendLine(m);
-            }
-
-            sb.AppendLine("}");
-
+            sb.AppendLine("");
+            generator(true);
+            
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
@@ -879,7 +878,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             return updateMethods;
         }
 
-        private IEnumerable<string> GetUpdateManyMethodNames()
+        private IEnumerable<string> GetUpdateMany2ManyMethodNames()
         {
             var updateMethods = RepositoryInfo.Many2ManyInfo.Select(info => "UpdateMany" + info.ManyToManyRepositoryInfo.ClassName);
 

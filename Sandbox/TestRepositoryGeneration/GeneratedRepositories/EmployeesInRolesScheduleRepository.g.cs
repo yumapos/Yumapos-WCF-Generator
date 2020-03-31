@@ -192,7 +192,7 @@ namespace TestRepositoryGeneration
 		*/
 		/*
 
-		public void UpdateManyByScheduleId(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		public void UpdateManyByScheduleIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
 
@@ -210,6 +210,7 @@ namespace TestRepositoryGeneration
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -218,6 +219,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"ScheduleId{index}", employeesInRolesSchedule.ScheduleId);
 		query.AppendFormat($"{UpdateManyByScheduleIdQueryTemplate};", index, employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -227,7 +229,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task UpdateManyByScheduleIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		public async Task UpdateManyByScheduleIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
 
@@ -246,6 +248,7 @@ namespace TestRepositoryGeneration
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -254,6 +257,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"ScheduleId{index}", employeesInRolesSchedule.ScheduleId);
 		query.AppendFormat($"{UpdateManyByScheduleIdQueryTemplate};", index, employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);

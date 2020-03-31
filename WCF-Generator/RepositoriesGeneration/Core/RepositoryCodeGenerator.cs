@@ -719,11 +719,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             {
                 if (isAsync)
                 {
-                    sb.AppendLine("public async Task UpdateManyBy" + filter.Key + "Async(" + methodParameter + ")");
+                    sb.AppendLine("public async Task UpdateManyBy" + filter.Key + "SplitByTransactionsAsync(" + methodParameter + ")");
                 }
                 else
                 {
-                    sb.AppendLine("public void UpdateManyBy" + filter.Key + "(" + methodParameter + ")");
+                    sb.AppendLine("public void UpdateManyBy" + filter.Key + "SplitByTransactions(" + methodParameter + ")");
                 }
                 sb.AppendLine("{");
                 sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
@@ -762,6 +762,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("foreach (var items in itemsPerRequest)");
                 sb.AppendLine("{");
 
+                sb.AppendLine("query.AppendLine(\"BEGIN TRANSACTION\");");
                 if (RepositoryInfo.IsTenantRelated)
                 {
                     sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
@@ -789,6 +790,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 }
 
                 sb.AppendLine("}");
+
+                sb.AppendLine("query.AppendLine(\"COMMIT TRANSACTION\");");
 
                 if (isAsync)
                 {

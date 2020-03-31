@@ -219,7 +219,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		/*
 
-		public void UpdateManyByMenuItemId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		public void UpdateManyByMenuItemIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
 		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
 
@@ -237,6 +237,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var menuItems2Taxes = item.Value;
@@ -244,6 +245,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		parameters.Add($"MenuItemId{index}", menuItems2Taxes.MenuItemId);
 		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -253,7 +255,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
-		public async Task UpdateManyByMenuItemIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		public async Task UpdateManyByMenuItemIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
 		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
 
@@ -272,6 +274,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var menuItems2Taxes = item.Value;
@@ -279,6 +282,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		parameters.Add($"MenuItemId{index}", menuItems2Taxes.MenuItemId);
 		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
@@ -292,7 +296,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		*//*
 
-		public void UpdateManyByTaxId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		public void UpdateManyByTaxIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
 		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
 
@@ -310,6 +314,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var menuItems2Taxes = item.Value;
@@ -317,6 +322,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		parameters.Add($"TaxId{index}", menuItems2Taxes.TaxId);
 		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -326,7 +332,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
-		public async Task UpdateManyByTaxIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		public async Task UpdateManyByTaxIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
 		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
 
@@ -345,6 +351,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var menuItems2Taxes = item.Value;
@@ -352,6 +359,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		parameters.Add($"TaxId{index}", menuItems2Taxes.TaxId);
 		query.AppendFormat($"{UpdateManyByQueryTemplate};", index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);

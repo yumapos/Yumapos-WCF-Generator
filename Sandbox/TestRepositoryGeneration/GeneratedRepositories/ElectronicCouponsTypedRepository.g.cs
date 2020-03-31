@@ -213,7 +213,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		*/
 		/*
 
-		public void UpdateManyByElectronicCouponsId(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
+		public void UpdateManyByElectronicCouponsIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
 		{
 		if(electronicCouponsTypedList==null) throw new ArgumentException(nameof(electronicCouponsTypedList));
 
@@ -234,6 +234,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -245,6 +246,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		query.AppendFormat($"{UpdateManyByElectronicCouponsIdQueryTemplate};", index, electronicCouponsTyped.ElectronicCouponsPresetId,electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0);
 		query.AppendFormat($"{UpdateManyByIdJoinedQueryTemplate};", index, electronicCouponsTyped.Id,electronicCouponsTyped.ImageId?.ToString() ?? "NULL",electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL",electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL",electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL",electronicCouponsTyped.Priority?.ToString() ?? "NULL",electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL",electronicCouponsTyped.IsActive ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -254,7 +256,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
-		public async Task UpdateManyByElectronicCouponsIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
+		public async Task UpdateManyByElectronicCouponsIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
 		{
 		if(electronicCouponsTypedList==null) throw new ArgumentException(nameof(electronicCouponsTypedList));
 
@@ -276,6 +278,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -287,6 +290,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		query.AppendFormat($"{UpdateManyByElectronicCouponsIdQueryTemplate};", index, electronicCouponsTyped.ElectronicCouponsPresetId,electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0);
 		query.AppendFormat($"{UpdateManyByIdJoinedQueryTemplate};", index, electronicCouponsTyped.Id,electronicCouponsTyped.ImageId?.ToString() ?? "NULL",electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL",electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL",electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL",electronicCouponsTyped.Priority?.ToString() ?? "NULL",electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL",electronicCouponsTyped.IsActive ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);

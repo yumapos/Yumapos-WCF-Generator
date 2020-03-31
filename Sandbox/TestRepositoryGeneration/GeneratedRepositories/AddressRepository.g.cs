@@ -298,7 +298,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		*/
 
-		public void UpdateManyById(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public void UpdateManyByIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 			if (addressList == null) throw new ArgumentException(nameof(addressList));
 
@@ -319,6 +319,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 			foreach (var items in itemsPerRequest)
 			{
+				query.AppendLine("BEGIN TRANSACTION");
 				foreach (var item in items)
 				{
 					var address = item.Value;
@@ -332,6 +333,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"ZipCode{index}", address.ZipCode);
 					query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 				}
+				query.AppendLine("COMMIT TRANSACTION");
 				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 				DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 				parameters.Clear();
@@ -341,7 +343,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
-		public async Task UpdateManyByIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public async Task UpdateManyByIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 			if (addressList == null) throw new ArgumentException(nameof(addressList));
 
@@ -363,6 +365,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 			foreach (var items in itemsPerRequest)
 			{
+				query.AppendLine("BEGIN TRANSACTION");
 				foreach (var item in items)
 				{
 					var address = item.Value;
@@ -376,6 +379,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					parameters.Add($"ZipCode{index}", address.ZipCode);
 					query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 				}
+				query.AppendLine("COMMIT TRANSACTION");
 				await Task.Delay(10);
 				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 				await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
@@ -388,7 +392,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 		/*
 
-		public void UpdateManyByExpireDate(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public void UpdateManyByExpireDateSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -409,6 +413,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var address = item.Value;
@@ -422,6 +427,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -431,7 +437,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
-		public async Task UpdateManyByExpireDateAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public async Task UpdateManyByExpireDateSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -453,6 +459,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var address = item.Value;
@@ -466,6 +473,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
@@ -479,7 +487,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		*//*
 
-		public void UpdateManyByModifiedAndCountryAndCity(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public void UpdateManyByModifiedAndCountryAndCitySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -500,6 +508,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var address = item.Value;
@@ -515,6 +524,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -524,7 +534,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
-		public async Task UpdateManyByModifiedAndCountryAndCityAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public async Task UpdateManyByModifiedAndCountryAndCitySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -546,6 +556,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var address = item.Value;
@@ -561,6 +572,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
@@ -574,7 +586,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		*//*
 
-		public void UpdateManyByLatitudeAndLongitude(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public void UpdateManyByLatitudeAndLongitudeSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -595,6 +607,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var address = item.Value;
@@ -609,6 +622,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -618,7 +632,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
-		public async Task UpdateManyByLatitudeAndLongitudeAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public async Task UpdateManyByLatitudeAndLongitudeSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -640,6 +654,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		foreach (var item in items)
 		{
 		var address = item.Value;
@@ -654,6 +669,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);

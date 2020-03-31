@@ -215,7 +215,8 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 
 		*/
-		public void UpdateManyByMenuItemId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+
+		public void UpdateManyByMenuItemIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			foreach (var menuItem in menuItemList)
 			{
@@ -228,10 +229,11 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 				}
 			}
 			_menuItemVersionRepository.InsertMany(menuItemList);
-			_menuItemCacheRepository.UpdateManyByMenuItemId(menuItemList);
+			_menuItemCacheRepository.UpdateManyByMenuItemIdSplitByTransactions(menuItemList);
 			UpdateManyMenuItems2Taxes(menuItemList);
 		}
-		public async Task UpdateManyByMenuItemIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+
+		public async Task UpdateManyByMenuItemIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			foreach (var menuItem in menuItemList)
 			{
@@ -244,11 +246,12 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 				}
 			}
 			await _menuItemVersionRepository.InsertManyAsync(menuItemList);
-			await _menuItemCacheRepository.UpdateManyByMenuItemIdAsync(menuItemList);
+			await _menuItemCacheRepository.UpdateManyByMenuItemIdSplitByTransactionsAsync(menuItemList);
 			UpdateManyMenuItems2Taxes(menuItemList);
 		}
 		/*
-		public void UpdateManyByMenuCategoryId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+
+		public void UpdateManyByMenuCategoryIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 		foreach (var menuItem in menuItemList)
 		{
@@ -261,10 +264,11 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 		}
 		_menuItemVersionRepository.InsertMany(menuItemList);
-		_menuItemCacheRepository.UpdateManyByMenuCategoryId(menuItemList);
+		_menuItemCacheRepository.UpdateManyByMenuCategoryIdSplitByTransactions(menuItemList);
 		UpdateManyMenuItems2Taxes(menuItemList);
 		}
-		public async Task UpdateManyByMenuCategoryIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+
+		public async Task UpdateManyByMenuCategoryIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 		foreach (var menuItem in menuItemList)
 		{
@@ -277,7 +281,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 		}
 		await _menuItemVersionRepository.InsertManyAsync(menuItemList);
-		await _menuItemCacheRepository.UpdateManyByMenuCategoryIdAsync(menuItemList);
+		await _menuItemCacheRepository.UpdateManyByMenuCategoryIdSplitByTransactionsAsync(menuItemList);
 		UpdateManyMenuItems2Taxes(menuItemList);
 		}
 

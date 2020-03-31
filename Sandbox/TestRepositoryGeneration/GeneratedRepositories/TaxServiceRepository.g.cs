@@ -165,7 +165,8 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
-		public void UpdateManyByTaxId(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+
+		public void UpdateManyByTaxIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
 		{
 		foreach (var tax in taxList)
 		{
@@ -175,10 +176,11 @@ namespace TestRepositoryGeneration
 		tax.TaxId = 0;
 		}
 		_taxVersionRepository.InsertMany(taxList);
-		_taxCacheRepository.UpdateManyByTaxId(taxList);
+		_taxCacheRepository.UpdateManyByTaxIdSplitByTransactions(taxList);
 		UpdateManyMenuItems2Taxes(taxList);
 		}
-		public async Task UpdateManyByTaxIdAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
+
+		public async Task UpdateManyByTaxIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
 		{
 		foreach (var tax in taxList)
 		{
@@ -188,7 +190,7 @@ namespace TestRepositoryGeneration
 		tax.TaxId = 0;
 		}
 		await _taxVersionRepository.InsertManyAsync(taxList);
-		await _taxCacheRepository.UpdateManyByTaxIdAsync(taxList);
+		await _taxCacheRepository.UpdateManyByTaxIdSplitByTransactionsAsync(taxList);
 		UpdateManyMenuItems2Taxes(taxList);
 		}
 

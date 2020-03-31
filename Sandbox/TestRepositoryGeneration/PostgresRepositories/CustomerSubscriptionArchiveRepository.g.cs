@@ -182,7 +182,7 @@ namespace TestRepositoryGeneration
 		*/
 		/*
 
-		public void UpdateManyByCustomerIdAndCustomerNotificationsType(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		public void UpdateManyByCustomerIdAndCustomerNotificationsTypeSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
 
@@ -203,6 +203,7 @@ namespace TestRepositoryGeneration
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -213,6 +214,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		query.AppendFormat($"{UpdateManyByCustomerIdAndCustomerNotificationsTypeQueryTemplate};", index, customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription));
 		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
 		parameters.Clear();
@@ -222,7 +224,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task UpdateManyByCustomerIdAndCustomerNotificationsTypeAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		public async Task UpdateManyByCustomerIdAndCustomerNotificationsTypeSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
 
@@ -244,6 +246,7 @@ namespace TestRepositoryGeneration
 
 		foreach (var items in itemsPerRequest)
 		{
+		query.AppendLine("BEGIN TRANSACTION");
 		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
 		foreach (var item in items)
 		{
@@ -254,6 +257,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		query.AppendFormat($"{UpdateManyByCustomerIdAndCustomerNotificationsTypeQueryTemplate};", index, customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0);
 		}
+		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription));
 		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
