@@ -101,6 +101,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		*/
+
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
 		{
 			if (electronicCouponsTypedList == null) throw new ArgumentException(nameof(electronicCouponsTypedList));
@@ -120,7 +121,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 							.GroupBy(x => x.Index / maxInsertManyRows)
 							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
 							.ToList();
-
 
 			foreach (var items in itemsPerRequest)
 			{
@@ -144,6 +144,51 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 				query.Clear();
 			}
 
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
+		{
+			if (electronicCouponsTypedList == null) throw new ArgumentException(nameof(electronicCouponsTypedList));
+
+			if (!electronicCouponsTypedList.Any()) return;
+
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 3;
+			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
+																	? maxInsertManyRowsWithParameters
+																	: MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
+			var joinedValues = new System.Text.StringBuilder();
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = electronicCouponsTypedList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			foreach (var items in itemsPerRequest)
+			{
+				query.AppendLine("BEGIN TRANSACTION;");
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var electronicCouponsTyped = item.Value;
+					var index = item.Index;
+					parameters.Add($"Name{index}", electronicCouponsTyped.Name);
+					parameters.Add($"PrintText{index}", electronicCouponsTyped.PrintText);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, electronicCouponsTyped.ElectronicCouponsId, electronicCouponsTyped.ElectronicCouponsPresetId, electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0);
+					joinedValues.AppendLine(index != 0 ? "," : "");
+					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0);
+				}
+				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
+				query.AppendLine("COMMIT TRANSACTION;");
+				DataAccessService.Execute(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				joinedValues.Clear();
+				query.Clear();
+			}
 
 		}
 
@@ -184,6 +229,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
+
 				await Task.Delay(10);
 				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 				parameters.Clear();
@@ -196,6 +242,57 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped> electronicCouponsTypedList)
+		{
+			if (electronicCouponsTypedList == null) throw new ArgumentException(nameof(electronicCouponsTypedList));
+
+			if (!electronicCouponsTypedList.Any()) return;
+
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 3;
+			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
+																	? maxInsertManyRowsWithParameters
+																	: MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
+			var joinedValues = new System.Text.StringBuilder();
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = electronicCouponsTypedList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			await Task.Delay(10);
+
+			foreach (var items in itemsPerRequest)
+			{
+				query.AppendLine("BEGIN TRANSACTION;");
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var electronicCouponsTyped = item.Value;
+					var index = item.Index;
+					parameters.Add($"Name{index}", electronicCouponsTyped.Name);
+					parameters.Add($"PrintText{index}", electronicCouponsTyped.PrintText);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, electronicCouponsTyped.ElectronicCouponsId, electronicCouponsTyped.ElectronicCouponsPresetId, electronicCouponsTyped.IsPromotionalCampaign ? 1 : 0);
+					joinedValues.AppendLine(index != 0 ? "," : "");
+					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, electronicCouponsTyped.Id, electronicCouponsTyped.ImageId?.ToString() ?? "NULL", electronicCouponsTyped.ValidFrom?.ToString(CultureInfo.InvariantCulture) ?? "NULL", electronicCouponsTyped.ValidTo?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (electronicCouponsTyped.IsDeleted != null ? (electronicCouponsTyped.IsDeleted.Value ? 1 : 0).ToString() : null) ?? "NULL", electronicCouponsTyped.LimitPerOrder?.ToString() ?? "NULL", electronicCouponsTyped.Priority?.ToString() ?? "NULL", electronicCouponsTyped.MaxTimesPerCustomer?.ToString() ?? "NULL", electronicCouponsTyped.IsActive ? 1 : 0);
+				}
+				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
+				query.AppendLine("COMMIT TRANSACTION;");
+
+				await Task.Delay(10);
+				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				joinedValues.Clear();
+				query.Clear();
+			}
+
+			await Task.Delay(10);
+
+		}
 
 		/*
 		public void UpdateByElectronicCouponsId(TestRepositoryGeneration.DataObjects.BaseRepositories.ElectronicCouponsTyped electronicCouponsTyped)

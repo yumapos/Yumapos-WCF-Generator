@@ -451,90 +451,92 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var methodParameter = $"{parameterType} {parameterName}";
 
             var updateMethodNames = GetUpdateMany2ManyMethodNames();
-            var updateMethods = updateMethodNames.Select(name => name + "(" + parameterName + ");").ToList();
 
             var returnType = parameterType;
-            var returnTypeAsync = "Task<" + returnType + ">";
-            var returnFunc = "return " + parameterName + ";";
+            var returnTypeAsync = $"Task<{returnType}>";
+            var returnFunc = $"return {parameterName};";
 
             var sb = new StringBuilder();
 
+            Action<bool, bool> generator = (isAsync, splitByTransactions) =>
+            {
+                var methodName = splitByTransactions 
+                    ? "InsertManySplitByTransactions"
+                    : "InsertMany";
+
+                if (isAsync)
+                {
+                    sb.AppendLine($"public async {returnTypeAsync}{methodName}Async({methodParameter})");
+                }
+                else
+                {
+                    sb.AppendLine($"public {returnType}{methodName}({methodParameter})");
+                }
+
+                sb.AppendLine("{");
+                sb.AppendLine($"foreach (var {elementName} in {parameterName})");
+                sb.AppendLine("{");
+                sb.AppendLine($"{elementName}.Modified = {DateTimeServiceField}.CurrentDateTimeOffset;");
+                sb.AppendLine($"{elementName}.ModifiedBy = {DataAccessControllerField}.EmployeeId.Value;");
+                sb.AppendLine($"{elementName}.{RepositoryInfo.VersionKeyName} = Guid.NewGuid();");
+                foreach (var key in RepositoryInfo.PrimaryKeys)
+                {
+                    var primaryKeyProperty = $"{elementName}.{key.Name}";
+
+                    if (key.TypeName.IsInt()) // int skipped on insert
+                    {
+                        sb.AppendLine($"{primaryKeyProperty} = 0;");
+                    }
+                    else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
+                    {
+                        sb.AppendLine($"if({primaryKeyProperty} == null || {primaryKeyProperty}== Guid.Empty )");
+                        sb.AppendLine("{");
+                        sb.AppendLine($"throw new ArgumentException({RepositoryInfo.PrimaryKeyName.SurroundWithQuotes()});");
+                        sb.AppendLine("}");
+                    }
+                }
+                sb.AppendLine("}");
+                if (isAsync)
+                {
+                    sb.AppendLine($"await {VersionRepositoryField}.{methodName}Async({parameterName});");
+                    sb.AppendLine($"await {CacheRepositoryField}.{methodName}Async({parameterName});");
+                }
+                else
+                {
+                    sb.AppendLine($"{VersionRepositoryField}.{methodName}({parameterName});");
+                    sb.AppendLine($"{CacheRepositoryField}.{methodName}({parameterName});");
+                }
+
+                foreach (var name in updateMethodNames)
+                {
+                    // TODO Async methods for update many to many generation disabled in GenerateUpdateManyToMany
+                    //if (isAsync)
+                    //{
+                    //    sb.AppendLine("await " + name + "Async(" + parameterName + ");");
+                    //}
+                    //else
+                    //{
+                    sb.AppendLine($"{name}({parameterName});");
+                    //}
+                }
+
+                sb.AppendLine(returnFunc);
+
+                sb.AppendLine("}");
+
+            };
+
             // synchronous method
-            sb.AppendLine("public " + returnType + " InsertMany(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-            sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
-            sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
-            sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
-            foreach (var key in RepositoryInfo.PrimaryKeys)
-            {
-                var primaryKeyProperty = elementName + "." + key.Name;
-
-                if (key.TypeName.IsInt()) // int skipped on insert
-                {
-                    sb.AppendLine(primaryKeyProperty + " = 0;");
-                }
-                else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
-                {
-                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
-                    sb.AppendLine("{");
-                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
-                    sb.AppendLine("}");
-                }
-            }
-            sb.AppendLine("}");
-
-            sb.AppendLine(VersionRepositoryField + ".InsertMany(" + parameterName + ");");
-            sb.AppendLine(CacheRepositoryField + ".InsertMany(" + parameterName + ");");
-
-            foreach (var m in updateMethods)
-            {
-                sb.AppendLine(m);
-            }
-
-            sb.AppendLine(returnFunc);
-
-            sb.AppendLine("}");
+            sb.AppendLine("");
+            generator(false, false);
+            sb.AppendLine("");
+            generator(false, true);
 
             // Asynchronous method
-            sb.AppendLine("public async " + returnTypeAsync + " InsertManyAsync(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"foreach (var {elementName} in {parameterName})");
-            sb.AppendLine("{");
-            sb.AppendLine(elementName + ".Modified = " + DateTimeServiceField + ".CurrentDateTimeOffset;");
-            sb.AppendLine(elementName + ".ModifiedBy = " + DataAccessControllerField + ".EmployeeId.Value;");
-            sb.AppendLine(elementName + "." + RepositoryInfo.VersionKeyName + " = Guid.NewGuid();");
-            foreach (var key in RepositoryInfo.PrimaryKeys)
-            {
-                var primaryKeyProperty = elementName + "." + key.Name;
-
-                if (key.TypeName.IsInt()) // int skipped on insert
-                {
-                    sb.AppendLine(primaryKeyProperty + " = 0;");
-                }
-                else if (key.TypeName.IsGuid()) // throw ArgumentException if primary key if guid and empty, 
-                {
-                    sb.AppendLine("if(" + primaryKeyProperty + " == null || " + primaryKeyProperty + "== Guid.Empty )");
-                    sb.AppendLine("{");
-                    sb.AppendLine("throw new ArgumentException(" + RepositoryInfo.PrimaryKeyName.SurroundWithQuotes() + ");");
-                    sb.AppendLine("}");
-                }
-            }
-            sb.AppendLine("}");
-
-            sb.AppendLine("await " + VersionRepositoryField + ".InsertManyAsync(" + parameterName + ");");
-            sb.AppendLine("await " + CacheRepositoryField + ".InsertManyAsync(" + parameterName + ");");
-
-            foreach (var m in updateMethods)
-            {
-                sb.AppendLine(m);
-            }
-
-            sb.AppendLine(returnFunc);
-
-            sb.AppendLine("}");
-
+            sb.AppendLine("");
+            generator(true, false);
+            sb.AppendLine("");
+            generator(true, true);
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
@@ -635,13 +637,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
                 if (isAsync)
                 {
-                    sb.AppendLine("await " + VersionRepositoryField + ".InsertManyAsync(" + parameterName + ");");
+                    sb.AppendLine("await " + VersionRepositoryField + ".InsertManySplitByTransactionsAsync(" + parameterName + ");");
                     sb.AppendLine("await " + CacheRepositoryField + ".UpdateManyBy" + filter.Key + "SplitByTransactionsAsync(" +
                                   parameterName + ");");
                 }
                 else
                 {
-                    sb.AppendLine(VersionRepositoryField + ".InsertMany(" + parameterName + ");");
+                    sb.AppendLine(VersionRepositoryField + ".InsertManySplitByTransactions(" + parameterName + ");");
                     sb.AppendLine(CacheRepositoryField + ".UpdateManyBy" + filter.Key + "SplitByTransactions(" +
                                   parameterName + ");");
                 }

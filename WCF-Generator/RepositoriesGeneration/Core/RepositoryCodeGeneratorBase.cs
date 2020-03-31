@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -46,221 +47,167 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var methodParameter = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterName}";
             var allColumns = RepositoryInfo.Elements.Concat(RepositoryInfo.JoinRepositoryInfo?.Elements ?? Enumerable.Empty<PropertyInfo>()).ToList();
             var valuesAsParametesCount = RepositoryInfo.Elements.Count(p => p.IsParameter) + RepositoryInfo.HiddenElements.Count(p => p.IsParameter);
+            var columnsAsParameters = allColumns.Where(c => c.IsParameter).ToList();
+            var values = ExtractValuesAsString(elementName, RepositoryInfo.Elements.Where(c => !c.IsParameter));
+            var joinedValues = ExtractValuesAsString(elementName, RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter));
 
             if (joined)
             {
                 valuesAsParametesCount += 2;// @TempTable, @TempId
             }
 
-            // Synchronous method
-            sb.AppendLine("public void InsertMany(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
-            sb.AppendLine();
-            sb.AppendLine($"if(!{parameterName}.Any()) return;");
-            sb.AppendLine();
-
-
-            if (valuesAsParametesCount > 1)
+            Action<bool, bool> generator = (isAsync, splitByTransactions) =>
             {
-                sb.AppendLine($"var maxInsertManyRowsWithParameters = {MaxRepositoryParamsBaseRepositoryField} / {valuesAsParametesCount};");
+                var methodName = splitByTransactions
+                    ? "InsertManySplitByTransactions"
+                    : "InsertMany";
 
-                sb.AppendLine($@"var maxInsertManyRows = maxInsertManyRowsWithParameters < {MaxInsertManyRowsBaseRepositoryField} 
+                if (isAsync)
+                {
+                    sb.AppendLine($"public async Task {methodName}Async({methodParameter})");
+                }
+                else
+                {
+                    sb.AppendLine($"public void {methodName}({methodParameter})");
+                }
+                sb.AppendLine("{");
+                sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
+                sb.AppendLine();
+                sb.AppendLine($"if(!{parameterName}.Any()) return;");
+                sb.AppendLine();
+                if (valuesAsParametesCount > 1)
+                {
+                    sb.AppendLine($"var maxInsertManyRowsWithParameters = {MaxRepositoryParamsBaseRepositoryField} / {valuesAsParametesCount};");
+
+                    sb.AppendLine($@"var maxInsertManyRows = maxInsertManyRowsWithParameters < {MaxInsertManyRowsBaseRepositoryField} 
                                                         ? maxInsertManyRowsWithParameters
                                                         : {MaxInsertManyRowsBaseRepositoryField};");
-            }
-            else
-            {
-                sb.AppendLine($"var maxInsertManyRows = {MaxInsertManyRowsBaseRepositoryField};");
-            }
+                }
+                else
+                {
+                    sb.AppendLine($"var maxInsertManyRows = {MaxInsertManyRowsBaseRepositoryField};");
+                }
 
-            sb.AppendLine($"var values = new System.Text.StringBuilder();");
+                sb.AppendLine($"var values = new System.Text.StringBuilder();");
 
-            if (joined)
-            {
-                sb.AppendLine($"var joinedValues = new System.Text.StringBuilder();");
-            }
+                if (joined)
+                {
+                    sb.AppendLine($"var joinedValues = new System.Text.StringBuilder();");
+                }
 
-            sb.AppendLine($"var query = new System.Text.StringBuilder();");
-            sb.AppendLine($"var parameters = new Dictionary<string, object>();");
-            sb.AppendLine();
-            sb.AppendLine($@"var itemsPerRequest = {parameterName}.Select((x, i) => new {{Index = i,Value = x}})
+                sb.AppendLine($"var query = new System.Text.StringBuilder();");
+                sb.AppendLine($"var parameters = new Dictionary<string, object>();");
+                sb.AppendLine();
+                sb.AppendLine($@"var itemsPerRequest = {parameterName}.Select((x, i) => new {{Index = i,Value = x}})
                 .GroupBy(x => x.Index / maxInsertManyRows)
                 .Select(x => x.Select((v, i) => new {{ Index = i, Value = v.Value }}).ToList())
                 .ToList(); ");
-            sb.AppendLine();
 
-            sb.AppendLine();
+                if (isAsync)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"await Task.Delay(10);");
+                }
 
-            sb.AppendLine("foreach (var items in itemsPerRequest)");
-            sb.AppendLine("{");
+                sb.AppendLine();
+                sb.AppendLine("foreach (var items in itemsPerRequest)");
+                sb.AppendLine("{");
 
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
+                if (splitByTransactions)
+                {
+                    sb.AppendLine("query.AppendLine(\"BEGIN TRANSACTION;\");");
+                }
 
-            sb.AppendLine($"foreach (var item in items)");
-            sb.AppendLine("{");
-            sb.AppendLine($"var {elementName} = item.Value;");
-            sb.AppendLine("var index = item.Index; ");
+                if (RepositoryInfo.IsTenantRelated)
+                {
+                    sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
+                }
 
-            var columnsAsParameters = allColumns.Where(c => c.IsParameter).ToList();
+                sb.AppendLine($"foreach (var item in items)");
+                sb.AppendLine("{");
+                sb.AppendLine($"var {elementName} = item.Value;");
+                sb.AppendLine("var index = item.Index; ");
 
-            foreach (var column in columnsAsParameters)
-            {
-                sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {elementName}.{column.Name});");
-            }
+                foreach (var column in columnsAsParameters)
+                {
+                    sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {elementName}.{column.Name});");
+                }
 
-            var values = ExtractValuesAsString(elementName, RepositoryInfo.Elements.Where(c => !c.IsParameter));
-            var joinedValues = ExtractValuesAsString(elementName, RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter));
-
-            sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
-
-            sb.AppendLine(values.Any()
-                ? $"values.AppendFormat({InsertManyValuesTempleteField}, index, {string.Join(",", values)});"
-                : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
-
-            if (joined)
-            {
-                sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
+                sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
 
                 sb.AppendLine(values.Any()
-                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index, {string.Join(",", joinedValues)});"
-                    : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
-            }
+                    ? $"values.AppendFormat({InsertManyValuesTempleteField}, index, {string.Join(",", values)});"
+                    : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
 
-            sb.AppendLine("}");
 
-            if (joined)
-            {
-                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, joinedValues.Replace(\"'NULL'\",\"NULL\").ToString(), values.Replace(\"'NULL'\",\"NULL\").ToString());");
-            }
-            else
-            {
-                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
-            }
+                if (joined)
+                {
+                    sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
 
-            sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
-            sb.AppendLine("parameters.Clear();");
-            sb.AppendLine("values.Clear();");
-            if (joined)
-            {
-                sb.AppendLine("joinedValues.Clear();");
-            }
-            sb.AppendLine("query.Clear();");
+                    sb.AppendLine(values.Any()
+                        ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index, {string.Join(",", joinedValues)});"
+                        : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
+                }
 
-            sb.AppendLine("}");
-            sb.AppendLine();
-            sb.AppendLine();
+                sb.AppendLine("}");
 
-            sb.AppendLine("}");
-            sb.AppendLine();
+                if (joined)
+                {
+                    sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, joinedValues.Replace(\"'NULL'\",\"NULL\").ToString(), values.Replace(\"'NULL'\",\"NULL\").ToString());");
+                }
+                else
+                {
+                    sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
+                }
+
+                if (splitByTransactions)
+                {
+                    sb.AppendLine("query.AppendLine(\"COMMIT TRANSACTION;\");");
+                }
+
+                if (isAsync)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"await Task.Delay(10);");
+                    sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
+                }
+                else
+                {
+                    sb.AppendLine($"{DataAccessServiceBaseRepositoryField}.Execute(query.ToString(), parameters);");
+                }
+
+                sb.AppendLine("parameters.Clear();");
+                sb.AppendLine("values.Clear();");
+                if (joined)
+                {
+                    sb.AppendLine("joinedValues.Clear();");
+                }
+                sb.AppendLine("query.Clear();");
+
+                sb.AppendLine("}");
+                if (isAsync)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"await Task.Delay(10);");
+                }
+
+                sb.AppendLine();
+
+                sb.AppendLine("}");
+
+            };
+
+            // synchronous method
+            sb.AppendLine("");
+            generator(false, false);
+            sb.AppendLine("");
+            generator(false, true);
 
             // Asynchronous method
-            sb.AppendLine("public async Task InsertManyAsync(" + methodParameter + ")");
-            sb.AppendLine("{");
-            sb.AppendLine($"if({parameterName}==null) throw new ArgumentException(nameof({parameterName}));");
-            sb.AppendLine();
-            sb.AppendLine($"if(!{parameterName}.Any()) return;");
-            sb.AppendLine();
-            if (valuesAsParametesCount > 1)
-            {
-                sb.AppendLine($"var maxInsertManyRowsWithParameters = {MaxRepositoryParamsBaseRepositoryField} / {valuesAsParametesCount};");
-
-                sb.AppendLine($@"var maxInsertManyRows = maxInsertManyRowsWithParameters < {MaxInsertManyRowsBaseRepositoryField} 
-                                                        ? maxInsertManyRowsWithParameters
-                                                        : {MaxInsertManyRowsBaseRepositoryField};");
-            }
-            else
-            {
-                sb.AppendLine($"var maxInsertManyRows = {MaxInsertManyRowsBaseRepositoryField};");
-            }
-
-            sb.AppendLine($"var values = new System.Text.StringBuilder();");
-
-            if (joined)
-            {
-                sb.AppendLine($"var joinedValues = new System.Text.StringBuilder();");
-            }
-
-            sb.AppendLine($"var query = new System.Text.StringBuilder();");
-            sb.AppendLine($"var parameters = new Dictionary<string, object>();");
-            sb.AppendLine();
-            sb.AppendLine($@"var itemsPerRequest = {parameterName}.Select((x, i) => new {{Index = i,Value = x}})
-                .GroupBy(x => x.Index / maxInsertManyRows)
-                .Select(x => x.Select((v, i) => new {{ Index = i, Value = v.Value }}).ToList())
-                .ToList(); ");
-            sb.AppendLine();
-
-            sb.AppendLine($"await Task.Delay(10);");
-            
-            sb.AppendLine();
-
-            sb.AppendLine("foreach (var items in itemsPerRequest)");
-            sb.AppendLine("{");
-
-            if (RepositoryInfo.IsTenantRelated)
-            {
-                sb.AppendLine($"parameters.Add($\"TenantId\", {DataAccessControllerBaseRepositoryField}.Tenant.TenantId);");
-            }
-
-            sb.AppendLine($"foreach (var item in items)");
-            sb.AppendLine("{");
-            sb.AppendLine($"var {elementName} = item.Value;");
-            sb.AppendLine("var index = item.Index; ");
-
-            foreach (var column in columnsAsParameters)
-            {
-                sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {elementName}.{column.Name});");
-            }
-
-            sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
-
-            sb.AppendLine(values.Any()
-                ? $"values.AppendFormat({InsertManyValuesTempleteField}, index, {string.Join(",", values)});"
-                : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
-
-
-            if (joined)
-            {
-                sb.AppendLine("joinedValues.AppendLine(index != 0 ? \",\":\"\");");
-
-                sb.AppendLine(values.Any()
-                    ? $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index, {string.Join(",", joinedValues)});"
-                    : $"joinedValues.AppendFormat({InsertManyJoinedValuesTempleteField}, index);");
-            }
-
-            sb.AppendLine("}");
-
-            if (joined)
-            {
-                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, joinedValues.Replace(\"'NULL'\",\"NULL\").ToString(), values.Replace(\"'NULL'\",\"NULL\").ToString());");
-            }
-            else
-            {
-                sb.AppendLine($"query.AppendFormat({InsertManyQueryTemplateField}, values.Replace(\"'NULL'\",\"NULL\").ToString());");
-            }
-
-            sb.AppendLine($"await Task.Delay(10);");
-
-            sb.AppendLine($"await {DataAccessServiceBaseRepositoryField}.ExecuteAsync(query.ToString(), parameters);");
-            sb.AppendLine("parameters.Clear();");
-            sb.AppendLine("values.Clear();");
-            if (joined)
-            {
-                sb.AppendLine("joinedValues.Clear();");
-            }
-            sb.AppendLine("query.Clear();");
-
-            sb.AppendLine("}");
-            sb.AppendLine();
-            sb.AppendLine($"await Task.Delay(10);");
-
-            sb.AppendLine();
-
-            sb.AppendLine("}");
-            sb.AppendLine();
+            sb.AppendLine("");
+            generator(true, false);
+            sb.AppendLine("");
+            generator(true, true);
 
             return requiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }

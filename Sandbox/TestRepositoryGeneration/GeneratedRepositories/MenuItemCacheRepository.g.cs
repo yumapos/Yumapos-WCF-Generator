@@ -147,6 +147,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
 		}
 
+
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
@@ -166,7 +167,6 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 							.GroupBy(x => x.Index / maxInsertManyRows)
 							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
 							.ToList();
-
 
 			foreach (var items in itemsPerRequest)
 			{
@@ -190,6 +190,51 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 				query.Clear();
 			}
 
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+
+			if (!menuItemList.Any()) return;
+
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
+			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
+																	? maxInsertManyRowsWithParameters
+																	: MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
+			var joinedValues = new System.Text.StringBuilder();
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			foreach (var items in itemsPerRequest)
+			{
+				query.AppendLine("BEGIN TRANSACTION;");
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var menuItem = item.Value;
+					var index = item.Index;
+					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+					joinedValues.AppendLine(index != 0 ? "," : "");
+					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
+				}
+				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
+				query.AppendLine("COMMIT TRANSACTION;");
+				DataAccessService.Execute(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				joinedValues.Clear();
+				query.Clear();
+			}
 
 		}
 
@@ -230,6 +275,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
+
 				await Task.Delay(10);
 				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 				parameters.Clear();
@@ -242,6 +288,57 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+
+			if (!menuItemList.Any()) return;
+
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
+			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
+																	? maxInsertManyRowsWithParameters
+																	: MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
+			var joinedValues = new System.Text.StringBuilder();
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			await Task.Delay(10);
+
+			foreach (var items in itemsPerRequest)
+			{
+				query.AppendLine("BEGIN TRANSACTION;");
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var menuItem = item.Value;
+					var index = item.Index;
+					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+					joinedValues.AppendLine(index != 0 ? "," : "");
+					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
+				}
+				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
+				query.AppendLine("COMMIT TRANSACTION;");
+
+				await Task.Delay(10);
+				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				joinedValues.Clear();
+				query.Clear();
+			}
+
+			await Task.Delay(10);
+
+		}
 
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{

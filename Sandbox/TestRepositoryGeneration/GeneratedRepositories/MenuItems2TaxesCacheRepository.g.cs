@@ -117,6 +117,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 
 		/*
+
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
 		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
@@ -132,7 +133,6 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 						.GroupBy(x => x.Index / maxInsertManyRows)
 						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
 						.ToList(); 
-
 
 		foreach (var items in itemsPerRequest)
 		{
@@ -150,6 +150,41 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		query.Clear();
 		}
 
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
 
 		}
 
@@ -181,6 +216,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+
 		await Task.Delay(10);
 		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		parameters.Clear();
@@ -192,6 +228,47 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		}
 
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
 
 		*/
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)

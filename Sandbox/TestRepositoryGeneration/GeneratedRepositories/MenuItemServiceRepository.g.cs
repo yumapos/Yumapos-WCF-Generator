@@ -141,6 +141,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			return menuItem.MenuItemVersionId;
 		}
 
+
 		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			foreach (var menuItem in menuItemList)
@@ -158,6 +159,25 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			UpdateManyMenuItems2Taxes(menuItemList);
 			return menuItemList;
 		}
+
+		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+				menuItem.MenuItemVersionId = Guid.NewGuid();
+				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
+				{
+					throw new ArgumentException("MenuItemId");
+				}
+			}
+			_menuItemVersionRepository.InsertManySplitByTransactions(menuItemList);
+			_menuItemCacheRepository.InsertManySplitByTransactions(menuItemList);
+			UpdateManyMenuItems2Taxes(menuItemList);
+			return menuItemList;
+		}
+
 		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>> InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
 			foreach (var menuItem in menuItemList)
@@ -172,6 +192,24 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			}
 			await _menuItemVersionRepository.InsertManyAsync(menuItemList);
 			await _menuItemCacheRepository.InsertManyAsync(menuItemList);
+			UpdateManyMenuItems2Taxes(menuItemList);
+			return menuItemList;
+		}
+
+		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>> InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			foreach (var menuItem in menuItemList)
+			{
+				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
+				menuItem.MenuItemVersionId = Guid.NewGuid();
+				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
+				{
+					throw new ArgumentException("MenuItemId");
+				}
+			}
+			await _menuItemVersionRepository.InsertManySplitByTransactionsAsync(menuItemList);
+			await _menuItemCacheRepository.InsertManySplitByTransactionsAsync(menuItemList);
 			UpdateManyMenuItems2Taxes(menuItemList);
 			return menuItemList;
 		}
@@ -228,7 +266,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 					throw new ArgumentException("MenuItemId");
 				}
 			}
-			_menuItemVersionRepository.InsertMany(menuItemList);
+			_menuItemVersionRepository.InsertManySplitByTransactions(menuItemList);
 			_menuItemCacheRepository.UpdateManyByMenuItemIdSplitByTransactions(menuItemList);
 			UpdateManyMenuItems2Taxes(menuItemList);
 		}
@@ -245,7 +283,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 					throw new ArgumentException("MenuItemId");
 				}
 			}
-			await _menuItemVersionRepository.InsertManyAsync(menuItemList);
+			await _menuItemVersionRepository.InsertManySplitByTransactionsAsync(menuItemList);
 			await _menuItemCacheRepository.UpdateManyByMenuItemIdSplitByTransactionsAsync(menuItemList);
 			UpdateManyMenuItems2Taxes(menuItemList);
 		}
@@ -263,7 +301,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		throw new ArgumentException("MenuItemId");
 		}
 		}
-		_menuItemVersionRepository.InsertMany(menuItemList);
+		_menuItemVersionRepository.InsertManySplitByTransactions(menuItemList);
 		_menuItemCacheRepository.UpdateManyByMenuCategoryIdSplitByTransactions(menuItemList);
 		UpdateManyMenuItems2Taxes(menuItemList);
 		}
@@ -280,7 +318,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		throw new ArgumentException("MenuItemId");
 		}
 		}
-		await _menuItemVersionRepository.InsertManyAsync(menuItemList);
+		await _menuItemVersionRepository.InsertManySplitByTransactionsAsync(menuItemList);
 		await _menuItemCacheRepository.UpdateManyByMenuCategoryIdSplitByTransactionsAsync(menuItemList);
 		UpdateManyMenuItems2Taxes(menuItemList);
 		}

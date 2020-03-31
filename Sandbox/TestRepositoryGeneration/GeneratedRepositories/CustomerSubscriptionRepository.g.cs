@@ -78,6 +78,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		}
 
 		*/
+
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 			if (customerSubscriptionList == null) throw new ArgumentException(nameof(customerSubscriptionList));
@@ -97,7 +98,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
 							.ToList();
 
-
 			foreach (var items in itemsPerRequest)
 			{
 				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
@@ -116,6 +116,46 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 				query.Clear();
 			}
 
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+			if (customerSubscriptionList == null) throw new ArgumentException(nameof(customerSubscriptionList));
+
+			if (!customerSubscriptionList.Any()) return;
+
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
+																	? maxInsertManyRowsWithParameters
+																	: MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = customerSubscriptionList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			foreach (var items in itemsPerRequest)
+			{
+				query.AppendLine("BEGIN TRANSACTION;");
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var customerSubscription = item.Value;
+					var index = item.Index;
+					parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL", customerSubscription.Email ? 1 : 0, customerSubscription.SMS ? 1 : 0, customerSubscription.Push ? 1 : 0, (customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL", customerSubscription.ResendPeriod?.ToString() ?? "NULL", customerSubscription.IsDeleted ? 1 : 0);
+				}
+				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
+				query.AppendLine("COMMIT TRANSACTION;");
+				DataAccessService.Execute(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				query.Clear();
+			}
 
 		}
 
@@ -152,6 +192,7 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 					values.AppendFormat(InsertManyValuesTemplate, index, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL", customerSubscription.Email ? 1 : 0, customerSubscription.SMS ? 1 : 0, customerSubscription.Push ? 1 : 0, (customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL", customerSubscription.ResendPeriod?.ToString() ?? "NULL", customerSubscription.IsDeleted ? 1 : 0);
 				}
 				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
+
 				await Task.Delay(10);
 				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 				parameters.Clear();
@@ -163,6 +204,52 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 
 		}
 
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+			if (customerSubscriptionList == null) throw new ArgumentException(nameof(customerSubscriptionList));
+
+			if (!customerSubscriptionList.Any()) return;
+
+			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
+																	? maxInsertManyRowsWithParameters
+																	: MaxInsertManyRows;
+			var values = new System.Text.StringBuilder();
+			var query = new System.Text.StringBuilder();
+			var parameters = new Dictionary<string, object>();
+
+			var itemsPerRequest = customerSubscriptionList.Select((x, i) => new { Index = i, Value = x })
+							.GroupBy(x => x.Index / maxInsertManyRows)
+							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+							.ToList();
+
+			await Task.Delay(10);
+
+			foreach (var items in itemsPerRequest)
+			{
+				query.AppendLine("BEGIN TRANSACTION;");
+				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+				foreach (var item in items)
+				{
+					var customerSubscription = item.Value;
+					var index = item.Index;
+					parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
+					values.AppendLine(index != 0 ? "," : "");
+					values.AppendFormat(InsertManyValuesTemplate, index, customerSubscription.CustomerNotificationsType?.ToString() ?? "NULL", customerSubscription.Email ? 1 : 0, customerSubscription.SMS ? 1 : 0, customerSubscription.Push ? 1 : 0, (customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL", customerSubscription.ResendPeriod?.ToString() ?? "NULL", customerSubscription.IsDeleted ? 1 : 0);
+				}
+				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
+				query.AppendLine("COMMIT TRANSACTION;");
+
+				await Task.Delay(10);
+				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+				parameters.Clear();
+				values.Clear();
+				query.Clear();
+			}
+
+			await Task.Delay(10);
+
+		}
 
 		/*
 		public void UpdateByCustomerIdAndCustomerNotificationsType(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription customerSubscription)
