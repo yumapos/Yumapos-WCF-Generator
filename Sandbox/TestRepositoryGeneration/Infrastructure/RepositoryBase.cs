@@ -7,6 +7,7 @@
 
         protected const int MaxRepositoryParams = 2000;
         protected const int MaxInsertManyRows = 1000;
+        protected const int MaxUpdateManyRows = 1000;
 
         protected RepositoryBase(IDataAccessService dataAccessService)
         {

@@ -502,6 +502,16 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return repositoryInfo;
         }
 
+        public string GenerateUpdateMany(SqlInfo sqlInfo)
+        {
+            return "GenerateUpdateMany script was not generated";
+        }
+
+        public string GenerateUpdateManyJoined(SqlInfo sqlInfo)
+        {
+            return "GenerateUpdateMany script was not generated";
+        }
+
         #endregion
     }
 }

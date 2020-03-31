@@ -26,6 +26,7 @@ namespace TestRepositoryGeneration
 		private const string UpdateQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule] ";
 		private const string DeleteQueryBy = @"UPDATE [EmployeesInRolesSchedule] SET IsDeleted = 1 ";
 		private const string InsertOrUpdateQuery = @"UPDATE [EmployeesInRolesSchedule] SET [EmployeesInRolesSchedule].[RoleId] = @RoleId,[EmployeesInRolesSchedule].[UserId] = @UserId,[EmployeesInRolesSchedule].[StoreId] = @StoreId,[EmployeesInRolesSchedule].[BusinessDayNumber] = @BusinessDayNumber,[EmployeesInRolesSchedule].[Start] = @Start,[EmployeesInRolesSchedule].[End] = @End,[EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted FROM [EmployeesInRolesSchedule]  WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [EmployeesInRolesSchedule]([EmployeesInRolesSchedule].[RoleId],[EmployeesInRolesSchedule].[UserId],[EmployeesInRolesSchedule].[StoreId],[EmployeesInRolesSchedule].[BusinessDayNumber],[EmployeesInRolesSchedule].[Start],[EmployeesInRolesSchedule].[End],[EmployeesInRolesSchedule].[IsDeleted],[EmployeesInRolesSchedule].[TenantId]) OUTPUT INSERTED.ScheduleId VALUES(@RoleId,@UserId,@StoreId,@BusinessDayNumber,@Start,@End,@IsDeleted,@TenantId)  END";
+		private const string UpdateManyByScheduleIdQueryTemplate = @"UPDATE [EmployeesInRolesSchedule] SET RoleId = '{1}',UserId = '{2}',StoreId = '{3}',BusinessDayNumber = '{4}',Start = '{5}',End = '{6}',IsDeleted = '{7}' WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{0}{{andTenantId:[EmployeesInRolesSchedule]}}";
 		private const string WhereQueryByScheduleId = "WHERE [EmployeesInRolesSchedule].[ScheduleId] = @ScheduleId{andTenantId:[EmployeesInRolesSchedule]} ";
 		private const string AndWithIsDeletedFilter = "AND [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [EmployeesInRolesSchedule].[IsDeleted] = @IsDeleted{andTenantId:[EmployeesInRolesSchedule]} ";
@@ -96,6 +97,7 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
+
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
@@ -111,7 +113,6 @@ namespace TestRepositoryGeneration
 						.GroupBy(x => x.Index / maxInsertManyRows)
 						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
 						.ToList(); 
-
 
 		foreach (var items in itemsPerRequest)
 		{
@@ -130,6 +131,42 @@ namespace TestRepositoryGeneration
 		query.Clear();
 		}
 
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
+
+		if(!employeesInRolesScheduleList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = employeesInRolesScheduleList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var employeesInRolesSchedule = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
 
 		}
 
@@ -162,6 +199,7 @@ namespace TestRepositoryGeneration
 		values.AppendFormat(InsertManyValuesTemplate, index, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+
 		await Task.Delay(10);
 		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
 		parameters.Clear();
@@ -173,6 +211,48 @@ namespace TestRepositoryGeneration
 
 		}
 
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
+
+		if(!employeesInRolesScheduleList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = employeesInRolesScheduleList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var employeesInRolesSchedule = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, employeesInRolesSchedule.ScheduleId,employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
 
 		*/
 		/*
@@ -187,6 +267,86 @@ namespace TestRepositoryGeneration
 		await DataAccessService.PersistObjectAsync(employeesInRolesSchedule, sql);
 		}
 
+
+		*/
+		/*
+
+		public void UpdateManyByScheduleIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
+
+		if(!employeesInRolesScheduleList.Any()) return;
+
+		var maxUpdateManyRows = MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = employeesInRolesScheduleList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION");
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var employeesInRolesSchedule = item.Value;
+		var index = item.Index; 
+		parameters.Add($"ScheduleId{index}", employeesInRolesSchedule.ScheduleId);
+		query.AppendFormat($"{UpdateManyByScheduleIdQueryTemplate};", index, employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
+		}
+		query.AppendLine("COMMIT TRANSACTION");
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule));
+		DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+
+		}
+
+		public async Task UpdateManyByScheduleIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
+
+		if(!employeesInRolesScheduleList.Any()) return;
+
+		var maxUpdateManyRows = MaxUpdateManyRows;
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = employeesInRolesScheduleList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxUpdateManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION");
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var employeesInRolesSchedule = item.Value;
+		var index = item.Index; 
+		parameters.Add($"ScheduleId{index}", employeesInRolesSchedule.ScheduleId);
+		query.AppendFormat($"{UpdateManyByScheduleIdQueryTemplate};", index, employeesInRolesSchedule.RoleId,employeesInRolesSchedule.UserId,employeesInRolesSchedule.StoreId,employeesInRolesSchedule.BusinessDayNumber,employeesInRolesSchedule.Start.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.End.ToString(CultureInfo.InvariantCulture),employeesInRolesSchedule.IsDeleted ? 1 : 0);
+		}
+		query.AppendLine("COMMIT TRANSACTION");
+		await Task.Delay(10);
+		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule));
+		await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
+		parameters.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
 
 		*/
 		/*

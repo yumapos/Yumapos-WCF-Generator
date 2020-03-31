@@ -15,6 +15,8 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 
         void UpdateByMenuItemId(MenuItem menuItemId);
 
+        Task UpdateManyByMenuItemIdSplitByTransactionsAsync(IEnumerable<MenuItem> menuItem);
+
         void RemoveByMenuItemId(MenuItem menuItemId);
 
         MenuItem GetByMenuItemId(Guid menuItemId, DateTimeOffset modified, bool? isDeleted = false);

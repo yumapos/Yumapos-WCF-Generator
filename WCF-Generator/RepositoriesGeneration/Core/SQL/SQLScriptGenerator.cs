@@ -167,6 +167,19 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return Where(selectedFilters, info.TableName) + AndTenantAndStoreRelated(info.TableName, info.TenantRelated, info.IsStoreDependent) + " ";
         }
 
+        public string GenerateWhereTemplate(IEnumerable<string> selectedFilters, SqlInfo info)
+        {
+            var sb = new StringBuilder();
+            sb.Append("WHERE ");
+            sb.Append(string.Join(" AND ", selectedFilters.Select(i => info.TableName + ".[" + i + "] = @" + i + "{0}")));
+            var tenantRelatedString = info.TenantRelated ? "{{andTenantId:" + info.TableName + "}}" : "";
+            var storeRelatedString = info.IsStoreDependent ? "{{andStoreIds:" + info.TableName + "}}" : "";
+            sb.Append(tenantRelatedString + storeRelatedString);
+
+            return sb.ToString();
+        }
+
+
         public string GenerateWhere(IEnumerable<string> commonFilters, IEnumerable<string> datesFilters, SqlInfo info)
         {
             if(commonFilters.Any())
@@ -211,6 +224,36 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                    + Set(values, info.JoinTableName) + " "
                    + From(info.JoinTableName) + " ";
         }
+
+
+        public string GenerateUpdateMany(SqlInfo info)
+        {
+            var columns = info.TableColumns
+                .Where(propertyInfo => !propertyInfo.IgnoreOnUpdate
+                                       && !info.PrimaryKeyNames.Contains(propertyInfo.Name)
+                                       && !info.IdentityColumns.Contains(propertyInfo.Name));
+
+            var columnsString = UpdateManyValuesTemplate(columns);
+
+            var updateManySql = Update(info.TableName) + " SET " + columnsString + " " + GenerateWhereTemplate(info.PrimaryKeyNames, info);
+
+            return updateManySql;
+        }
+
+        public string GenerateUpdateManyJoined(SqlInfo info)
+        {
+            var columns = info.JoinTableColumns
+                .Where(propertyInfo => !propertyInfo.IgnoreOnUpdate
+                                       && !info.PrimaryKeyNames.Contains(propertyInfo.Name)
+                                       && !info.IdentityColumns.Contains(propertyInfo.Name));
+
+            var columnsString = UpdateManyValuesTemplate(columns);
+
+            var updateManySql = Update(info.JoinTableName) + " SET " + columnsString + " " + GenerateWhereTemplate(info.JoinPrimaryKeyNames, info);
+
+            return updateManySql;
+        }
+
 
         public string GenerateRemove(SqlInfo info)
         {
@@ -403,6 +446,34 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 else
                 {
                     sb.Append($"'{{{index}}}'");
+                    index++;
+                }
+
+                if (i < columnList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string UpdateManyValuesTemplate(IEnumerable<PropertyInfo> columns)
+        {
+            var columnList = columns.ToList();
+            var sb = new StringBuilder();
+            var index = 1;
+
+            for (var i = 0; i < columnList.Count; i++)
+            {
+                var c = columnList[i];
+                if (c.IsParameter)
+                {
+                    sb.Append($"{c.Name} = @{c.Name}{{0}}");
+                }
+                else
+                {
+                    sb.Append($"{c.Name} = '{{{index}}}'");
                     index++;
                 }
 

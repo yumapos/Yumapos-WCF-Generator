@@ -7,6 +7,7 @@
         InsertMany,
         GetBy,
         UpdateBy,
+        UpdateManyBy,
         RemoveBy,
         InsertOrUpdate
     }

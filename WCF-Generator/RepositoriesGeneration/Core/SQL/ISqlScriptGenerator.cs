@@ -63,5 +63,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         SqlInfo GetTableInfo(SqlInfo repositoryInfo);
 
+        string GenerateUpdateMany(SqlInfo sqlInfo);
+
+        string GenerateUpdateManyJoined(SqlInfo sqlInfo);
     }
 }
