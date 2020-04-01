@@ -10,8 +10,8 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Task InsertAsync(Address address);
         Task<IEnumerable<Address>> GetAllAsync(bool? isDeleted);
         Task<Address> GetByIdAsync(Guid id, bool? isDeleted);
-        Task<Address> GetByCountryAndCityAsync(string country, string city, bool? isDeleted);
-        Task<Address> GetByCountryAndCityAndZipCodeAsync(string country, string city, string zipCode, bool? isDeleted);
+        Task<IEnumerable<Address>> GetByCountryAndCityAsync(string country, string city, bool? isDeleted);
+        Task<IEnumerable<Address>> GetByCountryAndCityAndZipCodeAsync(string country, string city, string zipCode, bool? isDeleted);
         Task UpdateByIdAsync(Address address);
         Task RemoveByIdAsync(Address address);
     }

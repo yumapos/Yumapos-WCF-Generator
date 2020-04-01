@@ -12,6 +12,6 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 
         void RemoveByTaxId(Tax tax);
 
-        Tax GetByTaxId(int taxId, DateTimeOffset sliceDate, bool? isDeleted = false);
+       // Tax GetByTaxId(int taxId, DateTimeOffset sliceDate, bool? isDeleted = false);
     }
 }

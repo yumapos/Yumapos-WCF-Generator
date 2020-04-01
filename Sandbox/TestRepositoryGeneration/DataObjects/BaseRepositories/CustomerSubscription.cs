@@ -10,7 +10,7 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
     ///     Repository <see cref="CustomerSubscriptionRepository"/>
     /// </summary>
     [DataAccess(TableName = "CustomerSubscriptions")]
-    [DataArchive(TableName = "archive.customer_subscriptions")]
+    [DataArchive(TableName = "archive.customer_subscriptions", FilterKey1 = "CustomerId")]
     public class CustomerSubscription
     {
         [Key]

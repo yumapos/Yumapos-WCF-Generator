@@ -91,7 +91,37 @@ namespace WCFGenerator.RepositoriesGeneration.Services
 
                 if (info.IsVersioning)
                 {
-                    var cacheRepoMethods = GetUnimplementedMethods(info.InterfaceMethods, info.CustomCacheRepositoryMethodNames, info.PossibleKeysForMethods, info.ClassFullName);
+                    var cacheRepoMethods = GetUnimplementedMethods(info.InterfaceMethods, info.CustomCacheRepositoryMethodNames, info.PossibleKeysForMethods, info.ClassFullName).ToList();
+
+                    foreach (var methodImplementationInfo in cacheRepoMethods)
+                    {
+                        if (methodImplementationInfo.Method == RepositoryMethod.RemoveBy)
+                        {
+                            var updateMethod = cacheRepoMethods
+                                .FirstOrDefault(c => c.Method == RepositoryMethod.UpdateBy 
+                                                     && c.FilterInfo.Key == methodImplementationInfo.FilterInfo.Key);
+
+                            if (updateMethod != null)
+                            {
+                                updateMethod.RequiresImplementation = methodImplementationInfo.RequiresImplementation;
+                                updateMethod.RequiresImplementationAsync = methodImplementationInfo.RequiresImplementationAsync;
+                            }
+                        }
+
+                        if (info.Many2ManyInfo.Any())
+                        {
+                            // TODO find method which need generate really
+                            var getByMethods = cacheRepoMethods
+                                .Where(c => c.Method == RepositoryMethod.GetBy);
+
+                            foreach (var getByMethod in getByMethods)
+                            {
+                                getByMethod.RequiresImplementation = true;
+                                getByMethod.RequiresImplementationAsync = true;
+                            }
+                        }
+                    }
+
                     info.CacheRepositoryMethodImplementationInfo.AddRange(cacheRepoMethods);
                 }
             }
@@ -120,6 +150,18 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 if (manyToManyRepositoryInfo != null)
                 {
                     manyToManyRepositoryInfo.IsManyToMany = true;
+
+                    var methods =
+                        manyToManyRepositoryInfo.MethodImplementationInfo.Where(
+                            m => m.Method == RepositoryMethod.Insert
+                            || (m.Method == RepositoryMethod.GetBy && m.FilterInfo.FilterType == FilterType.FilterKey)
+                            || (m.Method == RepositoryMethod.RemoveBy && m.FilterInfo.FilterType == FilterType.FilterKey));
+
+                    foreach (var m in methods)
+                    {
+                        m.RequiresImplementation = true;
+                        m.RequiresImplementationAsync = true;
+                    }
                 }
                 many2Many.ManyToManyRepositoryInfo = manyToManyRepositoryInfo;
             }
@@ -327,7 +369,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             {
                 // Custom repository info
                 customRepositoryMethods = customRepository.Members.OfType<MethodDeclarationSyntax>()
-                    .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString() })
+                    .Select(m => new MethodInfo()
+                    {
+                        Name = m.Identifier.Text,
+                        ReturnType = m.ReturnType.ToString(),
+                        Parameters = m.ParameterList.Parameters.Select(p => new ParameterInfo(p.Identifier.ToString(), p.Type.ToString(), false)).ToList()
+                    })
                     .ToList();
                 // Check constructor exist
                 repositoryInfo.IsConstructorImplemented = customRepository.ConstructorImplementationExist();
@@ -344,7 +391,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             {
                 // Custom repository info
                 customCacheRepositoryMethods = customCacheRepository.Members.OfType<MethodDeclarationSyntax>()
-                    .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString() })
+                    .Select(m => new MethodInfo()
+                    {
+                        Name = m.Identifier.Text, 
+                        ReturnType = m.ReturnType.ToString(),
+                        Parameters = m.ParameterList.Parameters.Select(p => new ParameterInfo(p.Identifier.ToString(), p.Type.ToString(), false)).ToList()
+                    })
                     .ToList();
 
                 // Check constructor exist
@@ -445,20 +497,19 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             // Check implemented methods in custom repository
             var unimplemented = interfaceMethodNames
-                .Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null)
-                .GroupBy(p=>p.Name)
-                .Select(gr => gr.Count() == 1 ? gr.Single() : gr.FirstOrDefault(p => p.Parameters.First().TypeName != fullRepositoryModelName.Split('.').Last()))
+                .Where(interfaceMethod => IsUnimplemented(interfaceMethod, customRepositoryMethodNames))
                 .ToList();
 
             // Set methods which possible to generate
 
             // Add common methods
-            var methods = new List<MethodImplementationInfo>
+            var generatedMethods = new List<MethodImplementationInfo>
             {
                 new MethodImplementationInfo { Method = RepositoryMethod.GetAll },
                 new MethodImplementationInfo { Method = RepositoryMethod.Insert },
                 new MethodImplementationInfo { Method = RepositoryMethod.InsertOrUpdate},
                 new MethodImplementationInfo { Method = RepositoryMethod.InsertMany },
+                new MethodImplementationInfo { Method = RepositoryMethod.InsertManySplitByTransactions },
             };
             try
             {
@@ -470,12 +521,14 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                         new MethodImplementationInfo
                         {
                             Method = RepositoryMethod.GetBy,
-                            ReturnType = "IEnumerable<" + fullRepositoryModelName + ">",
+                            ReturnType = filterInfo.FilterType == FilterType.FilterKey
+                                ?  "IEnumerable<" + fullRepositoryModelName + ">"
+                                : fullRepositoryModelName,
                             FilterInfo = filterInfo,
                             Parameters = interfaceMethodNames.FirstOrDefault(p => p.Name == ("GetBy" + filterInfo.Key) || p.Name == ("GetBy" + filterInfo.Key + "Async"))?.Parameters ?? filterInfo.Parameters
                         },
                         new MethodImplementationInfo {Method = RepositoryMethod.UpdateBy, FilterInfo = filterInfo},
-                        new MethodImplementationInfo {Method = RepositoryMethod.UpdateManyBy, FilterInfo = filterInfo},
+                        new MethodImplementationInfo {Method = RepositoryMethod.UpdateManyBySplitByTransactions, FilterInfo = filterInfo},
                         new MethodImplementationInfo
                         {
                             Method = RepositoryMethod.RemoveBy,
@@ -484,7 +537,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                         }
                     });
 
-                methods.AddRange(keyBasedMethods);
+                generatedMethods.AddRange(keyBasedMethods);
             }
             catch
             {
@@ -492,51 +545,113 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 throw;
             }
             // Set methods to implementation from possible list
-            foreach (var um in unimplemented)
+            foreach (var gm in generatedMethods)
             {
-                // Seach in possible list
-                var mm = methods.Where(methodInfo => NameIsTrue(methodInfo, um.Name));
-                if (!mm.Any()) continue;
-                // Set to implementation
-                foreach (var m in mm)
-                {
-                    m.RequiresImplementation = true;
-                    m.Name = um.Name;
-                    m.ReturnType = um.ReturnType;
-                    m.Parameters = um.Parameters;
-                }
+                gm.RequiresImplementation = unimplemented.Any(methodInfo => NameIsTrue(gm, methodInfo.Name, false));
+                gm.RequiresImplementationAsync = unimplemented.Any(methodInfo => NameIsTrue(gm, methodInfo.Name, true));
             }
 
-            return methods;
+            return generatedMethods;
         }
 
-        private static bool NameIsTrue(MethodImplementationInfo methodInfo, string name)
+        private static bool IsUnimplemented(MethodInfo interfaceMethod, List<MethodInfo> customRepositoryMethodNames)
+        {
+            foreach (var customMethod in customRepositoryMethodNames)
+            {
+                if (customMethod.Name != interfaceMethod.Name)
+                {
+                    continue;
+                }
+
+                if (customMethod.Parameters.Count() != interfaceMethod.Parameters.Count())
+                {
+                    continue;
+                }
+
+                var interfaceMethodParameters = interfaceMethod.Parameters.ToArray();
+                var customRepositoryMethodParameters = customMethod.Parameters.ToArray();
+                
+                var parametersEqual = true;
+                for (int i = 0; i < interfaceMethod.Parameters.Count(); i++)
+                {
+                    // TODO use full type name YWG-37
+                    if (interfaceMethodParameters[i].TypeName.Split('.').Last() != customRepositoryMethodParameters[i].TypeName.Split('.').Last())
+                    {
+                        parametersEqual = false;
+                        break;
+                    }
+                }
+
+                if (!parametersEqual)
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool NameIsTrue(MethodImplementationInfo methodInfo, string name, bool isAsync)
         {
             var methodsPatterns = new List<string>();
-
+            
             switch (methodInfo.Method)
             {
                 case RepositoryMethod.GetAll:
                 case RepositoryMethod.Insert:
                 case RepositoryMethod.InsertOrUpdate:
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}");
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
+                    if (isAsync)
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
+                    }
+                    else
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}");
+                    }
                     break;
                 case RepositoryMethod.GetBy:
                 case RepositoryMethod.UpdateBy:
                 case RepositoryMethod.RemoveBy:
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}");
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}Async");
+                    if(isAsync)
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}Async");
+                    }
+                    else
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}");
+                    }
                     break;
                 case RepositoryMethod.InsertMany:
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}");
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}SplitByTransactions");
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}SplitByTransactionsAsync");
+                    if(isAsync)
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
+                    }
+                    else
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}");
+                    }
                     break;
-                case RepositoryMethod.UpdateManyBy:
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}SplitByTransactions");
-                    methodsPatterns.Add($"{methodInfo.Method.GetName()}{methodInfo.FilterInfo.Key}SplitByTransactionsAsync");
+                case RepositoryMethod.InsertManySplitByTransactions:
+                    if (isAsync)
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}Async");
+                    }
+                    else
+                    {
+                        methodsPatterns.Add($"{methodInfo.Method.GetName()}");
+                    }
+                    break;
+                case RepositoryMethod.UpdateManyBySplitByTransactions:
+                    if (isAsync)
+                    {
+                        methodsPatterns.Add($"UpdateManyBy{methodInfo.FilterInfo.Key}SplitByTransactionsAsync");
+                    }
+                    else
+                    {
+                        methodsPatterns.Add($"UpdateManyBy{methodInfo.FilterInfo.Key}SplitByTransactions");
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

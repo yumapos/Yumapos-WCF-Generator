@@ -118,13 +118,13 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                     // open class
                     sb.AppendLine("{");
                     // members
-                    sb.AppendLine(GetFields());
-                    sb.AppendLine(GetProperties());
+                    sb.AppendLine(GetFields().TrimEnd('\n', '\r'));
+                    sb.AppendLine(GetProperties().TrimEnd('\n', '\r'));
                     if((RepositoryType != RepositoryType.Cache && !RepositoryInfo.IsConstructorImplemented) || (RepositoryType == RepositoryType.Cache && !RepositoryInfo.IsCacheRepositoryConstructorImplemented))
                     {
                         sb.AppendLine(GetConstructors());
                     }
-                    sb.AppendLine(GetMethods());
+                    sb.AppendLine(GetMethods().TrimEnd('\n', '\r'));
                     // close class
                     sb.AppendLine("}");
                     // close namespase

@@ -24,6 +24,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         ///     Requires of Implementation 
         /// </summary>
         public bool RequiresImplementation { get; set; }
+        public bool RequiresImplementationAsync { get; set; }
     }
 
     internal class MethodInfo

@@ -38,12 +38,13 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',@CreatedBy{0},@TenantId)";
 		private const string InsertManyJoinedValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}',@CategoryId{0},@TenantId)";
 
-
 		public MenuItemVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
+
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
 			DataAccessService.InsertObject(menuItem, InsertQuery);
 		}
+
 		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
 			await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
@@ -255,20 +256,6 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 			return result.FirstOrDefault();
 		}
-		public async Task<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> GetByMenuItemIdAsync(System.Guid menuItemId, DateTimeOffset modified, bool? isDeleted = false)
-		{
-			object parameters = new { menuItemId, modified, isDeleted };
-			var filter = WhereQueryByWithAliasMenuItemId;
-			if (isDeleted.HasValue)
-			{
-				filter = filter + AndWithIsDeletedFilterWithAlias;
-			}
-			filter = filter + AndWithSliceDateFilter;
-			var sql = SelectByKeyAndSliceDateQuery.Replace("{filter}", filter);
-			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters));
-			return result.FirstOrDefault();
-		}
-
 
 		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> GetByMenuCategoryId(System.Guid menuCategoryId, DateTimeOffset modified, bool? isDeleted = false)
 		{
@@ -283,20 +270,6 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 			return result.ToList();
 		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>> GetByMenuCategoryIdAsync(System.Guid menuCategoryId, DateTimeOffset modified, bool? isDeleted = false)
-		{
-			object parameters = new { menuCategoryId, modified, isDeleted };
-			var filter = WhereQueryByWithAliasMenuCategoryId;
-			if (isDeleted.HasValue)
-			{
-				filter = filter + AndWithIsDeletedFilterWithAlias;
-			}
-			filter = filter + AndWithSliceDateFilter;
-			var sql = SelectByKeyAndSliceDateQuery.Replace("{filter}", filter);
-			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters));
-			return result.ToList();
-		}
-
 
 		public TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem GetByMenuItemVersionId(System.Guid menuItemVersionId, bool? isDeleted = false)
 		{
@@ -310,19 +283,6 @@ VALUES (@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValu
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 			return result.FirstOrDefault();
 		}
-		public async Task<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> GetByMenuItemVersionIdAsync(System.Guid menuItemVersionId, bool? isDeleted = false)
-		{
-			object parameters = new { menuItemVersionId, isDeleted };
-			var filter = WhereQueryByMenuItemVersionId;
-			if (isDeleted.HasValue)
-			{
-				filter = filter + AndWithIsDeletedFilter;
-			}
-			var sql = SelectBy.Replace("{filter}", filter);
-			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters));
-			return result.FirstOrDefault();
-		}
-
 
 
 	}

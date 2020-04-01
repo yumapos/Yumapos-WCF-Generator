@@ -5,9 +5,10 @@
         GetAll,
         Insert,
         InsertMany,
+        InsertManySplitByTransactions,
         GetBy,
         UpdateBy,
-        UpdateManyBy,
+        UpdateManyBySplitByTransactions,
         RemoveBy,
         InsertOrUpdate
     }

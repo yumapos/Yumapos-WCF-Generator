@@ -33,10 +33,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("private const string " + InsertManyJoinedValuesTempleteField + " = @" + insertManyJoinedValuesTemplate + ";");
             }
 
-            return sb.ToString();
+            return sb.ToString().TrimEnd('\n', '\r');
         }
 
-        protected string GenerateInsertMany(bool requiresImplementation = true)
+        protected string GenerateInsertMany(MethodImplementationInfo implementationInfo)
         {
             var joined = RepositoryInfo.JoinRepositoryInfo != null;
 
@@ -198,18 +198,24 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             };
 
             // synchronous method
-            sb.AppendLine("");
-            generator(false, false);
-            sb.AppendLine("");
-            generator(false, true);
-
+            if(implementationInfo.RequiresImplementation)
+            {
+                sb.AppendLine();
+                generator(false, false);
+                sb.AppendLine();
+                generator(false, true);
+                
+            }
             // Asynchronous method
-            sb.AppendLine("");
-            generator(true, false);
-            sb.AppendLine("");
-            generator(true, true);
+            if(implementationInfo.RequiresImplementationAsync)
+            {
+                sb.AppendLine();
+                generator(true, false);
+                sb.AppendLine();
+                generator(true, true);
+            }
 
-            return requiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+            return sb.ToString();
         }
 
         protected List<string> ExtractValuesAsString(string entityName, IEnumerable<PropertyInfo> properties)

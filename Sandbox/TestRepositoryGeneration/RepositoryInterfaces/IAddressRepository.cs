@@ -5,8 +5,9 @@ using TestRepositoryGeneration.DataObjects.BaseRepositories;
 
 namespace TestRepositoryGeneration.RepositoryInterfaces
 {
-    public interface IAddressRepository : IRepository<Address>
+    public interface IAddressRepository : IRepository<Address>, IOfflineSerializeRepository<IEnumerable<Address>>
     {
+        void Insert(Address address);
         Task InsertAsync(Address address);
         Task InsertManyAsync(IEnumerable<Address> address);
         Task<IEnumerable<Address>> GetAllAsync(bool? isDeleted);

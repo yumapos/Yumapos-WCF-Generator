@@ -23,12 +23,13 @@ VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionI
 		private const string InsertManyQueryTemplate = @"INSERT INTO [MenuItemToTaxVersions]([MenuItemToTaxVersions].[MenuItemId],[MenuItemToTaxVersions].[MenuItemVersionId],[MenuItemToTaxVersions].[Modified],[MenuItemToTaxVersions].[ModifiedBy],[MenuItemToTaxVersions].[TaxId],[MenuItemToTaxVersions].[TaxVersionId],[MenuItemToTaxVersions].[IsDeleted])  VALUES {0}";
 		private const string InsertManyValuesTemplate = @"('{1}','{2}','{3}','{4}','{5}','{6}','{7}')";
 
-
 		public MenuItems2TaxesVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
+
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			DataAccessService.InsertObject(menuItems2Taxes, InsertQuery);
 		}
+
 		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes menuItems2Taxes)
 		{
 			await DataAccessService.InsertObjectAsync(menuItems2Taxes, InsertQuery);

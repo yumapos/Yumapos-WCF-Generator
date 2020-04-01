@@ -32,12 +32,13 @@ VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [TaxVersions]([TaxVersions].[TaxId],[TaxVersions].[TaxVersionId],[TaxVersions].[Name],[TaxVersions].[Modified],[TaxVersions].[ModifiedBy],[TaxVersions].[IsDeleted],[TaxVersions].[TenantId]) OUTPUT INSERTED.TaxId VALUES {0}";
 		private const string InsertManyValuesTemplate = @"('{1}','{2}',@Name{0},'{3}','{4}','{5}',@TenantId)";
 
-
 		public TaxVersionRepository(TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService, TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController) : base(dataAccessService, dataAccessController) { }
+
 		public void Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			DataAccessService.InsertObject(tax, InsertQuery);
 		}
+
 		public async Task InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			await DataAccessService.InsertObjectAsync(tax, InsertQuery);
@@ -216,62 +217,6 @@ VALUES (@TaxId,@TaxVersionId,@Name,@Modified,@ModifiedBy,@IsDeleted,@TenantId)";
 
 		}
 
-		public TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax GetByTaxId(int taxId, DateTimeOffset modified, bool? isDeleted = false)
-		{
-			object parameters = new { taxId, modified, isDeleted };
-			var filter = WhereQueryByWithAliasTaxId;
-			if (isDeleted.HasValue)
-			{
-				filter = filter + AndWithIsDeletedFilterWithAlias;
-			}
-			filter = filter + AndWithSliceDateFilter;
-			var sql = SelectByKeyAndSliceDateQuery.Replace("{filter}", filter);
-			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(sql, parameters);
-			return result.FirstOrDefault();
-		}
-		public async Task<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> GetByTaxIdAsync(int taxId, DateTimeOffset modified, bool? isDeleted = false)
-		{
-			object parameters = new { taxId, modified, isDeleted };
-			var filter = WhereQueryByWithAliasTaxId;
-			if (isDeleted.HasValue)
-			{
-				filter = filter + AndWithIsDeletedFilterWithAlias;
-			}
-			filter = filter + AndWithSliceDateFilter;
-			var sql = SelectByKeyAndSliceDateQuery.Replace("{filter}", filter);
-			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(sql, parameters));
-			return result.FirstOrDefault();
-		}
-
-
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
-		{
-		object parameters = new {taxVersionId, isDeleted};
-		var filter = WhereQueryByTaxVersionId;
-		if (isDeleted.HasValue)
-		{
-		filter = filter + AndWithIsDeletedFilter;
-		}
-		var sql = SelectBy.Replace("{filter}", filter);
-		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(sql, parameters);
-		return result.ToList();
-		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
-		{
-		object parameters = new {taxVersionId, isDeleted};
-		var filter = WhereQueryByTaxVersionId;
-		if (isDeleted.HasValue)
-		{
-		filter = filter + AndWithIsDeletedFilter;
-		}
-		var sql = SelectBy.Replace("{filter}", filter);
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>(sql, parameters));
-		return result.ToList();
-		}
-
-
-		*/
 
 	}
 }

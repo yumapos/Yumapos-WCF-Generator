@@ -26,7 +26,6 @@ namespace TestRepositoryGeneration
 		private TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItems2TaxesVersionRepository _menuItems2TaxesVersionRepository;
 		private TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemCacheRepository _menuItemCacheRepository;
 
-
 		public TaxRepository(TestRepositoryGeneration.Infrastructure.IDataAccessController dataAccessController,
 		TestRepositoryGeneration.Infrastructure.IDataAccessService dataAccessService,
 		TestRepositoryGeneration.Infrastructure.IDateTimeService dateTimeService)
@@ -40,57 +39,7 @@ namespace TestRepositoryGeneration
 			_menuItemCacheRepository = new TestRepositoryGeneration.CustomRepositories.VersionsRepositories.MenuItemCacheRepository(dataAccessService, dataAccessController);
 		}
 
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> GetAll(bool? isDeleted = false)
-		{
-		return _taxCacheRepository.GetAll(isDeleted);
-		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>> GetAllAsync(bool? isDeleted = false)
-		{
-		return await _taxCacheRepository.GetAllAsync(isDeleted);
-		}
 
-		*/
-		public TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax GetByTaxId(int taxId, DateTimeOffset modified, bool? isDeleted = false)
-		{
-			var result = _taxVersionRepository.GetByTaxId(taxId, modified, isDeleted);
-			return result;
-		}
-
-		public async Task<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> GetByTaxIdAsync(int taxId, DateTimeOffset modified, bool? isDeleted = false)
-		{
-			var result = await _taxVersionRepository.GetByTaxIdAsync(taxId, modified, isDeleted);
-			return result;
-		}
-
-		public TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax GetByTaxId(int taxId, bool? isDeleted = false)
-		{
-			var result = _taxCacheRepository.GetByTaxId(taxId, isDeleted);
-			return result;
-		}
-
-		public async Task<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> GetByTaxIdAsync(int taxId, bool? isDeleted = false)
-		{
-			var result = await _taxCacheRepository.GetByTaxIdAsync(taxId, isDeleted);
-			return result;
-		}
-
-
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> GetByTaxVersionId(System.Guid taxVersionId, bool? isDeleted = false)
-		{
-		var result = _taxVersionRepository.GetByTaxVersionId(taxVersionId, isDeleted);
-		return result.ToList();
-		}
-
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>> GetByTaxVersionIdAsync(System.Guid taxVersionId, bool? isDeleted = false)
-		{
-		var result = await _taxVersionRepository.GetByTaxVersionIdAsync(taxVersionId, isDeleted);
-		return result.ToList();
-		}
-
-
-		*/
 		public Guid Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
@@ -102,81 +51,8 @@ namespace TestRepositoryGeneration
 			UpdateMenuItems2Taxes(tax);
 			return tax.TaxVersionId;
 		}
-		public async Task<Guid> InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
-		{
-			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-			tax.TaxVersionId = tax.TaxVersionId == Guid.Empty ? Guid.NewGuid() : tax.TaxVersionId;
-			tax.TaxId = 0;
-			await _taxVersionRepository.InsertAsync(tax);
-			await _taxCacheRepository.InsertAsync(tax);
-			UpdateMenuItems2Taxes(tax);
-			return tax.TaxVersionId;
-		}
 
-		/*
 
-		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
-		{
-		foreach (var tax in taxList)
-		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-		tax.TaxVersionId = Guid.NewGuid();
-		tax.TaxId = 0;
-		}
-		_taxVersionRepository.InsertMany(taxList);
-		_taxCacheRepository.InsertMany(taxList);
-		UpdateManyMenuItems2Taxes(taxList);
-		return taxList;
-		}
-
-		public IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
-		{
-		foreach (var tax in taxList)
-		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-		tax.TaxVersionId = Guid.NewGuid();
-		tax.TaxId = 0;
-		}
-		_taxVersionRepository.InsertManySplitByTransactions(taxList);
-		_taxCacheRepository.InsertManySplitByTransactions(taxList);
-		UpdateManyMenuItems2Taxes(taxList);
-		return taxList;
-		}
-
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>>InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
-		{
-		foreach (var tax in taxList)
-		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-		tax.TaxVersionId = Guid.NewGuid();
-		tax.TaxId = 0;
-		}
-		await _taxVersionRepository.InsertManyAsync(taxList);
-		await _taxCacheRepository.InsertManyAsync(taxList);
-		UpdateManyMenuItems2Taxes(taxList);
-		return taxList;
-		}
-
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax>>InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
-		{
-		foreach (var tax in taxList)
-		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-		tax.TaxVersionId = Guid.NewGuid();
-		tax.TaxId = 0;
-		}
-		await _taxVersionRepository.InsertManySplitByTransactionsAsync(taxList);
-		await _taxCacheRepository.InsertManySplitByTransactionsAsync(taxList);
-		UpdateManyMenuItems2Taxes(taxList);
-		return taxList;
-		}
-
-		*/
 		public void UpdateByTaxId(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
@@ -186,47 +62,6 @@ namespace TestRepositoryGeneration
 			_taxCacheRepository.UpdateByTaxId(tax);
 			UpdateMenuItems2Taxes(tax);
 		}
-		public async Task UpdateByTaxIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
-		{
-			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-			tax.TaxVersionId = Guid.NewGuid();
-			await _taxVersionRepository.InsertAsync(tax);
-			await _taxCacheRepository.UpdateByTaxIdAsync(tax);
-			UpdateMenuItems2Taxes(tax);
-		}
-
-		/*
-
-		public void UpdateManyByTaxIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
-		{
-		foreach (var tax in taxList)
-		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-		tax.TaxVersionId = Guid.NewGuid();
-		tax.TaxId = 0;
-		}
-		_taxVersionRepository.InsertManySplitByTransactions(taxList);
-		_taxCacheRepository.UpdateManyByTaxIdSplitByTransactions(taxList);
-		UpdateManyMenuItems2Taxes(taxList);
-		}
-
-		public async Task UpdateManyByTaxIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax> taxList)
-		{
-		foreach (var tax in taxList)
-		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
-		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
-		tax.TaxVersionId = Guid.NewGuid();
-		tax.TaxId = 0;
-		}
-		await _taxVersionRepository.InsertManySplitByTransactionsAsync(taxList);
-		await _taxCacheRepository.UpdateManyByTaxIdSplitByTransactionsAsync(taxList);
-		UpdateManyMenuItems2Taxes(taxList);
-		}
-
-		*/
 		private void UpdateMenuItems2Taxes(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
 			if (tax.MenuItemIds == null)
@@ -262,24 +97,12 @@ namespace TestRepositoryGeneration
 			tax.IsDeleted = true;
 			UpdateByTaxId(tax);
 		}
-		public async Task RemoveByTaxIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
-		{
-			tax.IsDeleted = true;
-			await UpdateByTaxIdAsync(tax);
-		}
+
 		public void RemoveByTaxId(int taxId)
 		{
 			var result = _taxCacheRepository.GetByTaxId(taxId);
 			result.IsDeleted = true;
 			UpdateByTaxId(result);
 		}
-		public async Task RemoveByTaxIdAsync(int taxId)
-		{
-			var result = await _taxCacheRepository.GetByTaxIdAsync(taxId);
-			result.IsDeleted = true;
-			await UpdateByTaxIdAsync(result);
-		}
-
-
 	}
 }

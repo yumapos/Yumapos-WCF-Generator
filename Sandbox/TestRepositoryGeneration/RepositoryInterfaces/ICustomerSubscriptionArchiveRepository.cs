@@ -6,7 +6,8 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
 {
     public interface ICustomerSubscriptionArchiveRepository : IArchiveRepository<CustomerSubscription>
     {
-        IEnumerable<CustomerSubscription> GetByCustomerIdAndCustomerNotificationsType(string customerId, int customerNotificationsType);
+        CustomerSubscription GetByCustomerIdAndCustomerNotificationsType(string customerId, int customerNotificationsType);//  customerId + customerNotificationsType is PK
+        Task<IEnumerable<CustomerSubscription>> GetByCustomerIdAsync(string customerId);
         Task InsertOrUpdateAsync(CustomerSubscription item);
     }
 }
