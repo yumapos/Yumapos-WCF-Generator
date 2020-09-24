@@ -10,6 +10,10 @@ namespace TestDecoratorGeneration
 
         [DataMember]
         public CommandPostprocessingType? PostprocessingType { get; set; }
+
+        public object Errors { get; set; }
+        public object ServerInfo { get; set; }
+        public object Value { get; set; }
     }
 
     public enum CommandPostprocessingType

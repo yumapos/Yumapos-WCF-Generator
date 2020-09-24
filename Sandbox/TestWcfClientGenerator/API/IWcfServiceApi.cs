@@ -9,5 +9,6 @@ namespace TestWcfClientGenerator
     // Create custom part before generation
     public partial interface IWcfServiceApi
     {
+        ExecutionContext ExecutionContext { get; set; }
     }
 }

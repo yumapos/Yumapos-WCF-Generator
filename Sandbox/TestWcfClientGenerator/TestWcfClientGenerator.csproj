@@ -49,6 +49,17 @@
     <Compile Include="ClientFactory.g.cs" />
     <Compile Include="FlowOperationContextScope.g.cs" />
     <Compile Include="IAPIConfig.cs" />
+    <Compile Include="Infrastructure\Decorators\ApiLogOfCallsDecorator.g.cs" />
+    <Compile Include="Infrastructure\Decorators\ApiSecurityDecorator.g.cs" />
+    <Compile Include="Infrastructure\Decorators\ExecutionContext.cs" />
+    <Compile Include="Infrastructure\Decorators\ServerRuntimeErrorDecorator.g.cs" />
+    <Compile Include="Infrastructure\Decorators\ServerRuntimeException.cs" />
+    <Compile Include="Infrastructure\Decorators\ServerSecurityException.cs" />
+    <Compile Include="Infrastructure\Decorators\StringExtensions.cs" />
+    <Compile Include="Infrastructure\Decorators\UnauthorizedException.cs" />
+    <Compile Include="Infrastructure\Decorators\UnauthorizedFault.cs" />
+    <Compile Include="Infrastructure\Decorators\UnauthorizeErrorApiDecorator.g.cs" />
+    <Compile Include="Infrastructure\Decorators\YumaStubs.cs" />
     <Compile Include="IWcfService.cs" />
     <Compile Include="ItemDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
