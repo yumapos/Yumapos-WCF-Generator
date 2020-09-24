@@ -11,6 +11,7 @@ namespace WCFGenerator.ClientApiDecoratorsGeneration
             Decorators = new IDecoratorClass[]
             {
                 new TerminalApiSecurityDecorator(), 
+                new TerminalApiLogOfCallsDecorator(),
                 new ServerRuntimeErrorDecorator(),
                 new UnauthorizeErrorApiDecorator(),
             };

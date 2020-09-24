@@ -328,6 +328,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecorator.cs" />
+    <Compile Include="ClientApiDecoratorsGeneration\Generation\TerminalApiLogOfCallsDecorator.cs" />
     <Compile Include="Common\ApiDecoration\ApiDecoratorsConfiguration.cs" />
     <Compile Include="Common\ApiDecoration\GenerationConfig.cs" />
     <Compile Include="Common\Configuration\PrefixStrings.cs" />
