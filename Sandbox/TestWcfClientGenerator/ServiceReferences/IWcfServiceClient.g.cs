@@ -29,12 +29,7 @@ namespace TestWcfClientGenerator
 		 [System.ServiceModel.OperationContractAttribute(AsyncPattern = true, Action = "http://tempuri.org/IWcfService/GetItems", ReplyAction = "http://tempuri.org/IWcfService/GetItemsResponse")]
 		 System.IAsyncResult BeginGetItems(System.AsyncCallback callback, object asyncState);
 
-		 TestDecoratorGeneration.ItemDto[] EndGetItems(System.IAsyncResult result);
-
-		 [System.ServiceModel.OperationContractAttribute(AsyncPattern = true, Action = "http://tempuri.org/IWcfService/Open", ReplyAction = "http://tempuri.org/IWcfService/OpenResponse")]
-		 System.IAsyncResult BeginOpen(System.AsyncCallback callback, object asyncState);
-
-		 void EndOpen(System.IAsyncResult result);
+		 TestDecoratorGeneration.ItemDto EndGetItems(System.IAsyncResult result);
 
 	 } 
 

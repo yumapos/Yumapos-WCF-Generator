@@ -48,12 +48,6 @@ using System.Threading.Tasks;
 
 		 public event System.EventHandler<WcfService_GetItemsCompletedEventArgs> GetItemsCompleted; 
 
-		 private BeginOperationDelegate onBeginOpenDelegate; 
-		 private EndOperationDelegate onEndOpenDelegate; 
-		 private System.Threading.SendOrPostCallback onOpenCompletedDelegate; 
-
-		 public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> OpenCompleted; 
-
 		 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
 		 public System.IAsyncResult BeginAddItem(Guid id, string name, System.AsyncCallback callback, object asyncState)
 		 {
@@ -126,7 +120,7 @@ using System.Threading.Tasks;
 		 }
 
 		 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-		 public TestDecoratorGeneration.ItemDto[] EndGetItems(System.IAsyncResult result)
+		 public TestDecoratorGeneration.ItemDto EndGetItems(System.IAsyncResult result)
 		 {
 		   try
 		   {
@@ -146,7 +140,7 @@ using System.Threading.Tasks;
 
 		 private object[] OnEndGetItems(System.IAsyncResult result)
 		 {
-		   TestDecoratorGeneration.ItemDto[] retVal = ((IWcfServiceClient)(this)).EndGetItems(result);
+		   TestDecoratorGeneration.ItemDto retVal = ((IWcfServiceClient)(this)).EndGetItems(result);
 		   return new object[] { retVal };
 		 }
 
@@ -180,69 +174,6 @@ using System.Threading.Tasks;
 		   }
 		   base.InvokeAsync(this.onBeginGetItemsDelegate, new object[] {}, this.onEndGetItemsDelegate, this.onGetItemsCompletedDelegate, userState);
 		       this.onGetItemsCompletedDelegate = new System.Threading.SendOrPostCallback(this.OnGetItemsCompleted);
-		 }
-
-		 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-		 public System.IAsyncResult BeginOpen( System.AsyncCallback callback, object asyncState)
-		 {
-		   return base.Channel.BeginOpen( callback, asyncState); 
-		 }
-
-		 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-		 public void EndOpen(System.IAsyncResult result)
-		 {
-		   try
-		   {
-		        base.Channel.EndOpen(result);
-		   }
-		   catch (Exception)
-		   {
-		       IsCaughtException = true;
-		       throw;
-		   }
-		 }
-
-		 private System.IAsyncResult OnBeginOpen(object[] inValues, System.AsyncCallback callback, object asyncState)
-		 {
-		   return ((IWcfServiceClient)(this)).BeginOpen(callback, asyncState);
-		 }
-
-		 private object[] OnEndOpen(System.IAsyncResult result)
-		 {
-		   ((IWcfServiceClient)(this)).EndOpen(result);
-		   return null;
-		 }
-
-		 private void OnOpenCompleted(object state)
-		 {
-		   if ((this.OpenCompleted != null))
-		   {
-		      InvokeAsyncCompletedEventArgs e = ((InvokeAsyncCompletedEventArgs)(state));
-		      this.OpenCompleted(this, new WcfService_OpenCompletedEventArgs(e.Results, e.Error, e.Cancelled, e.UserState));
-		   }
-		 }
-
-		 public void OpenAsync()
-		 {
-		   this.OpenAsync(null);
-		 }
-
-		 public void OpenAsync( object userState)
-		 {
-		   if ((this.onBeginOpenDelegate == null))
-		   {
-		       this.onBeginOpenDelegate = new BeginOperationDelegate(this.OnBeginOpen);
-		   }
-		   if ((this.onEndOpenDelegate == null))
-		   {
-		       this.onEndOpenDelegate = new EndOperationDelegate(this.OnEndOpen);
-		   }
-		   if ((this.onOpenCompletedDelegate == null))
-		   {
-		       this.onOpenCompletedDelegate = new System.Threading.SendOrPostCallback(this.OnOpenCompleted);
-		   }
-		   base.InvokeAsync(this.onBeginOpenDelegate, new object[] {}, this.onEndOpenDelegate, this.onOpenCompletedDelegate, userState);
-		       this.onOpenCompletedDelegate = new System.Threading.SendOrPostCallback(this.OnOpenCompleted);
 		 }
 
 		 protected override IWcfServiceClient CreateChannel() 
@@ -310,24 +241,11 @@ using System.Threading.Tasks;
 			 return _result;
 		 } 
 
-		 public TestDecoratorGeneration.ItemDto[] EndGetItems(System.IAsyncResult result) 
+		 public TestDecoratorGeneration.ItemDto EndGetItems(System.IAsyncResult result) 
  		 { 
 			 object[] _args = new object[0];
-			 TestDecoratorGeneration.ItemDto[] _result = ((TestDecoratorGeneration.ItemDto[])(base.EndInvoke("GetItems", _args, result)));
+			 TestDecoratorGeneration.ItemDto _result = ((TestDecoratorGeneration.ItemDto)(base.EndInvoke("GetItems", _args, result)));
 			 return _result;
-		 } 
-
-		 public System.IAsyncResult BeginOpen(System.AsyncCallback callback, object asyncState) 
- 		 { 
-			 object[] _args = new object[0]; 
-			 System.IAsyncResult _result = base.BeginInvoke("Open", _args, callback, asyncState);
-			 return _result;
-		 } 
-
-		 public void EndOpen(System.IAsyncResult result) 
- 		 { 
-			 object[] _args = new object[0];
-			 base.EndInvoke("Open", _args, result);
 		 } 
 
 	 } 

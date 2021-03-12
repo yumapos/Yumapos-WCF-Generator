@@ -26,10 +26,10 @@ using System.Threading.Tasks;
 	       this.results = results;
 	   } 
 
-	   public Task<IEnumerable<TestDecoratorGeneration.ItemDto>> Result { 
+	   public Task<TestDecoratorGeneration.ItemDto> Result { 
 	       get {
 	           base.RaiseExceptionIfNecessary();
-	           return ((Task<IEnumerable<TestDecoratorGeneration.ItemDto>>)(this.results[0]));
+	           return ((Task<TestDecoratorGeneration.ItemDto>)(this.results[0]));
 	       }
 	   }
 	 }

@@ -42,7 +42,7 @@ using System.Threading.Tasks;
 			 }
 		 }
 
-		 public async System.Threading.Tasks.Task<TestDecoratorGeneration.ItemDto[]> GetItems()
+		 public async System.Threading.Tasks.Task<TestDecoratorGeneration.ItemDto> GetItems()
 		 {
 			 var channelContainer = CreateChannel<WcfServiceClient> ();
 			 var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);
@@ -50,27 +50,7 @@ using System.Threading.Tasks;
 			 try
 			 {
 				 AddClientInformationHeader();
-				 return await System.Threading.Tasks.Task<TestDecoratorGeneration.ItemDto[]>.Factory.FromAsync(channelContainer.Client.BeginGetItems, channelContainer.Client.EndGetItems,  null).ContinueOnScope(scope);
-			 }
-			 finally
-			 {
-				 var disposable = channelContainer as IDisposable; 
-				 if (disposable != null) disposable.Dispose();
-
-				 disposable = scope as IDisposable;
-				 if (disposable != null) disposable.Dispose();
-			 }
-		 }
-
-		 public async System.Threading.Tasks.Task Open()
-		 {
-			 var channelContainer = CreateChannel<WcfServiceClient> ();
-			 var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);
-
-			 try
-			 {
-				 AddClientInformationHeader();
-				 await System.Threading.Tasks.Task.Factory.FromAsync(channelContainer.Client.BeginOpen, channelContainer.Client.EndOpen,  null).ContinueOnScope(scope);
+				 return await System.Threading.Tasks.Task<TestDecoratorGeneration.ItemDto>.Factory.FromAsync(channelContainer.Client.BeginGetItems, channelContainer.Client.EndGetItems,  null).ContinueOnScope(scope);
 			 }
 			 finally
 			 {
