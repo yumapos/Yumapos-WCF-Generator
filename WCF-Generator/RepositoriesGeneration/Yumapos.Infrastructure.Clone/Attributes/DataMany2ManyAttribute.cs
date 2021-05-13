@@ -5,6 +5,6 @@ namespace WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attri
     public class DataMany2ManyAttribute : Attribute
     {
         public string EntityType { get; set; }
-        public string ManyToManyEntytyType { get; set; }
+        public string ManyToManyEntityType { get; set; }
     }
 }

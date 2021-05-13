@@ -15,6 +15,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         private string _primaryKeyName;
         private List<ParameterInfo> _primaryKeys;
         private ParameterInfo _versionKey;
+        private const string _syncStateFiledName = "SyncState";
 
         #endregion
 
@@ -267,6 +268,9 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         /// </summary>
         public bool IsCacheRepositoryConstructorImplemented { get; set; }
 
+        public bool HasSyncState { get; set; }
+
+
         /// <summary>
         ///     Return true if need create argument IsDeleted in "Get" methods
         /// </summary>
@@ -302,12 +306,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             {
                 var specialOption = "SyncState";
 
-                if (JoinRepositoryInfo != null)
-                {
-                    return JoinRepositoryInfo.Elements.Exists(s => s.Name == specialOption);
-                }
+                var isSyncStateFieldExists = JoinRepositoryInfo != null
+                    ? JoinRepositoryInfo.Elements.Exists(s => s.Name == specialOption)
+                    : Elements.Exists(s => s.Name == specialOption);
 
-                return Elements.Exists(s => s.Name == specialOption);
+                return isSyncStateFieldExists;
             }
         }
 
@@ -385,6 +388,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 {
                     TableColumns = Elements.ToList(),
                     HiddenTableColumns = new List<PropertyInfo>(),
+                    UpdateTableColumns = Elements.Where(FilterElemsForUpdate).ToList(),
                     TableName = TableName,
                     PrimaryKeyNames = PrimaryKeys.Select(k => k.Name).ToList(),
                     TenantRelated = IsTenantRelated,
@@ -416,7 +420,8 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 sqlInfo.PrimaryKeyType = pk?.TypeName;
                 sqlInfo.Identity = Identity;
                 sqlInfo.IsDeleted = IsDeletedExist;
-                sqlInfo.IsSyncState = IsSyncStateExists;
+                sqlInfo.IsSyncStateEnabled = HasSyncState;
+                sqlInfo.IsSyncStateFiledExists = IsSyncStateExists && !HasSyncState;
 
                 if (PrimaryKeys.Count == 1 && Identity)
                 {
@@ -463,8 +468,23 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
             get { return RepositoryAnalysisError.Any(e => e.Error == Infrastructure.RepositoryAnalysisError.InterfaceNotFound); }
         }
 
+
         #endregion
 
+        private bool FilterElemsForUpdate(PropertyInfo prop)
+        {
+            var res = true;
 
+            switch (prop.Name)
+            {
+                case _syncStateFiledName:
+                    res = !HasSyncState;
+                    break;
+                default:
+                    break;
+            }
+
+            return res;
+        }
     }
 }
