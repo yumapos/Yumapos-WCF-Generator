@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Generator.Repository.Infrastructure;
-using Generator.Repository.Infrastructure.Attributes;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
 namespace WCFGenerator.RepositoriesGeneration.Services
@@ -22,13 +20,16 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             var isDeleted = obj.GetParameterByKeyName("IsDeleted");
             var identity = obj.GetParameterByKeyName("Identity");
+            var hasSyncState = obj.GetParameterByKeyName("HasSyncState");
 
+            
             var attr = new DataAccessAttribute
             {
                 TableName = obj.GetParameterByKeyName("TableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = isDeleted !=null ? Convert.ToBoolean(isDeleted) : (bool?) null,
                 Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
+                HasSyncState = hasSyncState != null ? Convert.ToBoolean(hasSyncState) : (bool?)null,
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = obj.GetParameterByKeyName("FilterKey3")
@@ -46,13 +47,6 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             };
             return attr;
         }  
-        
-        public static explicit operator HasSyncState(AttributeAndProperties obj)
-        {
-            var attr = new HasSyncState
-            {
-            };
-            return attr;
-        }
+  
     }
 }

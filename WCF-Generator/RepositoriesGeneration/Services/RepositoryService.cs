@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Generator.Repository.Infrastructure.Attributes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Analysis;
@@ -178,8 +177,6 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             // Get DataAccess attribute from repository model
             var dataAccessAttr = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(doClass).FirstOrDefault(x => x.Name.ToString().Contains(_config.RepositoryAttributeName));
 
-            var hasSyncStateAttr = SyntaxAnalysisHelper.GetAttributesAndPropepertiesCollection(doClass).FirstOrDefault(x => x.Name.ToString().Contains(nameof(HasSyncState)));
-
             // common repository info
             var repositoryInfo = new RepositoryInfo
             {
@@ -252,7 +249,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
             repositoryInfo.Identity = dataAccess.Identity;
-            repositoryInfo.HasSyncState = hasSyncStateAttr != null;
+            repositoryInfo.HasSyncState = dataAccess.HasSyncState ?? false;
 
             #endregion
 

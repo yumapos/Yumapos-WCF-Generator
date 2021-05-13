@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Generator.Repository.Infrastructure.Attributes;
 using TestRepositoryGeneration.Infrastructure;
 
 namespace TestRepositoryGeneration.DataObjects.BaseRepositories
 {
-    [DataAccess(IsDeleted = false)]
-    [HasSyncState]
+    [DataAccess(IsDeleted = false, HasSyncState = true)]
     public class Store
     {
         [Key]
