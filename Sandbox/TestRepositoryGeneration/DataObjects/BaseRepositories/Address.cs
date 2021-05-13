@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Generator.Repository.Infrastructure;
+using Generator.Repository.Infrastructure.Attributes;
 using TestRepositoryGeneration.CustomRepositories.BaseRepositories;
 using TestRepositoryGeneration.Infrastructure;
 using TestRepositoryGeneration.RepositoryInterfaces;
@@ -12,6 +14,7 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
     /// </summary>
     [DataAccess(TableName = "dbo.Addresses", FilterKey1 = "ExpireDate", FilterKey2 = "Modified,Country,City", FilterKey3 = "Latitude,Longitude", IsDeleted = false)]
     [DataArchive(TableName = "archive.addresses", FilterKey1 = "Modified", FilterKey2 = "Country,City", FilterKey3 = "Country,City,ZipCode", IsDeleted = false)]
+    [HasSyncState]
     public class Address : ITenantUnrelated
     {
         [Key]
@@ -30,5 +33,6 @@ namespace TestRepositoryGeneration.DataObjects.BaseRepositories
         public DateTimeOffset? ExpireDate { get; set; }
         [DbIgnore]
         public string AditionalInfo { get; set; }
+        public bool SyncState { get; set; }
     }
 }

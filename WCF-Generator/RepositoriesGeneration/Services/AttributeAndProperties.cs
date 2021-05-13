@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Generator.Repository.Infrastructure;
+using Generator.Repository.Infrastructure.Attributes;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 
 namespace WCFGenerator.RepositoriesGeneration.Services
@@ -39,8 +41,16 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             var attr = new DataMany2ManyAttribute
             {
-                ManyToManyEntytyType = obj.GetParameterByKeyName("ManyToManyEntytyType"),
+                ManyToManyEntityType = obj.GetParameterByKeyName("ManyToManyEntityType") ?? obj.GetParameterByKeyName("ManyToManyEntytyType"),// TODO REMOVE old name whit typo
                 EntityType = obj.GetParameterByKeyName("EntityType"),
+            };
+            return attr;
+        }  
+        
+        public static explicit operator HasSyncState(AttributeAndProperties obj)
+        {
+            var attr = new HasSyncState
+            {
             };
             return attr;
         }

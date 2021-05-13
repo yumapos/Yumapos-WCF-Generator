@@ -64,6 +64,7 @@
     <Compile Include="CustomRepositories\BaseRepositories\ElectronicCouponsTypedRepository.cs" />
     <Compile Include="DataObjects\BaseRepositories\ElectronicCouponsTyped.cs" />
     <Compile Include="DataObjects\BaseRepositories\ElectronicCoupon.cs" />
+    <Compile Include="DataObjects\BaseRepositories\Store.cs" />
     <Compile Include="DataObjects\KitchenPrinter.cs" />
     <Compile Include="DataObjects\MenuItemType.cs" />
     <Compile Include="GeneratedRepositories\AddressRepository.g.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="GeneratedRepositories\MenuItems2TaxesVersionRepository.g.cs" />
     <Compile Include="GeneratedRepositories\MenuItemServiceRepository.g.cs" />
     <Compile Include="GeneratedRepositories\MenuItemVersionRepository.g.cs" />
+    <Compile Include="GeneratedRepositories\StoreRepository.g.cs" />
     <Compile Include="GeneratedRepositories\TaxCacheRepository.g.cs" />
     <Compile Include="GeneratedRepositories\TaxServiceRepository.g.cs" />
     <Compile Include="GeneratedRepositories\TaxVersionRepository.g.cs" />
@@ -86,6 +88,7 @@
     <Compile Include="PostgresRepositories\AddressArchiveRepository.g.cs" />
     <Compile Include="PostgresRepositories\CustomerSubscriptionArchiveRepository.g.cs" />
     <Compile Include="RepositoryInterfaces\IAddressArchiveRepository.cs" />
+    <Compile Include="RepositoryInterfaces\IStoresRepository.cs" />
     <Compile Include="RepositoryInterfaces\IArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\ICustomerSubscriptionArchiveRepository.cs" />
     <Compile Include="RepositoryInterfaces\IElectronicCouponRepository.cs" />
@@ -123,6 +126,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Generator.Repository.Infrastructure\Generator.Repository.Infrastructure.csproj">
+      <Project>{59640535-56C8-4106-A48C-0B2411C33E59}</Project>
+      <Name>Generator.Repository.Infrastructure</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

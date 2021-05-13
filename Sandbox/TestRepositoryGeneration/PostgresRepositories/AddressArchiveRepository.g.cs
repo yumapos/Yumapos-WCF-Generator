@@ -19,13 +19,13 @@ namespace TestRepositoryGeneration
 {
 	public partial class AddressArchiveRepository : TestRepositoryGeneration.Infrastructure.RepositoryBase, TestRepositoryGeneration.RepositoryInterfaces.IAddressArchiveRepository
 	{
-		public const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date";
-		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses   ";
-		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date FROM archive.addresses ";
-		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Created,@Modified,@ExpireDate) ";
-		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.created = @Created,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate FROM archive.addresses ";
+		public const string Fields = @"archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date,archive.addresses.sync_state";
+		private const string SelectAllQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date,archive.addresses.sync_state FROM archive.addresses   ";
+		private const string SelectByQuery = @"SELECT archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date,archive.addresses.sync_state FROM archive.addresses ";
+		private const string InsertQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date,archive.addresses.sync_state) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Created,@Modified,@ExpireDate,@SyncState) ";
+		private const string UpdateQueryBy = @"UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.created = @Created,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate,archive.addresses.sync_state = @SyncState FROM archive.addresses ";
 		private const string DeleteQueryBy = @"UPDATE archive.addresses SET is_deleted = TRUE ";
-		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Created,@Modified,@ExpireDate)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.created = @Created,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate ";
+		private const string InsertOrUpdateQuery = @"INSERT INTO archive.addresses(archive.addresses.id,archive.addresses.country,archive.addresses.city,archive.addresses.state,archive.addresses.street,archive.addresses.building,archive.addresses.zip_code,archive.addresses.latitude,archive.addresses.longitude,archive.addresses.created,archive.addresses.modified,archive.addresses.expire_date,archive.addresses.sync_state) OUTPUT INSERTED.Id VALUES(@Id,@Country,@City,@State,@Street,@Building,@ZipCode,@Latitude,@Longitude,@Created,@Modified,@ExpireDate,@SyncState)  ON CONFLICT (id) DO UPDATE archive.addresses SET archive.addresses.id = @Id,archive.addresses.country = @Country,archive.addresses.city = @City,archive.addresses.state = @State,archive.addresses.street = @Street,archive.addresses.building = @Building,archive.addresses.zip_code = @ZipCode,archive.addresses.latitude = @Latitude,archive.addresses.longitude = @Longitude,archive.addresses.created = @Created,archive.addresses.modified = @Modified,archive.addresses.expire_date = @ExpireDate,archive.addresses.sync_state = @SyncState ";
 		private const string UpdateManyByIdQueryTemplate = @"GenerateUpdateMany script was not generated";
 		private const string WhereQueryById = "WHERE archive.addresses.id = @Id ";
 		private const string WhereQueryByModified = "WHERE archive.addresses.modified >= @startModified AND archive.addresses.modified < @endModified ";
@@ -202,7 +202,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		DataAccessService.Execute(query.ToString(), parameters);
@@ -246,7 +246,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		query.AppendLine("COMMIT TRANSACTION;");
@@ -292,7 +292,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 
@@ -342,7 +342,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
 		values.AppendLine(index != 0 ? ",":"");
-		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
 		query.AppendLine("COMMIT TRANSACTION;");
@@ -432,7 +432,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
@@ -478,7 +478,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
@@ -527,7 +527,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
@@ -573,7 +573,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
@@ -623,7 +623,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
@@ -670,7 +670,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);
@@ -721,7 +721,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Address));
@@ -769,7 +769,7 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
 		await Task.Delay(10);

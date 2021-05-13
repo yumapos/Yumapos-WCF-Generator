@@ -11,6 +11,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
     {
         private const string _tempTable = "@Temp";
         private const string _sliceDateColumnName = "Modified";
+        private const string _syncStateColumnName = "SyncState";
         private const string _versionTableAlias1 = "versionTable1";
         private const string _joinVersionTableAlias1 = "joinVersionTable1";
 
@@ -119,13 +120,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             var sb = new StringBuilder();
 
-            var columns = InsertManyValuesTemplate(info.TableColumns);
+            var columnsPart = InsertManyValuesTemplate(info.TableColumns);
             var hidenColumns = info.HiddenTableColumns.Any()
                 ? "," + Values(info.HiddenTableColumns.Select(c => c.Name))
                 : "";
 
             sb.Append("(");
-            sb.Append(columns);
+            sb.Append(columnsPart);
             sb.Append(hidenColumns);
             sb.Append(")");
 
@@ -207,15 +208,30 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
-            var columns = info.TableColumns.Where(c => !c.IgnoreOnUpdate).Select(c => c.Name).Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c)).ToList();
-            return Update(info.TableName) + " " 
-                    + Set(columns, info.TableName) + " " 
-                    + From(info.TableName) + " ";
+            var columns = info.UpdateTableColumns
+                .Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
+                .Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c))
+                .ToList();
+
+            var update = $"{Update(info.TableName)} {Set(columns, info.TableName)}";
+
+            if (info.IsSyncStateEnabled)
+            {
+                update += $",{SetSyncState(info.TableName, false)}";
+            }
+
+            return $"{update} {From(info.TableName)} ";
+        }
+
+        private static string SetSyncState(string table, bool value)
+        {
+            var syncState = value ? "1" : "0";
+            return $"{table}.[{_syncStateColumnName}] = '{syncState}'";
         }
 
         public string GenerateUpdateJoin(SqlInfo info)
         {
-            // use pk from inherite model
+            // use pk from inherit model
             var values = info.JoinTableColumns.Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
                 .Except(info.IdentityColumnsJoined)
                 .Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c));//TODO FIX TO MANY KEYS
@@ -228,14 +244,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdateMany(SqlInfo info)
         {
-            var columns = info.TableColumns
+            var columns = info.UpdateTableColumns
                 .Where(propertyInfo => !propertyInfo.IgnoreOnUpdate
                                        && !info.PrimaryKeyNames.Contains(propertyInfo.Name)
                                        && !info.IdentityColumns.Contains(propertyInfo.Name));
 
             var columnsString = UpdateManyValuesTemplate(columns);
 
-            var updateManySql = Update(info.TableName) + " SET " + columnsString + " " + GenerateWhereTemplate(info.PrimaryKeyNames, info);
+            var update = Update(info.TableName) + " SET " + columnsString;
+
+            if (info.IsSyncStateEnabled)
+            {
+                update += $",{SetSyncState(info.TableName, false)}";
+            }
+
+            var updateManySql = $"{update} {GenerateWhereTemplate(info.PrimaryKeyNames, info)}";
 
             return updateManySql;
         }
@@ -260,7 +283,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             // base type of repository and "isDeleted" flag - set IsDeleted = true
             if (info.IsDeleted && info.VersionTableName == null)
             {
-                string syncSql = info.IsSyncState ? ", SyncState = 0 " : " ";
+                string syncSql = info.IsSyncStateEnabled || info.IsSyncStateFiledExists ? $", {_syncStateColumnName} = 0 " : " "; // SyncState always 0 on remove, can't be override
                 if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
                 {
                     return Update(info.JoinTableName) + " SET IsDeleted = 1" + syncSql;
@@ -721,7 +744,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public bool Identity;
         public bool JoinIdentity;
         public bool IsDeleted { get; set; }
-        public bool IsSyncState { get; set; }
+        public bool IsSyncStateEnabled { get; set; }
+        public bool IsSyncStateFiledExists { get; set; }
         public DatabaseType DatabaseType { get; set; }
+        public IList<PropertyInfo> UpdateTableColumns { get; set; }
     }
 }
