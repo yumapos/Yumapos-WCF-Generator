@@ -249,6 +249,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var isVersioning = dataAccess.TableVersion != null;
             repositoryInfo.IsVersioning = isVersioning;
             repositoryInfo.Identity = dataAccess.Identity;
+            repositoryInfo.HasSyncState = dataAccess.HasSyncState ?? false;
 
             #endregion
 
@@ -308,7 +309,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 .Where(p => p.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName)
                 .Select(p => new Tuple<string, DataMany2ManyAttribute>(p.OwnerElementName, (DataMany2ManyAttribute)p))
                 .Select(a =>
-                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntytyType, a.Item2.EntityType));
+                new Many2ManyInfo(a.Item1, a.Item2.ManyToManyEntityType, a.Item2.EntityType));
 
             repositoryInfo.Many2ManyInfo.AddRange(many2ManyInfos);
 

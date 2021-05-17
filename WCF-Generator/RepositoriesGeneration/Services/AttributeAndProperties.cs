@@ -20,13 +20,16 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             var isDeleted = obj.GetParameterByKeyName("IsDeleted");
             var identity = obj.GetParameterByKeyName("Identity");
+            var hasSyncState = obj.GetParameterByKeyName("HasSyncState");
 
+            
             var attr = new DataAccessAttribute
             {
                 TableName = obj.GetParameterByKeyName("TableName"),
                 TableVersion = obj.GetParameterByKeyName("TableVersion"),
                 IsDeleted = isDeleted !=null ? Convert.ToBoolean(isDeleted) : (bool?) null,
                 Identity = !string.IsNullOrEmpty(identity) && Convert.ToBoolean(identity),
+                HasSyncState = hasSyncState != null ? Convert.ToBoolean(hasSyncState) : (bool?)null,
                 FilterKey1 = obj.GetParameterByKeyName("FilterKey1"),
                 FilterKey2 = obj.GetParameterByKeyName("FilterKey2"),
                 FilterKey3 = obj.GetParameterByKeyName("FilterKey3")
@@ -39,10 +42,11 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         {
             var attr = new DataMany2ManyAttribute
             {
-                ManyToManyEntytyType = obj.GetParameterByKeyName("ManyToManyEntytyType"),
+                ManyToManyEntityType = obj.GetParameterByKeyName("ManyToManyEntityType") ?? obj.GetParameterByKeyName("ManyToManyEntytyType"),// TODO REMOVE old name whit typo
                 EntityType = obj.GetParameterByKeyName("EntityType"),
             };
             return attr;
-        }
+        }  
+  
     }
 }
