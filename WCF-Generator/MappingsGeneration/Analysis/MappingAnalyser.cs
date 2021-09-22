@@ -146,10 +146,10 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                         var property = allProperties.FirstOrDefault(p => p.Name == baseProperty.Name);
                         if (property!= null)
                         {
-                            if (!property.IsOverride)
+                            if (property.IsOverride)
                             {
                                 allProperties.Remove(property);
-                                allProperties.Add(property);
+                                allProperties.Add(baseProperty);
                             }
                         }
                         else
