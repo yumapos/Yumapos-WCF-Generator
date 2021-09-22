@@ -140,7 +140,23 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                 var baseClass = similarClass.DOClass.NamedTypeSymbol.BaseType;
                 while (baseClass != null)
                 {
-                    allProperties.AddRange(baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>());
+                    var baseProperties = baseClass.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>().ToList();
+                    foreach (var baseProperty in baseProperties)
+                    {
+                        var property = allProperties.FirstOrDefault(p => p.Name == baseProperty.Name);
+                        if (property!= null)
+                        {
+                            if (!property.IsOverride)
+                            {
+                                allProperties.Remove(property);
+                                allProperties.Add(property);
+                            }
+                        }
+                        else
+                        {
+                            allProperties.Add(baseProperty);
+                        }
+                    }
                     baseClass = baseClass.BaseType;
                 }
 
