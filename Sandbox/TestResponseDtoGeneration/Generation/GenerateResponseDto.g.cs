@@ -26,6 +26,8 @@ namespace blah
 		[DataMember]
 		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
 		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
+		[DataMember]
 		public virtual ResponseServerInfoDto ServerInfo { get; set; }
 		[DataMember]
 		public string Context { get; set; }
@@ -40,6 +42,8 @@ namespace blah
 		public IEnumerable<KitchenActiveOrdersChangeDigest> Value { get; set; }
 		[DataMember]
 		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
+		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
 		[DataMember]
 		public virtual ResponseServerInfoDto ServerInfo { get; set; }
 		[DataMember]
@@ -56,6 +60,8 @@ namespace blah
 		[DataMember]
 		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
 		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
+		[DataMember]
 		public virtual ResponseServerInfoDto ServerInfo { get; set; }
 		[DataMember]
 		public string Context { get; set; }
@@ -70,6 +76,8 @@ namespace blah
 		public IEnumerable<Test1Dto> Value { get; set; }
 		[DataMember]
 		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
+		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
 		[DataMember]
 		public virtual ResponseServerInfoDto ServerInfo { get; set; }
 		[DataMember]
@@ -86,6 +94,8 @@ namespace blah
 		[DataMember]
 		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
 		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
+		[DataMember]
 		public virtual ResponseServerInfoDto ServerInfo { get; set; }
 		[DataMember]
 		public string Context { get; set; }
@@ -100,6 +110,8 @@ namespace blah
 		public IEnumerable<Test2Dto> Value { get; set; }
 		[DataMember]
 		public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
+		[DataMember]
+		public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
 		[DataMember]
 		public virtual ResponseServerInfoDto ServerInfo { get; set; }
 		[DataMember]

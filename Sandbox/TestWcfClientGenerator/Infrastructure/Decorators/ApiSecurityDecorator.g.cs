@@ -8,7 +8,11 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using YumaPos.Shared.Terminal.Infrastructure;
+using YumaPos.Shared.API.ResponseDtos;
 using YumaPos.FrontEnd.Infrastructure.CommandProcessing;
 
 namespace TestWcfClientGenerator
@@ -16,6 +20,16 @@ namespace TestWcfClientGenerator
 	public sealed class ApiSecurityDecorator : TestWcfClientGenerator.IWcfServiceApi
 	{
 		private readonly TestWcfClientGenerator.IWcfServiceApi _actor;
+		private Func<IEnumerable<ResponseErrorDto>, Task> _warningsHandler;
+
+		private async Task HandleWarnings(IEnumerable<ResponseErrorDto> responseWarnings)
+		{
+			if (_warningsHandler != null)
+			{
+				await _warningsHandler(responseWarnings);
+			}
+		}
+
 		#region Properties
 		public ExecutionContext ExecutionContext
 		{
@@ -23,10 +37,11 @@ namespace TestWcfClientGenerator
 			set { _actor.ExecutionContext = value; }
 		}
 		#endregion
-		public ApiSecurityDecorator(TestWcfClientGenerator.IWcfServiceApi actor)
+		public ApiSecurityDecorator(TestWcfClientGenerator.IWcfServiceApi actor, Func<IEnumerable<ResponseErrorDto>, Task> warningHandler)
 		{
 			if (actor == null) throw new ArgumentNullException(nameof(actor));
 			_actor = actor;
+			_warningsHandler = warningHandler;
 		}
 		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, string name)
 		{
@@ -35,6 +50,12 @@ namespace TestWcfClientGenerator
 			{
 				throw new ServerSecurityException(response.Context, response.PostprocessingType, response.Errors, response.ServerInfo) { Value = response.Value };
 			}
+
+			if (response.Warnings != null && response.Warnings.Any())
+			{
+				await HandleWarnings(response.Warnings);
+			}
+
 			return response;
 		}
 
@@ -45,6 +66,12 @@ namespace TestWcfClientGenerator
 			{
 				throw new ServerSecurityException(response.Context, response.PostprocessingType, response.Errors, response.ServerInfo) { Value = response.Value };
 			}
+
+			if (response.Warnings != null && response.Warnings.Any())
+			{
+				await HandleWarnings(response.Warnings);
+			}
+
 			return response;
 		}
 

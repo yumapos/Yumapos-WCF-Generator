@@ -63,6 +63,7 @@
     <Compile Include="IWcfService.cs" />
     <Compile Include="ItemDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResponseErrorDto.cs" />
     <Compile Include="ResponseDto.cs" />
     <Compile Include="ServiceReferences\CompletedEventArgs\WcfService_AddItemCompletedEventArgs.g.cs" />
     <Compile Include="ServiceReferences\CompletedEventArgs\WcfService_GetItemsCompletedEventArgs.g.cs" />

@@ -16,31 +16,36 @@ namespace TestDecoratorGeneration
 
 		private TestDecoratorGeneration.ServiceDecorator DecoratedComponent { get; set; }
 
-		public async System.Threading.Tasks.Task Open()
-		{
-			try
-			{
-				await OnEntryAsync("Open", new object[] { });
-				await DecoratedComponent.Open();
-				await OnExitAsync();
-			}
-			catch (System.Exception e)
-			{
-				OnException(e);
-				throw;
-			}
-			finally
-			{
-				OnFinally();
-			}
-		}
-		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, string name)
+		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> Open()
 		{
 			var ret = default(TestDecoratorGeneration.ResponseDto);
 			try
 			{
-				await OnEntryAsync("AddItem", new object[] { id, name });
-				ret = await DecoratedComponent.AddItem(id, name);
+				var res = await OnEntryAsync("Open", new object[] { });
+				if (!res.Success)
+				{
+					ret = new TestDecoratorGeneration.ResponseDto()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.Open();
+
+					if (res.PostprocessingType.HasValue)
+					{
+						var warning = new YumaPos.Shared.API.ResponseDtos.ResponseErrorDto()
+						{
+							Code = res.PostprocessingType,
+							Message = res.AdditionalInformation?.ToString(),
+							Details = SerializationService.Serialize(res.Context, SerializationOptions),
+						};
+						ret.Warnings = new System.Collections.Generic.List<YumaPos.Shared.API.ResponseDtos.ResponseErrorDto>() { warning };
+					}
+
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
@@ -54,13 +59,79 @@ namespace TestDecoratorGeneration
 			}
 			return ret;
 		}
-		public async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>> GetItems()
+		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, string name)
 		{
-			var ret = default(System.Collections.Generic.IEnumerable<TestDecoratorGeneration.ItemDto>);
+			var ret = default(TestDecoratorGeneration.ResponseDto);
 			try
 			{
-				await OnEntryAsync("GetItems", new object[] { });
-				ret = await DecoratedComponent.GetItems();
+				var res = await OnEntryAsync("AddItem", new object[] { id, name });
+				if (!res.Success)
+				{
+					ret = new TestDecoratorGeneration.ResponseDto()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.AddItem(id, name);
+
+					if (res.PostprocessingType.HasValue)
+					{
+						var warning = new YumaPos.Shared.API.ResponseDtos.ResponseErrorDto()
+						{
+							Code = res.PostprocessingType,
+							Message = res.AdditionalInformation?.ToString(),
+							Details = SerializationService.Serialize(res.Context, SerializationOptions),
+						};
+						ret.Warnings = new System.Collections.Generic.List<YumaPos.Shared.API.ResponseDtos.ResponseErrorDto>() { warning };
+					}
+
+				}
+				await OnExitAsync(ret);
+			}
+			catch (System.Exception e)
+			{
+				OnException(e);
+				throw;
+			}
+			finally
+			{
+				OnFinally();
+			}
+			return ret;
+		}
+		public async System.Threading.Tasks.Task<TestDecoratorGeneration.ItemListResponseDto> GetListOfItems()
+		{
+			var ret = default(TestDecoratorGeneration.ItemListResponseDto);
+			try
+			{
+				var res = await OnEntryAsync("GetListOfItems", new object[] { });
+				if (!res.Success)
+				{
+					ret = new TestDecoratorGeneration.ItemListResponseDto()
+					{
+						PostprocessingType = res.PostprocessingType,
+						Context = SerializationService.Serialize(res.Context, SerializationOptions)
+					};
+				}
+				else
+				{
+					ret = await DecoratedComponent.GetListOfItems();
+
+					if (res.PostprocessingType.HasValue)
+					{
+						var warning = new YumaPos.Shared.API.ResponseDtos.ResponseErrorDto()
+						{
+							Code = res.PostprocessingType,
+							Message = res.AdditionalInformation?.ToString(),
+							Details = SerializationService.Serialize(res.Context, SerializationOptions),
+						};
+						ret.Warnings = new System.Collections.Generic.List<YumaPos.Shared.API.ResponseDtos.ResponseErrorDto>() { warning };
+					}
+
+				}
 				await OnExitAsync(ret);
 			}
 			catch (System.Exception e)
