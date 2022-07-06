@@ -160,9 +160,28 @@ namespace WCFGenerator.DecoratorGeneration.Core
             }
             var invokeDecoratedMethod = (returnValue ? "ret = " : "") + (methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");";
 
+            // Map warnings
+            if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
+            {
+                invokeDecoratedMethod += "\n\t";
+                invokeDecoratedMethod += "\n\t" +"if (res.PostprocessingType.HasValue)";
+                invokeDecoratedMethod += "\n\t" +"{";
+                invokeDecoratedMethod += "\n\t" + "var warning = new YumaPos.Shared.API.ResponseDtos.ResponseErrorDto()";
+                invokeDecoratedMethod += "\n\t" + "{";
+                invokeDecoratedMethod += "\n\t" + "Code = res.PostprocessingType,";
+                invokeDecoratedMethod += "\n\t" + "Message = res.AdditionalInformation?.ToString(),";
+                invokeDecoratedMethod += "\n\t" + "Details = SerializationService.Serialize(res.Context, SerializationOptions),";
+                invokeDecoratedMethod += "\n\t" + "};";
+                invokeDecoratedMethod += "\n\t"+ "ret.Warnings = new System.Collections.Generic.List<YumaPos.Shared.API.ResponseDtos.ResponseErrorDto>(){warning};";
+                invokeDecoratedMethod+="\n\t"+"}";
+                invokeDecoratedMethod+="\n\t";
+            }
+
             if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
                 invokeDecoratedMethod = methodInfo.ReturnValueWrap.Replace("{replace}", invokeDecoratedMethod);
             sb.AppendLine(invokeDecoratedMethod);
+
+            
 
             // OnExit method
             if (DecoratorInfo.OnExitExist)

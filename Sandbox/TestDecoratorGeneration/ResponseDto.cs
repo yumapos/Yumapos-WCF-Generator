@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
+using YumaPos.Shared.API.ResponseDtos;
 
 namespace TestDecoratorGeneration
 {
@@ -10,7 +12,10 @@ namespace TestDecoratorGeneration
 
         [DataMember]
         public CommandPostprocessingType? PostprocessingType { get; set; }
+        public List<ResponseErrorDto> Warnings { get; internal set; }
     }
+
+
 
     public enum CommandPostprocessingType
     {
@@ -64,4 +69,6 @@ namespace TestDecoratorGeneration
 
         #endregion
     }
+
+
 }
