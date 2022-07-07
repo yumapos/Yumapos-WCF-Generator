@@ -93,7 +93,7 @@ namespace TestRepositoryGeneration
 		*/
 		public Guid Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
-			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+			tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = tax.TaxVersionId == Guid.Empty ? Guid.NewGuid() : tax.TaxVersionId;
 			tax.TaxId = 0;
@@ -104,7 +104,7 @@ namespace TestRepositoryGeneration
 		}
 		public async Task<Guid> InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
-			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+			tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = tax.TaxVersionId == Guid.Empty ? Guid.NewGuid() : tax.TaxVersionId;
 			tax.TaxId = 0;
@@ -120,7 +120,7 @@ namespace TestRepositoryGeneration
 		{
 		foreach (var tax in taxList)
 		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		tax.TaxVersionId = Guid.NewGuid();
 		tax.TaxId = 0;
@@ -135,7 +135,7 @@ namespace TestRepositoryGeneration
 		{
 		foreach (var tax in taxList)
 		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		tax.TaxVersionId = Guid.NewGuid();
 		tax.TaxId = 0;
@@ -150,7 +150,7 @@ namespace TestRepositoryGeneration
 		{
 		foreach (var tax in taxList)
 		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		tax.TaxVersionId = Guid.NewGuid();
 		tax.TaxId = 0;
@@ -165,7 +165,7 @@ namespace TestRepositoryGeneration
 		{
 		foreach (var tax in taxList)
 		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		tax.TaxVersionId = Guid.NewGuid();
 		tax.TaxId = 0;
@@ -179,7 +179,7 @@ namespace TestRepositoryGeneration
 		*/
 		public void UpdateByTaxId(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
-			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+			tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = Guid.NewGuid();
 			_taxVersionRepository.Insert(tax);
@@ -188,7 +188,7 @@ namespace TestRepositoryGeneration
 		}
 		public async Task UpdateByTaxIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.Tax tax)
 		{
-			tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+			tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			tax.TaxVersionId = Guid.NewGuid();
 			await _taxVersionRepository.InsertAsync(tax);
@@ -202,7 +202,7 @@ namespace TestRepositoryGeneration
 		{
 		foreach (var tax in taxList)
 		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		tax.TaxVersionId = Guid.NewGuid();
 		tax.TaxId = 0;
@@ -216,7 +216,7 @@ namespace TestRepositoryGeneration
 		{
 		foreach (var tax in taxList)
 		{
-		tax.Modified = _dateTimeService.CurrentDateTimeOffset;
+		tax.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		tax.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		tax.TaxVersionId = Guid.NewGuid();
 		tax.TaxId = 0;
@@ -243,7 +243,7 @@ namespace TestRepositoryGeneration
 			_menuItems2TaxesCacheRepository.RemoveByTaxId(tax.TaxId);
 			foreach (var mt in listOfMenuItems2Taxes)
 			{
-				mt.Modified = _dateTimeService.CurrentDateTimeOffset;
+				mt.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				mt.ModifiedBy = tax.ModifiedBy;
 				_menuItems2TaxesCacheRepository.Insert(mt);
 				_menuItems2TaxesVersionRepository.Insert(mt);
