@@ -114,7 +114,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		public Guid Insert(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+			menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = menuItem.MenuItemVersionId == Guid.Empty ? Guid.NewGuid() : menuItem.MenuItemVersionId;
 			if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -128,7 +128,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 		public async Task<Guid> InsertAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+			menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = menuItem.MenuItemVersionId == Guid.Empty ? Guid.NewGuid() : menuItem.MenuItemVersionId;
 			if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -146,7 +146,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			foreach (var menuItem in menuItemList)
 			{
-				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 				menuItem.MenuItemVersionId = Guid.NewGuid();
 				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -164,7 +164,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			foreach (var menuItem in menuItemList)
 			{
-				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 				menuItem.MenuItemVersionId = Guid.NewGuid();
 				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -182,7 +182,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			foreach (var menuItem in menuItemList)
 			{
-				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 				menuItem.MenuItemVersionId = Guid.NewGuid();
 				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -200,7 +200,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			foreach (var menuItem in menuItemList)
 			{
-				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 				menuItem.MenuItemVersionId = Guid.NewGuid();
 				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -216,7 +216,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+			menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
 			_menuItemVersionRepository.Insert(menuItem);
@@ -225,7 +225,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 		public async Task UpdateByMenuItemIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-			menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+			menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 			menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 			menuItem.MenuItemVersionId = Guid.NewGuid();
 			await _menuItemVersionRepository.InsertAsync(menuItem);
@@ -235,7 +235,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		/*
 		public void UpdateByMenuCategoryId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-		menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+		menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		menuItem.MenuItemVersionId = Guid.NewGuid();
 		_menuItemVersionRepository.Insert(menuItem);
@@ -244,7 +244,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		}
 		public async Task UpdateByMenuCategoryIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-		menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+		menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		menuItem.MenuItemVersionId = Guid.NewGuid();
 		await _menuItemVersionRepository.InsertAsync(menuItem);
@@ -258,7 +258,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			foreach (var menuItem in menuItemList)
 			{
-				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 				menuItem.MenuItemVersionId = Guid.NewGuid();
 				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -275,7 +275,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 			foreach (var menuItem in menuItemList)
 			{
-				menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+				menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 				menuItem.MenuItemVersionId = Guid.NewGuid();
 				if (menuItem.MenuItemId == null || menuItem.MenuItemId == Guid.Empty)
@@ -293,7 +293,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 		foreach (var menuItem in menuItemList)
 		{
-		menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+		menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		menuItem.MenuItemVersionId = Guid.NewGuid();
 		if(menuItem.MenuItemId == null || menuItem.MenuItemId== Guid.Empty )
@@ -310,7 +310,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		{
 		foreach (var menuItem in menuItemList)
 		{
-		menuItem.Modified = _dateTimeService.CurrentDateTimeOffset;
+		menuItem.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 		menuItem.ModifiedBy = _dataAccessController.EmployeeId.Value;
 		menuItem.MenuItemVersionId = Guid.NewGuid();
 		if(menuItem.MenuItemId == null || menuItem.MenuItemId== Guid.Empty )
@@ -340,7 +340,7 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			_menuItems2TaxesCacheRepository.RemoveByMenuItemId(menuItem.MenuItemId);
 			foreach (var mt in listOfMenuItems2Taxes)
 			{
-				mt.Modified = _dateTimeService.CurrentDateTimeOffset;
+				mt.Modified = _dateTimeService.CurrentDateTimeUtcOffset;
 				mt.ModifiedBy = menuItem.ModifiedBy;
 				_menuItems2TaxesCacheRepository.Insert(mt);
 				_menuItems2TaxesVersionRepository.Insert(mt);
