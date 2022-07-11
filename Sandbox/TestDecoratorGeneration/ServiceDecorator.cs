@@ -10,8 +10,9 @@ namespace TestDecoratorGeneration
         {
         }
 
-        public async Task Open()
+        public async Task<ResponseDto> Open()
         {
+            return new ResponseDto();
         }
 
         public async Task<ResponseDto> AddItem(Guid id, string name)
@@ -19,9 +20,9 @@ namespace TestDecoratorGeneration
             return new ResponseDto();
         }
 
-        public async Task<IEnumerable<ItemDto>> GetItems()
+        public async Task<ItemListResponseDto> GetListOfItems()
         {
-            return new List<ItemDto>();
+            return new ItemListResponseDto();
         }
     }
 }
