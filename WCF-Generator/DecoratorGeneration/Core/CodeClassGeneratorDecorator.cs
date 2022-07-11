@@ -149,7 +149,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
                 if (!string.IsNullOrEmpty(methodInfo.OnEntryResultMap))
                 {
-                    sb.Append("var res = ");
+                    sb.Append("var entryResult = ");
                     sb.Append(onEntryInvoke);
                     sb.AppendLine(methodInfo.OnEntryResultMap);
                 }
@@ -164,13 +164,13 @@ namespace WCFGenerator.DecoratorGeneration.Core
             if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
             {
                 invokeDecoratedMethod += "\n\t";
-                invokeDecoratedMethod += "\n\t" +"if (res.PostprocessingType.HasValue)";
+                invokeDecoratedMethod += "\n\t" + "if (entryResult.PostprocessingType.HasValue)";
                 invokeDecoratedMethod += "\n\t" +"{";
                 invokeDecoratedMethod += "\n\t" + "var warning = new YumaPos.Shared.API.ResponseDtos.ResponseErrorDto()";
                 invokeDecoratedMethod += "\n\t" + "{";
-                invokeDecoratedMethod += "\n\t" + "Code = res.PostprocessingType,";
-                invokeDecoratedMethod += "\n\t" + "Message = res.AdditionalInformation?.ToString(),";
-                invokeDecoratedMethod += "\n\t" + "Details = SerializationService.Serialize(res.Context, SerializationOptions),";
+                invokeDecoratedMethod += "\n\t" + "Code = entryResult.PostprocessingType,";
+                invokeDecoratedMethod += "\n\t" + "Message = entryResult.AdditionalInformation?.ToString(),";
+                invokeDecoratedMethod += "\n\t" + "Details = SerializationService.Serialize(entryResult.Context, SerializationOptions),";
                 invokeDecoratedMethod += "\n\t" + "};";
                 invokeDecoratedMethod += "\n\t"+ "ret.Warnings = new System.Collections.Generic.List<YumaPos.Shared.API.ResponseDtos.ResponseErrorDto>(){warning};";
                 invokeDecoratedMethod+="\n\t"+"}";

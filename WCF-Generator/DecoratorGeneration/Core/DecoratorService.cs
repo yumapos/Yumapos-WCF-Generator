@@ -117,7 +117,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
                     {
                         var fullName = retTask ? method.GetTaskRetunTypeName() : method.ReturnTypeName;
 
-                        method.OnEntryResultMap = "\r\nif (!res.Success)\r\n{\r\nret = new " + fullName + "()\r\n{\r\nPostprocessingType = res.PostprocessingType,\r\nContext = SerializationService.Serialize(res.Context, SerializationOptions)\r\n};}";
+                        method.OnEntryResultMap = "\r\nif (!entryResult.Success)\r\n{\r\nret = new " + fullName + "()\r\n{\r\nPostprocessingType = entryResult.PostprocessingType,\r\nContext = SerializationService.Serialize(entryResult.Context, SerializationOptions)\r\n};}";
                         method.ReturnValueWrap = "else\r\n{{replace}\r\n}";
                     }
 
