@@ -11,6 +11,7 @@ namespace TestRepositoryGeneration.RepositoryInterfaces
         Task InsertManyAsync(IEnumerable<Store> stores);
         Task UpdateByStoreIdAsync(Store store);
         Task UpdateManyByStoreIdAsync(IEnumerable<Store> stores);
+        Task UpdateManyByStoreIdSplitByTransactionsAsync(IEnumerable<Store> stores);
         Task RemoveByStoreIdAsync(Guid storeId);
     }
 

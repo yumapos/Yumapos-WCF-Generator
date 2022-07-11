@@ -28,8 +28,6 @@ namespace blah
 			var itemDto = new TestMappingGenerationDtos.AddressDto();
 			itemDto.Id = item.Id;
 			itemDto.Country = item.Country.HasValue ? item.Country.Value : default(TestMappingGeneration.Enums.CountryISOCodes2);
-			itemDto.City = item.City;
-			itemDto.State = item.State;
 			itemDto.Street = item.Street;
 			itemDto.Building = item.Building;
 			itemDto.ZipCode = item.ZipCode;
@@ -40,6 +38,8 @@ namespace blah
 			itemDto.SomeTimeOffset = item.SomeTimeOffset.UtcDateTime;
 			itemDto.SomeTimeNullable = item.SomeTimeNullable.HasValue ? new DateTimeOffset(item.SomeTimeNullable.Value, new TimeSpan(0)) : default(System.DateTimeOffset);
 			itemDto.SomeTimeOffsetNullable = item.SomeTimeOffsetNullable.UtcDateTime;
+			itemDto.City = item.City;
+			itemDto.State = item.State;
 
 			return itemDto;
 		}
@@ -52,8 +52,6 @@ namespace blah
 			var item = new TestMappingGeneration.DataObjects.Address();
 			item.Id = itemDto.Id;
 			item.Country = itemDto.Country;
-			item.City = itemDto.City;
-			item.State = itemDto.State;
 			item.Street = itemDto.Street;
 			item.Building = itemDto.Building;
 			item.ZipCode = itemDto.ZipCode;
@@ -64,6 +62,8 @@ namespace blah
 			item.SomeTimeOffset = new DateTimeOffset(itemDto.SomeTimeOffset, new TimeSpan(0));
 			item.SomeTimeNullable = itemDto.SomeTimeNullable.UtcDateTime;
 			item.SomeTimeOffsetNullable = itemDto.SomeTimeOffsetNullable.HasValue ? new DateTimeOffset(itemDto.SomeTimeOffsetNullable.Value, new TimeSpan(0)) : default(System.DateTimeOffset);
+			item.City = itemDto.City;
+			item.State = itemDto.State;
 
 			return item;
 		}
