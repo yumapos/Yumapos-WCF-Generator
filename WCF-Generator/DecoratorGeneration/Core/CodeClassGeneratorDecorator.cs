@@ -149,7 +149,7 @@ namespace WCFGenerator.DecoratorGeneration.Core
 
                 if (!string.IsNullOrEmpty(methodInfo.OnEntryResultMap))
                 {
-                    sb.Append("var res = ");
+                    sb.Append("var entryResult = ");
                     sb.Append(onEntryInvoke);
                     sb.AppendLine(methodInfo.OnEntryResultMap);
                 }
@@ -160,9 +160,28 @@ namespace WCFGenerator.DecoratorGeneration.Core
             }
             var invokeDecoratedMethod = (returnValue ? "ret = " : "") + (methodInfo.IsAsync ? "await " : " ") + _decoratedComponent + "." + methodInfo.Name + "(" + methodParameterNames + ");";
 
+            // Map warnings
+            if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
+            {
+                invokeDecoratedMethod += "\n\t";
+                invokeDecoratedMethod += "\n\t" + "if (entryResult.PostprocessingType.HasValue)";
+                invokeDecoratedMethod += "\n\t" +"{";
+                invokeDecoratedMethod += "\n\t" + "var warning = new YumaPos.Shared.API.ResponseDtos.ResponseErrorDto()";
+                invokeDecoratedMethod += "\n\t" + "{";
+                invokeDecoratedMethod += "\n\t" + "Code = entryResult.PostprocessingType,";
+                invokeDecoratedMethod += "\n\t" + "Message = entryResult.AdditionalInformation?.ToString(),";
+                invokeDecoratedMethod += "\n\t" + "Details = SerializationService.Serialize(entryResult.Context, SerializationOptions),";
+                invokeDecoratedMethod += "\n\t" + "};";
+                invokeDecoratedMethod += "\n\t"+ "ret.Warnings = new System.Collections.Generic.List<YumaPos.Shared.API.ResponseDtos.ResponseErrorDto>(){warning};";
+                invokeDecoratedMethod+="\n\t"+"}";
+                invokeDecoratedMethod+="\n\t";
+            }
+
             if (!string.IsNullOrEmpty(methodInfo.ReturnValueWrap))
                 invokeDecoratedMethod = methodInfo.ReturnValueWrap.Replace("{replace}", invokeDecoratedMethod);
             sb.AppendLine(invokeDecoratedMethod);
+
+            
 
             // OnExit method
             if (DecoratorInfo.OnExitExist)

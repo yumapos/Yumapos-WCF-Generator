@@ -4,7 +4,7 @@ using TestRepositoryGeneration.Infrastructure;
 
 namespace TestRepositoryGeneration.DataObjects.BaseRepositories
 {
-    [DataAccess(IsDeleted = false, HasSyncState = true)]
+    [DataAccess(IsDeleted = false, HasSyncState = true, FilterKey1 = "StoreId")]
     public class Store
     {
         [Key]

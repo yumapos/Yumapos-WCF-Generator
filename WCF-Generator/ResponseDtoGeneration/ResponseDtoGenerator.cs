@@ -69,6 +69,8 @@ using YumaPos.Shared.API.ResponseDtos;
             [DataMember]
             public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
             [DataMember]
+            public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
+            [DataMember]
             public virtual ResponseServerInfoDto ServerInfo { get; set; }
             [DataMember]
             public string Context { get; set; }
@@ -83,6 +85,8 @@ using YumaPos.Shared.API.ResponseDtos;
             public IEnumerable<" + className + @"> Value{get;set;}
             [DataMember]
             public virtual IEnumerable<ResponseErrorDto> Errors { get; set; }
+            [DataMember]
+            public virtual IEnumerable<ResponseErrorDto> Warnings { get; set; }
             [DataMember]
             public virtual ResponseServerInfoDto ServerInfo { get; set; }
             [DataMember]

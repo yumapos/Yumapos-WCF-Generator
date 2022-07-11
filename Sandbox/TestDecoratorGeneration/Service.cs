@@ -15,6 +15,10 @@ namespace TestDecoratorGeneration
             DecoratedComponent = new ServiceDecorator();
         }
 
+        protected ISerializationService SerializationService;
+
+        protected SerializationOptions SerializationOptions;
+
         public void Dispose(){}
 
         private async Task<ICommandExecutionResult> OnEntryAsync(string methodName, object[] args)
@@ -49,5 +53,20 @@ namespace TestDecoratorGeneration
         private void OnFinally()
         {
         }
+    }
+
+    [Flags]
+    public enum SerializationOptions
+    {
+        None = 0,
+        WithTypes = 1,
+        PreserveObjectReferences = 2
+    }
+
+    public interface ISerializationService
+    {
+        string Serialize(object toSerialize, SerializationOptions options);
+
+        T Deserialize<T>(string str, SerializationOptions options);
     }
 }
