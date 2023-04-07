@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 			 return clientContainer; 
 		 } 
 
-		 public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, string name)
+		 public async System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id id, string name name)
 		 {
 			 var channelContainer = CreateChannel<WcfServiceClient> ();
 			 var scope = new FlowOperationContextScope(channelContainer.Client.InnerChannel);
