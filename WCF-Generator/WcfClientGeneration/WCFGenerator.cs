@@ -219,7 +219,7 @@ namespace WCFGenerator.WcfClientGeneration
                 {
                     parameterTypeString = parameterTypeString.Substring(parameterTypeString.IndexOf("<") + 1).Replace(">", "[]");
                 }
-                var param = parameterTypeString + " " + symbol.Name;
+                var param = parameterTypeString /* bug: duplicates params + " " + symbol.Name */;
                 parameters += param;
 
                 if (count < size)

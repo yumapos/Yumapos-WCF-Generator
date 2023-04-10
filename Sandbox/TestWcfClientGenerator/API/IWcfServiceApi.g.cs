@@ -16,6 +16,6 @@ using System.Threading.Tasks;
  { 
 	 public partial interface IWcfServiceApi
 	 { 
-		 System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id id, string name name);
+		 System.Threading.Tasks.Task<TestDecoratorGeneration.ResponseDto> AddItem(System.Guid id, string name);
 		 System.Threading.Tasks.Task<TestDecoratorGeneration.ItemDto> GetItems();
 	 } }
