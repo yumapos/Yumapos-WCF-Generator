@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Globalization;
 using TestRepositoryGeneration.RepositoryInterfaces;
-using TestRepositoryGeneration.DataObjects.BaseRepositories;
+
 
 namespace TestRepositoryGeneration
 {
@@ -59,32 +59,6 @@ namespace TestRepositoryGeneration
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters));
 		return result.ToList();
 		}
-
-		*/
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store> GetByStoreId(System.Guid storeId, bool? isDeleted = false)
-		{
-		object parameters = new {storeId, isDeleted};
-		var sql = SelectByQuery + WhereQueryByStoreId;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters);
-		return result.ToList();
-		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>> GetByStoreIdAsync(System.Guid storeId, bool? isDeleted = false)
-		{
-		object parameters = new {storeId, isDeleted};
-		var sql = SelectByQuery + WhereQueryByStoreId;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters));
-		return result.ToList();
-		}
-
 
 		*/
 		/*
@@ -417,13 +391,8 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters);
 		}
 
-        public Task UpdateManyByStoreIdAsync(IEnumerable<Store> stores)
-        {
-            throw new NotImplementedException();
-        }
 
-
-        /*
+		/*
 		public void InsertOrUpdate(TestRepositoryGeneration.DataObjects.BaseRepositories.Store store)
 		{
 		DataAccessService.ExecuteScalar(InsertOrUpdateQuery,store);
@@ -435,5 +404,5 @@ namespace TestRepositoryGeneration
 
 		*/
 
-    }
+	}
 }
