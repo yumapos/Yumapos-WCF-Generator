@@ -108,7 +108,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append(" namespace " + prjName + "\r\n { \r\n");
             sb.Append("\t public partial class " + svcName + "Api\r\n\t { \r\n");
 
-            sb.Append("\t\t private ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\r\n\t\t { \r\n");
+            sb.Append("\t\t protected virtual ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\r\n\t\t { \r\n");
             sb.Append("\t\t\t var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); \r\n");
             sb.Append("\t\t\t return clientContainer; \r\n\t\t } \r\n\r\n");
 
