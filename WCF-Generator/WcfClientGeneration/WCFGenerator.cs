@@ -108,7 +108,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append(" namespace " + prjName + "\r\n { \r\n");
             sb.Append("\t public partial class " + svcName + "Api\r\n\t { \r\n");
 
-            sb.Append("\t\t private ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()\r\n\t\t { \r\n");
+            sb.Append("\t\t protected virtual ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, IClientBase, new()\r\n\t\t { \r\n");
             sb.Append("\t\t\t var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); \r\n");
             sb.Append("\t\t\t return clientContainer; \r\n\t\t } \r\n\r\n");
 
@@ -246,6 +246,20 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("\t } \r\n}");
 
             files.Add(new SrcFile("IProperter.g.cs", "ServiceReferences", sb.ToString()));
+            sb.Clear();
+
+            #endregion
+
+            #region Create IClientBase 
+
+            sb.AppendLine("using System.ServiceModel.Description;").AppendLine();
+            sb.Append("namespace " + defaultNamespace + " \r\n{");
+            sb.Append("\r\n\tpublic interface IClientBase \r\n\t{\r\n");
+            sb.Append("\t\tServiceEndpoint Endpoint { get; }\r\n");
+            sb.Append("\t}\r\n}");
+
+            files.Add(new SrcFile("IClientBase.g.cs", "ServiceReferences", sb.ToString()));
+            sb.Clear();
 
             #endregion
 
@@ -284,7 +298,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append("using System.ServiceModel;" + " \r\n\r\n");
 
             sb.Append("namespace " + defaultNamespace + "\r\n");
-            sb.Append("{\r\n\t public static class ClientFactory<TClient> where TClient : class, IProperter , new()\r\n \t { \r\n");
+            sb.Append("{\r\n\t public static class ClientFactory<TClient> where TClient : class, IProperter, IClientBase, new()\r\n \t { \r\n");
             sb.Append("\t\t private static ConcurrentDictionary<string, ConcurrentBag<TClient>> FreeChannelsChannels { get; set; } \r\n");
             sb.Append("\t\t private static ConcurrentDictionary<int, ChannelContainer<TClient>> UsedChannels { get; set; } \r\n\r\n");
 
@@ -609,7 +623,7 @@ namespace WCFGenerator.WcfClientGeneration
             sb.Append(string.Join("; \r\n", _allUsings) + "; \r\n");
 
             sb.Append(" namespace " + projectName + "\r\n { \r\n");
-            sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter\r\n ");
+            sb.Append("\t public partial class " + channelName + " : System.ServiceModel.ClientBase<" + svcName + "Client>, " + svcName + "Client, IProperter, IClientBase\r\n ");
             sb.Append("\t {");
 
             sb.Append(GeneratePropertiesAndConstructors(svcName));
@@ -931,7 +945,6 @@ namespace WCFGenerator.WcfClientGeneration
 
             _serviceUsings = await GetUsings(svc, methodDeclarationSyntaxs, defaultUsings);
             _allUsings.AddRange(_serviceUsings.Except(_allUsings));
-
 
             var methods = new List<EndPoint>();
             methods.AddRange(methodDeclarationSyntaxs.Select(sm => GetEndPoint(iService, proj, sm)));

@@ -369,7 +369,17 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
                 // Filter keys
                 if (FilterInfos.Any())
                 {
-                    possibleKeyMethods.AddRange(FilterInfos);
+                    var filterInfos = FilterInfos;
+                    if (!string.IsNullOrEmpty(PrimaryKeyName))
+                    {
+                        filterInfos = filterInfos.Where(f => f.Key != PrimaryKeyName).ToList();
+                    }
+
+                    if (!string.IsNullOrEmpty(VersionKeyName))
+                    {
+                        filterInfos = filterInfos.Where(f => f.Key != VersionKeyName).ToList();
+                    }
+                    possibleKeyMethods.AddRange(filterInfos);
                 }
                 
                 return possibleKeyMethods;

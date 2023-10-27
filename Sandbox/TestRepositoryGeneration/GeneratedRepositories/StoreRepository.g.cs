@@ -28,7 +28,6 @@ namespace TestRepositoryGeneration
 		private const string InsertOrUpdateQuery = @"UPDATE [Stores] SET [Stores].[Name] = @Name,[Stores].[SyncState] = '0' FROM [Stores]  WHERE [Stores].[StoreId] = @StoreId{andTenantId:[Stores]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [Stores]([Stores].[StoreId],[Stores].[Name],[Stores].[SyncState],[Stores].[TenantId]) OUTPUT INSERTED.StoreId VALUES(@StoreId,@Name,@SyncState,@TenantId)  END";
 		private const string UpdateManyByStoreIdQueryTemplate = @"UPDATE [Stores] SET Name = @Name{0},[Stores].[SyncState] = '0' WHERE [Stores].[StoreId] = @StoreId{0}{{andTenantId:[Stores]}}";
 		private const string WhereQueryByStoreId = "WHERE [Stores].[StoreId] = @StoreId{andTenantId:[Stores]} ";
-		private const string WhereQueryByStoreId = "WHERE [Stores].[StoreId] = @StoreId{andTenantId:[Stores]} ";
 		private const string AndWithIsDeletedFilter = "AND [Stores].[IsDeleted] = @IsDeleted ";
 		private const string WhereWithIsDeletedFilter = "WHERE [Stores].[IsDeleted] = @IsDeleted{andTenantId:[Stores]} ";
 		private const string InsertManyQueryTemplate = @"INSERT INTO [Stores]([Stores].[StoreId],[Stores].[Name],[Stores].[SyncState],[Stores].[TenantId]) OUTPUT INSERTED.StoreId VALUES {0}";
@@ -60,32 +59,6 @@ namespace TestRepositoryGeneration
 		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters));
 		return result.ToList();
 		}
-
-		*/
-		/*
-		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store> GetByStoreId(System.Guid storeId, bool? isDeleted = false)
-		{
-		object parameters = new {storeId, isDeleted};
-		var sql = SelectByQuery + WhereQueryByStoreId;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters);
-		return result.ToList();
-		}
-		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>> GetByStoreIdAsync(System.Guid storeId, bool? isDeleted = false)
-		{
-		object parameters = new {storeId, isDeleted};
-		var sql = SelectByQuery + WhereQueryByStoreId;
-		if (isDeleted.HasValue)
-		{
-		sql = sql + AndWithIsDeletedFilter;
-		}
-		var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters));
-		return result.ToList();
-		}
-
 
 		*/
 		/*
@@ -307,17 +280,6 @@ namespace TestRepositoryGeneration
 			await DataAccessService.PersistObjectAsync(store, sql);
 		}
 
-		public void UpdateByStoreId(TestRepositoryGeneration.DataObjects.BaseRepositories.Store store)
-		{
-			var sql = UpdateQueryBy + WhereQueryByStoreId;
-			DataAccessService.PersistObject(store, sql);
-		}
-		public async Task UpdateByStoreIdAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Store store)
-		{
-			var sql = UpdateQueryBy + WhereQueryByStoreId;
-			await DataAccessService.PersistObjectAsync(store, sql);
-		}
-
 
 
 		public void UpdateManyByStoreIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store> storeList)
@@ -403,115 +365,6 @@ namespace TestRepositoryGeneration
 
 			await Task.Delay(10);
 
-		}
-
-		public void UpdateManyByStoreIdSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store> storeList)
-		{
-			if (storeList == null) throw new ArgumentException(nameof(storeList));
-
-			if (!storeList.Any()) return;
-
-			var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 2;
-			var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows
-																	? maxUpdateManyRowsWithParameters
-																	: MaxUpdateManyRows;
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = storeList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxUpdateManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION");
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-				foreach (var item in items)
-				{
-					var store = item.Value;
-					var index = item.Index;
-					parameters.Add($"StoreId{index}", store.StoreId);
-					parameters.Add($"Name{index}", store.Name);
-					query.AppendFormat($"{UpdateManyByStoreIdQueryTemplate};", index, store.SyncState ? 1 : 0);
-				}
-				query.AppendLine("COMMIT TRANSACTION");
-				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Store));
-				DataAccessService.Execute(fullSqlStatement.ToString(), parameters);
-				parameters.Clear();
-				query.Clear();
-			}
-
-
-		}
-
-		public async Task UpdateManyByStoreIdSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Store> storeList)
-		{
-			if (storeList == null) throw new ArgumentException(nameof(storeList));
-
-			if (!storeList.Any()) return;
-
-			var maxUpdateManyRowsWithParameters = MaxRepositoryParams / 2;
-			var maxUpdateManyRows = maxUpdateManyRowsWithParameters < MaxUpdateManyRows
-																	? maxUpdateManyRowsWithParameters
-																	: MaxUpdateManyRows;
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = storeList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxUpdateManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			await Task.Delay(10);
-
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION");
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-				foreach (var item in items)
-				{
-					var store = item.Value;
-					var index = item.Index;
-					parameters.Add($"StoreId{index}", store.StoreId);
-					parameters.Add($"Name{index}", store.Name);
-					query.AppendFormat($"{UpdateManyByStoreIdQueryTemplate};", index, store.SyncState ? 1 : 0);
-				}
-				query.AppendLine("COMMIT TRANSACTION");
-				await Task.Delay(10);
-				var fullSqlStatement = DataAccessService.GenerateFullSqlStatement(query.ToString().Replace("'NULL'", "NULL"), typeof(TestRepositoryGeneration.DataObjects.BaseRepositories.Store));
-				await DataAccessService.ExecuteAsync(fullSqlStatement.ToString(), parameters);
-				parameters.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
-
-		}
-
-		public void RemoveByStoreId(TestRepositoryGeneration.DataObjects.BaseRepositories.Store store)
-		{
-			var sql = DeleteQueryBy + WhereQueryByStoreId;
-			DataAccessService.PersistObject(store, sql);
-		}
-		public async Task RemoveByStoreIdAsync(TestRepositoryGeneration.DataObjects.BaseRepositories.Store store)
-		{
-			var sql = DeleteQueryBy + WhereQueryByStoreId;
-			await DataAccessService.PersistObjectAsync(store, sql);
-		}
-
-		public void RemoveByStoreId(System.Guid storeId)
-		{
-			object parameters = new { storeId };
-			var sql = DeleteQueryBy + WhereQueryByStoreId;
-			DataAccessService.PersistObject<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters);
-		}
-		public async Task RemoveByStoreIdAsync(System.Guid storeId)
-		{
-			object parameters = new { storeId };
-			var sql = DeleteQueryBy + WhereQueryByStoreId;
-			await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.Store>(sql, parameters);
 		}
 
 		public void RemoveByStoreId(TestRepositoryGeneration.DataObjects.BaseRepositories.Store store)
