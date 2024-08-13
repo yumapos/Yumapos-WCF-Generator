@@ -30,9 +30,9 @@ namespace WCFGenerator.ResponseDtoGeneration
             var analyser = new ResponseDtoGenerationAnalyser(_configuration, _generatorWorkspace);
             await analyser.Run();
             string code;
-            if (_configuration.UseResponseDtoAsBaseClass)
+            if (!string.IsNullOrEmpty(_configuration.BaseResponseDtoClass))
             {
-                code = GetFullCodeUsingResponseDtoAsBaseClass(analyser.Classes);
+                code = GetFullCodeUsingBaseClass(analyser.Classes, _configuration.BaseResponseDtoClass);
             }
             else
             {
@@ -109,7 +109,7 @@ using YumaPos.Shared.API.ResponseDtos;
             return sb.ToString();
         }
 
-        private string GetFullCodeUsingResponseDtoAsBaseClass(ClassCompilerInfo[] classes)
+        private string GetFullCodeUsingBaseClass(ClassCompilerInfo[] classes, string baseClass)
         {
             var sb = new StringBuilder();
             sb.AppendLine(@"
@@ -136,14 +136,14 @@ using YumaPos.Shared.API.ResponseDtos;
                     nameWithoutDto = className.Substring(0, className.Length - 3);
                 }
                 sb.AppendLine(@"[DataContract]
-        public class " + nameWithoutDto + @"ResponseDto : ResponseDto
+        public class " + nameWithoutDto + "ResponseDto : " + baseClass + @"
         {
             [DataMember]
             public " + className + @" Value { get; set; }
         }
 
         [DataContract]
-        public class " + nameWithoutDto + @"ListResponseDto : ResponseDto
+        public class " + nameWithoutDto + @"ListResponseDto : " + baseClass + @"
         {
             [DataMember]
             public IEnumerable<" + className + @"> Value{get;set;}
