@@ -72,7 +72,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             foreach (MappingSourceProject project in _configuration.DtoProjects)
             {
                 classesWithMapAttributeDto.AddRange(
-                    await _solution.GetAllClasses(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
+                    await _solution.GetAllClasses(project.ProjectName, _configuration.DTOSkipAttribute, _configuration.MapAttribute));
             }
 
             var listOfSimilarClasses = new List<MapDtoAndDo>();
@@ -205,6 +205,17 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                             var FunctionToDto = attrDto?.GetAttributePropertyValue("FunctionTo");
                             var FunctionTo = attrDo?.GetAttributePropertyValue("FunctionTo");
 
+                            if (_configuration.UseMappingFunctionOnlyFrom == "Dto")
+                            {
+                                FunctionFrom = null;
+                                FunctionTo = null;
+                            }
+                            else if (_configuration.UseMappingFunctionOnlyFrom == "Do")
+                            {
+                                FunctionFromDto = null;
+                                FunctionToDto = null;
+                            }
+
                             var FromDtoFunction = "";
                             var ToDtoFunction = "";
 
@@ -323,6 +334,18 @@ namespace WCFGenerator.MappingsGenerator.Analysis
                                             {
                                                 itemDoValue += ".UtcDateTime";
                                                 itemDtoValue = $"new DateTimeOffset({itemDtoValue}, new TimeSpan(0))";
+                                            }
+
+                                            if (doType.ToString() == "System.DateTime?" && dtoType.ToString() == "System.DateTimeOffset?")
+                                            {
+                                                itemDoValue = $"{itemDoValue}.HasValue ? new DateTimeOffset({itemDoValue}.Value, TimeSpan.Zero) : null";
+                                                itemDtoValue += "?.UtcDateTime";
+                                            }
+
+                                            if (doType.ToString() == "System.DateTimeOffset?" && dtoType.ToString() == "System.DateTime?")
+                                            {
+                                                itemDoValue += "?.UtcDateTime";
+                                                itemDtoValue = $"{itemDtoValue}.HasValue ? new DateTimeOffset({itemDtoValue}.Value, TimeSpan.Zero) : null";
                                             }
 
                                             if (dtoCodeProperty.Type.GetFullName().Contains("Nullable") && !codeProperty.Type.GetFullName().Contains("Nullable"))

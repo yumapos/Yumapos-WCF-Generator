@@ -68,7 +68,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
         {
             try
             {
-                if (codeproperty.AccessorList.Accessors.FirstOrDefault(x => x.Kind() == SyntaxKind.SetAccessorDeclaration) != null)
+                if (codeproperty.AccessorList?.Accessors.FirstOrDefault(x => x.Kind() == SyntaxKind.SetAccessorDeclaration) != null)
                 {
                     return true;
                 }
@@ -85,7 +85,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
         {
             try
             {
-                if (codeproperty.AccessorList.Accessors.FirstOrDefault(x => x.Kind() == SyntaxKind.GetAccessorDeclaration) != null)
+                if (codeproperty.AccessorList?.Accessors.FirstOrDefault(x => x.Kind() == SyntaxKind.GetAccessorDeclaration) != null)
                 {
                     return true;
                 }

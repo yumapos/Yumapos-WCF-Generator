@@ -120,6 +120,16 @@ namespace WCFGenerator.MappingsGeneration.Configuration
             get { return ((bool)(base["dtoSkipAttribute"])); }
         }
 
+
+        /// <summary>
+        /// Possible values: "Do", "Dto"
+        /// </summary>
+        [ConfigurationProperty("useMappingFunctionOnlyFrom", DefaultValue = null, IsRequired = false)]
+        public string UseMappingFunctionOnlyFrom
+        {
+            get { return ((string)(base["useMappingFunctionOnlyFrom"])); }
+        }
+
         [ConfigurationProperty("prefixStrings")]
         public PrefixStrings PrefixStrings
         {

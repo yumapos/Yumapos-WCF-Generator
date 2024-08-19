@@ -68,6 +68,13 @@ namespace WCFGenerator.ResponseDtoGeneration.Configuration
         {
             get { return ((string)(base["generatedDtosNameSpace"])); }
         }
+
+        [ConfigurationProperty("baseResponseDtoClass", DefaultValue = null, IsKey = true, IsRequired = false)]
+        public string BaseResponseDtoClass
+        {
+            get { return ((string)(base["baseResponseDtoClass"])); }
+        }
+
         [ConfigurationProperty("prefixStrings")]
         public PrefixStrings PrefixStrings
         {
