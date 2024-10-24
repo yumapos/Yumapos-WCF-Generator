@@ -617,8 +617,6 @@ namespace TestRepositoryGeneration
 		var index = item.Index; 
 		parameters.Add($"Country{index}", address.Country);
 		parameters.Add($"City{index}", address.City);
-		parameters.Add($"Country{index}", address.Country);
-		parameters.Add($"City{index}", address.City);
 		parameters.Add($"State{index}", address.State);
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
@@ -662,8 +660,6 @@ namespace TestRepositoryGeneration
 		{
 		var address = item.Value;
 		var index = item.Index; 
-		parameters.Add($"Country{index}", address.Country);
-		parameters.Add($"City{index}", address.City);
 		parameters.Add($"Country{index}", address.Country);
 		parameters.Add($"City{index}", address.City);
 		parameters.Add($"State{index}", address.State);
@@ -715,12 +711,9 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Country{index}", address.Country);
 		parameters.Add($"City{index}", address.City);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		parameters.Add($"Country{index}", address.Country);
-		parameters.Add($"City{index}", address.City);
 		parameters.Add($"State{index}", address.State);
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
-		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
@@ -763,12 +756,9 @@ namespace TestRepositoryGeneration
 		parameters.Add($"Country{index}", address.Country);
 		parameters.Add($"City{index}", address.City);
 		parameters.Add($"ZipCode{index}", address.ZipCode);
-		parameters.Add($"Country{index}", address.Country);
-		parameters.Add($"City{index}", address.City);
 		parameters.Add($"State{index}", address.State);
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
-		parameters.Add($"ZipCode{index}", address.ZipCode);
 		query.AppendFormat($"{UpdateManyByIdQueryTemplate};", index, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");

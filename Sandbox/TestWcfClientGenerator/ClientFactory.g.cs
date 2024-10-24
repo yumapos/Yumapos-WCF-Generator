@@ -15,7 +15,7 @@ using System.ServiceModel;
 
 namespace TestWcfClientGenerator
 {
-	 public static class ClientFactory<TClient> where TClient : class, IProperter , new()
+	 public static class ClientFactory<TClient> where TClient : class, IProperter, IClientBase, new()
  	 { 
 		 private static ConcurrentDictionary<string, ConcurrentBag<TClient>> FreeChannelsChannels { get; set; } 
 		 private static ConcurrentDictionary<int, ChannelContainer<TClient>> UsedChannels { get; set; } 

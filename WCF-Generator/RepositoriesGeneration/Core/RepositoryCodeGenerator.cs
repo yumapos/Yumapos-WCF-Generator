@@ -780,7 +780,10 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
                 foreach (var column in columnsAsParameters)
                 {
-                    sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {entityName}.{column.Name});");
+                    if (!filter.Parameters.Any(x => x.Name == column.Name))
+                    {
+                        sb.AppendLine($"parameters.Add($\"{column.Name}{{index}}\", {entityName}.{column.Name});");
+                    }
                 }
 
                 sb.AppendLine($"query.AppendFormat($\"{{{updateManyByQueryTemplateField}}};\", index, {string.Join(",", values)});");

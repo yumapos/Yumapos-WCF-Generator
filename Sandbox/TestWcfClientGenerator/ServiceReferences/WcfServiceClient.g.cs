@@ -13,7 +13,7 @@ using System.ServiceModel;
 using System.Threading.Tasks; 
  namespace TestWcfClientGenerator
  { 
-	 public partial class WcfServiceClient : System.ServiceModel.ClientBase<IWcfServiceClient>, IWcfServiceClient, IProperter
+	 public partial class WcfServiceClient : System.ServiceModel.ClientBase<IWcfServiceClient>, IWcfServiceClient, IProperter, IClientBase
  	 { 
 		 private static string _remoteAddress = ""; 
  

@@ -16,7 +16,7 @@ using System.Threading.Tasks;
  { 
 	 public partial class WcfServiceApi
 	 { 
-		 protected virtual ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, new()
+		 protected virtual ChannelContainer<T> CreateChannel<T>() where T : class, IProperter, IClientBase, new()
 		 { 
 			 var clientContainer = ClientFactory<T>.CreateClient(_endPoint.ToString(), _binding, _endPoint); 
 			 return clientContainer; 
