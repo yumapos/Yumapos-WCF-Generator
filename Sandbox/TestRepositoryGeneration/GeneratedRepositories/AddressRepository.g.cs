@@ -611,8 +611,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		parameters.Add($"Modified{index}", address.Modified);
 		parameters.Add($"Country{index}", address.Country);
 		parameters.Add($"City{index}", address.City);
-		parameters.Add($"Country{index}", address.Country);
-		parameters.Add($"City{index}", address.City);
 		parameters.Add($"State{index}", address.State);
 		parameters.Add($"Street{index}", address.Street);
 		parameters.Add($"Building{index}", address.Building);
@@ -657,8 +655,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		var address = item.Value;
 		var index = item.Index; 
 		parameters.Add($"Modified{index}", address.Modified);
-		parameters.Add($"Country{index}", address.Country);
-		parameters.Add($"City{index}", address.City);
 		parameters.Add($"Country{index}", address.Country);
 		parameters.Add($"City{index}", address.City);
 		parameters.Add($"State{index}", address.State);

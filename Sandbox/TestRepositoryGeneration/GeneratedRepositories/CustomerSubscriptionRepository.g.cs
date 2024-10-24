@@ -296,7 +296,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		var index = item.Index; 
 		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		parameters.Add($"CustomerNotificationsType{index}", customerSubscription.CustomerNotificationsType);
-		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		query.AppendFormat($"{UpdateManyByCustomerIdAndCustomerNotificationsTypeQueryTemplate};", index, customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");
@@ -339,7 +338,6 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 		var index = item.Index; 
 		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		parameters.Add($"CustomerNotificationsType{index}", customerSubscription.CustomerNotificationsType);
-		parameters.Add($"CustomerId{index}", customerSubscription.CustomerId);
 		query.AppendFormat($"{UpdateManyByCustomerIdAndCustomerNotificationsTypeQueryTemplate};", index, customerSubscription.Email ? 1 : 0,customerSubscription.SMS ? 1 : 0,customerSubscription.Push ? 1 : 0,(customerSubscription.IsCustomizable != null ? (customerSubscription.IsCustomizable.Value ? 1 : 0).ToString() : null) ?? "NULL",customerSubscription.ResendPeriod?.ToString() ?? "NULL",customerSubscription.IsDeleted ? 1 : 0);
 		}
 		query.AppendLine("COMMIT TRANSACTION");

@@ -69,6 +69,7 @@
     <Compile Include="ServiceReferences\CompletedEventArgs\WcfService_GetItemsCompletedEventArgs.g.cs" />
     <Compile Include="ServiceReferences\CompletedEventArgs\WcfService_OpenCompletedEventArgs.g.cs" />
     <Compile Include="ServiceReferences\EndpointConfiguration.g.cs" />
+    <Compile Include="ServiceReferences\IClientBase.g.cs" />
     <Compile Include="ServiceReferences\IProperter.g.cs" />
     <Compile Include="ServiceReferences\IWcfServiceClient.g.cs" />
     <Compile Include="ServiceReferences\WcfServiceClient.g.cs" />
