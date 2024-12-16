@@ -76,6 +76,47 @@ namespace WCFGenerator.Common
             return ret;
         }
 
+        public static async Task<IEnumerable<EnumCompilerInfo>> GetAllEnums(
+            this Solution solution,
+            string projectName,
+            bool isSkipAttribute,
+            string attribute)
+        {
+            var project = solution.Projects.First(x => x.Name == projectName);
+            var compilation = (CSharpCompilation)(await project.GetCompilationAsync());
+            var enumVisitor = new EnumVirtualizationVisitor();
+            var enums = new List<EnumDeclarationSyntax>();
+
+            foreach (var syntaxTree in compilation.SyntaxTrees)
+            {
+                enumVisitor.Visit(syntaxTree.GetRoot());
+            }
+
+            if (!isSkipAttribute)
+            {
+                enums = enumVisitor.Enums.Where(x => x.AttributeLists
+                    .Any(att => att.Attributes
+                        .Any(att2 => att2.Name.ToString() == attribute))).ToList();
+            }
+            else
+            {
+                enums = enumVisitor.Enums;
+            }
+
+            var ret = new List<EnumCompilerInfo>();
+
+            foreach (var enumDeclarationSyntax in enums)
+            {
+                var typeInfo = compilation.GetClass(enumDeclarationSyntax);
+                ret.Add(new EnumCompilerInfo()
+                {
+                    EnumDeclarationSyntax = enumDeclarationSyntax,
+                    NamedTypeSymbol = typeInfo
+                });
+            }
+
+            return ret;
+        }
         #endregion
 
 
@@ -135,7 +176,7 @@ namespace WCFGenerator.Common
 
         #region IPropertySymbol
 
-        public static AttributeData GetAttributeByName(this IPropertySymbol symbol, string name)
+        public static AttributeData GetAttributeByName(this ISymbol symbol, string name)
         {
             return symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == name || a.AttributeClass.Name == (name + "Attribute"));
         }

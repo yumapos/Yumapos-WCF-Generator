@@ -23,6 +23,7 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
         public IList<ClassCompilerInfo> ClassesWithoutPair = new List<ClassCompilerInfo>();
         public IList<MapDtoAndDo> ListOfSimilarClasses;
+        public IList<MapEnumDtoAndDo> ListOfSimilarEnums = null;
 
         public MappingAnalyser(MappingConfiguration configuration, GeneratorWorkspace generatorWorkspace)
         {
@@ -71,6 +72,10 @@ namespace WCFGenerator.MappingsGenerator.Analysis
 
             foreach (MappingSourceProject project in _configuration.DtoProjects)
             {
+                if (project.ProjectName == "YumaPos.Packages.Integration.YandexDelivery")
+                {
+                    var test = "";
+                }
                 classesWithMapAttributeDto.AddRange(
                     await _solution.GetAllClasses(project.ProjectName, _configuration.DTOSkipAttribute, _configuration.MapAttribute));
             }
@@ -405,14 +410,127 @@ namespace WCFGenerator.MappingsGenerator.Analysis
             }
 
             ListOfSimilarClasses = listOfSimilarClasses;
+
+            if (_configuration.MapEnums?.Enable == true)
+            {
+                await CalculateEnums();
+            }
         }
 
-        public string GetMapNameForProperty(IPropertySymbol propertySymbol)
+        private async Task CalculateEnums()
         {
-            string value = propertySymbol.Name;
+            var listOfSimilarEnums = new List<MapEnumDtoAndDo>();
+
+            var enumsWithMapAttribute = new List<EnumCompilerInfo>();
+            var enumsWithMapAttributeDto = new List<EnumCompilerInfo>();
+
+            foreach (MappingSourceProject project in _configuration.DoProjects)
+            {
+                enumsWithMapAttribute.AddRange(
+                    await _solution.GetAllEnums(project.ProjectName, _configuration.DOSkipAttribute, _configuration.MapAttribute));
+            }
+
+            foreach (MappingSourceProject project in _configuration.DtoProjects)
+            {
+                enumsWithMapAttributeDto.AddRange(
+                    await _solution.GetAllEnums(project.ProjectName, _configuration.DTOSkipAttribute, _configuration.MapAttribute));
+            }
+
+            foreach (var doEnum in enumsWithMapAttribute)
+            {
+                var doName = doEnum.NamedTypeSymbol.Name.ToLower();
+                if (!_configuration.DOSkipAttribute)
+                {
+                    doName = GetMapNameForClass(doEnum.NamedTypeSymbol);
+                }
+
+                IFieldSymbol[] doEnumFields = null;
+
+                foreach (var dtoEnum in enumsWithMapAttributeDto)
+                {
+                    var dtoName = dtoEnum.NamedTypeSymbol.Name.ToLower();
+                    if (!_configuration.DTOSkipAttribute)
+                    {
+                        dtoName = GetMapNameForClass(dtoEnum.NamedTypeSymbol);
+                    }
+
+                    if (doName == dtoName)
+                    {
+                        if (doEnumFields == null)
+                        {
+                            doEnumFields = GetFields(doEnum.NamedTypeSymbol);
+                        }
+
+                        var dtoEnumFields = GetFields(dtoEnum.NamedTypeSymbol);
+
+                        var enumFields = new List<MapEnumField>();
+                        foreach (var doEnumField in doEnumFields)
+                        {
+                            foreach (var dtoEnumField in dtoEnumFields)
+                            {
+                                if (GetMapNameForProperty(doEnumField) == GetMapNameForProperty(dtoEnumField))
+                                {
+                                    enumFields.Add(new MapEnumField()
+                                    {
+                                        DoField = doEnumField,
+                                        DtoField = dtoEnumField,
+                                    });
+                                }
+                            }
+                        }
+
+                        listOfSimilarEnums.Add(new MapEnumDtoAndDo
+                        {
+                            DoEnum = doEnum,
+                            DtoEnum = dtoEnum,
+                            MapEnumFields = enumFields.ToArray(),
+                            DefaultDoEnumField = GetDefaultEnumField(doEnum.NamedTypeSymbol, doEnumFields),
+                            DefaultDtoEnumField = GetDefaultEnumField(dtoEnum.NamedTypeSymbol, dtoEnumFields),
+                        });
+                        break;
+                    }
+                }
+            }
+
+            ListOfSimilarEnums = listOfSimilarEnums;
+        }
+
+        private IFieldSymbol[] GetFields(INamedTypeSymbol namedTypeSymbol)
+        {
+            return namedTypeSymbol
+                .GetMembers()
+                .Where(m => m.Kind == SymbolKind.Field)
+                .Cast<IFieldSymbol>()
+                .ToArray();
+        }
+
+        private IFieldSymbol GetDefaultEnumField(INamedTypeSymbol enumSymbol, IFieldSymbol[] fields)
+        {
+            var defaultValueAttribute = enumSymbol
+                .GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass.Name == "DefaultEnumValueAttribute");
+
+            if (defaultValueAttribute != null)
+            {
+                var defaultValue = defaultValueAttribute.GetAttributePropertyValue("DefaultValue");
+                foreach (var field in fields)
+                {
+                    if (field.ConstantValue?.ToString() == defaultValue)
+                    {
+                        return field;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public string GetMapNameForProperty(ISymbol symbol)
+        {
+            string value = symbol.Name;
             const string nameProperty = "Name";
 
-            var attributes = propertySymbol.GetAttributes();
+            var attributes = symbol.GetAttributes();
 
             foreach (var ca in attributes)
             {

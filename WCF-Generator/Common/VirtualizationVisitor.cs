@@ -53,4 +53,17 @@ namespace WCFGenerator.Common
             }
         }
     }
+
+    internal class EnumVirtualizationVisitor : CSharpSyntaxRewriter
+    {
+        public readonly List<EnumDeclarationSyntax> Enums = new List<EnumDeclarationSyntax>();
+
+        public override SyntaxNode VisitEnumDeclaration(EnumDeclarationSyntax node)
+        {
+            node = (EnumDeclarationSyntax)base.VisitEnumDeclaration(node);
+
+            Enums.Add(node);
+            return node;
+        }
+    }
 }
