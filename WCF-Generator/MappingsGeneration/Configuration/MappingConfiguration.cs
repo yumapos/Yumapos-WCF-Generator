@@ -61,6 +61,12 @@ namespace WCFGenerator.MappingsGeneration.Configuration
             get { return ((string)(base["projectForGeneratedCode"])); }
         }
 
+        [ConfigurationProperty("customFolder", DefaultValue = "", IsKey = true, IsRequired = false)]
+        public string CustomFolder //= "YumaPos.Server.BackOffice.Presentation.Generation";
+        {
+            get { return ((string)(base["customFolder"])); }
+        }
+
         [ConfigurationProperty("mapExtensionNameSpace", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string MapExtensionNameSpace //= "YumaPos.Server.BackOffice.Presentation.Generation";
         {
@@ -135,6 +141,12 @@ namespace WCFGenerator.MappingsGeneration.Configuration
         {
             get { return ((PrefixStrings)(base["prefixStrings"])); }
         }
+
+        /// <summary>
+        /// MapEnums
+        /// </summary>
+        [ConfigurationProperty("mapEnums", IsRequired = false)]
+        public MapEnums MapEnums => ((MapEnums)(base["mapEnums"]));
     }
 
     [ConfigurationCollection(typeof(MappingSourceProject), AddItemName = "project")]
@@ -162,6 +174,15 @@ namespace WCFGenerator.MappingsGeneration.Configuration
         public string ProjectName
         {
             get { return ((string)(base["projectName"])); }
+        }
+    }
+
+    public class MapEnums : ConfigurationElement
+    {
+        [ConfigurationProperty("enable", DefaultValue = false, IsKey = true, IsRequired = false)]
+        public bool Enable
+        {
+            get { return ((bool)(base["enable"])); }
         }
     }
 }

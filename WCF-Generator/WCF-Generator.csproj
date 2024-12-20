@@ -379,6 +379,7 @@
     <Compile Include="Common\ApiDecoration\ApiDecoratorsConfiguration.cs" />
     <Compile Include="Common\ApiDecoration\GenerationConfig.cs" />
     <Compile Include="Common\Configuration\PrefixStrings.cs" />
+    <Compile Include="Common\Infrastructure\EnumCompilerInfo.cs" />
     <Compile Include="CustomerApiDecoratorsGeneration\Configuration\CustomerApiDecoratorsSettings.cs" />
     <Compile Include="Common\ApiDecoration\DecoratorsGenerator.cs" />
     <Compile Include="ClientApiDecoratorsGeneration\ClientApiDecoratorsGenerator.cs" />
@@ -411,6 +412,7 @@
     <Compile Include="Common\Infrastructure\ClassCompilerInfo.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\KindOfProperty.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\MapDtoAndDo.cs" />
+    <Compile Include="MappingsGeneration\Infrastructure\MapEnumDtoAndDo.cs" />
     <Compile Include="MappingsGeneration\Infrastructure\MapPropertiesDtoAndDo.cs" />
     <Compile Include="MappingsGeneration\MappingGenerationFactory.cs" />
     <Compile Include="MappingsGeneration\MappingGenerator.cs" />

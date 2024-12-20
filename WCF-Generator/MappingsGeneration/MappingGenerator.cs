@@ -26,13 +26,26 @@ namespace WCFGenerator.MappingsGeneration
         {
             var analyser = new MappingAnalyser(_configuration, _generatorWorkspace);
             await analyser.Run();
-            var code = GetFullCode(analyser.ListOfSimilarClasses.ToArray(), analyser.ClassesWithoutPair.ToArray());
+            var code = GetFullCode(
+                analyser.ListOfSimilarClasses.ToArray(),
+                analyser.ClassesWithoutPair.ToArray(),
+                analyser.ListOfSimilarEnums?.ToArray());
             _generatorWorkspace.SetTargetProject(_configuration.ProjectForGeneratedCode);
-            _generatorWorkspace.UpdateFileInTargetProject("MappingExtension.g.cs", "Generation", code);
+
+            var folder = "Generation";
+            if (!string.IsNullOrEmpty(_configuration.CustomFolder))
+            {
+                folder = _configuration.CustomFolder;
+            }
+
+            _generatorWorkspace.UpdateFileInTargetProject("MappingExtension.g.cs", folder, code);
             await _generatorWorkspace.ApplyTargetProjectChanges(true);
         }
 
-        private string GetFullCode(MapDtoAndDo[] similarClasses, ClassCompilerInfo[] classesWithoutPair)
+        private string GetFullCode(
+            MapDtoAndDo[] similarClasses,
+            ClassCompilerInfo[] classesWithoutPair,
+            MapEnumDtoAndDo[] similarEnums)
         {
             var sb = new StringBuilder();
             foreach (PrefixString prefixString in _configuration.PrefixStrings)
@@ -95,6 +108,69 @@ namespace WCFGenerator.MappingsGeneration
                 sb.AppendLine("");
                 sb.AppendLine("return item;");
                 sb.AppendLine("}");
+            }
+
+            if (similarEnums != null && similarEnums.Any())
+            {
+                foreach (var similarEnum in similarEnums)
+                {
+                    sb.AppendLine("");
+                    var doEnumName = similarEnum.DoEnum.NamedTypeSymbol.GetFullName();
+                    var dtoEnumName = similarEnum.DtoEnum.NamedTypeSymbol.GetFullName();
+
+                    sb.AppendLine("public static " + dtoEnumName + " MapToDto (this " + doEnumName + " item)");
+                    sb.AppendLine("{");
+                    /*foreach (var prop in similarEnum.IsIgnoreDOProperties)
+                    {
+                        sb.AppendLine("//itemDo." + prop.Name);
+                    }*/
+                    sb.AppendLine("switch (item)");
+                    sb.AppendLine("{");
+                    foreach (var property in similarEnum.MapEnumFields)
+                    {
+                        sb.AppendLine($"case {doEnumName}.{property.DoField.Name}:");
+                        sb.AppendLine($"return {dtoEnumName}.{property.DtoField.Name};");
+                    }
+                    sb.AppendLine("default:");
+                    if (similarEnum.DefaultDtoEnumField != null)
+                    {
+                        sb.AppendLine($"return {dtoEnumName}.{similarEnum.DefaultDtoEnumField.Name}");
+                    }
+                    else
+                    {
+                        var errorMessage = $"$\"Unable to map {doEnumName} {{item}} to {dtoEnumName}\"";
+                        sb.AppendLine($"throw new NotImplementedException({errorMessage});");
+                    }
+                    sb.AppendLine("}");
+                    sb.AppendLine("}");
+
+
+                    sb.AppendLine("");
+
+
+                    sb.AppendLine("public static " + doEnumName + " MapFromDto (this " + dtoEnumName + " itemDto)");
+                    sb.AppendLine("{");
+                    sb.AppendLine("switch (itemDto)");
+                    sb.AppendLine("{");
+                    foreach (var property in similarEnum.MapEnumFields)
+                    {
+                        sb.AppendLine($"case {dtoEnumName}.{property.DtoField.Name}:");
+                        sb.AppendLine($"return {doEnumName}.{property.DoField.Name};");
+                    }
+                    sb.AppendLine("default:");
+                    if (similarEnum.DefaultDoEnumField != null)
+                    {
+                        sb.AppendLine($"return {doEnumName}.{similarEnum.DefaultDoEnumField.Name};");
+                    }
+                    else
+                    {
+                        var errorMessage = $"$\"Unable to map {dtoEnumName} {{itemDto}} to {doEnumName}\"";
+                        sb.AppendLine($"throw new NotImplementedException({errorMessage});");
+                    }
+                    sb.AppendLine("}");
+                    sb.AppendLine("}");
+                }
+
             }
 
             sb.AppendLine("}");
