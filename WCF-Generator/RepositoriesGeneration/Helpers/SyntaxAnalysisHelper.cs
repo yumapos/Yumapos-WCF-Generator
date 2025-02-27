@@ -10,7 +10,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
 {
     internal static class SyntaxAnalysisHelper
     {
-        // TODO Перенести в SolutionSyntaxWalker
+        // TODO Move to SolutionSyntaxWalker
         public static IEnumerable<AttributeAndProperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element) 
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
@@ -27,7 +27,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
             var codeProperty = element as PropertyDeclarationSyntax;
             if (codeProperty != null)
             {
-                // TODO использовать SimanticModel - IPropertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName).First().NamedArguments;
+                // TODO Use SimanticModel - IPropertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName).First().NamedArguments;
                 attributes = codeProperty.AttributeLists;
                 ownerName = codeProperty.Identifier.Text;
             }
@@ -48,7 +48,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
                     var countProperties = 0;
                     listOfStringProperties.Clear();
 
-                    Regex attributesRegex = new Regex(@"(@""(?:""""|[^""])*"")|(""(?:\\""|\\r|\\n|\\t|\\\\|[^""\\])*"")",
+                    Regex attributesRegex = new Regex(@"(?<!\{\s*)(@""(?:""""|[^""])*""|""(?:\\""|\\r|\\n|\\t|\\\\|[^""\\])*"")(?!\s*\})",
                         RegexOptions.IgnoreCase | RegexOptions.Multiline);
                     MatchCollection matchesProperties = attributesRegex.Matches(properties);
 
