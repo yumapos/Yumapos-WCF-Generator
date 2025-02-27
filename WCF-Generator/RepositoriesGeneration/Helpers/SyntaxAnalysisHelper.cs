@@ -10,7 +10,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
 {
     internal static class SyntaxAnalysisHelper
     {
-        // TODO ��������� � SolutionSyntaxWalker
+        // TODO Move to SolutionSyntaxWalker
         public static IEnumerable<AttributeAndProperties> GetAttributesAndPropepertiesCollection(MemberDeclarationSyntax element) 
         {
             SyntaxList<AttributeListSyntax> attributes = new SyntaxList<AttributeListSyntax>();
@@ -27,7 +27,7 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
             var codeProperty = element as PropertyDeclarationSyntax;
             if (codeProperty != null)
             {
-                // TODO ������������ SimanticModel - IPropertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName).First().NamedArguments;
+                // TODO Use SimanticModel - IPropertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == RepositoryDataModelHelper.DataMany2ManyAttributeName).First().NamedArguments;
                 attributes = codeProperty.AttributeLists;
                 ownerName = codeProperty.Identifier.Text;
             }
