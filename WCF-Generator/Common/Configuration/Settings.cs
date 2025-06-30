@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using MyApp;
+using System.Configuration;
 
 namespace WCFGenerator.Common
 {
@@ -12,15 +13,9 @@ namespace WCFGenerator.Common
         {
             get
             {
-                var section = ConfigurationManager.GetSection(ConfigSectionName) as BasicConfigurationSection;
+                var section = Program.GlobalConfig.GetSection(ConfigSectionName) as BasicConfigurationSection;
                 return section?.Enabled ?? false;
             }
-        }
-
-        public string GetSolutionPath()
-        {
-            var ret = ConfigurationManager.AppSettings["SolutionPath"];
-            return ret;
         }
     }
 

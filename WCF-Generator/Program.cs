@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using Nito.AsyncEx;
+﻿using System.Configuration;
+using System.Reflection;
 using WCFGenerator.ClientApiDecoratorsGeneration;
 using WCFGenerator.ClientApiDecoratorsGeneration.Configuration;
 using WCFGenerator.Common;
@@ -13,7 +9,6 @@ using WCFGenerator.DecoratorGeneration.Configuration;
 using WCFGenerator.DecoratorGeneration.Core;
 using WCFGenerator.MappingsGeneration;
 using WCFGenerator.MappingsGeneration.Configuration;
-using WCFGenerator.MappingsGenerator;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.ResponseDtoGeneration;
@@ -23,13 +18,14 @@ using WCFGenerator.SerializeGeneration.Generation;
 using WCFGenerator.WcfClientGeneration;
 using WCFGenerator.WcfClientGeneration.Configuration;
 
-namespace WCFGenerator
+namespace MyApp
 {
     internal class Program
     {
         private static GeneratorWorkspace _generatorWorkspace;
+        public static Configuration GlobalConfig { get; private set; }
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("WCF-Generator.exe started.");
 
@@ -38,11 +34,10 @@ namespace WCFGenerator
             if (args != null && args.Any() && !string.IsNullOrEmpty(args[0]))
             {
                 absoluteConfigPath = Path.GetFullPath(args[0]);
-                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", absoluteConfigPath);
             }
             else
             {
-                absoluteConfigPath = AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString();
+                absoluteConfigPath = $"{Assembly.GetExecutingAssembly().Location}.config";
             }
             if (!File.Exists(absoluteConfigPath))
             {
@@ -51,8 +46,22 @@ namespace WCFGenerator
             Console.WriteLine("Configuration: " + absoluteConfigPath);
 
             // Get solution
-            Console.Write("Open solulion: " );
-            var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+            Console.Write("Open solulion: ");
+
+            //var solutionPath = ConfigurationManager.AppSettings["SolutionPath"];
+
+            AppDomain.CurrentDomain.AssemblyResolve += new
+                ResolveEventHandler(ConfigResolveEventHandler);
+            configurationDefiningAssembly = Assembly.LoadFrom(Assembly.GetExecutingAssembly().Location);
+
+            ExeConfigurationFileMap configFileMap = new ExeConfigurationFileMap();
+            configFileMap.ExeConfigFilename = absoluteConfigPath;
+
+            GlobalConfig = ConfigurationManager.OpenMappedExeConfiguration(configFileMap, ConfigurationUserLevel.None);
+            var solutionPath = GlobalConfig.AppSettings.Settings["SolutionPath"]?.Value;
+
+            var test = Program.GlobalConfig.Sections["repositoryGenerator"];
+
             //Path to solution relative config file
             if (!Path.IsPathRooted(solutionPath))
             {
@@ -73,7 +82,7 @@ namespace WCFGenerator
 
             try
             {
-                RunRepositoryGeneration();
+                await RunRepositoryGeneration();
             }
             catch (Exception e)
             {
@@ -82,7 +91,7 @@ namespace WCFGenerator
 
             try
             {
-                RunSerializeGeneration();
+                await RunSerializeGeneration();
             }
             catch (Exception e)
             {
@@ -91,7 +100,7 @@ namespace WCFGenerator
 
             try
             {
-               RunWcfGeneration();
+                await RunWcfGeneration();
             }
             catch (Exception e)
             {
@@ -100,7 +109,7 @@ namespace WCFGenerator
 
             try
             {
-               RunDecoratorGeneration();
+                await RunDecoratorGeneration();
             }
             catch (Exception e)
             {
@@ -109,7 +118,7 @@ namespace WCFGenerator
 
             try
             {
-                RunMappingGeneration();
+                await RunMappingGeneration();
             }
             catch (Exception e)
             {
@@ -118,7 +127,7 @@ namespace WCFGenerator
 
             try
             {
-                 RunClientApiDecoratorsGeneration();
+                await RunClientApiDecoratorsGeneration();
             }
             catch (Exception e)
             {
@@ -127,7 +136,7 @@ namespace WCFGenerator
 
             try
             {
-                RunCustomerApiDecoratorsGeneration();
+                await RunCustomerApiDecoratorsGeneration();
             }
             catch (Exception e)
             {
@@ -136,7 +145,7 @@ namespace WCFGenerator
 
             try
             {
-                RunResponseDtoGeneration();
+                await RunResponseDtoGeneration();
             }
             catch (Exception e)
             {
@@ -147,7 +156,7 @@ namespace WCFGenerator
             _generatorWorkspace.CloseSolution();
         }
 
-        private static void RunWcfGeneration()
+        private static async Task RunWcfGeneration()
         {
             if (!WcfServiceClientGeneratorSettings.Current.Enabled)
             {
@@ -180,12 +189,13 @@ namespace WCFGenerator
 
             var wcf = new WcfGenerator(_generatorWorkspace, srvs);
 
-            AsyncContext.Run(wcf.Start);
+            await wcf.Start();
 
             Console.WriteLine("Wcf client generation completed.");
         }
 
-        private static void RunRepositoryGeneration()
+
+        private static async Task RunRepositoryGeneration()
         {
             if (!RepositoryGeneratorSettings.Current.Enabled)
             {
@@ -194,19 +204,21 @@ namespace WCFGenerator
             }
 
             Console.WriteLine("Start repository generation...");
-            
+
             // Configure generator 
             var config = RepositoryGeneratorSettings.Current.GetConfigs();
 
             var repositoryGenerator = new RepositoryCodeFactory(config, _generatorWorkspace);
 
             // run generation
-            AsyncContext.Run(repositoryGenerator.GenerateRepository);
+
+            await repositoryGenerator.GenerateRepository();
 
             Console.WriteLine("Repository generation completed.");
         }
 
-        private static void RunSerializeGeneration()
+        
+        private static async Task RunSerializeGeneration()
         {
             if (!SerializeGeneratorSettings.Current.Enabled)
             {
@@ -224,7 +236,7 @@ namespace WCFGenerator
             Console.WriteLine("Serialize generation completed.");
         }
 
-        private static void RunDecoratorGeneration()
+        private static async Task RunDecoratorGeneration()
         {
             if (!DecoratorGeneratorSettings.Current.Enabled)
             {
@@ -233,19 +245,19 @@ namespace WCFGenerator
             }
 
             Console.WriteLine("Start decoration generation...");
-            
+
             // Configure generator 
             var config = DecoratorGeneratorSettings.Current.GetConfigs();
 
             var generator = new DecoratorCodeFactory(config, _generatorWorkspace);
 
             // run generation
-            AsyncContext.Run(() => generator.Generate());
+            await generator.Generate();
 
             Console.WriteLine("Decoration generation completed.");
         }
 
-        private static void RunMappingGeneration()
+        private static async Task RunMappingGeneration()
         {
             var curSettings = MappingGeneratorSettings.Current;
             if (!curSettings.Enabled)
@@ -258,12 +270,12 @@ namespace WCFGenerator
             var configs = curSettings.GetConfigs();
 
             var generationFactory = new MappingGenerationFactory(_generatorWorkspace, configs.ToArray());
-            AsyncContext.Run(() => generationFactory.GenerateAll());
+            await generationFactory.GenerateAll();
 
             Console.WriteLine("Mapping generation completed.");
         }
 
-        private static void RunClientApiDecoratorsGeneration()
+        private static async Task RunClientApiDecoratorsGeneration()
         {
             var curSettings = ClientApiDecoratorsGeneratorSettings.Current;
             if (!curSettings.Enabled)
@@ -276,12 +288,12 @@ namespace WCFGenerator
             var configs = curSettings.GetConfigs();
 
             var factory = new ClientApiGenerationFactory(_generatorWorkspace, configs.ToArray());
-            AsyncContext.Run(() => factory.GenerateAll());
+            await factory.GenerateAll();
 
             Console.WriteLine("Сlient api decorators  generation completed.");
         }
 
-        private static void RunCustomerApiDecoratorsGeneration()
+        private static async Task RunCustomerApiDecoratorsGeneration()
         {
             var curSettings = CustomerApiDecoratorsSettings.Current;
             if (!curSettings.Enabled)
@@ -294,12 +306,12 @@ namespace WCFGenerator
             var configs = curSettings.GetConfigs();
 
             var factory = new CustomerApiDecoratorsFactory(_generatorWorkspace, configs.ToArray());
-            AsyncContext.Run(() => factory.GenerateAll());
+            await factory.GenerateAll();
 
             Console.WriteLine("Customer api decorators  generation completed.");
         }
 
-        private static void RunResponseDtoGeneration()
+        private static async Task RunResponseDtoGeneration()
         {
             var curSettings = ResponseDtoGeneratorSettings.Current;
             if (!curSettings.Enabled)
@@ -312,9 +324,16 @@ namespace WCFGenerator
             var configs = curSettings.GetConfigs();
 
             var factory = new ResponseDtoGeneratorsFactory(_generatorWorkspace, configs.ToArray());
-            AsyncContext.Run(() => factory.GenerateAll());
+            await factory.GenerateAll();
 
             Console.WriteLine("Response dto generation completed.");
+        }
+
+        private static Assembly configurationDefiningAssembly;
+
+        protected static Assembly ConfigResolveEventHandler(object sender, ResolveEventArgs args)
+        {
+            return configurationDefiningAssembly;
         }
     }
 }

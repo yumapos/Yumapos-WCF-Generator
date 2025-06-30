@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyApp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace WCFGenerator.WcfClientGeneration.Configuration
         {
             try
             {
-                var section = ConfigurationManager.GetSection(ConfigSectionName) as WcfClientGenerator;
+                var section = Program.GlobalConfig.GetSection(ConfigSectionName) as WcfClientGenerator;
                 return section?.RepositoryProjects.Cast<WcfService>().ToList();
             }
             catch (ConfigurationErrorsException e)

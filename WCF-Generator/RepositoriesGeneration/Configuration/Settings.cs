@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MyApp;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using WCFGenerator.Common;
@@ -11,7 +12,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
 
         public IEnumerable<RepositoryProject> GetConfigs()
         {
-            var section = ConfigurationManager.GetSection(ConfigSectionName) as RepositoryGenerator;
+            var section = Program.GlobalConfig.GetSection(ConfigSectionName) as RepositoryGenerator;
             return section?.RepositoryProjects.Cast<RepositoryProject>() ?? Enumerable.Empty<RepositoryProject>();
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MyApp;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using WCFGenerator.Common;
@@ -12,7 +13,7 @@ namespace WCFGenerator.SerializeGeneration.Configuration
 
         public SerializeConfiguration GetConfig()
         {
-            var section = ConfigurationManager.GetSection(ConfigSectionName) as SerializeConfiguration;
+            var section = Program.GlobalConfig.GetSection(ConfigSectionName) as SerializeConfiguration;
             return section;
         }
 

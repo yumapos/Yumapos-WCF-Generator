@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyApp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace WCFGenerator.MappingsGeneration.Configuration
         {
             try
             {
-                var section = ConfigurationManager.GetSection(ConfigSectionName) as MappingGenerator;
+                var section = Program.GlobalConfig.GetSection(ConfigSectionName) as MappingGenerator;
                 return section?.MappingConfigurations.Cast<MappingConfiguration>().ToList();
             }
             catch (ConfigurationErrorsException e)
