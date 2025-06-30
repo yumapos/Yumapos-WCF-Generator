@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyApp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace WCFGenerator.ResponseDtoGeneration.Configuration
         {
             try
             {
-                var section = ConfigurationManager.GetSection(ConfigSectionName) as ResponseDtoGenerator;
+                var section = Program.GlobalConfig.GetSection(ConfigSectionName) as ResponseDtoGenerator;
                 return section?.ResponseDtoConfigurations.Cast<ResponseDtoConfiguration>().ToList();
             }
             catch (ConfigurationErrorsException e)

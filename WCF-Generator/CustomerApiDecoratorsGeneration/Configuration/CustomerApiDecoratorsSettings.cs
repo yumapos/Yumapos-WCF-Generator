@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyApp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace WCFGenerator.CustomerApiDecoratorsGeneration.Configuration
         {
             try
             {
-                var section = ConfigurationManager.GetSection(ConfigSectionName) as CustomerApiDecoratorsGenerator;
+                var section = Program.GlobalConfig.GetSection(ConfigSectionName) as CustomerApiDecoratorsGenerator;
                 return section?.CustomerApiDecoratorsConfigurations.Cast<ApiDecoratorsConfiguration>().ToList();
             }
             catch (ConfigurationErrorsException e)

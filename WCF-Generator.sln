@@ -1,14 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36127.28 d17.14
+VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCF-Generator", "WCF-Generator\WCF-Generator.csproj", "{AEB81C25-77E8-44B0-B820-DC88B86F74B3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRepositoryGeneration", "Sandbox\TestRepositoryGeneration\TestRepositoryGeneration.csproj", "{D17E53C7-1F38-45AE-A715-649DB73735B5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3} = {AEB81C25-77E8-44B0-B820-DC88B86F74B3}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E80D3D4A-AFFA-4AD1-BD2D-18448FE024A9}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,14 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDecoratorGeneration", "Sandbox\TestDecoratorGeneration\TestDecoratorGeneration.csproj", "{FB48311B-6ACA-4E29-8108-5B69051DC904}"
-	ProjectSection(ProjectDependencies) = postProject
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3} = {AEB81C25-77E8-44B0-B820-DC88B86F74B3}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSerializationGeneration", "Sandbox\TestSerializationGeneration\TestSerializationGeneration.csproj", "{C72F1B27-79FF-4B0B-AD55-B53591736E36}"
-	ProjectSection(ProjectDependencies) = postProject
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3} = {AEB81C25-77E8-44B0-B820-DC88B86F74B3}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMappingGeneration", "Sandbox\TestMappingGeneration\TestMappingGeneration.csproj", "{88F379B9-54BF-4815-B339-7C11C82D2713}"
 EndProject
@@ -38,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestResponseDtoGeneration",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6AA6E4C6-1534-49DF-B506-1427A26280EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCF-Generator-new", "WCF-Generator-new\WCF-Generator-new.csproj", "{7C7CF228-7A56-4624-9B68-4A68C57DE7B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCF-Generator", "WCF-Generator\WCF-Generator.csproj", "{0DB95912-053B-7B19-ED8B-3FBECB045320}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,10 +35,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AEB81C25-77E8-44B0-B820-DC88B86F74B3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D17E53C7-1F38-45AE-A715-649DB73735B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D17E53C7-1F38-45AE-A715-649DB73735B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D17E53C7-1F38-45AE-A715-649DB73735B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -77,10 +62,10 @@ Global
 		{D35230CF-4E52-4FCD-9813-9347D766D788}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D35230CF-4E52-4FCD-9813-9347D766D788}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D35230CF-4E52-4FCD-9813-9347D766D788}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7C7CF228-7A56-4624-9B68-4A68C57DE7B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7C7CF228-7A56-4624-9B68-4A68C57DE7B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7C7CF228-7A56-4624-9B68-4A68C57DE7B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7C7CF228-7A56-4624-9B68-4A68C57DE7B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DB95912-053B-7B19-ED8B-3FBECB045320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DB95912-053B-7B19-ED8B-3FBECB045320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DB95912-053B-7B19-ED8B-3FBECB045320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DB95912-053B-7B19-ED8B-3FBECB045320}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

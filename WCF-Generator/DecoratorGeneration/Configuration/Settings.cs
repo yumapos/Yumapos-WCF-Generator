@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MyApp;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using WCFGenerator.Common;
@@ -11,7 +12,7 @@ namespace WCFGenerator.DecoratorGeneration.Configuration
 
         public IReadOnlyCollection<DecoratorConfiguration> GetConfigs()
         {
-            var section = ConfigurationManager.GetSection(ConfigSectionName) as DecoratorGenerator;
+            var section = Program.GlobalConfig.GetSection(ConfigSectionName) as DecoratorGenerator;
             return section?.RepositoryProjects.Cast<DecoratorProject>().Select(s=> new DecoratorConfiguration()
             {
                 SolutionProjectName = s.Name,
