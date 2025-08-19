@@ -308,6 +308,13 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             }
         }
 
+        public static string GenerateUpdateFields(IEnumerable<KeyValuePair<string, string>> parameters, string ownerTableName)
+        {
+            var sb = new StringBuilder();
+            SetFields(parameters, ownerTableName, sb);
+            return sb.ToString();
+        }
+
         #endregion
 
         #region VERSION TABLE
@@ -589,9 +596,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var sb = new StringBuilder();
 
             sb.Append("SET ");
-            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i.Key + "] = @" + i.Value)));
+            SetFields(parameters, ownerTableName, sb);
 
             return sb.ToString();
+        }
+
+        private static void SetFields(IEnumerable<KeyValuePair<string, string>> parameters, string ownerTableName, StringBuilder sb)
+        {
+            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i.Key + "] = @" + i.Value)));
         }
 
         private static string Delete(string tableName)

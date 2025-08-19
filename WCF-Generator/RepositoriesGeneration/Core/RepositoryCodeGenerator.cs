@@ -19,6 +19,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         
         private readonly string _updateQuery = "UpdateQuery";
         private readonly string _updateQueryBy = "UpdateQueryBy";
+        private readonly string _updateFields = "UpdateFields";
         private readonly string _updateManyByQueryTemplateField = "UpdateManyBy{0}QueryTemplate";
         private readonly string _updateManyByJoinedQueryTemplateField = "UpdateManyBy{0}JoinedQueryTemplate";
 
@@ -66,6 +67,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var insertQuery = ScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
            
             var updateBy = ScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
+            var updateFields = ScriptGenerator.GenerateFields(sqlInfo).SurroundWithQuotes();
             var deleteBy = ScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
             var insertOrUpdate = ScriptGenerator.GenerateInsertOrUpdate(RepositoryInfo.PrimaryKeys, sqlInfo).SurroundWithQuotes();
             
@@ -75,6 +77,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("private const string " + _insertQuery + " = @" + insertQuery + ";");
             
             sb.AppendLine("private const string " + _updateQueryBy + " = @" + updateBy + ";");
+            sb.AppendLine("private const string " + _updateFields + " = @" + updateFields + ";");
             sb.AppendLine("private const string " + _deleteQueryBy + " = @" + deleteBy + ";");
             sb.AppendLine("private const string " + _insertOrUpdateQuery + " = @" + insertOrUpdate + ";");
 
