@@ -24,6 +24,7 @@ namespace TestRepositoryGeneration
 		private const string SelectByQuery = @"SELECT [Stores].[StoreId],[Stores].[Name],[Stores].[SyncState] FROM [Stores] ";
 		private const string InsertQuery = @"INSERT INTO [Stores]([Stores].[StoreId],[Stores].[Name],[Stores].[SyncState],[Stores].[TenantId]) OUTPUT INSERTED.StoreId VALUES(@StoreId,@Name,@SyncState,@TenantId) ";
 		private const string UpdateQueryBy = @"UPDATE [Stores] SET [Stores].[Name] = @Name,[Stores].[SyncState] = '0' FROM [Stores] ";
+		private const string UpdateFields = @"[Stores].[StoreId],[Stores].[Name],[Stores].[SyncState]";
 		private const string DeleteQueryBy = @"UPDATE [Stores] SET IsDeleted = 1, SyncState = 0 ";
 		private const string InsertOrUpdateQuery = @"UPDATE [Stores] SET [Stores].[Name] = @Name,[Stores].[SyncState] = '0' FROM [Stores]  WHERE [Stores].[StoreId] = @StoreId{andTenantId:[Stores]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [Stores]([Stores].[StoreId],[Stores].[Name],[Stores].[SyncState],[Stores].[TenantId]) OUTPUT INSERTED.StoreId VALUES(@StoreId,@Name,@SyncState,@TenantId)  END";
 		private const string UpdateManyByStoreIdQueryTemplate = @"UPDATE [Stores] SET Name = @Name{0},[Stores].[SyncState] = '0' WHERE [Stores].[StoreId] = @StoreId{0}{{andTenantId:[Stores]}}";
