@@ -218,7 +218,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 .Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
                 .Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c))
                 .ToList();
-            var ret = Set(columns, info.TableName);
+            var sb = new StringBuilder();
+            sb.Append(string.Join(",", columns.Select(i => info.TableName + ".[" + i + "] = @" + i)));
+            var ret = sb.ToString();
             if (info.IsSyncStateEnabled)
             {
                 ret += $",{SetSyncState(info.TableName, false)}";
@@ -578,15 +580,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "UPDATE " + tableName;
         }
         
-        private static string Set(IEnumerable<string> parameters, string ownerTableName)
-        {
-            var sb = new StringBuilder();
-
-            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
-
-            return sb.ToString();
-        }
-
         private static string Set(IEnumerable<KeyValuePair<string, string>> parameters, string ownerTableName)
         {
             var sb = new StringBuilder();
