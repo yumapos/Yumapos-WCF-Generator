@@ -149,6 +149,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                     + From(info.TableName) + " ";
         }
 
+        public string GenerateUpdateFields(SqlInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
         public string GenerateUpdateWithoutTable(SqlInfo info)
         {
             var columns = info.TableColumns.Where(c => info.IdentityColumns.All(pk => pk != c.Name)).ToList();

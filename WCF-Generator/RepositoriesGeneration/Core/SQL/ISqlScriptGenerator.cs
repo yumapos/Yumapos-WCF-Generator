@@ -37,6 +37,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateUpdate(SqlInfo info);
 
+        string GenerateUpdateFields(SqlInfo info);
+
         string GenerateUpdateJoin(SqlInfo info);
 
         string GenerateRemove(SqlInfo info);
