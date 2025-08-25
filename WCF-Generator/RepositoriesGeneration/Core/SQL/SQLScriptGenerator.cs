@@ -238,7 +238,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public string GenerateUpdateJoin(SqlInfo info)
         {
             // use pk from inherit model
-            var values = info.JoinTableColumns.Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
+            var values = info.JoinTableColumns
+                .Where(c => !c.IgnoreOnUpdate && !info.JoinPrimaryKeyNames.Contains(c.Name))
+                .Select(c => c.Name)
                 .Except(info.IdentityColumnsJoined)
                 .Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c));//TODO FIX TO MANY KEYS
 
@@ -274,7 +276,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var columns = info.JoinTableColumns
                 .Where(propertyInfo => !propertyInfo.IgnoreOnUpdate
                                        && !info.PrimaryKeyNames.Contains(propertyInfo.Name)
-                                       && !info.IdentityColumns.Contains(propertyInfo.Name));
+                                       && !info.IdentityColumns.Contains(propertyInfo.Name)
+                                       && !info.JoinPrimaryKeyNames.Contains(propertyInfo.Name));
 
             var columnsString = UpdateManyValuesTemplate(columns);
 
