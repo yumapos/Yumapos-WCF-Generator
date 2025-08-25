@@ -208,19 +208,23 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
+            var update = $"{Update(info.TableName)} SET {GenerateUpdateFields(info)}";
+            return $"{update} {From(info.TableName)} ";
+        }
+
+        public string GenerateUpdateFields(SqlInfo info)
+        {
             var columns = info.UpdateTableColumns
                 .Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
                 .Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c))
                 .ToList();
-
-            var update = $"{Update(info.TableName)} {Set(columns, info.TableName)}";
-
+            var ret = Set(columns, info.TableName);
             if (info.IsSyncStateEnabled)
             {
-                update += $",{SetSyncState(info.TableName, false)}";
+                ret += $",{SetSyncState(info.TableName, false)}";
             }
 
-            return $"{update} {From(info.TableName)} ";
+            return ret;
         }
 
         private static string SetSyncState(string table, bool value)
@@ -306,11 +310,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                     return Delete(info.TableName) + " ";
                 }
             }
-        }
-
-        public string GenerateUpdateFields(SqlInfo info)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
@@ -583,7 +582,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         {
             var sb = new StringBuilder();
 
-            sb.Append("SET ");
             sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
 
             return sb.ToString();

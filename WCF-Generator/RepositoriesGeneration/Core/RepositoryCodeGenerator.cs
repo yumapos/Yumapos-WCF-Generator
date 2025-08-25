@@ -67,7 +67,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var insertQuery = ScriptGenerator.GenerateInsert(sqlInfo).SurroundWithQuotes();
            
             var updateBy = ScriptGenerator.GenerateUpdate(sqlInfo).SurroundWithQuotes();
-            var updateFields = ScriptGenerator.GenerateFields(sqlInfo).SurroundWithQuotes();
+            var updateFields = ScriptGenerator.GenerateUpdateFields(sqlInfo).SurroundWithQuotes();
             var deleteBy = ScriptGenerator.GenerateRemove(sqlInfo).SurroundWithQuotes();
             var insertOrUpdate = ScriptGenerator.GenerateInsertOrUpdate(RepositoryInfo.PrimaryKeys, sqlInfo).SurroundWithQuotes();
             
