@@ -143,17 +143,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
+            return Update(info.TableName) + " SET " + GenerateUpdateFields(info) + " " + From(info.TableName) + " ";
+        }
+
+        public string GenerateUpdateFields(SqlInfo info)
+        {
             var columns = info.TableColumns.Where(c => info.IdentityColumns.All(pk => pk != c.Name)).ToList();
-            return Update(info.TableName) + " "
-                    + Set(columns.Select(c => c.Name), info.TableName) + " "
-                    + From(info.TableName) + " ";
+            var sb = new StringBuilder();
+            sb.Append(string.Join(",", columns.Select(c => c.Name).Select(i => info.TableName + "." + PostgresColumnsHelper.Convert(i) + " = @" + i)));
+            return sb.ToString();
         }
 
         public string GenerateUpdateWithoutTable(SqlInfo info)
         {
             var columns = info.TableColumns.Where(c => info.IdentityColumns.All(pk => pk != c.Name)).ToList();
-            return Update(info.TableName) + " "
-                    + Set(columns.Select(c => c.Name), info.TableName) + " ";
+            return Update(info.TableName) + " SET " + GenerateUpdateFields(info) + " ";
         }
 
         public string GenerateUpdateJoin(SqlInfo info)
@@ -362,16 +366,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         private static string Update(string tableName)
         {
             return "UPDATE " + tableName;
-        }
-
-        private static string Set(IEnumerable<string> parameters, string ownerTableName)
-        {
-            var sb = new StringBuilder();
-
-            sb.Append("SET ");
-            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + "." + PostgresColumnsHelper.Convert(i) + " = @" + i)));
-
-            return sb.ToString();
         }
 
         private static string Set(IEnumerable<KeyValuePair<string, string>> parameters, string ownerTableName)

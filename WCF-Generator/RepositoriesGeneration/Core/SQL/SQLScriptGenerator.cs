@@ -208,19 +208,25 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         public string GenerateUpdate(SqlInfo info)
         {
+            var update = $"{Update(info.TableName)} SET {GenerateUpdateFields(info)}";
+            return $"{update} {From(info.TableName)} ";
+        }
+
+        public string GenerateUpdateFields(SqlInfo info)
+        {
             var columns = info.UpdateTableColumns
                 .Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
                 .Where(c => info.IdentityColumns.All(pk => pk != c) && !info.PrimaryKeyNames.Contains(c))
                 .ToList();
-
-            var update = $"{Update(info.TableName)} {Set(columns, info.TableName)}";
-
+            var sb = new StringBuilder();
+            sb.Append(string.Join(",", columns.Select(i => info.TableName + ".[" + i + "] = @" + i)));
+            var ret = sb.ToString();
             if (info.IsSyncStateEnabled)
             {
-                update += $",{SetSyncState(info.TableName, false)}";
+                ret += $",{SetSyncState(info.TableName, false)}";
             }
 
-            return $"{update} {From(info.TableName)} ";
+            return ret;
         }
 
         private static string SetSyncState(string table, bool value)
@@ -232,7 +238,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         public string GenerateUpdateJoin(SqlInfo info)
         {
             // use pk from inherit model
-            var values = info.JoinTableColumns.Where(c => !c.IgnoreOnUpdate).Select(c => c.Name)
+            var values = info.JoinTableColumns
+                .Where(c => !c.IgnoreOnUpdate && !info.JoinPrimaryKeyNames.Contains(c.Name))
+                .Select(c => c.Name)
                 .Except(info.IdentityColumnsJoined)
                 .Select(c => new KeyValuePair<string,string>(c,c == info.JoinVersionKeyName ? info.VersionKeyName : c == info.JoinPrimaryKeyNames.First() ? info.PrimaryKeyNames.First() : c));//TODO FIX TO MANY KEYS
 
@@ -268,7 +276,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             var columns = info.JoinTableColumns
                 .Where(propertyInfo => !propertyInfo.IgnoreOnUpdate
                                        && !info.PrimaryKeyNames.Contains(propertyInfo.Name)
-                                       && !info.IdentityColumns.Contains(propertyInfo.Name));
+                                       && !info.IdentityColumns.Contains(propertyInfo.Name)
+                                       && !info.JoinPrimaryKeyNames.Contains(propertyInfo.Name));
 
             var columnsString = UpdateManyValuesTemplate(columns);
 
@@ -574,16 +583,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "UPDATE " + tableName;
         }
         
-        private static string Set(IEnumerable<string> parameters, string ownerTableName)
-        {
-            var sb = new StringBuilder();
-
-            sb.Append("SET ");
-            sb.Append(string.Join(",", parameters.Select(i => ownerTableName + ".[" + i + "] = @" + i)));
-
-            return sb.ToString();
-        }
-
         private static string Set(IEnumerable<KeyValuePair<string, string>> parameters, string ownerTableName)
         {
             var sb = new StringBuilder();
