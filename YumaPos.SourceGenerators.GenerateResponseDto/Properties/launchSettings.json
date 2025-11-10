@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DebugRoslynSourceGenerator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../../Submodule.YumaPos.Shared/YumaPos.Shared.Infrastructure/YumaPos.Shared.Infrastructure.csproj"
+    }
+  }
+}
