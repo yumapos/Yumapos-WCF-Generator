@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
@@ -33,14 +34,14 @@ namespace WCFGenerator.Common
             var projectPath = project.FilePath.Replace('\\', Path.DirectorySeparatorChar);
             var lastOccur = projectPath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }).Last().Length;
             var path = Path.Combine(projectPath.Substring(0, projectPath.Length - lastOccur), string.Join(Path.DirectorySeparatorChar, folders), fileName);
-            System.IO.File.WriteAllText(path, documentText.ReplaceLineEndings("\r\n"), Encoding.UTF8);
+            System.IO.File.WriteAllText(path, documentText, Encoding.UTF8);
         }
 
         public static Document Formatting(Document doc)
         {
             // general format
             var formattedDoc = Formatter.FormatAsync(doc).Result;
-            var text = formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t");
+            var text = Regex.Replace(formattedDoc.GetTextAsync().Result.ToString().Replace("    ", "\t"), @"\r\n|\r|\n", "\r\n");
             formattedDoc = formattedDoc.WithText(SourceText.From(text));
             return formattedDoc;
         }
