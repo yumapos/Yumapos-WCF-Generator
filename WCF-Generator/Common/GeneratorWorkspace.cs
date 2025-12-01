@@ -122,7 +122,7 @@ namespace WCFGenerator.Common
             {
                 Document document;
 
-                var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.EndsWith(doc.ProjectFolder + Path.DirectorySeparatorChar + doc.FileName));
+                var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.EndsWith(doc.ProjectFolder + "\\" + doc.FileName));
 
                 var code = CodeHelper.GeneratedDocumentHeader + "\r\n" + doc.SrcText;
 

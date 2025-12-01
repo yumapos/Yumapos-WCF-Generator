@@ -20,16 +20,10 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">
+    <PostBuildEvent>
 		cd $(SolutionDir)
 		if '$(Configuration)' == 'Debug' $(SolutionDir)copy_binaries.bat
-    </PostBuildEvent>
-    <PostBuildEvent Condition="'$(OS)' == 'Unix'">
-		cd $(SolutionDir)
-		if [['$(Configuration)' == 'Debug']];
-      then ./copy_binaries.sh
-    fi
-    </PostBuildEvent>
+	</PostBuildEvent>
   </PropertyGroup>
 
 </Project>

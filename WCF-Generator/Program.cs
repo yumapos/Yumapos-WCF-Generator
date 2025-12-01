@@ -58,7 +58,7 @@ namespace MyApp
             configFileMap.ExeConfigFilename = absoluteConfigPath;
 
             GlobalConfig = ConfigurationManager.OpenMappedExeConfiguration(configFileMap, ConfigurationUserLevel.None);
-            var solutionPath = GlobalConfig.AppSettings.Settings["SolutionPath"]?.Value.Replace('\\', Path.DirectorySeparatorChar);
+            var solutionPath = GlobalConfig.AppSettings.Settings["SolutionPath"]?.Value;
 
             var test = Program.GlobalConfig.Sections["repositoryGenerator"];
 
