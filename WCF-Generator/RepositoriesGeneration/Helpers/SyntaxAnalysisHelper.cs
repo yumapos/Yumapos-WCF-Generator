@@ -42,6 +42,8 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
             {
                 foreach (var attr in ca.Attributes)
                 {
+                    if (attr.Name.ToString() == "Archive") continue;
+
                     var properties = attr.ArgumentList?.ToString() ?? "";
 
                     var dictionaryOfAttributes = new Dictionary<string, string>();
