@@ -134,7 +134,12 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 // add namespace of repositories which added from relation many to many 
                 var manyToMany = r.RepositoryInfo.Many2ManyInfo.SelectMany(i => i.RepositoryNamespaces).ToList();
                 requiredNamespacesForService.AddRange(manyToMany);
-                r.RepositoryInfo.RequiredNamespaces.Add(RepositoryType.VersionService, requiredNamespacesForService.Distinct().ToList());
+                const RepositoryType key = RepositoryType.VersionService;
+                var values = requiredNamespacesForService.Distinct().ToList();
+                if (!r.RepositoryInfo.RequiredNamespaces.TryAdd(key, values))
+                {
+                    r.RepositoryInfo.RequiredNamespaces[key].AddRange(values);
+                }
 
                 #endregion
 
@@ -445,7 +450,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
         private static IEnumerable<MethodImplementationInfo> GetUnimplementedMethods(List<MethodInfo> interfaceMethodNames, List<MethodInfo> customRepositoryMethodNames, List<FilterInfo> possibleKeysForMethods, string fullRepositoryModelName)
         {
             // Check implemented methods in custom repository
-            var unimplemented = interfaceMethodNames
+            var unimplementedMethods = interfaceMethodNames
                 .Where(im => customRepositoryMethodNames.FirstOrDefault(cm => cm.Name == im.Name) == null)
                 .GroupBy(p=>p.Name)
                 .Select(gr => gr.Count() == 1 ? gr.Single() : gr.FirstOrDefault(p => p.Parameters.First().TypeName != fullRepositoryModelName.Split('.').Last()))
@@ -493,25 +498,25 @@ namespace WCFGenerator.RepositoriesGeneration.Services
                 throw;
             }
             // Set methods to implementation from possible list
-            foreach (var um in unimplemented)
+            foreach (var unimplementedMethod in unimplementedMethods.OrderBy(s => s.Name.EndsWith("Async") ? 1 : 0))
             {
                 // Seach in possible list
-                var mm = methods.Where(methodInfo => NameIsTrue(methodInfo, um.Name));
+                var mm = methods.Where(methodInfo => MethodCanBeImplemented(methodInfo, unimplementedMethod.Name));
                 if (!mm.Any()) continue;
                 // Set to implementation
                 foreach (var m in mm)
                 {
                     m.RequiresImplementation = true;
-                    m.Name = um.Name;
-                    m.ReturnType = um.ReturnType;
-                    m.Parameters = um.Parameters;
+                    m.Name = unimplementedMethod.Name;
+                    m.ReturnType = unimplementedMethod.ReturnType;
+                    m.Parameters = unimplementedMethod.Parameters;
                 }
             }
 
             return methods;
         }
 
-        private static bool NameIsTrue(MethodImplementationInfo methodInfo, string name)
+        private static bool MethodCanBeImplemented(MethodImplementationInfo methodInfo, string name)
         {
             var methodsPatterns = new List<string>();
 

@@ -231,10 +231,20 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 parameters.Add(specialMethodParameterIsDeleted);
                 parameterNames.Add(specialMethodParameterIsDeletedName);
             }
+            
+            var asyncParameters = new List<string>(parameters);
+            var ct = ExtractCancellationToken(method);
+            var ctExists = ct != null;
+            if (ctExists)
+            {
+                var ctParam = GetCancellationTokenParameter(ct);
+                asyncParameters.Add(ctParam);
+            }
 
             var methodParameters = string.Join(", ", parameters);
             var methodParameterNames = string.Join(", ", parameterNames);
 
+            var asyncMethodParameters = string.Join(", ", asyncParameters);
 
             var sb = new StringBuilder();
 
@@ -262,7 +272,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("}");
 
             // Asynchronous method
-            sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async" + "(" + methodParameters + ")");
+            sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async" + "(" + asyncMethodParameters + ")");
             sb.AppendLine("{");
 
             sb.AppendLine("object parameters = new {" + methodParameterNames + "};");
@@ -280,7 +290,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("filter = filter + " + _andWithSliceDateFilter + ";");
             }
             sb.AppendLine("var sql = " + selectQuery + ".Replace(\"{filter}\", filter);");
-            sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters));");
+            sb.AppendLine("var result = (await DataAccessService.GetAsync<" + RepositoryInfo.ClassFullName + $">(sql, parameters{(ctExists ? $", {ct.Name}":"")}));");
             sb.AppendLine(returnFunc);
             sb.AppendLine("}");
             sb.AppendLine("");

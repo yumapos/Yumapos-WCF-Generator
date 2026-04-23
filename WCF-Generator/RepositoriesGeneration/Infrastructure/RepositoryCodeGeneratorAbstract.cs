@@ -150,5 +150,20 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         }
 
         #endregion
+        
+        protected ParameterInfo? ExtractCancellationToken(MethodImplementationInfo method)
+        {
+            var tokenParameterInfo = method?.Parameters?.FirstOrDefault(x=>
+                x.TypeName.Equals("System.Threading.CancellationToken", StringComparison.OrdinalIgnoreCase) ||
+                x.TypeName.Equals("Threading.CancellationToken", StringComparison.OrdinalIgnoreCase) ||
+                x.TypeName.Equals("CancellationToken", StringComparison.OrdinalIgnoreCase));
+            return tokenParameterInfo;
+        }
+
+        protected string GetCancellationTokenParameter(ParameterInfo ctParameterInfo)
+        {
+            var ctParam = "System.Threading.CancellationToken " + ctParameterInfo.Name + " = default";
+            return ctParam;
+        }
     }
 }
