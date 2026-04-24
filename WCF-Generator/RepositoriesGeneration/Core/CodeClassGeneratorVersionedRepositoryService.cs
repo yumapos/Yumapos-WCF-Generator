@@ -228,15 +228,27 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private string GenerateGetAll(MethodImplementationInfo method)
         {
-            var parameters = "";
+            var parametersList =  new List<string>();
             var parameterNames = "";
 
             if (RepositoryInfo.IsDeletedExist)
             {
                 var specialParameterIsDeleted = RepositoryInfo.SpecialOptionsIsDeleted.Parameters.First();
-                parameters = specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue;
+                parametersList.Add(specialParameterIsDeleted.TypeName + "? " + specialParameterIsDeleted.Name.FirstSymbolToLower() + " = " + specialParameterIsDeleted.DefaultValue);
                 parameterNames = specialParameterIsDeleted.Name.FirstSymbolToLower();
             }
+            
+            var asyncParametersList = new List<string>(parametersList);
+            var ct = ExtractCancellationToken(method);
+            var ctExists = ct != null;
+            if (ctExists)
+            {
+                var ctParam = GetCancellationTokenParameter(ct);
+                asyncParametersList.Add(ctParam);
+            }
+            
+            var parameters = string.Join(", ", parametersList);
+            var asyncParameters = string.Join(", ", asyncParametersList);
 
             var returnType = "IEnumerable<" + RepositoryInfo.ClassFullName + ">";
 
@@ -249,9 +261,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("}");
 
             // Asynchronous method
-            sb.AppendLine("public async Task<" + returnType + "> GetAllAsync(" + parameters + ")");
+            sb.AppendLine("public async Task<" + returnType + "> GetAllAsync(" + asyncParameters + ")");
             sb.AppendLine("{");
-            sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync(" + parameterNames + ");");
+            sb.AppendLine("return await " + CacheRepositoryField + ".GetAllAsync(" + parameterNames + (ctExists ? $", {ct.Name}":"") + ");");
             sb.AppendLine("}");
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
@@ -311,9 +323,28 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 firstOverloadParameters.Add(specialMethodParameterIsDeleted);
                 firstOverloadParameterNames.Add(specialMethodParameterIsDeletedName);
             }
+            var asyncParameters = new List<string>(parameters);
+            var asyncParameterNames = new List<string>(parameterNames);
+            var firstOverloadAsyncParameters = new List<string>(firstOverloadParameters);
+            var firstOverloadAsyncParameterNames = new List<string>(firstOverloadParameterNames);
+            var ct = ExtractCancellationToken(method);
+            var ctExists = ct != null;
+            if (ctExists)
+            {
+                var ctParam = GetCancellationTokenParameter(ct);
+                asyncParameters.Add(ctParam);
+                asyncParameterNames.Add(ct.Name);
+                firstOverloadAsyncParameters.Add(ctParam);
+                firstOverloadAsyncParameterNames.Add(ct.Name);
+            }
 
             var methodParameters = string.Join(", ", parameters);
             var methodParameterNames = string.Join(", ", parameterNames);
+            
+            var asyncMethodParameters = string.Join(", ", asyncParameters);
+            var asyncMethodParameterNames = string.Join(", ", asyncParameterNames);
+            var firstOverloadAsyncMethodParameters = string.Join(", ", firstOverloadAsyncParameters);
+            var firstOverloadAsyncMethodParameterNames = string.Join(", ", firstOverloadAsyncParameterNames);
 
             var firstOverloadMethodParameters = string.Join(", ", firstOverloadParameters);
             var firstOverloadMethodParameterNames = string.Join(", ", firstOverloadParameterNames);
@@ -323,8 +354,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
             var overloads = new[]
             {
-                new {repository = VersionRepositoryField, parameters = methodParameters, parameterNames = methodParameterNames, needImplement = true},
-                new {repository = CacheRepositoryField, parameters = firstOverloadMethodParameters, parameterNames = firstOverloadMethodParameterNames, needImplement = filter.FilterType != FilterType.VersionKey}
+                new {repository = VersionRepositoryField,
+                    parameters = methodParameters, parameterNames = methodParameterNames,
+                    asyncParameters = asyncMethodParameters, asyncParameterNames = asyncMethodParameterNames,
+                    needImplement = true},
+                new {repository = CacheRepositoryField,
+                    parameters = firstOverloadMethodParameters, parameterNames = firstOverloadMethodParameterNames,
+                    asyncParameters = firstOverloadAsyncMethodParameters, asyncParameterNames = firstOverloadAsyncMethodParameterNames,
+                    needImplement = filter.FilterType != FilterType.VersionKey}
             };
 
             var methods = overloads.Where(m => m.needImplement).ToList();
@@ -340,9 +377,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine();
 
                 //Asynchronous method
-                sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async(" + overload.parameters + ")");
+                sb.AppendLine("public async Task<" + returnType + "> GetBy" + filter.Key + "Async(" + overload.asyncParameters + ")");
                 sb.AppendLine("{");
-                sb.AppendLine("var result = await " + overload.repository + ".GetBy" + filter.Key + "Async(" + overload.parameterNames + ");");
+                sb.AppendLine("var result = await " + overload.repository + ".GetBy" + filter.Key + "Async(" + overload.asyncParameterNames + ");");
                 sb.AppendLine(returnFunc);
                 sb.AppendLine("}");
                 sb.AppendLine();
