@@ -22,15 +22,15 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		public const string Fields = @"[MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy]";
 		private const string SelectAllQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId]  {whereTenantId:[MenuItems]} ";
 		private const string SelectByQuery = @"SELECT [MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId] FROM [MenuItems] INNER JOIN [RecipieItems] ON [MenuItems].[MenuItemId] = [RecipieItems].[ItemId] ";
-		private const string InsertQuery = @"DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@CreatedBy,@TenantId);SELECT ItemId FROM @TempTable;";
+		private const string InsertQuery = @"INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId])  VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[MenuItems].[TenantId])  VALUES(@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@CreatedBy,@TenantId);";
 		private const string UpdateQueryBy = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId,[MenuItems].[ExternalId] = @ExternalId,[MenuItems].[DiscountValue] = @DiscountValue,[MenuItems].[DiscountStartDate] = @DiscountStartDate,[MenuItems].[Type] = @Type,[MenuItems].[BitKitchenPrinters] = @BitKitchenPrinters,[MenuItems].[YesNoUnknown] = @YesNoUnknown FROM [MenuItems] ";
 		private const string UpdateFields = @"[MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId,[MenuItems].[ExternalId] = @ExternalId,[MenuItems].[DiscountValue] = @DiscountValue,[MenuItems].[DiscountStartDate] = @DiscountStartDate,[MenuItems].[Type] = @Type,[MenuItems].[BitKitchenPrinters] = @BitKitchenPrinters,[MenuItems].[YesNoUnknown] = @YesNoUnknown";
-		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] IN (SELECT ItemId FROM @Temp);DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] IN (SELECT ItemId FROM @Temp); ";
-		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId,[MenuItems].[ExternalId] = @ExternalId,[MenuItems].[DiscountValue] = @DiscountValue,[MenuItems].[DiscountStartDate] = @DiscountStartDate,[MenuItems].[Type] = @Type,[MenuItems].[BitKitchenPrinters] = @BitKitchenPrinters,[MenuItems].[YesNoUnknown] = @YesNoUnknown FROM [MenuItems]  WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]}  IF @@ROWCOUNT = 0 BEGIN DECLARE @TempTable TABLE (ItemId uniqueidentifier);INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId]) OUTPUT INSERTED.ItemId INTO @TempTable VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);DECLARE @TempId uniqueidentifier; SELECT @TempId = ItemId FROM @TempTable;INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[MenuItems].[TenantId]) OUTPUT INSERTED.MenuItemId INTO @TempTable VALUES(@TempId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@CreatedBy,@TenantId);SELECT ItemId FROM @TempTable; END";
+		private const string DeleteQueryBy = @"DELETE FROM [MenuItems] WHERE [MenuItems].[MenuItemId] = @primaryKey;DELETE FROM [RecipieItems] WHERE [RecipieItems].[ItemId] = @primaryKey; ";
+		private const string InsertOrUpdateQuery = @"UPDATE [MenuItems] SET [MenuItems].[MenuItemVersionId] = @MenuItemVersionId,[MenuItems].[MenuCategoryId] = @MenuCategoryId,[MenuItems].[ExternalId] = @ExternalId,[MenuItems].[DiscountValue] = @DiscountValue,[MenuItems].[DiscountStartDate] = @DiscountStartDate,[MenuItems].[Type] = @Type,[MenuItems].[BitKitchenPrinters] = @BitKitchenPrinters,[MenuItems].[YesNoUnknown] = @YesNoUnknown FROM [MenuItems]  WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]}  IF @@ROWCOUNT = 0 BEGIN INSERT INTO [RecipieItems]([RecipieItems].[ItemId],[RecipieItems].[ItemVersionId],[RecipieItems].[IsDeleted],[RecipieItems].[Modified],[RecipieItems].[ModifiedBy],[RecipieItems].[CategoryId],[RecipieItems].[TenantId])  VALUES(@MenuItemId,@MenuItemVersionId,@IsDeleted,@Modified,@ModifiedBy,@CategoryId,@TenantId);INSERT INTO [MenuItems]([MenuItems].[MenuItemId],[MenuItems].[MenuItemVersionId],[MenuItems].[MenuCategoryId],[MenuItems].[ExternalId],[MenuItems].[DiscountValue],[MenuItems].[DiscountStartDate],[MenuItems].[Type],[MenuItems].[BitKitchenPrinters],[MenuItems].[YesNoUnknown],[MenuItems].[CreatedBy],[MenuItems].[TenantId])  VALUES(@MenuItemId,@MenuItemVersionId,@MenuCategoryId,@ExternalId,@DiscountValue,@DiscountStartDate,@Type,@BitKitchenPrinters,@YesNoUnknown,@CreatedBy,@TenantId); END";
 		private const string UpdateManyByMenuItemIdQueryTemplate = @"UPDATE [MenuItems] SET MenuItemVersionId = '{1}',MenuCategoryId = '{2}',ExternalId = '{3}',DiscountValue = '{4}',DiscountStartDate = '{5}',Type = '{6}',BitKitchenPrinters = '{7}',YesNoUnknown = '{8}' WHERE [MenuItems].[MenuItemId] = @MenuItemId{0}{{andTenantId:[MenuItems]}}";
 		private const string UpdateQueryJoin = "UPDATE [RecipieItems] SET [RecipieItems].[ItemVersionId] = @MenuItemVersionId,[RecipieItems].[IsDeleted] = @IsDeleted,[RecipieItems].[Modified] = @Modified,[RecipieItems].[ModifiedBy] = @ModifiedBy,[RecipieItems].[CategoryId] = @CategoryId FROM [RecipieItems] ";
 		private const string UpdateManyByItemIdJoinedQueryTemplate = @"UPDATE [RecipieItems] SET ItemVersionId = '{1}',IsDeleted = '{2}',Modified = '{3}',ModifiedBy = '{4}',CategoryId = @CategoryId{0} WHERE [MenuItems].[ItemId] = @ItemId{0}{{andTenantId:[MenuItems]}}";
-		private const string SelectIntoTempTable = @"DECLARE @Temp TABLE (ItemId uniqueidentifier);INSERT INTO @Temp SELECT [MenuItems].[MenuItemId] FROM [MenuItems] ";
+		private const string DeclarePK = @"DECLARE @primaryKey uniqueidentifier SELECT TOP 1 @primaryKey = [MenuItems].[MenuItemId] FROM [MenuItems] ";
 		private const string WhereQueryByMenuItemId = "WHERE [MenuItems].[MenuItemId] = @MenuItemId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuItemVersionId = "WHERE [MenuItems].[MenuItemVersionId] = @MenuItemVersionId{andTenantId:[MenuItems]} ";
 		private const string WhereQueryByMenuCategoryId = "WHERE [MenuItems].[MenuCategoryId] = @MenuCategoryId{andTenantId:[MenuItems]} ";
@@ -640,50 +640,50 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 		*/
 		public void RemoveByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-			var sql = SelectIntoTempTable + WhereQueryByMenuItemId + DeleteQueryBy;
+			var sql = DeclarePK + WhereQueryByMenuItemId + DeleteQueryBy;
 			DataAccessService.PersistObject(menuItem, sql);
 		}
 		public async Task RemoveByMenuItemIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-			var sql = SelectIntoTempTable + WhereQueryByMenuItemId + DeleteQueryBy;
+			var sql = DeclarePK + WhereQueryByMenuItemId + DeleteQueryBy;
 			await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 
 		public void RemoveByMenuItemId(System.Guid menuItemId)
 		{
 			object parameters = new { menuItemId };
-			var sql = SelectIntoTempTable + WhereQueryByMenuItemId + DeleteQueryBy;
+			var sql = DeclarePK + WhereQueryByMenuItemId + DeleteQueryBy;
 			DataAccessService.PersistObject<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 		}
 		public async Task RemoveByMenuItemIdAsync(System.Guid menuItemId)
 		{
 			object parameters = new { menuItemId };
-			var sql = SelectIntoTempTable + WhereQueryByMenuItemId + DeleteQueryBy;
+			var sql = DeclarePK + WhereQueryByMenuItemId + DeleteQueryBy;
 			await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 		}
 
 		/*
 		public void RemoveByMenuCategoryId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
+		var sql = DeclarePK + WhereQueryByMenuCategoryId + DeleteQueryBy; 
 		DataAccessService.PersistObject(menuItem, sql);
 		}
 		public async Task RemoveByMenuCategoryIdAsync(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{
-		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
+		var sql = DeclarePK + WhereQueryByMenuCategoryId + DeleteQueryBy; 
 		await DataAccessService.PersistObjectAsync(menuItem, sql);
 		}
 
 		public void RemoveByMenuCategoryId(System.Guid menuCategoryId)
 		{
 		object parameters = new {menuCategoryId};
-		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
+		var sql = DeclarePK + WhereQueryByMenuCategoryId + DeleteQueryBy; 
 		DataAccessService.PersistObject<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 		}
 		public async Task RemoveByMenuCategoryIdAsync(System.Guid menuCategoryId)
 		{
 		object parameters = new {menuCategoryId};
-		var sql = SelectIntoTempTable + WhereQueryByMenuCategoryId + DeleteQueryBy; 
+		var sql = DeclarePK + WhereQueryByMenuCategoryId + DeleteQueryBy; 
 		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem>(sql, parameters);
 		}
 
