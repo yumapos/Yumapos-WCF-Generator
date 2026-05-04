@@ -150,11 +150,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return sb.ToString();
         }
 
-        public string GenerateInsertToTemp(SqlInfo info)
+        public string GenerateDeclarePK(SqlInfo info)
         {
-            return "DECLARE " + _tempTable + " TABLE (ItemId uniqueidentifier);" +
-                                                        "INSERT INTO "+ _tempTable + " " +
-                                                        "SELECT " + Field(info.TableName, info.PrimaryKeyNames.First()) + " FROM " + info.TableName + " ";//TODO FIX TO MANY KEYS
+            return $"DECLARE @primaryKey uniqueidentifier SELECT TOP 1 @primaryKey = {Field(info.TableName, info.PrimaryKeyNames.First())} FROM {info.TableName} ";
         }
 
         public string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info)
@@ -307,8 +305,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
                 // base or version repository without "isDeleted" flag
                 if (info.JoinTableColumns != null && !string.IsNullOrEmpty(info.JoinTableName))
                 {
-                    return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + //TODO FIX TO MANY KEYS
-                           Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " IN (SELECT ItemId FROM " + _tempTable + ");" + " "; //TODO FIX TO MANY KEYS
+                    return Delete(info.TableName) + " WHERE " + Field(info.TableName, info.PrimaryKeyNames.First()) + " = @primaryKey;" + 
+                           Delete(info.JoinTableName) + " WHERE " + Field(info.JoinTableName, info.JoinPrimaryKeyNames.First()) + " = @primaryKey;" + " ";
                 }
                 else
                 {
@@ -553,16 +551,9 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         private static string InsertWithJoined(List<string> joinedTableColumns, List<string> joinedTableValues, string joinedTableName, string joinedPkColumn, string joinedPkType, List<string> tableColumns, List<string> tableValues, string tableName, string pkColumn)
         {
-            var tableForSave = "TempTable";
-            var declareTable = "DECLARE @" + tableForSave + " TABLE (" + joinedPkColumn + " " + joinedPkType + ");";
-            var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + "OUTPUT INSERTED." + joinedPkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(joinedTableValues) + ");";
-
-            var tempValue = "TempId" ;
-            var insertedValue = "DECLARE @" + tempValue + " " + joinedPkType + "; SELECT @" + tempValue + " = "+ joinedPkColumn + " FROM @" + tableForSave + ";";
-
-            var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + "OUTPUT INSERTED." + pkColumn + (string.IsNullOrEmpty(tableForSave) ? "" : " INTO @" + tableForSave) + " VALUES(" + Values(tableValues.Select(v=> v == pkColumn ? tempValue : v)) + ");";
-            var selectId = "SELECT " + joinedPkColumn + " FROM @" + tableForSave + ";";
-            return declareTable + insertToJoined + insertedValue + insert + selectId;
+            var insertToJoined = "INSERT INTO " + joinedTableName + "(" + Fields(joinedTableColumns, joinedTableName) + ") " + " VALUES(" + Values(joinedTableValues) + ");";
+            var insert = "INSERT INTO " + tableName + "(" + Fields(tableColumns, tableName) + ") " + " VALUES(" + Values(tableValues.Select(v=> v)) + ");";
+            return insertToJoined + insert;
         }
 
         private static string InsertManyWithJoined(List<string> joinedTableColumns, string joinedTableName, List<string> tableColumns, string tableName, List<string> hiddenTableColumns)
