@@ -21,8 +21,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
 
         string GenerateInsertManyJoinedValuesTemplate(SqlInfo info);
 
-        string GenerateInsertToTemp(SqlInfo info);
-
         string GenerateWhere(IEnumerable<ParameterInfo> parameters, SqlInfo info);
 
         string GenerateWhere(IEnumerable<string> selectedFilters, SqlInfo info);
@@ -68,5 +66,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
         string GenerateUpdateMany(SqlInfo sqlInfo);
 
         string GenerateUpdateManyJoined(SqlInfo sqlInfo);
+        string GenerateDeclarePK(SqlInfo info);
     }
 }

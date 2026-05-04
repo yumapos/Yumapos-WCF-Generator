@@ -13,7 +13,6 @@ namespace WCFGenerator.RepositoriesGeneration.Core
 
         private readonly string _selectAllQuery = "SelectAllQuery";
         private readonly string _selectByQuery = "SelectByQuery";
-        private readonly string _selectIntoTemp = "SelectIntoTempTable";
 
         private readonly string _insertQuery = "InsertQuery";
         
@@ -31,6 +30,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         private readonly string _pk = "Pk";
         private readonly string _insertOrUpdateQuery = "InsertOrUpdateQuery";
 
+        private readonly string _declarePK = "DeclarePK";
+        
         #endregion
 
         #region Overrides of RepositoryCodeGeneratorAbstract
@@ -92,8 +93,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 var updateManyByQueryJoinedTemplate = ScriptGenerator.GenerateUpdateManyJoined(sqlInfo).SurroundWithQuotes();
                 sb.AppendLine("private const string " + GetUpdateManyByJoinedQueryTemplateField(RepositoryInfo.JoinRepositoryInfo.PrimaryKeyName) + " = @" + updateManyByQueryJoinedTemplate + ";");
 
-                var selectIntoTemp = ScriptGenerator.GenerateInsertToTemp(sqlInfo).SurroundWithQuotes();
-                sb.AppendLine("private const string " + _selectIntoTemp + " = @" + selectIntoTemp + ";");
+                var declarePK = ScriptGenerator.GenerateDeclarePK(sqlInfo).SurroundWithQuotes();
+                sb.AppendLine("private const string " + _declarePK + " = @" + declarePK + ";");
             }
 
             foreach (var method in RepositoryInfo.PossibleKeysForMethods)
@@ -616,7 +617,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
             else
             {
-                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
             }
             sb.AppendLine("DataAccessService.PersistObject(" + parameterName + ", sql);");
             sb.AppendLine("}");
@@ -630,7 +631,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
             else
             {
-                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
             }
             sb.AppendLine("await DataAccessService.PersistObjectAsync(" + parameterName + ", sql);");
             sb.AppendLine("}");
@@ -662,7 +663,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
             else
             {
-                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
             }
             sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
             sb.AppendLine("}");
@@ -677,7 +678,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             }
             else
             {
-                sb.AppendLine("var sql = " + _selectIntoTemp + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
             }
             sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
             sb.AppendLine("}");

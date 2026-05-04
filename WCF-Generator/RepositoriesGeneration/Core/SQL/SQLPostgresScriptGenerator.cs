@@ -506,6 +506,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core.SQL
             return "GenerateUpdateMany script was not generated";
         }
 
+        public string GenerateDeclarePK(SqlInfo info)
+        {
+            return "GenerateDeclarePK script was not generated";
+        }
+
         #endregion
     }
 }
