@@ -23,10 +23,59 @@ namespace WCFGenerator.Common
          * 5. Close solution if all project updated
          */
 
+        private static int CountProjectsInSolution(string solutionPath)
+        {
+            var solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
+            int count = 0;
+    
+            foreach (string line in File.ReadLines(solutionPath))
+            {
+                if (!line.TrimStart().StartsWith("Project(\"")) continue;
+        
+                // Извлекаем GUID типа проекта
+                var match = System.Text.RegularExpressions.Regex.Match(line, @"Project\(""\{([^}]+)\}""\)");
+                if (match.Success)
+                {
+                    string guid = "{" + match.Groups[1].Value + "}";
+                    if (guid != solutionFolderGuid) // исключаем папки
+                        count++;
+                }
+            }
+            return count;
+        }
         public GeneratorWorkspace(string absoluteSlnPath)
         {
             MsBuildWorkspace = MSBuildWorkspace.Create();
-            Solution = MsBuildWorkspace.OpenSolutionAsync(absoluteSlnPath).Result;
+            
+            int totalProjects;
+            var progress = new Progress<ProjectLoadProgress>();
+            try
+            {
+                totalProjects = CountProjectsInSolution(absoluteSlnPath);
+                Console.WriteLine("Total projects: {0}", totalProjects);
+                var loadedProjects = 0;
+                progress.ProgressChanged += (sender, loadProgress) =>
+                {
+                    if (loadProgress.Operation == ProjectLoadOperation.Build && !string.IsNullOrEmpty(loadProgress.FilePath))
+                    {
+                        loadedProjects += 1;
+                    }
+                    var percent = (double)loadedProjects / totalProjects * 100;
+                    var barLength = 50;
+                    var filled = (int)(percent / 100.0 * barLength);
+                    var bar = new string('█', filled) + new string('░', barLength - filled);
+            
+                    var message = $"[{bar}] {percent,5:F1}%";
+            
+                    Console.Write("\r" + message.PadRight(Console.WindowWidth - 1));
+                };
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"Failed to count projects in solution {absoluteSlnPath}");
+            }
+            Solution = MsBuildWorkspace.OpenSolutionAsync(absoluteSlnPath, progress).Result;
+            Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
             var workspaceDiagnostics = MsBuildWorkspace.Diagnostics;
             foreach (var workspaceDiagnostic in workspaceDiagnostics)
             {
