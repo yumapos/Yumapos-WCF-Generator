@@ -4,6 +4,7 @@ using System.Linq;
 using WCFGenerator.RepositoriesGeneration.Core.SQL;
 using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Helpers;
+using WCFGenerator.RepositoriesGeneration.Infrastructure.Tvp;
 
 namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 {
@@ -40,6 +41,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         #region Repository model class info
 
+        public TvpMetadata TvpMetadata { get; set; }
         /// <summary>
         ///     Information about inherited model repository (join repository)
         /// </summary>
@@ -345,6 +347,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public List<MethodInfo> CustomCacheRepositoryMethodNames { get; set; }
 
         public DatabaseType DatabaseType { get; set; }
+        public InsertManyMethod InsertManyMethod { get; set; }
 
 
         /// <summary>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -14,12 +16,13 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 {
     internal class SolutionSyntaxWalker 
     {
-        private readonly CSharpCompilation _repositoryModelsCompilation;
-        private readonly CSharpCompilation _customRepositoriesCompilation;
-        private readonly CSharpCompilation _fullCompilation;
-        private readonly Task<IEnumerable<ClassCompilerInfo>> _getAllClasses;
+        private static readonly SymbolDisplayFormat FullQualifiedDisplayFormat = new SymbolDisplayFormat(
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
-        // Classes from all projects with repository models marked repostiry attribute
+        private readonly CSharpCompilation _fullCompilation;
+        private readonly CSharpCompilation _croppedCompilation;
+
+        // Classes from all projects with repository models marked repository attribute
         private readonly List<ClassDeclarationSyntax> _repositoryModelClasses;
 
         // Classes from target projects
@@ -27,8 +30,6 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 
         // interfaces from all projects with repository interfaces
         private readonly List<InterfaceDeclarationSyntax> _repositoryInterfaces;
-
-        private readonly List<string> _enums;
 
         public SolutionSyntaxWalker(Solution solution, List<string> repositoryModelsProjects, string repositoryAttributeName, List<string> repositoryInterfaceProjects, string targetProject,  List<string> additionalProjectsForAnalysis)
         {
@@ -38,67 +39,50 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             if (repositoryInterfaceProjects == null) throw new ArgumentException("repositoryInterfaceProjects");
             if (targetProject == null) throw new ArgumentException("targetProject");
 
-            _customRepositoryClasses = new List<ClassDeclarationSyntax>();
-            _repositoryModelClasses = new List<ClassDeclarationSyntax>();
-            _repositoryInterfaces = new List<InterfaceDeclarationSyntax>();
-            _enums = new List<string>();
+            var treesByProject = LoadTreesByProjectAsync(solution).Result;
+            var allTrees = treesByProject.SelectMany(g => g).ToList();
 
-            _getAllClasses = solution.GetAllClasses(targetProject, false, "");
-
-            // Get repository model Classes
-            var repositoryModelTrees = GetTrees(solution, repositoryModelsProjects);
-            var allClasses = repositoryModelTrees
-                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+            var selectedProjects = repositoryInterfaceProjects
+                .Concat(repositoryInterfaceProjects)
+                .Concat(additionalProjectsForAnalysis)
+                .Distinct()
                 .ToList();
 
-            var repositoryModels = allClasses.Where(c => c.AttributeExist(repositoryAttributeName));
-            _repositoryModelClasses.AddRange(repositoryModels);
-
-            // Get repository Classes
-            var repositoryTrees = GetTrees(solution, new List<string> {targetProject});
-            var customClasses = repositoryTrees
-                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
-                .ToList();
-            _customRepositoryClasses.AddRange(customClasses);
-
-            // Get repository intrefaces
-            var repositoryInterfaceTrees = GetTrees(solution, repositoryInterfaceProjects);
-            var repositoryInterfaces = repositoryInterfaceTrees
-                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<InterfaceDeclarationSyntax>())
-                .ToList();
-            _repositoryInterfaces.AddRange(repositoryInterfaces);
-
-            // Get additional Classes
-            var additionalTrees = GetTrees(solution, additionalProjectsForAnalysis);
-
-            _repositoryModelsCompilation = CSharpCompilation.Create("RepositoryModelCompilation").AddSyntaxTrees(repositoryModelTrees);
-            _customRepositoriesCompilation = CSharpCompilation.Create("CustomRepositoriesCompilation").AddSyntaxTrees(repositoryTrees);
-
-            var allTrees = new List<SyntaxTree>();
-            allTrees.AddRange(repositoryModelTrees);
-            allTrees.AddRange(repositoryInterfaceTrees);
-            allTrees.AddRange(additionalTrees);
-
-            _fullCompilation = CSharpCompilation.Create("FullCompilation")
-                .AddSyntaxTrees(allTrees)
-                .WithReferences(new List<MetadataReference>()
+            var selectedTrees = treesByProject.Where(x => selectedProjects.Contains(x.Key))
+                .SelectMany(x => x).ToList();
+            
+            _croppedCompilation = CSharpCompilation.Create("CroppedCompilation")
+                .AddSyntaxTrees(selectedTrees)
+                .WithReferences(new List<MetadataReference>
                 {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IEnumerable).Assembly.Location)
                 });
-
-            var allProjectsTrees = repositoryInterfaceProjects
-                .Concat(repositoryModelsProjects)
-                .Concat(additionalProjectsForAnalysis)
-                .Distinct()
-                .ToDictionary(p => p, p => GetTrees(solution, new List<string> { p }));
-
-            _enums = allProjectsTrees
-                .SelectMany(t => t.Value)
-                .SelectMany(t => t.GetRoot().DescendantNodes().OfType<EnumDeclarationSyntax>())
-                .Select(e=> e.Identifier.Text.ToString())
+            
+            _fullCompilation = CSharpCompilation.Create("FullCompilation")
+                .AddSyntaxTrees(allTrees)
+                .WithReferences(new List<MetadataReference>
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IEnumerable).Assembly.Location)
+                });
+    
+            _repositoryModelClasses = treesByProject
+                .Where(g => repositoryModelsProjects.Contains(g.Key))
+                .SelectMany(g => g)
+                .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+                .Where(c => c.AttributeExist(repositoryAttributeName))
                 .ToList();
-
+    
+            _customRepositoryClasses = treesByProject[targetProject]
+                .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+                .ToList();
+    
+            _repositoryInterfaces = treesByProject
+                .Where(g => repositoryInterfaceProjects.Contains(g.Key))
+                .SelectMany(g => g)
+                .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<InterfaceDeclarationSyntax>())
+                .ToList();
         }
 
         public IEnumerable<ClassDeclarationSyntax> GetRepositoryClasses()
@@ -121,7 +105,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         /// </summary>
         public string GetFullTypeName(string typeName)
         {
-            var resultList = _fullCompilation.GetSymbolsWithName(s => s == typeName);
+            var resultList = _croppedCompilation.GetSymbolsWithName(s => s == typeName);
             return resultList.FirstOrDefault()?.ToString();
         }
 
@@ -133,7 +117,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 
         public string GetFullRepositoryModelName(BaseTypeDeclarationSyntax codeclass)
         {
-            var semanticModel = _repositoryModelsCompilation.GetSemanticModel(codeclass.SyntaxTree);
+            var semanticModel = _fullCompilation.GetSemanticModel(codeclass.SyntaxTree);
 
             var symbol = semanticModel.GetDeclaredSymbol(codeclass);
 
@@ -142,7 +126,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
 
         public string GetCustomRepositoryNamespace(BaseTypeDeclarationSyntax codeclass)
         {
-            var semanticModel = _customRepositoriesCompilation.GetSemanticModel(codeclass.SyntaxTree);
+            var semanticModel = _fullCompilation.GetSemanticModel(codeclass.SyntaxTree);
 
             var symbol = semanticModel.GetDeclaredSymbol(codeclass);
 
@@ -165,6 +149,23 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             
             return symbol.GetMethod.ReturnType.ToString();
         }
+
+        public (string FullyQualifiedName, bool Nullable) GetFullPropertyTypeNameAndNullable(PropertyDeclarationSyntax prop)
+        {
+            var semanticModel = _fullCompilation.GetSemanticModel(prop.SyntaxTree);
+            var symbol = semanticModel.GetDeclaredSymbol(prop);
+            var typeSymbol = symbol.Type;
+            var nullable = false;
+            if (typeSymbol is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                nullable = true;
+                typeSymbol = namedType.TypeArguments.FirstOrDefault();
+            }
+
+            return (typeSymbol.ToDisplayString(FullQualifiedDisplayFormat), nullable);
+        }
+        
+        
         public Type GetReturnType(TypeSyntax returnType)
         {
             var semanticModel = _fullCompilation.GetSemanticModel(returnType.SyntaxTree);
@@ -179,22 +180,55 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             return _repositoryModelClasses.Any(c => c.Identifier.Text == syntax.Type.ToString());
         }
 
-        private static List<SyntaxTree> GetTrees(Solution solution, List<string> projects)
-        {
-            var mProjects = solution.Projects.Where(proj => projects.Any(p => p == proj.Name));
-            var mDocuments = mProjects.SelectMany(p => p.Documents.Where(d => !d.Name.Contains(".g.cs")));
-            var mSyntaxTrees = mDocuments.Select(d => CSharpSyntaxTree.ParseText(d.GetTextAsync().Result)).Where(t => t != null).ToList();
-            return mSyntaxTrees;
-        }
-
-
         public bool PropertyIsEnum(PropertyDeclarationSyntax propertyDeclarationSyntax)
         {
-            var t = propertyDeclarationSyntax.Type.ToString().TrimEnd('?');
+            var semanticModel = _fullCompilation.GetSemanticModel(propertyDeclarationSyntax.SyntaxTree);
+            var symbol = semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
+            var typeSymbol = symbol.Type;
             
-            return _enums.Any(e => e == t);
-        }
+            if (typeSymbol is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                var nullableArg = namedType.TypeArguments.FirstOrDefault();
+                if (nullableArg != null && nullableArg.TypeKind == TypeKind.Enum)
+                {
+                    return true;
+                }
+            }
 
+            return typeSymbol.TypeKind == TypeKind.Enum;
+        }
+        public string GetEnumUnderlyingTypeFullName(PropertyDeclarationSyntax prop)
+        {
+            var semanticModel = _fullCompilation.GetSemanticModel(prop.SyntaxTree);
+            var symbol = semanticModel.GetDeclaredSymbol(prop);
+            if (symbol == null) return "System.Int32";
+    
+            var typeSymbol = symbol.GetMethod?.ReturnType;
+            if (typeSymbol == null) return "System.Int32";
+            
+
+            if (typeSymbol is INamedTypeSymbol namedType && 
+                namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                var nullableArg = namedType.TypeArguments.FirstOrDefault();
+                if (nullableArg != null && nullableArg.TypeKind == TypeKind.Enum)
+                {
+                    var enumSymbol = (INamedTypeSymbol)nullableArg;
+                    var underlying = enumSymbol.EnumUnderlyingType;
+                    return underlying?.ToString() ?? "System.Int32";
+                }
+                return "System.Int32";
+            }
+    
+            if (typeSymbol.TypeKind == TypeKind.Enum)
+            {
+                var enumtype = (INamedTypeSymbol)typeSymbol;
+                var underlying = enumtype.EnumUnderlyingType;
+                return underlying?.ToDisplayString(FullQualifiedDisplayFormat) ?? "System.Int32";
+            }
+    
+            return null;
+        }
         public string GetAttributeArgumentValue(ClassDeclarationSyntax parentClass, string propertyName, string attributeName, string argumentName)
         {
             return GetAttributeArgumentValueFromSyntax(parentClass, propertyName, attributeName, argumentName);
@@ -203,6 +237,56 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             //return GetAttributeArgumentValueFromCompilationFromNamedArguments(codeclass, propertyName, attributeName, argumentName);
         }
 
+        
+        private async Task<ILookup<string, SyntaxTree>> LoadTreesByProjectAsync(Solution solution)
+        {
+            var projects = solution.Projects.ToList();
+            var tasks = projects.Select(async project =>
+            {
+                var trees = await GetTrees(solution, new List<string> { project.Name });
+                return new { ProjectName = project.Name, Trees = trees };
+            });
+            var results = await Task.WhenAll(tasks);
+            return results
+                .SelectMany(r => r.Trees, (r, tree) => new { r.ProjectName, Tree = tree })
+                .ToLookup(x => x.ProjectName, x => x.Tree);
+        }
+        
+        private static async Task<List<SyntaxTree>> GetTrees(
+            Solution solution,
+            List<string> projects,
+            LanguageVersion targetVersion = LanguageVersion.Latest)
+        {
+            var uniqueProjectNames = projects.Distinct().ToList();
+            var targetProjects = solution.Projects.Where(p => uniqueProjectNames.Contains(p.Name)).ToList();
+            var trees = new List<SyntaxTree>();
+            foreach (var project in targetProjects)
+            {
+                foreach (var document in project.Documents)
+                {
+                    if (document.Name.Contains(".g.cs"))
+                        continue;
+
+                    var filePath = document.FilePath;
+                    if (string.IsNullOrEmpty(filePath))
+                        continue;
+
+                    var tree = await document.GetSyntaxTreeAsync();
+                    if (tree == null) continue;
+
+                    var parseOptions = tree.Options as CSharpParseOptions;
+                    if (parseOptions != null && parseOptions.LanguageVersion != targetVersion)
+                    {
+                        var newParseOptions = parseOptions.WithLanguageVersion(targetVersion);
+                        tree = tree.WithRootAndOptions(await tree.GetRootAsync(), newParseOptions);
+                    }
+                    trees.Add(tree);
+                }
+            }
+
+            return trees;
+        }
+        
         private static string GetAttributeArgumentValueFromSyntax(ClassDeclarationSyntax parentClass, string propertyName, string attributeName, string argumentName)
         {
             var prop = parentClass.Members.OfType<PropertyDeclarationSyntax>().First(cp =>

@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
+using WCFGenerator.RepositoriesGeneration.Helpers;
 
 namespace WCFGenerator.Common
 {
@@ -170,8 +171,8 @@ namespace WCFGenerator.Common
             foreach (var doc in _filesToCreation)
             {
                 Document document;
-
-                var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.EndsWith(doc.ProjectFolder + "\\" + doc.FileName));
+                var docname = (doc.ProjectFolder + "\\" + doc.FileName).NormalizeDirectorySlashes();
+                var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.NormalizeDirectorySlashes().EndsWith(docname));
 
                 var code = CodeHelper.GeneratedDocumentHeader + "\r\n" + doc.SrcText;
 
@@ -182,7 +183,7 @@ namespace WCFGenerator.Common
                     var newDoc = old.WithText(st);
                     if(standartFormatting)
                     {
-                        newDoc = CodeHelper.Formatting(newDoc);
+                        newDoc = await CodeHelper.Format(newDoc);
                     }
                     var c = await newDoc.GetTextChangesAsync(old);
                     document = c.Any() ? newDoc : old;
@@ -191,7 +192,7 @@ namespace WCFGenerator.Common
                 // create new document
                 else
                 {
-                    CodeHelper.AddDocument(standartFormatting, project, doc.FileName, code, doc.ProjectFolder.Split('\\'));
+                    await CodeHelper.AddDocument(standartFormatting, project, doc.FileName, code, doc.ProjectFolder.Split('\\'));
                 }
             }
             // Apply project changes

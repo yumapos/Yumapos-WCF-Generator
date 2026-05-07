@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace TestRepositoryGeneration.Infrastructure
@@ -32,5 +33,7 @@ namespace TestRepositoryGeneration.Infrastructure
 
         Task<IEnumerable<TResult>> GetMultipleMappingAsync<TFirst, TSecond, TThird, TResult>(string sql,
             Func<TFirst, TSecond, TThird, TResult> map, object parameterValues, string splitOn);
+        
+        void AddTableParameter(DataTable dataTable, string typeName, string parameterName, IDictionary<string, object> parameters);
     }
 }

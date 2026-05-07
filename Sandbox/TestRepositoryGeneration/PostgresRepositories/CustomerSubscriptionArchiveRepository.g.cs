@@ -80,8 +80,29 @@ namespace TestRepositoryGeneration
 
 		*/
 		/*
-
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+			InsertManyViaRows(customerSubscriptionList);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+			await InsertManyViaRowsAsync(customerSubscriptionList);
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+			InsertManyViaRowsSplitByTransactions(customerSubscriptionList);
+		}
+
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		{
+			await InsertManyViaRowsSplitByTransactionsAsync(customerSubscriptionList);
+		}
+		*/
+		/*
+
+		public void InsertManyViaRows(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
 
@@ -120,7 +141,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		public void InsertManyViaRowsSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
 
@@ -161,7 +182,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		public async Task InsertManyViaRowsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
 
@@ -206,7 +227,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
+		public async Task InsertManyViaRowsSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> customerSubscriptionList)
 		{
 		if(customerSubscriptionList==null) throw new ArgumentException(nameof(customerSubscriptionList));
 
@@ -254,6 +275,7 @@ namespace TestRepositoryGeneration
 		}
 
 		*/
+
 		/*
 		public void UpdateByCustomerIdAndCustomerNotificationsType(TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription customerSubscription)
 		{

@@ -170,8 +170,29 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
-
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			InsertManyViaRows(addressList);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			await InsertManyViaRowsAsync(addressList);
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			InsertManyViaRowsSplitByTransactions(addressList);
+		}
+
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			await InsertManyViaRowsSplitByTransactionsAsync(addressList);
+		}
+		*/
+		/*
+
+		public void InsertManyViaRows(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -214,7 +235,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public void InsertManyViaRowsSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -259,7 +280,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public async Task InsertManyViaRowsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -308,7 +329,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		public async Task InsertManyViaRowsSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
 		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
@@ -360,6 +381,7 @@ namespace TestRepositoryGeneration
 		}
 
 		*/
+
 		public void UpdateById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{
 			var sql = UpdateQueryBy + WhereQueryById;

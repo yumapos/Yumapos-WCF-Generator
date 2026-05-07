@@ -148,198 +148,504 @@ namespace TestRepositoryGeneration.CustomRepositories.VersionsRepositories
 			await DataAccessService.InsertObjectAsync(menuItem, InsertQuery);
 		}
 
-
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
-			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
-
-			if (!menuItemList.Any()) return;
-
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var joinedValues = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			foreach (var items in itemsPerRequest)
-			{
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-				foreach (var item in items)
-				{
-					var menuItem = item.Value;
-					var index = item.Index;
-					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
-					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
-					joinedValues.AppendLine(index != 0 ? "," : "");
-					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
-				DataAccessService.Execute(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				joinedValues.Clear();
-				query.Clear();
-			}
-
-		}
-
-		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
-		{
-			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
-
-			if (!menuItemList.Any()) return;
-
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var joinedValues = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION;");
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-				foreach (var item in items)
-				{
-					var menuItem = item.Value;
-					var index = item.Index;
-					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
-					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
-					joinedValues.AppendLine(index != 0 ? "," : "");
-					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
-				query.AppendLine("COMMIT TRANSACTION;");
-				DataAccessService.Execute(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				joinedValues.Clear();
-				query.Clear();
-			}
-
+			InsertManyViaTvp(menuItemList);
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
-			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+			await InsertManyViaTvpAsync(menuItemList);
+		}
 
-			if (!menuItemList.Any()) return;
-
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var joinedValues = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			await Task.Delay(10);
-
-			foreach (var items in itemsPerRequest)
-			{
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-				foreach (var item in items)
-				{
-					var menuItem = item.Value;
-					var index = item.Index;
-					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
-					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
-					joinedValues.AppendLine(index != 0 ? "," : "");
-					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
-
-				await Task.Delay(10);
-				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				joinedValues.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
-
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			InsertManyViaTvpSplitByTransactions(menuItemList);
 		}
 
 		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
 		{
-			if (menuItemList == null) throw new ArgumentException(nameof(menuItemList));
+			await InsertManyViaTvpSplitByTransactionsAsync(menuItemList);
+		}
+		/*
 
-			if (!menuItemList.Any()) return;
+		public void InsertManyViaRows(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
 
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 4;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var joinedValues = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
+		if(!menuItemList.Any()) return;
 
-			var itemsPerRequest = menuItemList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var joinedValues = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
 
-			await Task.Delay(10);
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
 
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION;");
-				parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
-				foreach (var item in items)
-				{
-					var menuItem = item.Value;
-					var index = item.Index;
-					parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
-					parameters.Add($"CategoryId{index}", menuItem.CategoryId);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId, menuItem.MenuItemVersionId, menuItem.MenuCategoryId, menuItem.ExternalId?.ToString() ?? "NULL", menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL", menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", (int)menuItem.Type, ((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL", (menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
-					joinedValues.AppendLine(index != 0 ? "," : "");
-					joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId, menuItem.ItemVersionId, menuItem.IsDeleted ? 1 : 0, menuItem.Modified.ToString(CultureInfo.InvariantCulture), menuItem.ModifiedBy);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'", "NULL").ToString(), values.Replace("'NULL'", "NULL").ToString());
-				query.AppendLine("COMMIT TRANSACTION;");
-
-				await Task.Delay(10);
-				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				joinedValues.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
+		foreach (var items in itemsPerRequest)
+		{
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId,menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		joinedValues.AppendLine(index != 0 ? ",":"");
+		joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'","NULL").ToString(), values.Replace("'NULL'","NULL").ToString());
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		joinedValues.Clear();
+		query.Clear();
+		}
 
 		}
+
+		public void InsertManyViaRowsSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var joinedValues = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId,menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		joinedValues.AppendLine(index != 0 ? ",":"");
+		joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'","NULL").ToString(), values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		joinedValues.Clear();
+		query.Clear();
+		}
+
+		}
+
+		public async Task InsertManyViaRowsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var joinedValues = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId,menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		joinedValues.AppendLine(index != 0 ? ",":"");
+		joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'","NULL").ToString(), values.Replace("'NULL'","NULL").ToString());
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		joinedValues.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		public async Task InsertManyViaRowsSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+		if(menuItemList==null) throw new ArgumentException(nameof(menuItemList));
+
+		if(!menuItemList.Any()) return;
+
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 2;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var joinedValues = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItemList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		parameters.Add($"TenantId", DataAccessController.Tenant.TenantId);
+		foreach (var item in items)
+		{
+		var menuItem = item.Value;
+		var index = item.Index; 
+		parameters.Add($"CreatedBy{index}", menuItem.CreatedBy);
+		parameters.Add($"CategoryId{index}", menuItem.CategoryId);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItem.MenuItemId,menuItem.MenuItemVersionId,menuItem.MenuCategoryId,menuItem.ExternalId?.ToString() ?? "NULL",menuItem.DiscountValue?.ToString(CultureInfo.InvariantCulture) ?? "NULL",menuItem.DiscountStartDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",(int)menuItem.Type,((int?)menuItem.BitKitchenPrinters)?.ToString() ?? "NULL",(menuItem.YesNoUnknown != null ? (menuItem.YesNoUnknown.Value ? 1 : 0).ToString() : null) ?? "NULL");
+		joinedValues.AppendLine(index != 0 ? ",":"");
+		joinedValues.AppendFormat(InsertManyJoinedValuesTemplate, index, menuItem.ItemId,menuItem.ItemVersionId,menuItem.IsDeleted ? 1 : 0,menuItem.Modified.ToString(CultureInfo.InvariantCulture),menuItem.ModifiedBy);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, joinedValues.Replace("'NULL'","NULL").ToString(), values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		joinedValues.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*/
+		private void InsertManyViaTvp(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentNullException(nameof(menuItemList));
+			var list = menuItemList.ToList();
+			if (!list.Any()) return;
+
+			var joinedDataTable = new System.Data.DataTable();
+			joinedDataTable.Columns.Add("CategoryId", typeof(System.String));
+			joinedDataTable.Columns["CategoryId"].AllowDBNull = true;
+			joinedDataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			joinedDataTable.Columns.Add("ItemId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("ItemVersionId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			joinedDataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			joinedDataTable.Columns.Add("TenantId", typeof(Guid));
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("BitKitchenPrinters", typeof(int));
+			dataTable.Columns.Add("CreatedBy", typeof(System.String));
+			dataTable.Columns.Add("DiscountStartDate", typeof(System.DateTime));
+			dataTable.Columns.Add("DiscountValue", typeof(System.Decimal));
+			dataTable.Columns.Add("ExternalId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuCategoryId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("TenantId", typeof(Guid));
+			dataTable.Columns.Add("Type", typeof(System.Int32));
+			dataTable.Columns.Add("YesNoUnknown", typeof(System.Boolean));
+
+			foreach (var item in list)
+			{
+				var row = dataTable.NewRow();
+				row["BitKitchenPrinters"] = item.BitKitchenPrinters == null ? DBNull.Value : item.BitKitchenPrinters;
+				row["CreatedBy"] = item.CreatedBy == null ? DBNull.Value : item.CreatedBy;
+				row["DiscountStartDate"] = item.DiscountStartDate == null ? DBNull.Value : item.DiscountStartDate;
+				row["DiscountValue"] = item.DiscountValue == null ? DBNull.Value : item.DiscountValue;
+				row["ExternalId"] = item.ExternalId == null ? DBNull.Value : item.ExternalId;
+				row["MenuCategoryId"] = item.MenuCategoryId;
+				row["MenuItemId"] = item.MenuItemId;
+				row["MenuItemVersionId"] = item.MenuItemVersionId;
+				row["TenantId"] = DataAccessController.Tenant.TenantId;
+				row["Type"] = item.Type;
+				row["YesNoUnknown"] = item.YesNoUnknown == null ? DBNull.Value : item.YesNoUnknown;
+				dataTable.Rows.Add(row);
+				var joinedRow = joinedDataTable.NewRow();
+				joinedRow["CategoryId"] = item.CategoryId == null ? DBNull.Value : item.CategoryId;
+				joinedRow["IsDeleted"] = item.IsDeleted;
+				joinedRow["ItemId"] = item.ItemId;
+				joinedRow["ItemVersionId"] = item.ItemVersionId;
+				joinedRow["Modified"] = item.Modified;
+				joinedRow["ModifiedBy"] = item.ModifiedBy;
+				joinedRow["TenantId"] = DataAccessController.Tenant.TenantId;
+				joinedDataTable.Rows.Add(joinedRow);
+			}
+
+			var parameters = new Dictionary<string, object>();
+			DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems", "tvp", parameters);
+			DataAccessService.AddTableParameter(joinedDataTable, "dbo.UT_RecipieItems", "joinedTvp", parameters);
+			var sql = @"
+INSERT INTO [dbo].[RecipieItems] ([dbo].[RecipieItems].[CategoryId], [dbo].[RecipieItems].[IsDeleted], [dbo].[RecipieItems].[ItemId], [dbo].[RecipieItems].[ItemVersionId], [dbo].[RecipieItems].[Modified], [dbo].[RecipieItems].[ModifiedBy], [dbo].[RecipieItems].[TenantId])
+SELECT [CategoryId], [IsDeleted], [ItemId], [ItemVersionId], [Modified], [ModifiedBy], [TenantId] FROM @joinedTvp;
+
+INSERT INTO [dbo].[MenuItems] ([dbo].[MenuItems].[BitKitchenPrinters], [dbo].[MenuItems].[CreatedBy], [dbo].[MenuItems].[DiscountStartDate], [dbo].[MenuItems].[DiscountValue], [dbo].[MenuItems].[ExternalId], [dbo].[MenuItems].[MenuCategoryId], [dbo].[MenuItems].[MenuItemId], [dbo].[MenuItems].[MenuItemVersionId], [dbo].[MenuItems].[TenantId], [dbo].[MenuItems].[Type], [dbo].[MenuItems].[YesNoUnknown]) 
+SELECT [BitKitchenPrinters], [CreatedBy], [DiscountStartDate], [DiscountValue], [ExternalId], [MenuCategoryId], [MenuItemId], [MenuItemVersionId], [TenantId], [Type], [YesNoUnknown] FROM @tvp;";
+
+			DataAccessService.Execute(sql, parameters);
+		}
+
+		private async Task InsertManyViaTvpAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentNullException(nameof(menuItemList));
+			var list = menuItemList.ToList();
+			if (!list.Any()) return;
+
+			var joinedDataTable = new System.Data.DataTable();
+			joinedDataTable.Columns.Add("CategoryId", typeof(System.String));
+			joinedDataTable.Columns["CategoryId"].AllowDBNull = true;
+			joinedDataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			joinedDataTable.Columns.Add("ItemId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("ItemVersionId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			joinedDataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			joinedDataTable.Columns.Add("TenantId", typeof(Guid));
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("BitKitchenPrinters", typeof(int));
+			dataTable.Columns.Add("CreatedBy", typeof(System.String));
+			dataTable.Columns.Add("DiscountStartDate", typeof(System.DateTime));
+			dataTable.Columns.Add("DiscountValue", typeof(System.Decimal));
+			dataTable.Columns.Add("ExternalId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuCategoryId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("TenantId", typeof(Guid));
+			dataTable.Columns.Add("Type", typeof(System.Int32));
+			dataTable.Columns.Add("YesNoUnknown", typeof(System.Boolean));
+
+			foreach (var item in list)
+			{
+				var row = dataTable.NewRow();
+				row["BitKitchenPrinters"] = item.BitKitchenPrinters == null ? DBNull.Value : item.BitKitchenPrinters;
+				row["CreatedBy"] = item.CreatedBy == null ? DBNull.Value : item.CreatedBy;
+				row["DiscountStartDate"] = item.DiscountStartDate == null ? DBNull.Value : item.DiscountStartDate;
+				row["DiscountValue"] = item.DiscountValue == null ? DBNull.Value : item.DiscountValue;
+				row["ExternalId"] = item.ExternalId == null ? DBNull.Value : item.ExternalId;
+				row["MenuCategoryId"] = item.MenuCategoryId;
+				row["MenuItemId"] = item.MenuItemId;
+				row["MenuItemVersionId"] = item.MenuItemVersionId;
+				row["TenantId"] = DataAccessController.Tenant.TenantId;
+				row["Type"] = item.Type;
+				row["YesNoUnknown"] = item.YesNoUnknown == null ? DBNull.Value : item.YesNoUnknown;
+				dataTable.Rows.Add(row);
+				var joinedRow = joinedDataTable.NewRow();
+				joinedRow["CategoryId"] = item.CategoryId == null ? DBNull.Value : item.CategoryId;
+				joinedRow["IsDeleted"] = item.IsDeleted;
+				joinedRow["ItemId"] = item.ItemId;
+				joinedRow["ItemVersionId"] = item.ItemVersionId;
+				joinedRow["Modified"] = item.Modified;
+				joinedRow["ModifiedBy"] = item.ModifiedBy;
+				joinedRow["TenantId"] = DataAccessController.Tenant.TenantId;
+				joinedDataTable.Rows.Add(joinedRow);
+			}
+
+			var parameters = new Dictionary<string, object>();
+			DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems", "tvp", parameters);
+			DataAccessService.AddTableParameter(joinedDataTable, "dbo.UT_RecipieItems", "joinedTvp", parameters);
+			var sql = @"
+INSERT INTO [dbo].[RecipieItems] ([dbo].[RecipieItems].[CategoryId], [dbo].[RecipieItems].[IsDeleted], [dbo].[RecipieItems].[ItemId], [dbo].[RecipieItems].[ItemVersionId], [dbo].[RecipieItems].[Modified], [dbo].[RecipieItems].[ModifiedBy], [dbo].[RecipieItems].[TenantId])
+SELECT [CategoryId], [IsDeleted], [ItemId], [ItemVersionId], [Modified], [ModifiedBy], [TenantId] FROM @joinedTvp;
+
+INSERT INTO [dbo].[MenuItems] ([dbo].[MenuItems].[BitKitchenPrinters], [dbo].[MenuItems].[CreatedBy], [dbo].[MenuItems].[DiscountStartDate], [dbo].[MenuItems].[DiscountValue], [dbo].[MenuItems].[ExternalId], [dbo].[MenuItems].[MenuCategoryId], [dbo].[MenuItems].[MenuItemId], [dbo].[MenuItems].[MenuItemVersionId], [dbo].[MenuItems].[TenantId], [dbo].[MenuItems].[Type], [dbo].[MenuItems].[YesNoUnknown]) 
+SELECT [BitKitchenPrinters], [CreatedBy], [DiscountStartDate], [DiscountValue], [ExternalId], [MenuCategoryId], [MenuItemId], [MenuItemVersionId], [TenantId], [Type], [YesNoUnknown] FROM @tvp;";
+
+			await DataAccessService.ExecuteAsync(sql, parameters);
+		}
+
+		private void InsertManyViaTvpSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentNullException(nameof(menuItemList));
+			var list = menuItemList.ToList();
+			if (!list.Any()) return;
+
+			const int batchSize = 1000;
+
+			var joinedDataTable = new System.Data.DataTable();
+			joinedDataTable.Columns.Add("CategoryId", typeof(System.String));
+			joinedDataTable.Columns["CategoryId"].AllowDBNull = true;
+			joinedDataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			joinedDataTable.Columns.Add("ItemId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("ItemVersionId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			joinedDataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			joinedDataTable.Columns.Add("TenantId", typeof(Guid));
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("BitKitchenPrinters", typeof(int));
+			dataTable.Columns.Add("CreatedBy", typeof(System.String));
+			dataTable.Columns.Add("DiscountStartDate", typeof(System.DateTime));
+			dataTable.Columns.Add("DiscountValue", typeof(System.Decimal));
+			dataTable.Columns.Add("ExternalId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuCategoryId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("TenantId", typeof(Guid));
+			dataTable.Columns.Add("Type", typeof(System.Int32));
+			dataTable.Columns.Add("YesNoUnknown", typeof(System.Boolean));
+
+			foreach (var batch in list.Chunk(batchSize))
+			{
+				foreach (var item in batch)
+				{
+					var row = dataTable.NewRow();
+					row["BitKitchenPrinters"] = item.BitKitchenPrinters == null ? DBNull.Value : item.BitKitchenPrinters;
+					row["CreatedBy"] = item.CreatedBy == null ? DBNull.Value : item.CreatedBy;
+					row["DiscountStartDate"] = item.DiscountStartDate == null ? DBNull.Value : item.DiscountStartDate;
+					row["DiscountValue"] = item.DiscountValue == null ? DBNull.Value : item.DiscountValue;
+					row["ExternalId"] = item.ExternalId == null ? DBNull.Value : item.ExternalId;
+					row["MenuCategoryId"] = item.MenuCategoryId;
+					row["MenuItemId"] = item.MenuItemId;
+					row["MenuItemVersionId"] = item.MenuItemVersionId;
+					row["TenantId"] = DataAccessController.Tenant.TenantId;
+					row["Type"] = item.Type;
+					row["YesNoUnknown"] = item.YesNoUnknown == null ? DBNull.Value : item.YesNoUnknown;
+					dataTable.Rows.Add(row);
+					var joinedRow = joinedDataTable.NewRow();
+					joinedRow["CategoryId"] = item.CategoryId == null ? DBNull.Value : item.CategoryId;
+					joinedRow["IsDeleted"] = item.IsDeleted;
+					joinedRow["ItemId"] = item.ItemId;
+					joinedRow["ItemVersionId"] = item.ItemVersionId;
+					joinedRow["Modified"] = item.Modified;
+					joinedRow["ModifiedBy"] = item.ModifiedBy;
+					joinedRow["TenantId"] = DataAccessController.Tenant.TenantId;
+					joinedDataTable.Rows.Add(joinedRow);
+				}
+
+				var parameters = new Dictionary<string, object>();
+				DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems", "tvp", parameters);
+				DataAccessService.AddTableParameter(joinedDataTable, "dbo.UT_RecipieItems", "joinedTvp", parameters);
+				var sql = @"
+INSERT INTO [dbo].[RecipieItems] ([dbo].[RecipieItems].[CategoryId], [dbo].[RecipieItems].[IsDeleted], [dbo].[RecipieItems].[ItemId], [dbo].[RecipieItems].[ItemVersionId], [dbo].[RecipieItems].[Modified], [dbo].[RecipieItems].[ModifiedBy], [dbo].[RecipieItems].[TenantId])
+SELECT [CategoryId], [IsDeleted], [ItemId], [ItemVersionId], [Modified], [ModifiedBy], [TenantId] FROM @joinedTvp;
+
+INSERT INTO [dbo].[MenuItems] ([dbo].[MenuItems].[BitKitchenPrinters], [dbo].[MenuItems].[CreatedBy], [dbo].[MenuItems].[DiscountStartDate], [dbo].[MenuItems].[DiscountValue], [dbo].[MenuItems].[ExternalId], [dbo].[MenuItems].[MenuCategoryId], [dbo].[MenuItems].[MenuItemId], [dbo].[MenuItems].[MenuItemVersionId], [dbo].[MenuItems].[TenantId], [dbo].[MenuItems].[Type], [dbo].[MenuItems].[YesNoUnknown]) 
+SELECT [BitKitchenPrinters], [CreatedBy], [DiscountStartDate], [DiscountValue], [ExternalId], [MenuCategoryId], [MenuItemId], [MenuItemVersionId], [TenantId], [Type], [YesNoUnknown] FROM @tvp;";
+
+				DataAccessService.Execute(sql, parameters);
+				joinedDataTable.Clear();
+				dataTable.Clear();
+			}
+		}
+
+		private async Task InsertManyViaTvpSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem> menuItemList)
+		{
+			if (menuItemList == null) throw new ArgumentNullException(nameof(menuItemList));
+			var list = menuItemList.ToList();
+			if (!list.Any()) return;
+
+			const int batchSize = 1000;
+
+			var joinedDataTable = new System.Data.DataTable();
+			joinedDataTable.Columns.Add("CategoryId", typeof(System.String));
+			joinedDataTable.Columns["CategoryId"].AllowDBNull = true;
+			joinedDataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			joinedDataTable.Columns.Add("ItemId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("ItemVersionId", typeof(System.Guid));
+			joinedDataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			joinedDataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			joinedDataTable.Columns.Add("TenantId", typeof(Guid));
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("BitKitchenPrinters", typeof(int));
+			dataTable.Columns.Add("CreatedBy", typeof(System.String));
+			dataTable.Columns.Add("DiscountStartDate", typeof(System.DateTime));
+			dataTable.Columns.Add("DiscountValue", typeof(System.Decimal));
+			dataTable.Columns.Add("ExternalId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuCategoryId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("TenantId", typeof(Guid));
+			dataTable.Columns.Add("Type", typeof(System.Int32));
+			dataTable.Columns.Add("YesNoUnknown", typeof(System.Boolean));
+
+			foreach (var batch in list.Chunk(batchSize))
+			{
+				foreach (var item in batch)
+				{
+					var row = dataTable.NewRow();
+					row["BitKitchenPrinters"] = item.BitKitchenPrinters == null ? DBNull.Value : item.BitKitchenPrinters;
+					row["CreatedBy"] = item.CreatedBy == null ? DBNull.Value : item.CreatedBy;
+					row["DiscountStartDate"] = item.DiscountStartDate == null ? DBNull.Value : item.DiscountStartDate;
+					row["DiscountValue"] = item.DiscountValue == null ? DBNull.Value : item.DiscountValue;
+					row["ExternalId"] = item.ExternalId == null ? DBNull.Value : item.ExternalId;
+					row["MenuCategoryId"] = item.MenuCategoryId;
+					row["MenuItemId"] = item.MenuItemId;
+					row["MenuItemVersionId"] = item.MenuItemVersionId;
+					row["TenantId"] = DataAccessController.Tenant.TenantId;
+					row["Type"] = item.Type;
+					row["YesNoUnknown"] = item.YesNoUnknown == null ? DBNull.Value : item.YesNoUnknown;
+					dataTable.Rows.Add(row);
+					var joinedRow = joinedDataTable.NewRow();
+					joinedRow["CategoryId"] = item.CategoryId == null ? DBNull.Value : item.CategoryId;
+					joinedRow["IsDeleted"] = item.IsDeleted;
+					joinedRow["ItemId"] = item.ItemId;
+					joinedRow["ItemVersionId"] = item.ItemVersionId;
+					joinedRow["Modified"] = item.Modified;
+					joinedRow["ModifiedBy"] = item.ModifiedBy;
+					joinedRow["TenantId"] = DataAccessController.Tenant.TenantId;
+					joinedDataTable.Rows.Add(joinedRow);
+				}
+
+				var parameters = new Dictionary<string, object>();
+				DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems", "tvp", parameters);
+				DataAccessService.AddTableParameter(joinedDataTable, "dbo.UT_RecipieItems", "joinedTvp", parameters);
+				var sql = @"
+INSERT INTO [dbo].[RecipieItems] ([dbo].[RecipieItems].[CategoryId], [dbo].[RecipieItems].[IsDeleted], [dbo].[RecipieItems].[ItemId], [dbo].[RecipieItems].[ItemVersionId], [dbo].[RecipieItems].[Modified], [dbo].[RecipieItems].[ModifiedBy], [dbo].[RecipieItems].[TenantId])
+SELECT [CategoryId], [IsDeleted], [ItemId], [ItemVersionId], [Modified], [ModifiedBy], [TenantId] FROM @joinedTvp;
+
+INSERT INTO [dbo].[MenuItems] ([dbo].[MenuItems].[BitKitchenPrinters], [dbo].[MenuItems].[CreatedBy], [dbo].[MenuItems].[DiscountStartDate], [dbo].[MenuItems].[DiscountValue], [dbo].[MenuItems].[ExternalId], [dbo].[MenuItems].[MenuCategoryId], [dbo].[MenuItems].[MenuItemId], [dbo].[MenuItems].[MenuItemVersionId], [dbo].[MenuItems].[TenantId], [dbo].[MenuItems].[Type], [dbo].[MenuItems].[YesNoUnknown]) 
+SELECT [BitKitchenPrinters], [CreatedBy], [DiscountStartDate], [DiscountValue], [ExternalId], [MenuCategoryId], [MenuItemId], [MenuItemVersionId], [TenantId], [Type], [YesNoUnknown] FROM @tvp;";
+
+				await DataAccessService.ExecuteAsync(sql, parameters);
+				joinedDataTable.Clear();
+				dataTable.Clear();
+				await Task.Delay(10);
+			}
+		}
+
+
 
 		public void UpdateByMenuItemId(TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItem menuItem)
 		{

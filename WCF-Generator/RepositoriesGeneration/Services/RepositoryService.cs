@@ -9,6 +9,7 @@ using WCFGenerator.RepositoriesGeneration.Core;
 using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Infrastructure.Tvp;
 using WCFGenerator.RepositoriesGeneration.Yumapos.Infrastructure.Clone.Attributes;
 using MethodInfo = WCFGenerator.RepositoriesGeneration.Infrastructure.MethodInfo;
 using ParameterInfo = WCFGenerator.RepositoriesGeneration.Infrastructure.ParameterInfo;
@@ -431,9 +432,21 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             }
 
             repositoryInfo.DatabaseType = (DatabaseType)_config.DatabaseType;
+            repositoryInfo.InsertManyMethod = _config.InsertManyMethod;
 
             #endregion
 
+            try
+            {
+                var tvpAnalyzer = new TvpAnalyzer(_solutionSyntaxWalker);
+                tvpAnalyzer.PopulateTvpMetadata(repositoryInfo, doClass);
+            }
+            catch (Exception e)
+            {
+                var message = "InsertManyViaTVP cannot be generated. " + e.Message;
+                repositoryInfo.TvpMetadata ??= new TvpMetadata();
+                repositoryInfo.TvpMetadata.AnalysisError = message;
+            }
             var repositoryAndDo = new RepositoryCodeGenerator
             {
                 RepositoryInfo = repositoryInfo

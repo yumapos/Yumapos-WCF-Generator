@@ -34,158 +34,342 @@ VALUES (@MenuItemId,@MenuItemVersionId,@Modified,@ModifiedBy,@TaxId,@TaxVersionI
 			await DataAccessService.InsertObjectAsync(menuItems2Taxes, InsertQuery);
 		}
 
-
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
-			if (menuItems2TaxesList == null) throw new ArgumentException(nameof(menuItems2TaxesList));
-
-			if (!menuItems2TaxesList.Any()) return;
-
-			var maxInsertManyRows = MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			foreach (var items in itemsPerRequest)
-			{
-				foreach (var item in items)
-				{
-					var menuItems2Taxes = item.Value;
-					var index = item.Index;
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId, menuItems2Taxes.MenuItemVersionId, menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture), menuItems2Taxes.ModifiedBy, menuItems2Taxes.TaxId, menuItems2Taxes.TaxVersionId, menuItems2Taxes.IsDeleted ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-				DataAccessService.Execute(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
-		}
-
-		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
-		{
-			if (menuItems2TaxesList == null) throw new ArgumentException(nameof(menuItems2TaxesList));
-
-			if (!menuItems2TaxesList.Any()) return;
-
-			var maxInsertManyRows = MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION;");
-				foreach (var item in items)
-				{
-					var menuItems2Taxes = item.Value;
-					var index = item.Index;
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId, menuItems2Taxes.MenuItemVersionId, menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture), menuItems2Taxes.ModifiedBy, menuItems2Taxes.TaxId, menuItems2Taxes.TaxVersionId, menuItems2Taxes.IsDeleted ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-				query.AppendLine("COMMIT TRANSACTION;");
-				DataAccessService.Execute(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
+			InsertManyViaTvp(menuItems2TaxesList);
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
-			if (menuItems2TaxesList == null) throw new ArgumentException(nameof(menuItems2TaxesList));
+			await InsertManyViaTvpAsync(menuItems2TaxesList);
+		}
 
-			if (!menuItems2TaxesList.Any()) return;
-
-			var maxInsertManyRows = MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			await Task.Delay(10);
-
-			foreach (var items in itemsPerRequest)
-			{
-				foreach (var item in items)
-				{
-					var menuItems2Taxes = item.Value;
-					var index = item.Index;
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId, menuItems2Taxes.MenuItemVersionId, menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture), menuItems2Taxes.ModifiedBy, menuItems2Taxes.TaxId, menuItems2Taxes.TaxVersionId, menuItems2Taxes.IsDeleted ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-
-				await Task.Delay(10);
-				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
-
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			InsertManyViaTvpSplitByTransactions(menuItems2TaxesList);
 		}
 
 		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
 		{
-			if (menuItems2TaxesList == null) throw new ArgumentException(nameof(menuItems2TaxesList));
+			await InsertManyViaTvpSplitByTransactionsAsync(menuItems2TaxesList);
+		}
+		/*
 
-			if (!menuItems2TaxesList.Any()) return;
+		public void InsertManyViaRows(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
 
-			var maxInsertManyRows = MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
+		if(!menuItems2TaxesList.Any()) return;
 
-			var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
 
-			await Task.Delay(10);
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
 
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION;");
-				foreach (var item in items)
-				{
-					var menuItems2Taxes = item.Value;
-					var index = item.Index;
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId, menuItems2Taxes.MenuItemVersionId, menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture), menuItems2Taxes.ModifiedBy, menuItems2Taxes.TaxId, menuItems2Taxes.TaxVersionId, menuItems2Taxes.IsDeleted ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-				query.AppendLine("COMMIT TRANSACTION;");
-
-				await Task.Delay(10);
-				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
 
 		}
+
+		public void InsertManyViaRowsSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		}
+
+		public async Task InsertManyViaRowsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		public async Task InsertManyViaRowsSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+		if(menuItems2TaxesList==null) throw new ArgumentException(nameof(menuItems2TaxesList));
+
+		if(!menuItems2TaxesList.Any()) return;
+
+		var maxInsertManyRows = MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = menuItems2TaxesList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		foreach (var item in items)
+		{
+		var menuItems2Taxes = item.Value;
+		var index = item.Index; 
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, menuItems2Taxes.MenuItemId,menuItems2Taxes.MenuItemVersionId,menuItems2Taxes.Modified.ToString(CultureInfo.InvariantCulture),menuItems2Taxes.ModifiedBy,menuItems2Taxes.TaxId,menuItems2Taxes.TaxVersionId,menuItems2Taxes.IsDeleted ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*/
+		private void InsertManyViaTvp(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			if (menuItems2TaxesList == null) throw new ArgumentNullException(nameof(menuItems2TaxesList));
+			var list = menuItems2TaxesList.ToList();
+			if (!list.Any()) return;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			dataTable.Columns.Add("TaxId", typeof(System.Int32));
+			dataTable.Columns.Add("TaxVersionId", typeof(System.Guid));
+
+			foreach (var item in list)
+			{
+				var row = dataTable.NewRow();
+				row["IsDeleted"] = item.IsDeleted;
+				row["MenuItemId"] = item.MenuItemId;
+				row["MenuItemVersionId"] = item.MenuItemVersionId;
+				row["Modified"] = item.Modified;
+				row["ModifiedBy"] = item.ModifiedBy;
+				row["TaxId"] = item.TaxId;
+				row["TaxVersionId"] = item.TaxVersionId;
+				dataTable.Rows.Add(row);
+			}
+
+			var parameters = new Dictionary<string, object>();
+			DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems2Taxess", "tvp", parameters);
+			var sql = @"
+INSERT INTO [dbo].[MenuItemToTaxVersions] ([dbo].[MenuItemToTaxVersions].[IsDeleted], [dbo].[MenuItemToTaxVersions].[MenuItemId], [dbo].[MenuItemToTaxVersions].[MenuItemVersionId], [dbo].[MenuItemToTaxVersions].[Modified], [dbo].[MenuItemToTaxVersions].[ModifiedBy], [dbo].[MenuItemToTaxVersions].[TaxId], [dbo].[MenuItemToTaxVersions].[TaxVersionId]) 
+SELECT [IsDeleted], [MenuItemId], [MenuItemVersionId], [Modified], [ModifiedBy], [TaxId], [TaxVersionId] FROM @tvp;";
+
+			DataAccessService.Execute(sql, parameters);
+		}
+
+		private async Task InsertManyViaTvpAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			if (menuItems2TaxesList == null) throw new ArgumentNullException(nameof(menuItems2TaxesList));
+			var list = menuItems2TaxesList.ToList();
+			if (!list.Any()) return;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			dataTable.Columns.Add("TaxId", typeof(System.Int32));
+			dataTable.Columns.Add("TaxVersionId", typeof(System.Guid));
+
+			foreach (var item in list)
+			{
+				var row = dataTable.NewRow();
+				row["IsDeleted"] = item.IsDeleted;
+				row["MenuItemId"] = item.MenuItemId;
+				row["MenuItemVersionId"] = item.MenuItemVersionId;
+				row["Modified"] = item.Modified;
+				row["ModifiedBy"] = item.ModifiedBy;
+				row["TaxId"] = item.TaxId;
+				row["TaxVersionId"] = item.TaxVersionId;
+				dataTable.Rows.Add(row);
+			}
+
+			var parameters = new Dictionary<string, object>();
+			DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems2Taxess", "tvp", parameters);
+			var sql = @"
+INSERT INTO [dbo].[MenuItemToTaxVersions] ([dbo].[MenuItemToTaxVersions].[IsDeleted], [dbo].[MenuItemToTaxVersions].[MenuItemId], [dbo].[MenuItemToTaxVersions].[MenuItemVersionId], [dbo].[MenuItemToTaxVersions].[Modified], [dbo].[MenuItemToTaxVersions].[ModifiedBy], [dbo].[MenuItemToTaxVersions].[TaxId], [dbo].[MenuItemToTaxVersions].[TaxVersionId]) 
+SELECT [IsDeleted], [MenuItemId], [MenuItemVersionId], [Modified], [ModifiedBy], [TaxId], [TaxVersionId] FROM @tvp;";
+
+			await DataAccessService.ExecuteAsync(sql, parameters);
+		}
+
+		private void InsertManyViaTvpSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			if (menuItems2TaxesList == null) throw new ArgumentNullException(nameof(menuItems2TaxesList));
+			var list = menuItems2TaxesList.ToList();
+			if (!list.Any()) return;
+
+			const int batchSize = 1000;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			dataTable.Columns.Add("TaxId", typeof(System.Int32));
+			dataTable.Columns.Add("TaxVersionId", typeof(System.Guid));
+
+			foreach (var batch in list.Chunk(batchSize))
+			{
+				foreach (var item in batch)
+				{
+					var row = dataTable.NewRow();
+					row["IsDeleted"] = item.IsDeleted;
+					row["MenuItemId"] = item.MenuItemId;
+					row["MenuItemVersionId"] = item.MenuItemVersionId;
+					row["Modified"] = item.Modified;
+					row["ModifiedBy"] = item.ModifiedBy;
+					row["TaxId"] = item.TaxId;
+					row["TaxVersionId"] = item.TaxVersionId;
+					dataTable.Rows.Add(row);
+				}
+
+				var parameters = new Dictionary<string, object>();
+				DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems2Taxess", "tvp", parameters);
+				var sql = @"
+INSERT INTO [dbo].[MenuItemToTaxVersions] ([dbo].[MenuItemToTaxVersions].[IsDeleted], [dbo].[MenuItemToTaxVersions].[MenuItemId], [dbo].[MenuItemToTaxVersions].[MenuItemVersionId], [dbo].[MenuItemToTaxVersions].[Modified], [dbo].[MenuItemToTaxVersions].[ModifiedBy], [dbo].[MenuItemToTaxVersions].[TaxId], [dbo].[MenuItemToTaxVersions].[TaxVersionId]) 
+SELECT [IsDeleted], [MenuItemId], [MenuItemVersionId], [Modified], [ModifiedBy], [TaxId], [TaxVersionId] FROM @tvp;";
+
+				DataAccessService.Execute(sql, parameters);
+				dataTable.Clear();
+			}
+		}
+
+		private async Task InsertManyViaTvpSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.VersionsRepositories.MenuItems2Taxes> menuItems2TaxesList)
+		{
+			if (menuItems2TaxesList == null) throw new ArgumentNullException(nameof(menuItems2TaxesList));
+			var list = menuItems2TaxesList.ToList();
+			if (!list.Any()) return;
+
+			const int batchSize = 1000;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+			dataTable.Columns.Add("MenuItemId", typeof(System.Guid));
+			dataTable.Columns.Add("MenuItemVersionId", typeof(System.Guid));
+			dataTable.Columns.Add("Modified", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("ModifiedBy", typeof(System.Guid));
+			dataTable.Columns.Add("TaxId", typeof(System.Int32));
+			dataTable.Columns.Add("TaxVersionId", typeof(System.Guid));
+
+			foreach (var batch in list.Chunk(batchSize))
+			{
+				foreach (var item in batch)
+				{
+					var row = dataTable.NewRow();
+					row["IsDeleted"] = item.IsDeleted;
+					row["MenuItemId"] = item.MenuItemId;
+					row["MenuItemVersionId"] = item.MenuItemVersionId;
+					row["Modified"] = item.Modified;
+					row["ModifiedBy"] = item.ModifiedBy;
+					row["TaxId"] = item.TaxId;
+					row["TaxVersionId"] = item.TaxVersionId;
+					dataTable.Rows.Add(row);
+				}
+
+				var parameters = new Dictionary<string, object>();
+				DataAccessService.AddTableParameter(dataTable, "dbo.UT_MenuItems2Taxess", "tvp", parameters);
+				var sql = @"
+INSERT INTO [dbo].[MenuItemToTaxVersions] ([dbo].[MenuItemToTaxVersions].[IsDeleted], [dbo].[MenuItemToTaxVersions].[MenuItemId], [dbo].[MenuItemToTaxVersions].[MenuItemVersionId], [dbo].[MenuItemToTaxVersions].[Modified], [dbo].[MenuItemToTaxVersions].[ModifiedBy], [dbo].[MenuItemToTaxVersions].[TaxId], [dbo].[MenuItemToTaxVersions].[TaxVersionId]) 
+SELECT [IsDeleted], [MenuItemId], [MenuItemVersionId], [Modified], [ModifiedBy], [TaxId], [TaxVersionId] FROM @tvp;";
+
+				await DataAccessService.ExecuteAsync(sql, parameters);
+				dataTable.Clear();
+				await Task.Delay(10);
+			}
+		}
+
+
 
 
 	}
