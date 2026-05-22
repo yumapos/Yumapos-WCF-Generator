@@ -44,7 +44,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         public TvpMetadata TvpMetadata { get; set; }
         
         /// <summary>
-        ///     Prefix of repository name
+        ///     Prefix of datatable name
         /// </summary>
         public string DataTablePrefix { get; set; }
         /// <summary>
