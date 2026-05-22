@@ -98,8 +98,29 @@ namespace TestRepositoryGeneration
 		}
 
 		/*
-
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+			InsertManyViaTvp(employeesInRolesScheduleList);
+		}
+
+		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+			await InsertManyViaTvpAsync(employeesInRolesScheduleList);
+		}
+
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+			InsertManyViaTvpSplitByTransactions(employeesInRolesScheduleList);
+		}
+
+		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+			await InsertManyViaTvpSplitByTransactionsAsync(employeesInRolesScheduleList);
+		}
+		*/
+		/*
+
+		public void InsertManyViaRows(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
 
@@ -134,7 +155,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		public void InsertManyViaRowsSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
 
@@ -171,7 +192,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		public async Task InsertManyViaRowsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
 
@@ -212,7 +233,7 @@ namespace TestRepositoryGeneration
 
 		}
 
-		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		public async Task InsertManyViaRowsSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
 		{
 		if(employeesInRolesScheduleList==null) throw new ArgumentException(nameof(employeesInRolesScheduleList));
 
@@ -256,6 +277,187 @@ namespace TestRepositoryGeneration
 		}
 
 		*/
+		/*
+		private void InsertManyViaTvp(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if (employeesInRolesScheduleList == null) throw new ArgumentNullException(nameof(employeesInRolesScheduleList));
+		var list = employeesInRolesScheduleList.ToList();
+		if (!list.Any()) return;
+
+		var dataTable = new System.Data.DataTable();
+		dataTable.Columns.Add("BusinessDayNumber", typeof(System.Int32));
+		dataTable.Columns.Add("End", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+		dataTable.Columns.Add("RoleId", typeof(System.Guid));
+		dataTable.Columns.Add("ScheduleId", typeof(System.Guid));
+		dataTable.Columns.Add("Start", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("StoreId", typeof(System.Guid));
+		dataTable.Columns.Add("TenantId", typeof(Guid));
+		dataTable.Columns.Add("UserId", typeof(System.Guid));
+
+		foreach (var item in list)
+		{
+		var row = dataTable.NewRow();
+		row["BusinessDayNumber"] = item.BusinessDayNumber;
+		row["End"] = item.End;
+		row["IsDeleted"] = item.IsDeleted;
+		row["RoleId"] = item.RoleId;
+		row["ScheduleId"] = item.ScheduleId;
+		row["Start"] = item.Start;
+		row["StoreId"] = item.StoreId;
+		row["TenantId"] = DataAccessController.Tenant.TenantId;
+		row["UserId"] = item.UserId;
+		dataTable.Rows.Add(row);
+		}
+
+		var parameters = new Dictionary<string, object>();
+		DataAccessService.AddTableParameter(dataTable, "dbo.UT_EmployeesInRolesSchedule", "tvp", parameters);
+		var sql = @"
+		INSERT INTO [dbo].[EmployeesInRolesSchedule] ([dbo].[EmployeesInRolesSchedule].[BusinessDayNumber], [dbo].[EmployeesInRolesSchedule].[End], [dbo].[EmployeesInRolesSchedule].[IsDeleted], [dbo].[EmployeesInRolesSchedule].[RoleId], [dbo].[EmployeesInRolesSchedule].[ScheduleId], [dbo].[EmployeesInRolesSchedule].[Start], [dbo].[EmployeesInRolesSchedule].[StoreId], [dbo].[EmployeesInRolesSchedule].[TenantId], [dbo].[EmployeesInRolesSchedule].[UserId]) 
+		SELECT [BusinessDayNumber], [End], [IsDeleted], [RoleId], [ScheduleId], [Start], [StoreId], [TenantId], [UserId] FROM @tvp;";
+
+		DataAccessService.Execute(sql, parameters);
+		}
+
+		private async Task InsertManyViaTvpAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if (employeesInRolesScheduleList == null) throw new ArgumentNullException(nameof(employeesInRolesScheduleList));
+		var list = employeesInRolesScheduleList.ToList();
+		if (!list.Any()) return;
+
+		var dataTable = new System.Data.DataTable();
+		dataTable.Columns.Add("BusinessDayNumber", typeof(System.Int32));
+		dataTable.Columns.Add("End", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+		dataTable.Columns.Add("RoleId", typeof(System.Guid));
+		dataTable.Columns.Add("ScheduleId", typeof(System.Guid));
+		dataTable.Columns.Add("Start", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("StoreId", typeof(System.Guid));
+		dataTable.Columns.Add("TenantId", typeof(Guid));
+		dataTable.Columns.Add("UserId", typeof(System.Guid));
+
+		foreach (var item in list)
+		{
+		var row = dataTable.NewRow();
+		row["BusinessDayNumber"] = item.BusinessDayNumber;
+		row["End"] = item.End;
+		row["IsDeleted"] = item.IsDeleted;
+		row["RoleId"] = item.RoleId;
+		row["ScheduleId"] = item.ScheduleId;
+		row["Start"] = item.Start;
+		row["StoreId"] = item.StoreId;
+		row["TenantId"] = DataAccessController.Tenant.TenantId;
+		row["UserId"] = item.UserId;
+		dataTable.Rows.Add(row);
+		}
+
+		var parameters = new Dictionary<string, object>();
+		DataAccessService.AddTableParameter(dataTable, "dbo.UT_EmployeesInRolesSchedule", "tvp", parameters);
+		var sql = @"
+		INSERT INTO [dbo].[EmployeesInRolesSchedule] ([dbo].[EmployeesInRolesSchedule].[BusinessDayNumber], [dbo].[EmployeesInRolesSchedule].[End], [dbo].[EmployeesInRolesSchedule].[IsDeleted], [dbo].[EmployeesInRolesSchedule].[RoleId], [dbo].[EmployeesInRolesSchedule].[ScheduleId], [dbo].[EmployeesInRolesSchedule].[Start], [dbo].[EmployeesInRolesSchedule].[StoreId], [dbo].[EmployeesInRolesSchedule].[TenantId], [dbo].[EmployeesInRolesSchedule].[UserId]) 
+		SELECT [BusinessDayNumber], [End], [IsDeleted], [RoleId], [ScheduleId], [Start], [StoreId], [TenantId], [UserId] FROM @tvp;";
+
+		await DataAccessService.ExecuteAsync(sql, parameters);
+		}
+
+		private void InsertManyViaTvpSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if (employeesInRolesScheduleList == null) throw new ArgumentNullException(nameof(employeesInRolesScheduleList));
+		var list = employeesInRolesScheduleList.ToList();
+		if (!list.Any()) return;
+
+		const int batchSize = 1000;
+
+		var dataTable = new System.Data.DataTable();
+		dataTable.Columns.Add("BusinessDayNumber", typeof(System.Int32));
+		dataTable.Columns.Add("End", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+		dataTable.Columns.Add("RoleId", typeof(System.Guid));
+		dataTable.Columns.Add("ScheduleId", typeof(System.Guid));
+		dataTable.Columns.Add("Start", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("StoreId", typeof(System.Guid));
+		dataTable.Columns.Add("TenantId", typeof(Guid));
+		dataTable.Columns.Add("UserId", typeof(System.Guid));
+
+		foreach (var batch in list.Chunk(batchSize))
+		{
+		foreach (var item in batch)
+		{
+		var row = dataTable.NewRow();
+		row["BusinessDayNumber"] = item.BusinessDayNumber;
+		row["End"] = item.End;
+		row["IsDeleted"] = item.IsDeleted;
+		row["RoleId"] = item.RoleId;
+		row["ScheduleId"] = item.ScheduleId;
+		row["Start"] = item.Start;
+		row["StoreId"] = item.StoreId;
+		row["TenantId"] = DataAccessController.Tenant.TenantId;
+		row["UserId"] = item.UserId;
+		dataTable.Rows.Add(row);
+		}
+
+		var parameters = new Dictionary<string, object>();
+		DataAccessService.AddTableParameter(dataTable, "dbo.UT_EmployeesInRolesSchedule", "tvp", parameters);
+		var sql = @"
+		INSERT INTO [dbo].[EmployeesInRolesSchedule] ([dbo].[EmployeesInRolesSchedule].[BusinessDayNumber], [dbo].[EmployeesInRolesSchedule].[End], [dbo].[EmployeesInRolesSchedule].[IsDeleted], [dbo].[EmployeesInRolesSchedule].[RoleId], [dbo].[EmployeesInRolesSchedule].[ScheduleId], [dbo].[EmployeesInRolesSchedule].[Start], [dbo].[EmployeesInRolesSchedule].[StoreId], [dbo].[EmployeesInRolesSchedule].[TenantId], [dbo].[EmployeesInRolesSchedule].[UserId]) 
+		SELECT [BusinessDayNumber], [End], [IsDeleted], [RoleId], [ScheduleId], [Start], [StoreId], [TenantId], [UserId] FROM @tvp;";
+
+		DataAccessService.Execute(sql, parameters);
+		dataTable.Clear();
+		}
+		}
+
+		private async Task InsertManyViaTvpSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule> employeesInRolesScheduleList)
+		{
+		if (employeesInRolesScheduleList == null) throw new ArgumentNullException(nameof(employeesInRolesScheduleList));
+		var list = employeesInRolesScheduleList.ToList();
+		if (!list.Any()) return;
+
+		const int batchSize = 1000;
+
+		var dataTable = new System.Data.DataTable();
+		dataTable.Columns.Add("BusinessDayNumber", typeof(System.Int32));
+		dataTable.Columns.Add("End", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("IsDeleted", typeof(System.Boolean));
+		dataTable.Columns.Add("RoleId", typeof(System.Guid));
+		dataTable.Columns.Add("ScheduleId", typeof(System.Guid));
+		dataTable.Columns.Add("Start", typeof(System.DateTimeOffset));
+		dataTable.Columns.Add("StoreId", typeof(System.Guid));
+		dataTable.Columns.Add("TenantId", typeof(Guid));
+		dataTable.Columns.Add("UserId", typeof(System.Guid));
+
+		foreach (var batch in list.Chunk(batchSize))
+		{
+		foreach (var item in batch)
+		{
+		var row = dataTable.NewRow();
+		row["BusinessDayNumber"] = item.BusinessDayNumber;
+		row["End"] = item.End;
+		row["IsDeleted"] = item.IsDeleted;
+		row["RoleId"] = item.RoleId;
+		row["ScheduleId"] = item.ScheduleId;
+		row["Start"] = item.Start;
+		row["StoreId"] = item.StoreId;
+		row["TenantId"] = DataAccessController.Tenant.TenantId;
+		row["UserId"] = item.UserId;
+		dataTable.Rows.Add(row);
+		}
+
+		var parameters = new Dictionary<string, object>();
+		DataAccessService.AddTableParameter(dataTable, "dbo.UT_EmployeesInRolesSchedule", "tvp", parameters);
+		var sql = @"
+		INSERT INTO [dbo].[EmployeesInRolesSchedule] ([dbo].[EmployeesInRolesSchedule].[BusinessDayNumber], [dbo].[EmployeesInRolesSchedule].[End], [dbo].[EmployeesInRolesSchedule].[IsDeleted], [dbo].[EmployeesInRolesSchedule].[RoleId], [dbo].[EmployeesInRolesSchedule].[ScheduleId], [dbo].[EmployeesInRolesSchedule].[Start], [dbo].[EmployeesInRolesSchedule].[StoreId], [dbo].[EmployeesInRolesSchedule].[TenantId], [dbo].[EmployeesInRolesSchedule].[UserId]) 
+		SELECT [BusinessDayNumber], [End], [IsDeleted], [RoleId], [ScheduleId], [Start], [StoreId], [TenantId], [UserId] FROM @tvp;";
+
+		await DataAccessService.ExecuteAsync(sql, parameters);
+		dataTable.Clear();
+		await Task.Delay(10);
+		}
+		}
+
+
+		*/
+
 		/*
 		public void UpdateByScheduleId(TestRepositoryGeneration.DataObjects.BaseRepositories.EmployeesInRolesSchedule employeesInRolesSchedule)
 		{

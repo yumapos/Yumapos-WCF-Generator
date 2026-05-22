@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
+using WCFGenerator.RepositoriesGeneration.Services;
 
 namespace WCFGenerator.RepositoriesGeneration.Core
 {
     internal abstract class RepositoryCodeGeneratorBase : RepositoryCodeGeneratorAbstract
     {
         protected readonly string InsertManyQueryTemplateField = "InsertManyQueryTemplate";
-        protected readonly string InsertManyValuesTempleteField = "InsertManyValuesTemplate";
+        protected readonly string InsertManyValuesTemplateField = "InsertManyValuesTemplate";
         protected readonly string InsertManyJoinedValuesTempleteField = "InsertManyJoinedValuesTemplate";
 
         public override string GetFields()
@@ -24,7 +26,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var insertManyValuesTemplate = ScriptGenerator.GenerateInsertManyValuesTemplate(sqlInfo).SurroundWithQuotes();
 
             sb.AppendLine("private const string " + InsertManyQueryTemplateField + " = @" + insertManyQueryTemplate + ";");
-            sb.AppendLine("private const string " + InsertManyValuesTempleteField + " = @" + insertManyValuesTemplate + ";");
+            sb.AppendLine("private const string " + InsertManyValuesTemplateField + " = @" + insertManyValuesTemplate + ";");
 
             if (RepositoryInfo.JoinRepositoryInfo != null)
             {
@@ -37,6 +39,53 @@ namespace WCFGenerator.RepositoriesGeneration.Core
         }
 
         protected string GenerateInsertMany(bool requiresImplementation = true)
+        {
+            var generationMethod = RepositoryInfo.InsertManyMethod;
+            var dbType = RepositoryInfo.DatabaseType;
+            var sb = new StringBuilder();
+            var insertManyWrapped = WrapCallInsertMany(generationMethod);
+            insertManyWrapped = requiresImplementation ? insertManyWrapped : insertManyWrapped.SurroundWithComments();
+            sb.Append(insertManyWrapped);
+            sb.AppendLine();
+            sb.Append(GenerateInsertManyViaRows(requiresImplementation && generationMethod == InsertManyMethod.ViaRows));
+            sb.AppendLine();
+            if (dbType == DatabaseType.MSSql)
+            {
+                sb.AppendLine(GenerateInsertManyViaTvp(requiresImplementation && generationMethod == InsertManyMethod.ViaTvp));
+            }
+            return sb.ToString();
+        }
+
+        private string WrapCallInsertMany(InsertManyMethod method)
+        {
+            var suffix = method == InsertManyMethod.ViaRows ? "ViaRows" : "ViaTvp";
+            var elementName = RepositoryInfo.ClassName.FirstSymbolToLower();
+            var parameterName = $"{elementName}List";
+            var methodParameter = $"IEnumerable<{RepositoryInfo.ClassFullName}> {parameterName}";
+
+            return $$"""
+                     public void InsertMany({{methodParameter}})
+                     {
+                         InsertMany{{suffix}}({{parameterName}});
+                     }
+
+                     public async Task InsertManyAsync({{methodParameter}})
+                     {
+                         await InsertMany{{suffix}}Async({{parameterName}});
+                     }
+
+                     public void InsertManySplitByTransactions({{methodParameter}})
+                     {
+                         InsertMany{{suffix}}SplitByTransactions({{parameterName}});
+                     }
+
+                     public async Task InsertManySplitByTransactionsAsync({{methodParameter}})
+                     {
+                         await InsertMany{{suffix}}SplitByTransactionsAsync({{parameterName}});
+                     }
+                     """;
+        }
+        protected string GenerateInsertManyViaRows(bool requiresImplementation = true)
         {
             var joined = RepositoryInfo.JoinRepositoryInfo != null;
 
@@ -51,16 +100,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var values = ExtractValuesAsString(elementName, RepositoryInfo.Elements.Where(c => !c.IsParameter));
             var joinedValues = ExtractValuesAsString(elementName, RepositoryInfo.JoinRepositoryInfo?.Elements?.Where(c => !c.IsParameter));
 
-            if (joined)
-            {
-                valuesAsParametesCount += 2;// @TempTable, @TempId
-            }
-
             Action<bool, bool> generator = (isAsync, splitByTransactions) =>
             {
                 var methodName = splitByTransactions
-                    ? "InsertManySplitByTransactions"
-                    : "InsertMany";
+                    ? "InsertManyViaRowsSplitByTransactions"
+                    : "InsertManyViaRows";
 
                 if (isAsync)
                 {
@@ -136,8 +180,8 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("values.AppendLine(index != 0 ? \",\":\"\");");
 
                 sb.AppendLine(values.Any()
-                    ? $"values.AppendFormat({InsertManyValuesTempleteField}, index, {string.Join(",", values)});"
-                    : $"values.AppendFormat({InsertManyValuesTempleteField}, index);");
+                    ? $"values.AppendFormat({InsertManyValuesTemplateField}, index, {string.Join(",", values)});"
+                    : $"values.AppendFormat({InsertManyValuesTemplateField}, index);");
 
 
                 if (joined)
@@ -212,6 +256,14 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             return requiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
         }
 
+        protected string GenerateInsertManyViaTvp(bool requiresImplementation = true)
+        {
+            var isVersionRepo = RepositoryType == RepositoryType.Version;
+            var tvpGen = new TvpMethodGenerator(RepositoryInfo, isVersionRepo);
+            var insert = tvpGen.GenerateInsertManyViaTvp(true);
+            return requiresImplementation ? insert : insert.SurroundWithComments();
+        }
+        
         protected List<string> ExtractValuesAsString(string entityName, IEnumerable<PropertyInfo> properties)
         {
             if (properties == null) return null;

@@ -151,7 +151,7 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
 
         #endregion
         
-        protected ParameterInfo? ExtractCancellationToken(MethodImplementationInfo method)
+        protected ParameterInfo ExtractCancellationToken(MethodImplementationInfo method)
         {
             var tokenParameterInfo = method?.Parameters?.FirstOrDefault(x=>
                 x.TypeName.Equals("System.Threading.CancellationToken", StringComparison.OrdinalIgnoreCase) ||

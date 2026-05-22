@@ -41,6 +41,11 @@ namespace WCFGenerator.RepositoriesGeneration.Helpers
             return "\"" + codeText + "\"";
         }
 
+        public static string NormalizeDirectorySlashes(this string text)
+        {
+            return text.Replace("/", "\\");
+        }
+
         #endregion
 
         #region Syntax analysis extensions

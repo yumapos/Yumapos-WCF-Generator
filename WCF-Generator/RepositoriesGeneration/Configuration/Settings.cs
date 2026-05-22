@@ -1,8 +1,8 @@
-﻿using MyApp;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using WCFGenerator.Common;
+using WCFGenerator.RepositoriesGeneration.Enums;
 
 namespace WCFGenerator.RepositoriesGeneration.Configuration
 {
@@ -65,7 +65,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("Name", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string Name
         {
-            get { return ((string)(base["Name"])); }
+            get { return ((string)(base[nameof(Name)])); }
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("RepositoryAttributeName", DefaultValue = "", IsRequired = true)]
         public string RepositoryAttributeName
         {
-            get { return ((string)(base["RepositoryAttributeName"])); }
+            get { return ((string)(base[nameof(RepositoryAttributeName)])); }
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("RepositoryBase", DefaultValue = "", IsRequired = false)]
         public string RepositoryBase
         {
-            get { return ((string)(base["RepositoryBase"])); }
+            get { return ((string)(base[nameof(RepositoryBase)])); }
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("TargetProjectName", DefaultValue = "",  IsRequired = true)]
         public string TargetProjectName
         {
-            get { return ((string)(base["TargetProjectName"])); }
+            get { return ((string)(base[nameof(TargetProjectName)])); }
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("RepositoryTargetFolder", DefaultValue = "", IsRequired = true)]
         public string RepositoryTargetFolder
         {
-            get { return ((string)(base["RepositoryTargetFolder"])); }
+            get { return ((string)(base[nameof(RepositoryTargetFolder)])); }
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("RepositorySuffix", DefaultValue = "",  IsRequired = true)]
         public string RepositorySuffix
         {
-            get { return ((string)(base["RepositorySuffix"])); }
+            get { return ((string)(base[nameof(RepositorySuffix)])); }
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("RepositoryInterfacesProjectName", DefaultValue = "", IsRequired = true)]
         public string RepositoryInterfacesProjectName
         {
-            get { return ((string)(base["RepositoryInterfacesProjectName"])); }
+            get { return ((string)(base[nameof(RepositoryInterfacesProjectName)])); }
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("RepositoryClassProjects", DefaultValue = "",  IsRequired = true)]
         public string RepositoryClassProjects
         {
-            get { return ((string)(base["RepositoryClassProjects"])); }
+            get { return ((string)(base[nameof(RepositoryClassProjects)])); }
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("AdditionalProjects", DefaultValue = "", IsRequired = false)]
         public string AdditionalProjects
         {
-            get { return ((string)(base["AdditionalProjects"])); }
+            get { return ((string)(base[nameof(AdditionalProjects)])); }
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("DefaultNamespace", DefaultValue = "", IsRequired = true)]
         public string DefaultNamespace
         {
-            get { return ((string)(base["DefaultNamespace"])); }
+            get { return ((string)(base[nameof(DefaultNamespace)])); }
         }
 
         /// <summary>
@@ -155,7 +155,57 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         [ConfigurationProperty("DatabaseType", DefaultValue = 1, IsRequired = true)]
         public int DatabaseType
         {
-            get { return ((int)(base["DatabaseType"])); }
+            get { return ((int)(base[nameof(DatabaseType)])); }
+        }
+        
+        [ConfigurationProperty("InsertManyMethod", DefaultValue = Enums.InsertManyMethod.ViaRows, IsRequired = false)]
+        public InsertManyMethod InsertManyMethod
+        {
+            get { return ((InsertManyMethod)(base[nameof(InsertManyMethod)])); }
+        }
+        
+        /// <summary>
+        ///     Target Migration Project Name for save DataTable Migrations
+        /// </summary>
+        [ConfigurationProperty("DataTableMigrationProjectName", DefaultValue = "",  IsRequired = false)]
+        public string DataTableMigrationProjectName
+        {
+            get { return ((string)(base[nameof(DataTableMigrationProjectName)])); }
+        }
+        /// <summary>
+        ///      Name of target folder in Migration project
+        /// </summary>
+        [ConfigurationProperty("DataTableMigrationTargetFolder", DefaultValue = "", IsRequired = false)]
+        public string DataTableMigrationTargetFolder
+        {
+            get { return ((string)(base[nameof(DataTableMigrationTargetFolder)])); }
+        }
+        
+        /// <summary>
+        ///      Name of namespace in Migration project
+        /// </summary>
+        [ConfigurationProperty("DataTableMigrationNamespace", DefaultValue = "", IsRequired = false)]
+        public string DataTableMigrationNamespace
+        {
+            get { return ((string)(base[nameof(DataTableMigrationNamespace)])); }
+        }
+        
+        /// <summary>
+        ///      Name of namespace in Migration project
+        /// </summary>
+        [ConfigurationProperty("DataTablePrefix", DefaultValue = "UT_", IsRequired = false)]
+        public string DataTablePrefix
+        {
+            get { return ((string)(base[nameof(DataTablePrefix)])); }
+        }
+        
+        /// <summary>
+        ///      Force recreate migrations
+        /// </summary>
+        [ConfigurationProperty("ForceRecreateMigrations", DefaultValue = false, IsRequired = false)]
+        public bool ForceRecreateMigrations
+        {
+            get { return ((bool)(base[nameof(ForceRecreateMigrations)])); }
         }
     }
 }

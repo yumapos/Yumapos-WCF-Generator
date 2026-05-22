@@ -166,194 +166,426 @@ namespace TestRepositoryGeneration.CustomRepositories.BaseRepositories
 			await DataAccessService.InsertObjectAsync(address, InsertQuery);
 		}
 
-
 		public void InsertMany(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
-			if (addressList == null) throw new ArgumentException(nameof(addressList));
-
-			if (!addressList.Any()) return;
-
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = addressList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			foreach (var items in itemsPerRequest)
-			{
-				foreach (var item in items)
-				{
-					var address = item.Value;
-					var index = item.Index;
-					parameters.Add($"Country{index}", address.Country);
-					parameters.Add($"City{index}", address.City);
-					parameters.Add($"State{index}", address.State);
-					parameters.Add($"Street{index}", address.Street);
-					parameters.Add($"Building{index}", address.Building);
-					parameters.Add($"ZipCode{index}", address.ZipCode);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Created.ToString(CultureInfo.InvariantCulture), address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.SyncState ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-				DataAccessService.Execute(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
-		}
-
-		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
-		{
-			if (addressList == null) throw new ArgumentException(nameof(addressList));
-
-			if (!addressList.Any()) return;
-
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = addressList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION;");
-				foreach (var item in items)
-				{
-					var address = item.Value;
-					var index = item.Index;
-					parameters.Add($"Country{index}", address.Country);
-					parameters.Add($"City{index}", address.City);
-					parameters.Add($"State{index}", address.State);
-					parameters.Add($"Street{index}", address.Street);
-					parameters.Add($"Building{index}", address.Building);
-					parameters.Add($"ZipCode{index}", address.ZipCode);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Created.ToString(CultureInfo.InvariantCulture), address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.SyncState ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-				query.AppendLine("COMMIT TRANSACTION;");
-				DataAccessService.Execute(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
+			InsertManyViaTvp(addressList);
 		}
 
 		public async Task InsertManyAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
-			if (addressList == null) throw new ArgumentException(nameof(addressList));
+			await InsertManyViaTvpAsync(addressList);
+		}
 
-			if (!addressList.Any()) return;
-
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
-
-			var itemsPerRequest = addressList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
-
-			await Task.Delay(10);
-
-			foreach (var items in itemsPerRequest)
-			{
-				foreach (var item in items)
-				{
-					var address = item.Value;
-					var index = item.Index;
-					parameters.Add($"Country{index}", address.Country);
-					parameters.Add($"City{index}", address.City);
-					parameters.Add($"State{index}", address.State);
-					parameters.Add($"Street{index}", address.Street);
-					parameters.Add($"Building{index}", address.Building);
-					parameters.Add($"ZipCode{index}", address.ZipCode);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Created.ToString(CultureInfo.InvariantCulture), address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.SyncState ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-
-				await Task.Delay(10);
-				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
-
+		public void InsertManySplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			InsertManyViaTvpSplitByTransactions(addressList);
 		}
 
 		public async Task InsertManySplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
 		{
-			if (addressList == null) throw new ArgumentException(nameof(addressList));
+			await InsertManyViaTvpSplitByTransactionsAsync(addressList);
+		}
+		/*
 
-			if (!addressList.Any()) return;
+		public void InsertManyViaRows(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
 
-			var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
-			var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows
-																	? maxInsertManyRowsWithParameters
-																	: MaxInsertManyRows;
-			var values = new System.Text.StringBuilder();
-			var query = new System.Text.StringBuilder();
-			var parameters = new Dictionary<string, object>();
+		if(!addressList.Any()) return;
 
-			var itemsPerRequest = addressList.Select((x, i) => new { Index = i, Value = x })
-							.GroupBy(x => x.Index / maxInsertManyRows)
-							.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
-							.ToList();
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
 
-			await Task.Delay(10);
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
 
-			foreach (var items in itemsPerRequest)
-			{
-				query.AppendLine("BEGIN TRANSACTION;");
-				foreach (var item in items)
-				{
-					var address = item.Value;
-					var index = item.Index;
-					parameters.Add($"Country{index}", address.Country);
-					parameters.Add($"City{index}", address.City);
-					parameters.Add($"State{index}", address.State);
-					parameters.Add($"Street{index}", address.Street);
-					parameters.Add($"Building{index}", address.Building);
-					parameters.Add($"ZipCode{index}", address.ZipCode);
-					values.AppendLine(index != 0 ? "," : "");
-					values.AppendFormat(InsertManyValuesTemplate, index, address.Id, address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.Created.ToString(CultureInfo.InvariantCulture), address.Modified.ToString(CultureInfo.InvariantCulture), address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL", address.SyncState ? 1 : 0);
-				}
-				query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'", "NULL").ToString());
-				query.AppendLine("COMMIT TRANSACTION;");
-
-				await Task.Delay(10);
-				await DataAccessService.ExecuteAsync(query.ToString(), parameters);
-				parameters.Clear();
-				values.Clear();
-				query.Clear();
-			}
-
-			await Task.Delay(10);
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
 
 		}
+
+		public void InsertManyViaRowsSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+		DataAccessService.Execute(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		}
+
+		public async Task InsertManyViaRowsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		public async Task InsertManyViaRowsSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+		if(addressList==null) throw new ArgumentException(nameof(addressList));
+
+		if(!addressList.Any()) return;
+
+		var maxInsertManyRowsWithParameters = MaxRepositoryParams / 6;
+		var maxInsertManyRows = maxInsertManyRowsWithParameters < MaxInsertManyRows 
+																? maxInsertManyRowsWithParameters
+																: MaxInsertManyRows;
+		var values = new System.Text.StringBuilder();
+		var query = new System.Text.StringBuilder();
+		var parameters = new Dictionary<string, object>();
+
+		var itemsPerRequest = addressList.Select((x, i) => new {Index = i,Value = x})
+						.GroupBy(x => x.Index / maxInsertManyRows)
+						.Select(x => x.Select((v, i) => new { Index = i, Value = v.Value }).ToList())
+						.ToList(); 
+
+		await Task.Delay(10);
+
+		foreach (var items in itemsPerRequest)
+		{
+		query.AppendLine("BEGIN TRANSACTION;");
+		foreach (var item in items)
+		{
+		var address = item.Value;
+		var index = item.Index; 
+		parameters.Add($"Country{index}", address.Country);
+		parameters.Add($"City{index}", address.City);
+		parameters.Add($"State{index}", address.State);
+		parameters.Add($"Street{index}", address.Street);
+		parameters.Add($"Building{index}", address.Building);
+		parameters.Add($"ZipCode{index}", address.ZipCode);
+		values.AppendLine(index != 0 ? ",":"");
+		values.AppendFormat(InsertManyValuesTemplate, index, address.Id,address.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.Created.ToString(CultureInfo.InvariantCulture),address.Modified.ToString(CultureInfo.InvariantCulture),address.ExpireDate?.ToString(CultureInfo.InvariantCulture) ?? "NULL",address.SyncState ? 1 : 0);
+		}
+		query.AppendFormat(InsertManyQueryTemplate, values.Replace("'NULL'","NULL").ToString());
+		query.AppendLine("COMMIT TRANSACTION;");
+
+		await Task.Delay(10);
+		await DataAccessService.ExecuteAsync(query.ToString(), parameters);
+		parameters.Clear();
+		values.Clear();
+		query.Clear();
+		}
+
+		await Task.Delay(10);
+
+		}
+
+		*/
+		private void InsertManyViaTvp(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			if (addressList == null) throw new ArgumentNullException(nameof(addressList));
+			var list = addressList.ToList();
+			if (!list.Any()) return;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("Building", typeof(System.String));
+			dataTable.Columns.Add("City", typeof(System.String));
+			dataTable.Columns.Add("Country", typeof(System.String));
+			dataTable.Columns.Add("Created", typeof(System.DateTime));
+			dataTable.Columns.Add("ExpireDate", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("Id", typeof(System.Guid));
+			dataTable.Columns.Add("Latitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Longitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Modified", typeof(System.DateTime));
+			dataTable.Columns.Add("State", typeof(System.String));
+			dataTable.Columns.Add("Street", typeof(System.String));
+			dataTable.Columns.Add("SyncState", typeof(System.Boolean));
+			dataTable.Columns.Add("ZipCode", typeof(System.String));
+
+			foreach (var item in list)
+			{
+				var row = dataTable.NewRow();
+				row["Building"] = item.Building == null ? DBNull.Value : item.Building;
+				row["City"] = item.City == null ? DBNull.Value : item.City;
+				row["Country"] = item.Country == null ? DBNull.Value : item.Country;
+				row["Created"] = item.Created;
+				row["ExpireDate"] = item.ExpireDate == null ? DBNull.Value : item.ExpireDate;
+				row["Id"] = item.Id;
+				row["Latitude"] = item.Latitude == null ? DBNull.Value : item.Latitude;
+				row["Longitude"] = item.Longitude == null ? DBNull.Value : item.Longitude;
+				row["Modified"] = item.Modified;
+				row["State"] = item.State == null ? DBNull.Value : item.State;
+				row["Street"] = item.Street == null ? DBNull.Value : item.Street;
+				row["SyncState"] = item.SyncState;
+				row["ZipCode"] = item.ZipCode == null ? DBNull.Value : item.ZipCode;
+				dataTable.Rows.Add(row);
+			}
+
+			var parameters = new Dictionary<string, object>();
+			DataAccessService.AddTableParameter(dataTable, "dbo.UT_Addresses", "tvp", parameters);
+			var sql = @"
+INSERT INTO [dbo].[Addresses] ([dbo].[Addresses].[Building], [dbo].[Addresses].[City], [dbo].[Addresses].[Country], [dbo].[Addresses].[Created], [dbo].[Addresses].[ExpireDate], [dbo].[Addresses].[Id], [dbo].[Addresses].[Latitude], [dbo].[Addresses].[Longitude], [dbo].[Addresses].[Modified], [dbo].[Addresses].[State], [dbo].[Addresses].[Street], [dbo].[Addresses].[SyncState], [dbo].[Addresses].[ZipCode]) 
+SELECT [Building], [City], [Country], [Created], [ExpireDate], [Id], [Latitude], [Longitude], [Modified], [State], [Street], [SyncState], [ZipCode] FROM @tvp;";
+
+			DataAccessService.Execute(sql, parameters);
+		}
+
+		private async Task InsertManyViaTvpAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			if (addressList == null) throw new ArgumentNullException(nameof(addressList));
+			var list = addressList.ToList();
+			if (!list.Any()) return;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("Building", typeof(System.String));
+			dataTable.Columns.Add("City", typeof(System.String));
+			dataTable.Columns.Add("Country", typeof(System.String));
+			dataTable.Columns.Add("Created", typeof(System.DateTime));
+			dataTable.Columns.Add("ExpireDate", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("Id", typeof(System.Guid));
+			dataTable.Columns.Add("Latitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Longitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Modified", typeof(System.DateTime));
+			dataTable.Columns.Add("State", typeof(System.String));
+			dataTable.Columns.Add("Street", typeof(System.String));
+			dataTable.Columns.Add("SyncState", typeof(System.Boolean));
+			dataTable.Columns.Add("ZipCode", typeof(System.String));
+
+			foreach (var item in list)
+			{
+				var row = dataTable.NewRow();
+				row["Building"] = item.Building == null ? DBNull.Value : item.Building;
+				row["City"] = item.City == null ? DBNull.Value : item.City;
+				row["Country"] = item.Country == null ? DBNull.Value : item.Country;
+				row["Created"] = item.Created;
+				row["ExpireDate"] = item.ExpireDate == null ? DBNull.Value : item.ExpireDate;
+				row["Id"] = item.Id;
+				row["Latitude"] = item.Latitude == null ? DBNull.Value : item.Latitude;
+				row["Longitude"] = item.Longitude == null ? DBNull.Value : item.Longitude;
+				row["Modified"] = item.Modified;
+				row["State"] = item.State == null ? DBNull.Value : item.State;
+				row["Street"] = item.Street == null ? DBNull.Value : item.Street;
+				row["SyncState"] = item.SyncState;
+				row["ZipCode"] = item.ZipCode == null ? DBNull.Value : item.ZipCode;
+				dataTable.Rows.Add(row);
+			}
+
+			var parameters = new Dictionary<string, object>();
+			DataAccessService.AddTableParameter(dataTable, "dbo.UT_Addresses", "tvp", parameters);
+			var sql = @"
+INSERT INTO [dbo].[Addresses] ([dbo].[Addresses].[Building], [dbo].[Addresses].[City], [dbo].[Addresses].[Country], [dbo].[Addresses].[Created], [dbo].[Addresses].[ExpireDate], [dbo].[Addresses].[Id], [dbo].[Addresses].[Latitude], [dbo].[Addresses].[Longitude], [dbo].[Addresses].[Modified], [dbo].[Addresses].[State], [dbo].[Addresses].[Street], [dbo].[Addresses].[SyncState], [dbo].[Addresses].[ZipCode]) 
+SELECT [Building], [City], [Country], [Created], [ExpireDate], [Id], [Latitude], [Longitude], [Modified], [State], [Street], [SyncState], [ZipCode] FROM @tvp;";
+
+			await DataAccessService.ExecuteAsync(sql, parameters);
+		}
+
+		private void InsertManyViaTvpSplitByTransactions(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			if (addressList == null) throw new ArgumentNullException(nameof(addressList));
+			var list = addressList.ToList();
+			if (!list.Any()) return;
+
+			const int batchSize = 1000;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("Building", typeof(System.String));
+			dataTable.Columns.Add("City", typeof(System.String));
+			dataTable.Columns.Add("Country", typeof(System.String));
+			dataTable.Columns.Add("Created", typeof(System.DateTime));
+			dataTable.Columns.Add("ExpireDate", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("Id", typeof(System.Guid));
+			dataTable.Columns.Add("Latitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Longitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Modified", typeof(System.DateTime));
+			dataTable.Columns.Add("State", typeof(System.String));
+			dataTable.Columns.Add("Street", typeof(System.String));
+			dataTable.Columns.Add("SyncState", typeof(System.Boolean));
+			dataTable.Columns.Add("ZipCode", typeof(System.String));
+
+			foreach (var batch in list.Chunk(batchSize))
+			{
+				foreach (var item in batch)
+				{
+					var row = dataTable.NewRow();
+					row["Building"] = item.Building == null ? DBNull.Value : item.Building;
+					row["City"] = item.City == null ? DBNull.Value : item.City;
+					row["Country"] = item.Country == null ? DBNull.Value : item.Country;
+					row["Created"] = item.Created;
+					row["ExpireDate"] = item.ExpireDate == null ? DBNull.Value : item.ExpireDate;
+					row["Id"] = item.Id;
+					row["Latitude"] = item.Latitude == null ? DBNull.Value : item.Latitude;
+					row["Longitude"] = item.Longitude == null ? DBNull.Value : item.Longitude;
+					row["Modified"] = item.Modified;
+					row["State"] = item.State == null ? DBNull.Value : item.State;
+					row["Street"] = item.Street == null ? DBNull.Value : item.Street;
+					row["SyncState"] = item.SyncState;
+					row["ZipCode"] = item.ZipCode == null ? DBNull.Value : item.ZipCode;
+					dataTable.Rows.Add(row);
+				}
+
+				var parameters = new Dictionary<string, object>();
+				DataAccessService.AddTableParameter(dataTable, "dbo.UT_Addresses", "tvp", parameters);
+				var sql = @"
+INSERT INTO [dbo].[Addresses] ([dbo].[Addresses].[Building], [dbo].[Addresses].[City], [dbo].[Addresses].[Country], [dbo].[Addresses].[Created], [dbo].[Addresses].[ExpireDate], [dbo].[Addresses].[Id], [dbo].[Addresses].[Latitude], [dbo].[Addresses].[Longitude], [dbo].[Addresses].[Modified], [dbo].[Addresses].[State], [dbo].[Addresses].[Street], [dbo].[Addresses].[SyncState], [dbo].[Addresses].[ZipCode]) 
+SELECT [Building], [City], [Country], [Created], [ExpireDate], [Id], [Latitude], [Longitude], [Modified], [State], [Street], [SyncState], [ZipCode] FROM @tvp;";
+
+				DataAccessService.Execute(sql, parameters);
+				dataTable.Clear();
+			}
+		}
+
+		private async Task InsertManyViaTvpSplitByTransactionsAsync(IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.Address> addressList)
+		{
+			if (addressList == null) throw new ArgumentNullException(nameof(addressList));
+			var list = addressList.ToList();
+			if (!list.Any()) return;
+
+			const int batchSize = 1000;
+
+			var dataTable = new System.Data.DataTable();
+			dataTable.Columns.Add("Building", typeof(System.String));
+			dataTable.Columns.Add("City", typeof(System.String));
+			dataTable.Columns.Add("Country", typeof(System.String));
+			dataTable.Columns.Add("Created", typeof(System.DateTime));
+			dataTable.Columns.Add("ExpireDate", typeof(System.DateTimeOffset));
+			dataTable.Columns.Add("Id", typeof(System.Guid));
+			dataTable.Columns.Add("Latitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Longitude", typeof(System.Decimal));
+			dataTable.Columns.Add("Modified", typeof(System.DateTime));
+			dataTable.Columns.Add("State", typeof(System.String));
+			dataTable.Columns.Add("Street", typeof(System.String));
+			dataTable.Columns.Add("SyncState", typeof(System.Boolean));
+			dataTable.Columns.Add("ZipCode", typeof(System.String));
+
+			foreach (var batch in list.Chunk(batchSize))
+			{
+				foreach (var item in batch)
+				{
+					var row = dataTable.NewRow();
+					row["Building"] = item.Building == null ? DBNull.Value : item.Building;
+					row["City"] = item.City == null ? DBNull.Value : item.City;
+					row["Country"] = item.Country == null ? DBNull.Value : item.Country;
+					row["Created"] = item.Created;
+					row["ExpireDate"] = item.ExpireDate == null ? DBNull.Value : item.ExpireDate;
+					row["Id"] = item.Id;
+					row["Latitude"] = item.Latitude == null ? DBNull.Value : item.Latitude;
+					row["Longitude"] = item.Longitude == null ? DBNull.Value : item.Longitude;
+					row["Modified"] = item.Modified;
+					row["State"] = item.State == null ? DBNull.Value : item.State;
+					row["Street"] = item.Street == null ? DBNull.Value : item.Street;
+					row["SyncState"] = item.SyncState;
+					row["ZipCode"] = item.ZipCode == null ? DBNull.Value : item.ZipCode;
+					dataTable.Rows.Add(row);
+				}
+
+				var parameters = new Dictionary<string, object>();
+				DataAccessService.AddTableParameter(dataTable, "dbo.UT_Addresses", "tvp", parameters);
+				var sql = @"
+INSERT INTO [dbo].[Addresses] ([dbo].[Addresses].[Building], [dbo].[Addresses].[City], [dbo].[Addresses].[Country], [dbo].[Addresses].[Created], [dbo].[Addresses].[ExpireDate], [dbo].[Addresses].[Id], [dbo].[Addresses].[Latitude], [dbo].[Addresses].[Longitude], [dbo].[Addresses].[Modified], [dbo].[Addresses].[State], [dbo].[Addresses].[Street], [dbo].[Addresses].[SyncState], [dbo].[Addresses].[ZipCode]) 
+SELECT [Building], [City], [Country], [Created], [ExpireDate], [Id], [Latitude], [Longitude], [Modified], [State], [Street], [SyncState], [ZipCode] FROM @tvp;";
+
+				await DataAccessService.ExecuteAsync(sql, parameters);
+				dataTable.Clear();
+				await Task.Delay(10);
+			}
+		}
+
+
 
 		public void UpdateById(TestRepositoryGeneration.DataObjects.BaseRepositories.Address address)
 		{

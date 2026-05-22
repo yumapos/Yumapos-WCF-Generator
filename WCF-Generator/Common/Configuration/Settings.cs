@@ -1,5 +1,4 @@
-﻿using MyApp;
-using System.Configuration;
+﻿using System.Configuration;
 
 namespace WCFGenerator.Common
 {

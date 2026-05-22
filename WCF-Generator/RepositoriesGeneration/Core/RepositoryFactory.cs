@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WCFGenerator.Common;
 using WCFGenerator.RepositoriesGeneration.Configuration;
+using WCFGenerator.RepositoriesGeneration.Enums;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Services;
 
@@ -66,9 +70,21 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                     // Add document to creation
                     _generatorWorkspace.UpdateFileInTargetProject(repository.FileName, config.RepositoryTargetFolder, code);
                 }
+                var repoGenerators = candidatesRepository
+                    .Select(x => x as RepositoryCodeGeneratorAbstract)
+                    .ToList();
+                var migrationGenerator = new DataTableMigrationCodeGenerator(_generatorWorkspace, config, repoGenerators);
+                var migrationCode = await migrationGenerator.GetFullCode();
 
-                // Save all files
                 await _generatorWorkspace.ApplyTargetProjectChanges(true);
+                
+                
+                if (!string.IsNullOrEmpty(migrationCode))
+                {
+                    _generatorWorkspace.SetTargetProject(config.DataTableMigrationProjectName);
+                    _generatorWorkspace.UpdateFileInTargetProject(migrationGenerator.GetFileName(), config.DataTableMigrationTargetFolder, migrationCode);
+                    await _generatorWorkspace.ApplyTargetProjectChanges(true);
+                }
             }
         }
     }

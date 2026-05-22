@@ -282,7 +282,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             return listGenEl;
         }
 
-        public void GenerateAll()
+        public async Task GenerateAll()
         {
             SyntaxSerilizationHelper.Solution = _generatorWorkspace.Solution;
             var migrationElements = new List<MigrationElements>();
@@ -314,13 +314,13 @@ namespace WCFGenerator.SerializeGeneration.Generation
                         var fullGenClass = patternText.GeneratePartialClass();
                         CreateDocument(fullGenClass.ToString(), projectName, "Extensions/" + generatedClass.ClassName + ".g.cs");
                     }
-                    ApplyChanges();
+                    await ApplyChanges();
                 }
             }
             if (migrationElements.Any())
             {
-                var newVersion = GenerateNewVersion();
-                GenerateMigration(newVersion, migrationElements);
+                var newVersion = await GenerateNewVersion();
+                await GenerateMigration(newVersion, migrationElements);
             }
 
             _generatorWorkspace.ApplyChanges();
@@ -341,7 +341,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
             }
         }
 
-        private void ApplyChanges()
+        private async Task ApplyChanges()
         {
             foreach (var doc in Tasks)
             {
@@ -362,7 +362,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
 
                         if (_project != null)
                         {
-                            CodeHelper.AddDocument(true, _project, doc.Item1, doc.Item2.ToString(), doc.Item3);
+                            await CodeHelper.AddDocument(true, _project, doc.Item1, doc.Item2.ToString(), doc.Item3);
                         }
                     }
                 }
@@ -370,7 +370,7 @@ namespace WCFGenerator.SerializeGeneration.Generation
                 {
                     if (_project != null)
                     {
-                        CodeHelper.AddDocument(true, _project, doc.Item1, doc.Item2.ToString(), doc.Item3);
+                        await CodeHelper.AddDocument(true, _project, doc.Item1, doc.Item2.ToString(), doc.Item3);
                     }
                 }
             }
@@ -409,24 +409,24 @@ namespace WCFGenerator.SerializeGeneration.Generation
             return int.Parse(versionField.ExpressionBody.Expression.GetFirstToken().ValueText);
         }
 
-        private int GenerateNewVersion()
+        private async Task<int> GenerateNewVersion()
         {
             var version = GetCurrentVersion() + 1;
             var versionClass = _textMigrationPatterns.GenerateVersionNumberClass(version, _migrationVersionClass, _migrationVersionProject);
             CreateDocument(versionClass, _migrationVersionProject, "Helpers/Generation/" +_migrationVersionClass + ".cs");
-            ApplyChanges();
+            await ApplyChanges();
 
             return version;
         }
 
-        private void GenerateMigration(int version, List<MigrationElements> migrationElements)
+        private async Task GenerateMigration(int version, List<MigrationElements> migrationElements)
         {
             var migrationProject = _generatorWorkspace.Solution.Projects.FirstOrDefault(x => x.Name == _migrationProject);
             SyntaxSerilizationHelper.Project = migrationProject;
             var migration = _textMigrationPatterns.GenerateNewMigrationClass(_migrationProject, _migrationClassPrefix, _migrationInterface,
                 version, migrationElements);
             CreateDocument(migration, _migrationProject, "GeneratedMigrations/" + $"{_migrationClassPrefix}V{version}" + ".g.cs");
-            ApplyChanges();
+            await ApplyChanges();
         }
     }
 }

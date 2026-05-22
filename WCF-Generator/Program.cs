@@ -18,7 +18,7 @@ using WCFGenerator.SerializeGeneration.Generation;
 using WCFGenerator.WcfClientGeneration;
 using WCFGenerator.WcfClientGeneration.Configuration;
 
-namespace MyApp
+namespace WCFGenerator
 {
     internal class Program
     {
@@ -231,7 +231,7 @@ namespace MyApp
             var repositoryGenerator = new SerilizationGeneration(_generatorWorkspace);
 
             // run generation
-            repositoryGenerator.GenerateAll();
+            await repositoryGenerator.GenerateAll();
 
             Console.WriteLine("Serialize generation completed.");
         }
