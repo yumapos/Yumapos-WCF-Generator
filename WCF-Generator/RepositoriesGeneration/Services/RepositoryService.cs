@@ -187,6 +187,7 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             var repositoryInfo = new RepositoryInfo
             {
                 RepositorySuffix = _config.RepositorySuffix,
+                DataTablePrefix = _config.DataTablePrefix,
                 ClassName = className,
                 ClassFullName = _solutionSyntaxWalker.GetFullRepositoryModelName(doClass),
                 IsTenantRelated = !doClass.BaseTypeExist("ITenantUnrelated"),

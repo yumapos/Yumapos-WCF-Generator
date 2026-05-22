@@ -191,6 +191,15 @@ namespace WCFGenerator.RepositoriesGeneration.Configuration
         }
         
         /// <summary>
+        ///      Name of namespace in Migration project
+        /// </summary>
+        [ConfigurationProperty("DataTablePrefix", DefaultValue = "UT_", IsRequired = false)]
+        public string DataTablePrefix
+        {
+            get { return ((string)(base[nameof(DataTablePrefix)])); }
+        }
+        
+        /// <summary>
         ///      Force recreate migrations
         /// </summary>
         [ConfigurationProperty("ForceRecreateMigrations", DefaultValue = false, IsRequired = false)]

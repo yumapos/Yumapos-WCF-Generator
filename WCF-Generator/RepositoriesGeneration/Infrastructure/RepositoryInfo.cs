@@ -42,6 +42,11 @@ namespace WCFGenerator.RepositoriesGeneration.Infrastructure
         #region Repository model class info
 
         public TvpMetadata TvpMetadata { get; set; }
+        
+        /// <summary>
+        ///     Prefix of repository name
+        /// </summary>
+        public string DataTablePrefix { get; set; }
         /// <summary>
         ///     Information about inherited model repository (join repository)
         /// </summary>

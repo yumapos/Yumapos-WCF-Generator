@@ -48,7 +48,7 @@ internal class TvpAnalyzer
             }
         }
         
-        tvp.DataTableName = $"{tvp.Schema}.UT_{tvp.TableName}";
+        tvp.DataTableName = $"{tvp.Schema}.{repositoryInfo.DataTablePrefix}{tvp.TableName}";
 
         var properties = modelClass.Members
             .OfType<PropertyDeclarationSyntax>()
