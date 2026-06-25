@@ -607,7 +607,7 @@ namespace WCFGenerator.WcfClientGeneration
                 sb.Append("\t }\r\n");
                 sb.Append(" }");
 
-               ret.Add(new SrcFile(method.Service + "_" + method.Name + "CompletedEventArgs.g.cs", "ServiceReferences\\CompletedEventArgs", sb.ToString()));
+               ret.Add(new SrcFile(method.Service + "_" + method.Name + "CompletedEventArgs.g.cs", "ServiceReferences" + Path.DirectorySeparatorChar + "CompletedEventArgs", sb.ToString()));
             }
 
             return ret;

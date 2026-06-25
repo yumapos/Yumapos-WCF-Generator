@@ -5,6 +5,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>WCFGenerator</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UseAppHost>false</UseAppHost>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,11 +21,9 @@
     </None>
   </ItemGroup>
 
-  <PropertyGroup>
-    <PostBuildEvent>
-		cd $(SolutionDir)
-		if '$(Configuration)' == 'Debug' $(SolutionDir)copy_binaries.bat
-	</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="PublishGeneratorBinaries" AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Debug' and '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="dotnet publish &quot;$(MSBuildProjectFullPath)&quot; --no-build -c &quot;$(Configuration)&quot; -f &quot;$(TargetFramework)&quot; -o &quot;$(MSBuildProjectDirectory)/../_WCF-Generator-binaries&quot;" />
+  </Target>
 
 </Project>
