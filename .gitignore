@@ -2,6 +2,7 @@ bin
 obj
 *.suo
 *.user
+*.lscache
 packages
 *.sln.ide
 /TestResults

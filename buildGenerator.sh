@@ -1,0 +1,1 @@
+dotnet publish WCF-Generator/WCF-Generator.csproj -c Debug --runtime win-x64 -o _WCF-Generator-binaries/

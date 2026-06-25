@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
@@ -30,11 +31,12 @@ namespace WCFGenerator.Common
                 document = await Format(document);
             }
 
-            // this is workaround to Roslyn adding strings <Compile Include="Repositories\Generated\CashDrawerCheckRepository.g.cs" />
+            // this is workaround to Roslyn adding strings <Compile Include="Repositories/Generated\CashDrawerCheckRepository.g.cs" />
             // to a project file if add file directly to Roslyn
             var documentText = (await document.GetTextAsync()).ToString();
-            var lastOccur = project.FilePath.Split(new[] { '\\' }).Last().Length;
-            var path = project.FilePath.Substring(0, project.FilePath.Length - lastOccur) + String.Join(@"\", folders) + @"\" + fileName;
+            var projectPath = project.FilePath.Replace('\\', Path.DirectorySeparatorChar);
+            var lastOccur = projectPath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }).Last().Length;
+            var path = Path.Combine(projectPath.Substring(0, projectPath.Length - lastOccur), string.Join(Path.DirectorySeparatorChar, folders), fileName);
             await System.IO.File.WriteAllTextAsync(path, documentText, Encoding.UTF8);
         }
 
@@ -42,7 +44,10 @@ namespace WCFGenerator.Common
         {
             // general format
             var formattedDoc = await Formatter.FormatAsync(doc);
-            var text = (await formattedDoc.GetTextAsync()).ToString().Replace("    ", "\t");
+            var text = (await formattedDoc.GetTextAsync())
+                .ToString()
+                .Replace("    ", "\t")
+                .Replace(@"\r\n|\r|\n", "\r\n");
             formattedDoc = formattedDoc.WithText(SourceText.From(text));
             return formattedDoc;
         }
