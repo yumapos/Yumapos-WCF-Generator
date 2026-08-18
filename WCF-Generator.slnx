@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="copy_binaries.bat" />
+    <File Path="generation.bat" />
+    <File Path="README.txt" />
+    <File Path="WCF-Generator.exe.config" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Sandbox/TestMappingGeneration/TestMappingGeneration.csproj" />
+    <Project Path="Sandbox/TestMappingGenerationDtos/TestMappingGenerationDtos.csproj" />
+    <Project Path="Sandbox/TestRepositoryGeneration/TestRepositoryGeneration.csproj" />
+    <Project Path="Sandbox/TestResponseDtoGeneration/TestResponseDtoGeneration.csproj" />
+    <Project Path="Sandbox/TestSerializationGeneration/TestSerializationGeneration.csproj" />
+  </Folder>
+  <Project Path="WCF-Generator/WCF-Generator.csproj" />
+</Solution>
