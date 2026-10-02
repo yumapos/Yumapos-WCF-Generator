@@ -12,8 +12,8 @@ using FluentMigrator;
 
 namespace TestRepositoryGeneration.Migrations;
 
-[Migration(20260522133116)]
-public class M20260522133116_CreateTVP_Sandbox_Server : FluentMigrator.Migration
+[Migration(20261002075406)]
+public class M20261002075406_CreateTVP_Sandbox_Server : FluentMigrator.Migration
 {
 
 	public override void Up()
@@ -31,8 +31,8 @@ CREATE TYPE dbo.UT_Addresses AS TABLE (
 	[Created] datetime2 NOT NULL,
 	[ExpireDate] datetimeoffset NULL,
 	[Id] uniqueidentifier NOT NULL,
-	[Latitude] decimal(19,5) NULL,
-	[Longitude] decimal(19,5) NULL,
+	[Latitude] decimal(19,6) NULL,
+	[Longitude] decimal(19,6) NULL,
 	[Modified] datetime2 NOT NULL,
 	[State] nvarchar(max) NULL,
 	[Street] nvarchar(max) NULL,
@@ -66,7 +66,7 @@ CREATE TYPE dbo.UT_MenuItems AS TABLE (
 	[BitKitchenPrinters] int NULL,
 	[CreatedBy] nvarchar(max) NULL,
 	[DiscountStartDate] datetime2 NULL,
-	[DiscountValue] decimal(19,5) NULL,
+	[DiscountValue] decimal(19,6) NULL,
 	[ExternalId] uniqueidentifier NULL,
 	[MenuCategoryId] uniqueidentifier NOT NULL,
 	[MenuItemId] uniqueidentifier NOT NULL,
