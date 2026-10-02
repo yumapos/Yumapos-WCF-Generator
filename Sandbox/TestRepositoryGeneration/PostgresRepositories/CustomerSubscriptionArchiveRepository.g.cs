@@ -29,6 +29,7 @@ namespace TestRepositoryGeneration
 		private const string InsertOrUpdateQuery = @"INSERT INTO archive.customer_subscriptions(archive.customer_subscriptions.customer_id,archive.customer_subscriptions.customer_notifications_type,archive.customer_subscriptions.email,archive.customer_subscriptions.s_m_s,archive.customer_subscriptions.push,archive.customer_subscriptions.is_customizable,archive.customer_subscriptions.resend_period,archive.customer_subscriptions.is_deleted,archive.customer_subscriptions.tenant_id)  VALUES(@CustomerId,@CustomerNotificationsType,@Email,@SMS,@Push,@IsCustomizable,@ResendPeriod,@IsDeleted,@TenantId)  ON CONFLICT (customer_id,customer_notifications_type) DO UPDATE archive.customer_subscriptions SET archive.customer_subscriptions.customer_id = @CustomerId,archive.customer_subscriptions.customer_notifications_type = @CustomerNotificationsType,archive.customer_subscriptions.email = @Email,archive.customer_subscriptions.s_m_s = @SMS,archive.customer_subscriptions.push = @Push,archive.customer_subscriptions.is_customizable = @IsCustomizable,archive.customer_subscriptions.resend_period = @ResendPeriod,archive.customer_subscriptions.is_deleted = @IsDeleted ";
 		private const string UpdateManyByCustomerIdAndCustomerNotificationsTypeQueryTemplate = @"GenerateUpdateMany script was not generated";
 		private const string WhereQueryByCustomerIdAndCustomerNotificationsType = "WHERE archive.customer_subscriptions.customer_id = @CustomerId AND ((archive.customer_subscriptions.customer_notifications_type IS NULL AND @CustomerNotificationsType IS NULL) OR archive.customer_subscriptions.customer_notifications_type = @CustomerNotificationsType){andTenantId:archive.customer_subscriptions} ";
+		private const string WhereQueryByCustomerIdAndCustomerNotificationsTypeNonNullableCustomerNotificationsType = "WHERE archive.customer_subscriptions.customer_id = @CustomerId AND archive.customer_subscriptions.customer_notifications_type = @CustomerNotificationsType{andTenantId:archive.customer_subscriptions} ";
 		private const string InsertManyQueryTemplate = @"InsertMany script was not generated";
 		private const string InsertManyValuesTemplate = @"InsertMany script was not generated";
 
@@ -55,14 +56,14 @@ namespace TestRepositoryGeneration
 		public IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription> GetByCustomerIdAndCustomerNotificationsType(string customerId, int customerNotificationsType)
 		{
 			object parameters = new { customerId, customerNotificationsType };
-			var sql = SelectByQuery + WhereQueryByCustomerIdAndCustomerNotificationsType;
+			var sql = SelectByQuery + WhereQueryByCustomerIdAndCustomerNotificationsTypeNonNullableCustomerNotificationsType;
 			var result = DataAccessService.Get<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription>(sql, parameters);
 			return result.ToList();
 		}
 		public async Task<IEnumerable<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription>> GetByCustomerIdAndCustomerNotificationsTypeAsync(string customerId, int customerNotificationsType)
 		{
 			object parameters = new { customerId, customerNotificationsType };
-			var sql = SelectByQuery + WhereQueryByCustomerIdAndCustomerNotificationsType;
+			var sql = SelectByQuery + WhereQueryByCustomerIdAndCustomerNotificationsTypeNonNullableCustomerNotificationsType;
 			var result = (await DataAccessService.GetAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription>(sql, parameters));
 			return result.ToList();
 		}
@@ -393,13 +394,13 @@ namespace TestRepositoryGeneration
 		public void RemoveByCustomerIdAndCustomerNotificationsType(string customerId, int customerNotificationsType)
 		{
 		object parameters = new {customerId, customerNotificationsType};
-		var sql = DeleteQueryBy + WhereQueryByCustomerIdAndCustomerNotificationsType; 
+		var sql = DeleteQueryBy + WhereQueryByCustomerIdAndCustomerNotificationsTypeNonNullableCustomerNotificationsType; 
 		DataAccessService.PersistObject<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription>(sql, parameters);
 		}
 		public async Task RemoveByCustomerIdAndCustomerNotificationsTypeAsync(string customerId, int customerNotificationsType)
 		{
 		object parameters = new {customerId, customerNotificationsType};
-		var sql = DeleteQueryBy + WhereQueryByCustomerIdAndCustomerNotificationsType; 
+		var sql = DeleteQueryBy + WhereQueryByCustomerIdAndCustomerNotificationsTypeNonNullableCustomerNotificationsType; 
 		await DataAccessService.PersistObjectAsync<TestRepositoryGeneration.DataObjects.BaseRepositories.CustomerSubscription>(sql, parameters);
 		}
 

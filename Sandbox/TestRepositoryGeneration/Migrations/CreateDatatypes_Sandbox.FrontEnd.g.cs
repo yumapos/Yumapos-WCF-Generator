@@ -12,8 +12,8 @@ using FluentMigrator;
 
 namespace TestRepositoryGeneration.Migrations;
 
-[Migration(20260522133118)]
-public class M20260522133118_CreateTVP_Sandbox_FrontEnd : FluentMigrator.Migration
+[Migration(20261002075408)]
+public class M20261002075408_CreateTVP_Sandbox_FrontEnd : FluentMigrator.Migration
 {
 
 	public override void Up()
