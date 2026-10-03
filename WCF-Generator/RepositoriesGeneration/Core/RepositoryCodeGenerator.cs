@@ -104,6 +104,18 @@ namespace WCFGenerator.RepositoriesGeneration.Core
                 sb.AppendLine("private const string " + _whereQueryBy + key + " = " + sql + ";");
             }
 
+            var methodsWithDifferentNullability = RepositoryInfo.MethodImplementationInfo.Where(m =>
+                    m.RequiresImplementation &&
+                    (m.Method == RepositoryMethod.GetBy || m.Method == RepositoryMethod.RemoveBy) &&
+                    UsesMethodParameterNullability(m))
+                .GroupBy(GetWhereQueryName)
+                .Select(group => group.First());
+            foreach (var method in methodsWithDifferentNullability)
+            {
+                var sql = ScriptGenerator.GenerateWhere(GetFilterParameters(method), sqlInfo).SurroundWithQuotes();
+                sb.AppendLine("private const string " + GetWhereQueryName(method) + " = " + sql + ";");
+            }
+
             // where by join PK
             if (RepositoryInfo.JoinRepositoryInfo != null)
             {
@@ -392,7 +404,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var returnFunc = method.ReturnType.IsEnumerable() ? "return result.ToList();" : "return result.FirstOrDefault();";
             var filter = method.FilterInfo;
             var filterByIsDeleted = RepositoryInfo.IsDeletedExist;
-            var sqlWhere = _whereQueryBy + filter.Key;
+            var sqlWhere = GetWhereQueryName(method);
             var selectQuery = _selectByQuery;
             if(filter.Parameters.Any(p => p == null))
             {
@@ -607,6 +619,7 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             var methodParameter = RepositoryInfo.ClassFullName + " " + parameterName;
 
             var whereQueryName = _whereQueryBy + filter.Key;
+            var whereQueryByMethodParameters = GetWhereQueryName(method);
 
             // Synchronous method
             sb.AppendLine("public void RemoveBy" + filter.Key + "(" + methodParameter + ")");
@@ -659,11 +672,11 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("object parameters = new {" + sqlParameters + "};");
             if(RepositoryInfo.JoinRepositoryInfo == null)
             {
-                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryByMethodParameters + "; ");
             }
             else
             {
-                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryByMethodParameters + " + " + _deleteQueryBy + "; ");
             }
             sb.AppendLine("DataAccessService.PersistObject<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
             sb.AppendLine("}");
@@ -674,17 +687,70 @@ namespace WCFGenerator.RepositoriesGeneration.Core
             sb.AppendLine("object parameters = new {" + sqlParameters + "};");
             if(RepositoryInfo.JoinRepositoryInfo == null)
             {
-                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryName + "; ");
+                sb.AppendLine("var sql = " + _deleteQueryBy + " + " + whereQueryByMethodParameters + "; ");
             }
             else
             {
-                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryName + " + " + _deleteQueryBy + "; ");
+                sb.AppendLine("var sql = " + _declarePK + " + " + whereQueryByMethodParameters + " + " + _deleteQueryBy + "; ");
             }
             sb.AppendLine("await DataAccessService.PersistObjectAsync<" + RepositoryInfo.ClassFullName + ">(sql, parameters);");
             sb.AppendLine("}");
             sb.AppendLine("");
 
             return method.RequiresImplementation ? sb.ToString() : sb.ToString().SurroundWithComments();
+        }
+
+        private string GetWhereQueryName(MethodImplementationInfo method)
+        {
+            var name = _whereQueryBy + method.FilterInfo.Key;
+            var parametersWithDifferentNullability = method.FilterInfo.Parameters
+                .Select(filterParameter => new
+                {
+                    FilterParameter = filterParameter,
+                    MethodParameter = method.Parameters?.FirstOrDefault(parameter =>
+                        string.Equals(parameter.Name, filterParameter.Name, StringComparison.InvariantCultureIgnoreCase))
+                })
+                .Where(parameters => parameters.MethodParameter != null &&
+                                     parameters.MethodParameter.IsNullable != parameters.FilterParameter.IsNullable)
+                .ToList();
+
+            if (!parametersWithDifferentNullability.Any())
+            {
+                return name;
+            }
+
+            return name + string.Join("And", parametersWithDifferentNullability.Select(parameters =>
+                (parameters.MethodParameter.IsNullable ? "Nullable" : "NonNullable") +
+                (method.FilterInfo.Parameters.Count > 1 ? parameters.FilterParameter.Name : "")));
+        }
+
+        private static bool UsesMethodParameterNullability(MethodImplementationInfo method)
+        {
+            return method.FilterInfo.Parameters.Any(filterParameter =>
+            {
+                var methodParameter = method.Parameters?.FirstOrDefault(parameter =>
+                    string.Equals(parameter.Name, filterParameter.Name, StringComparison.InvariantCultureIgnoreCase));
+                return methodParameter != null && methodParameter.IsNullable != filterParameter.IsNullable;
+            });
+        }
+
+        private static IEnumerable<ParameterInfo> GetFilterParameters(MethodImplementationInfo method)
+        {
+            return method.FilterInfo.Parameters.Select(filterParameter =>
+            {
+                var methodParameter = method.Parameters?.FirstOrDefault(parameter =>
+                    string.Equals(parameter.Name, filterParameter.Name, StringComparison.InvariantCultureIgnoreCase));
+                if (methodParameter == null || methodParameter.IsNullable == filterParameter.IsNullable)
+                {
+                    return filterParameter;
+                }
+
+                return new ParameterInfo(
+                    filterParameter.Name,
+                    filterParameter.TypeName + (methodParameter.IsNullable ? "?" : ""),
+                    filterParameter.NeedGeneratePeriod,
+                    filterParameter.DefaultValue);
+            });
         }
 
         private string GenerateInsertOrUpdate(MethodImplementationInfo method)

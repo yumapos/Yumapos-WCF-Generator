@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentMigrator" Version="7.1.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="System.Composition.AttributedModel" Version="7.0.0" />
+    <PackageReference Include="FluentMigrator" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.Composition.AttributedModel" />
   </ItemGroup>
 
   <ItemGroup>

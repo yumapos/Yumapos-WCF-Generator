@@ -243,7 +243,7 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
             var projects = solution.Projects.ToList();
             var tasks = projects.Select(async project =>
             {
-                var trees = await GetTrees(solution, new List<string> { project.Name });
+                var trees = await GetTrees(project);
                 return new { ProjectName = project.Name, Trees = trees };
             });
             var results = await Task.WhenAll(tasks);
@@ -253,35 +253,31 @@ namespace WCFGenerator.RepositoriesGeneration.Analysis
         }
         
         private static async Task<List<SyntaxTree>> GetTrees(
-            Solution solution,
-            List<string> projects,
+            Project project,
             LanguageVersion targetVersion = LanguageVersion.Latest)
         {
-            var uniqueProjectNames = projects.Distinct().ToList();
-            var targetProjects = solution.Projects.Where(p => uniqueProjectNames.Contains(p.Name)).ToList();
             var trees = new List<SyntaxTree>();
-            foreach (var project in targetProjects)
-            {
-                foreach (var document in project.Documents)
+            foreach (var document in project.Documents)
+            { 
+                if (document.Name.Contains(".g.cs"))
+                    continue;
+
+                var filePath = document.FilePath;
+                if (string.IsNullOrEmpty(filePath))
+                    continue;
+
+                var tree = await document.GetSyntaxTreeAsync();
+                if (tree == null) continue;
+
+                var parseOptions = tree.Options as CSharpParseOptions;
+                if (parseOptions != null)
                 {
-                    if (document.Name.Contains(".g.cs"))
-                        continue;
-
-                    var filePath = document.FilePath;
-                    if (string.IsNullOrEmpty(filePath))
-                        continue;
-
-                    var tree = await document.GetSyntaxTreeAsync();
-                    if (tree == null) continue;
-
-                    var parseOptions = tree.Options as CSharpParseOptions;
-                    if (parseOptions != null && parseOptions.LanguageVersion != targetVersion)
-                    {
-                        var newParseOptions = parseOptions.WithLanguageVersion(targetVersion);
-                        tree = tree.WithRootAndOptions(await tree.GetRootAsync(), newParseOptions);
-                    }
-                    trees.Add(tree);
+                    // This compilation combines projects, so all trees need identical compiler features.
+                    var newParseOptions = parseOptions.WithLanguageVersion(targetVersion)
+                        .WithFeatures(Array.Empty<KeyValuePair<string, string>>());
+                    tree = tree.WithRootAndOptions(await tree.GetRootAsync(), newParseOptions);
                 }
+                trees.Add(tree);
             }
 
             return trees;
