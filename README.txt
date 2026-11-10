@@ -7,3 +7,6 @@
 3. Run generation.bat or generation.sh to use the published binaries without rebuilding.
    Both use dotnet WCF-Generator.dll with WCF-Generator.exe.config.
    Keep the complete published directory, including Roslyn BuildHost dependencies.
+
+4. The repository-generation sandbox is Sandbox/TestRepositoryGeneration.
+   Its generator settings are in this submodule's WCF-Generator.exe.config.
