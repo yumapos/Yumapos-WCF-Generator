@@ -45,7 +45,8 @@ namespace WCFGenerator.Common
             var classVisitor = new ClassVirtualizationVisitor();
             var classes = new List<ClassDeclarationSyntax>();
 
-            foreach (var syntaxTree in compilation.SyntaxTrees)
+            // Preserve Windows file ordering regardless of host path separators or document order.
+            foreach (var syntaxTree in compilation.SyntaxTrees.OrderBy(t => t.FilePath.Replace('/', '\\'), StringComparer.OrdinalIgnoreCase))
             {
                 classVisitor.Visit(syntaxTree.GetRoot());
             }
@@ -87,7 +88,8 @@ namespace WCFGenerator.Common
             var enumVisitor = new EnumVirtualizationVisitor();
             var enums = new List<EnumDeclarationSyntax>();
 
-            foreach (var syntaxTree in compilation.SyntaxTrees)
+            // Preserve Windows file ordering regardless of host path separators or document order.
+            foreach (var syntaxTree in compilation.SyntaxTrees.OrderBy(t => t.FilePath.Replace('/', '\\'), StringComparer.OrdinalIgnoreCase))
             {
                 enumVisitor.Visit(syntaxTree.GetRoot());
             }
