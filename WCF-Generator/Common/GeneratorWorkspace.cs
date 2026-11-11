@@ -29,7 +29,7 @@ namespace WCFGenerator.Common
             MsBuildWorkspace = MSBuildWorkspace.Create();
             
             Solution = MsBuildWorkspace.OpenSolutionAsync(absoluteSlnPath).Result;
-            Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
+            Console.Write("\r" + new string(' ', Math.Max(0, Console.WindowWidth - 1)) + "\r");
             var workspaceDiagnostics = MsBuildWorkspace.Diagnostics;
             foreach (var workspaceDiagnostic in workspaceDiagnostics)
             {
@@ -127,7 +127,7 @@ namespace WCFGenerator.Common
                 var docname = (doc.ProjectFolder + "\\" + doc.FileName).NormalizeDirectorySlashes();
                 var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.NormalizeDirectorySlashes().EndsWith(docname));
 
-                var code = CodeHelper.GeneratedDocumentHeader + "\r\n" + doc.SrcText;
+                var code = (CodeHelper.GeneratedDocumentHeader + "\r\n" + doc.SrcText).ReplaceLineEndings("\r\n");
 
                 // check changes
                 if (old != null)

@@ -325,8 +325,8 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             #region Custom repository
 
             // Check exist custom repository class
-            var customRepository = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + _config.RepositorySuffix).FirstOrDefault();
-            var customRepoExist = customRepository != null;
+            var customRepositories = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + _config.RepositorySuffix).ToList();
+            var customRepoExist = customRepositories.Any();
 
             List<MethodInfo> customRepositoryMethods = null;
 
@@ -334,33 +334,33 @@ namespace WCFGenerator.RepositoriesGeneration.Services
             if (customRepoExist)
             {
                 // Custom repository info
-                customRepositoryMethods = customRepository.Members.OfType<MethodDeclarationSyntax>()
+                customRepositoryMethods = customRepositories.SelectMany(c => c.Members).OfType<MethodDeclarationSyntax>()
                     .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString() })
                     .ToList();
                 // Check constructor exist
-                repositoryInfo.IsConstructorImplemented = customRepository.ConstructorImplementationExist();
+                repositoryInfo.IsConstructorImplemented = customRepositories.Any(c => c.ConstructorImplementationExist());
 
-                repositoryInfo.RepositoryNamespace = _solutionSyntaxWalker.GetCustomRepositoryNamespace(customRepository);
+                repositoryInfo.RepositoryNamespace = _solutionSyntaxWalker.GetCustomRepositoryNamespace(customRepositories.First());
             }
 
-            var customCacheRepository = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + "Cache" + _config.RepositorySuffix).FirstOrDefault();
-            var customCacheRepositoryExist = customCacheRepository != null;
+            var customCacheRepositories = _solutionSyntaxWalker.FindCustomRepositoryClassByName(doClass.Identifier + "Cache" + _config.RepositorySuffix).ToList();
+            var customCacheRepositoryExist = customCacheRepositories.Any();
 
             List<MethodInfo> customCacheRepositoryMethods = null;
             // Get custom cache repository class info
             if (customCacheRepositoryExist)
             {
                 // Custom repository info
-                customCacheRepositoryMethods = customCacheRepository.Members.OfType<MethodDeclarationSyntax>()
+                customCacheRepositoryMethods = customCacheRepositories.SelectMany(c => c.Members).OfType<MethodDeclarationSyntax>()
                     .Select(m => new MethodInfo() { Name = m.Identifier.Text, ReturnType = m.ReturnType.ToString() })
                     .ToList();
 
                 // Check constructor exist
-                repositoryInfo.IsCacheRepositoryConstructorImplemented = customCacheRepository.ConstructorImplementationExist();
+                repositoryInfo.IsCacheRepositoryConstructorImplemented = customCacheRepositories.Any(c => c.ConstructorImplementationExist());
 
                 if (repositoryInfo.RepositoryNamespace == null)
                 {
-                    repositoryInfo.RepositoryNamespace = _solutionSyntaxWalker.GetCustomRepositoryNamespace(customCacheRepository);
+                    repositoryInfo.RepositoryNamespace = _solutionSyntaxWalker.GetCustomRepositoryNamespace(customCacheRepositories.First());
                 }
             }
 
