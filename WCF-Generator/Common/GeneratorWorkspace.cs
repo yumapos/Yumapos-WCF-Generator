@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
-using WCFGenerator.RepositoriesGeneration.Helpers;
 
 namespace WCFGenerator.Common
 {
@@ -124,8 +123,7 @@ namespace WCFGenerator.Common
             foreach (var doc in _filesToCreation)
             {
                 Document document;
-                var docname = (doc.ProjectFolder + "\\" + doc.FileName).NormalizeDirectorySlashes();
-                var old = project.Documents.FirstOrDefault(x => x.FilePath != null && x.FilePath.NormalizeDirectorySlashes().EndsWith(docname));
+                var old = FindTargetDocument(project, doc.ProjectFolder, doc.FileName);
 
                 var code = (CodeHelper.GeneratedDocumentHeader + "\r\n" + doc.SrcText).ReplaceLineEndings("\r\n");
 
@@ -151,6 +149,13 @@ namespace WCFGenerator.Common
             // Apply project changes
             Solution = project.Solution;
             ApplyChanges();
+        }
+
+        internal static Document FindTargetDocument(Project project, string folder, string fileName)
+        {
+            var path = Path.GetFullPath(Path.Combine(folder.Replace('\\', '/'), fileName), Path.GetDirectoryName(project.FilePath));
+            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            return project.Documents.FirstOrDefault(doc => string.Equals(doc.FilePath, path, comparison));
         }
 
         #endregion
