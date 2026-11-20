@@ -6,7 +6,6 @@ using WCFGenerator.Common;
 using WCFGenerator.Common.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Configuration;
 using WCFGenerator.RepositoriesGeneration.Enums;
-using WCFGenerator.RepositoriesGeneration.Helpers;
 using WCFGenerator.RepositoriesGeneration.Infrastructure;
 using WCFGenerator.RepositoriesGeneration.Infrastructure.Tvp;
 
@@ -86,8 +85,7 @@ internal class DataTableMigrationCodeGenerator
             return "";
         }
         var migrationClassDeclaration = GetMigrationDeclaration(infos);
-        var fileName = GetFileName();
-        var oldDocument = migrationProject.Documents.FirstOrDefault(x => x.FilePath.NormalizeDirectorySlashes().EndsWith(fileName));
+        var oldDocument = GeneratorWorkspace.FindTargetDocument(migrationProject, _projectConfig.DataTableMigrationTargetFolder, GetFileName());
         if (oldDocument != null)
         {
             var syntaxTree = await oldDocument.GetSyntaxTreeAsync();
@@ -222,10 +220,7 @@ internal class DataTableMigrationCodeGenerator
     
     private async Task<bool> NeedToCreateDataTableMigration(Project repositoryProject, RepositoryProject project, ICodeClassGeneratorRepository repository, string newCode)
     {
-        var newFilePath = Path.Combine(project.RepositoryTargetFolder, repository.FileName).NormalizeDirectorySlashes();
-        var oldDocument = repositoryProject.Documents
-            .FirstOrDefault(x => x.FilePath != null &&
-                                 x.FilePath.NormalizeDirectorySlashes().EndsWith(newFilePath));
+        var oldDocument = GeneratorWorkspace.FindTargetDocument(repositoryProject, project.RepositoryTargetFolder, repository.FileName);
         if (oldDocument == null)
         {
             return true;
